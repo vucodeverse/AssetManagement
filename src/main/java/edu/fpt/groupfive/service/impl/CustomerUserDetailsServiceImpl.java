@@ -2,6 +2,7 @@ package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.model.Users;
+import edu.fpt.groupfive.service.CustomerUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class CustomerUserDetailsServiceImpl implements UserDetailsService {
+public class CustomerUserDetailsServiceImpl implements CustomerUserDetailsService {
 
     private final UserDAO userDAO;
 
