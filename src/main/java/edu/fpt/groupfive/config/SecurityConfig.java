@@ -24,8 +24,6 @@ public class SecurityConfig {
     // các url dc truy cập tự do
     private final String[] WHITE_LIST = {"/login","/ccs/**"};
 
-
-
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

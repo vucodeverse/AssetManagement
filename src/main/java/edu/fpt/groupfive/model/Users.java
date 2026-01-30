@@ -1,22 +1,34 @@
 package edu.fpt.groupfive.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class Users {
-
     private Integer userId;
+
     private String username;
+
     private String passwordHash;
+
     private String fullName;
-    private Integer phone;
+
+    private String phoneNumber;
+
     private String email;
-    private Date createdAt;
+
     private String status;
+
     private String role;
-    private Date updatedAt;
+
+    private LocalDateTime createdDate;
+
+    private LocalDateTime updatedDate;
+
+    //Foreign key of table Department
+    private Integer departmentId;
 }

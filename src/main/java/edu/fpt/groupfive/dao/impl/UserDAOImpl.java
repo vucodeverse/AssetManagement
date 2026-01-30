@@ -13,4 +13,9 @@ public class UserDAOImpl implements UserDAO {
     public Optional<Users> findUserByUsername(String username) {
         return null;
     }
+
+    @Override
+    public Users createUser(Users users) {
+        return null;
+    }
 }
