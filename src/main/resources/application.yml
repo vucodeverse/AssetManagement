@@ -1,17 +1,15 @@
 server:
   port: 8080
+
 spring:
   application:
-    name: hung-nguyen
+    name: asset-manager
+
   profiles:
-    active: @spring.profiles.active@
-  config:
-    activate:
-      on-profile: dev
-    datasource:
-      url: jdbc:sqlserver://localhost:1433;databaseName=SWP;encrypt=true;trustServerCertificate=true
-      username: sa
-      password: 123
-      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    jpa:
-      database-platform: org.hibernate.dialect.SQLServerDialect
+    active: dev
+
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=AssetManager;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: 123
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
