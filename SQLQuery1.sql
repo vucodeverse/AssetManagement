@@ -6,6 +6,11 @@
 -- 1. NHÓM TỔ CHỨC & NGƯỜI DÙNG
 -- =============================================
 
+SELECT * FROM departments
+SELECT * FROM users u JOIN departments d ON u.department_id = d.department_id
+
+SELECT 1 FROM Departments WHERE department_name = 'Technology Department'
+
 CREATE TABLE departments (
   department_id   INT IDENTITY(1,1) NOT NULL,
   department_name VARCHAR(150) NOT NULL,
@@ -23,11 +28,11 @@ CREATE TABLE users (
   full_name      VARCHAR(150) NOT NULL,
   phone_number   VARCHAR(30)  NULL,
   email          VARCHAR(100) NULL UNIQUE,
-  department_id  INT NOT NULL,
   status         VARCHAR(40)  NOT NULL,
   role           VARCHAR(40)  NOT NULL,
   created_date   DATETIME NOT NULL DEFAULT GETDATE(),
   updated_date   DATETIME NULL,
+  department_id  INT NOT NULL,
   PRIMARY KEY (user_id),
   CONSTRAINT FK_users_department
     FOREIGN KEY (department_id) REFERENCES departments(department_id)
