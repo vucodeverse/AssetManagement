@@ -17,9 +17,9 @@ public class DepartmentDAOImpl implements DepartmentDAO {
     @Override
     public void insert(Department department) {
         String query = """
-                INSERT INTO Departments
-                    (department_name, created_date, status, manager_user_id)
-                VALUES (?, ?, ?, ?)
+                    INSERT INTO Departments
+                        (department_name, created_date, status, manager_user_id)
+                    VALUES (?, ?, ?, ?)
                 """;
         try (
                 Connection connection = DatabaseConfig.getConnection();
