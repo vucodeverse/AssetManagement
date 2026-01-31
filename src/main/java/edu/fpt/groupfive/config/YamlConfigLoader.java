@@ -15,7 +15,7 @@ public class YamlConfigLoader {
                         .getResourceAsStream("application.yml");
 
         if (inputStream == null) {
-            throw new RuntimeException("Không tìm thấy application.yml");
+            throw new RuntimeException("Not found application.yml");
         }
 
         return yaml.load(inputStream);
