@@ -6,9 +6,9 @@ import java.util.Map;
 
 public class DatabaseConfig {
 
-    private static String url;
-    private static String username;
-    private static String password;
+    private static final String url;
+    private static final String username;
+    private static final String password;
 
     static {
         try {
