@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact type="jlink" name="unnamed">
-    <output-path>$PROJECT_DIR$/out/artifacts/unnamed</output-path>
+  <artifact type="exploded-war" build-on-make="true" name="unnamed">
+    <output-path>$PROJECT_DIR$</output-path>
     <root id="root" />
   </artifact>
 </component>
