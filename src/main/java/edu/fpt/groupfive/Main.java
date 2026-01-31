@@ -35,13 +35,13 @@ public class Main {
 //
 //        service.createDepartment(request);
 
-        UseCreateRequest request = new UseCreateRequest("admin", "123", "System",
-                "system@gmail.com", "012345678", "ADMIN", 1);
-
-        UserDAO userDAO = new UserDAOImpl();
-        UserService userService = new UserServiceImpl(userDAO);
-
-        userService.createUser(request);
+//        UseCreateRequest request = new UseCreateRequest("admin", "123", "System",
+//                "system@gmail.com", "012345678", "ADMIN", 1);
+//
+//        UserDAO userDAO = new UserDAOImpl();
+//        UserService userService = new UserServiceImpl(userDAO);
+//
+//        userService.createUser(request);
 
 
 
