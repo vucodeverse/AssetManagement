@@ -7,5 +7,8 @@ import java.util.Optional;
 
 public interface UserDAO {
     Optional<Users> findUserByUsername(String username);
-    Users createUser(Users users);
+    void insert (Users users);
+    void update (Users users);
+    void delete (Integer id);
+    boolean existsByUsername(String username);
 }
