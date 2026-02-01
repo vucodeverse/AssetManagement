@@ -5,11 +5,11 @@
 -- =============================================
 -- 1. NHÓM TỔ CHỨC & NGƯỜI DÙNG
 -- =============================================
-/*
+
 SELECT * FROM departments
 SELECT * FROM users u JOIN departments d ON u.department_id = d.department_id
 
-SELECT 1 FROM Departments WHERE department_name = 'Technology Department'*/
+SELECT 1 FROM Departments WHERE department_name = 'Technology Department'
 
 CREATE TABLE departments (
   department_id   INT IDENTITY(1,1) NOT NULL,
