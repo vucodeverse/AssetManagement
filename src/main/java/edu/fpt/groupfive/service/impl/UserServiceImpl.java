@@ -5,11 +5,12 @@ import edu.fpt.groupfive.dto.request.UseCreateRequest;
 import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Repository
+@Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
@@ -33,5 +34,10 @@ public class UserServiceImpl implements UserService {
         user.setDepartmentId(request.getDepartmentId());
 
         userDAO.insert(user);
+    }
+
+    @Override
+    public List<Users> getAllUsers() {
+        return userDAO.findAll();
     }
 }

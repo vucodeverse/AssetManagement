@@ -16,7 +16,7 @@ import org.thymeleaf.templatemode.TemplateMode;
 @Configuration
 @EnableWebMvc
 @RequiredArgsConstructor
-@ComponentScan(basePackages = "edu.fpt.groupfive.controller")
+@ComponentScan(basePackages = "edu.fpt.groupfive")
 public class WebConfig implements WebMvcConfigurer {
 
     private final ApplicationContext applicationContext;

@@ -28,20 +28,25 @@ public class Main {
             e.printStackTrace();
         }
 
-//        DepartmentCreateRequest request = new DepartmentCreateRequest("Information Technology Department", null);
+//        DepartmentCreateRequest request1 = new DepartmentCreateRequest("Information Technology Department", null);
+//        DepartmentCreateRequest request2 = new DepartmentCreateRequest("Asset Management Department", null);
 //
 //        DepartmentDAO departmentDAO = new DepartmentDAOImpl();
 //        DepartmentServiceImpl service = new DepartmentServiceImpl(departmentDAO);
 //
-//        service.createDepartment(request);
-
-//        UseCreateRequest request = new UseCreateRequest("admin", "123", "System",
+//        service.createDepartment(request1);
+//        service.createDepartment(request2);
+//
+//        UseCreateRequest requestu1 = new UseCreateRequest("admin", "123", "System",
 //                "system@gmail.com", "012345678", "ADMIN", 1);
+//        UseCreateRequest requestu2 = new UseCreateRequest("manager1", "123", "Manager",
+//                "manage1@gmail.com", "012345688", "MANAGER", 2);
 //
 //        UserDAO userDAO = new UserDAOImpl();
 //        UserService userService = new UserServiceImpl(userDAO);
 //
-//        userService.createUser(request);
+//        userService.createUser(requestu1);
+//        userService.createUser(requestu2);
 
 
 
