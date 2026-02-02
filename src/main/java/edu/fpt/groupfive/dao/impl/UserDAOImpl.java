@@ -3,15 +3,22 @@ package edu.fpt.groupfive.dao.impl;
 import edu.fpt.groupfive.config.DatabaseConfig;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.model.Users;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class UserDAOImpl implements UserDAO {
+
+    private final DatabaseConfig databaseConfig;
 
     @Override
     public Optional<Users> findUserByUsername(String username) {
@@ -26,7 +33,7 @@ public class UserDAOImpl implements UserDAO {
                     status, role, created_date, department_id)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
-        try (Connection connection = DatabaseConfig.getConnection();
+        try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query);
         ) {
             preparedStatement.setString(1, users.getUsername());
@@ -60,7 +67,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                   SELECT 1 FROM Users WHERE username = ?
                 """;
-        try (Connection connection = DatabaseConfig.getConnection();
+        try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
             preparedStatement.setString(1, username);
@@ -69,6 +76,46 @@ public class UserDAOImpl implements UserDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<Users> findAll() {
+        String query = """
+            SELECT * FROM users
+            """;
+
+        List<Users> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Users u = new Users();
+                u.setUserId(rs.getInt("user_id"));
+                u.setUsername(rs.getString("username"));
+                u.setPasswordHash(rs.getString("password_hash"));
+                u.setFullName(rs.getString("full_name"));
+                u.setPhoneNumber(rs.getString("phone_number"));
+                u.setEmail(rs.getString("email"));
+                u.setStatus(rs.getString("status"));
+                u.setRole(rs.getString("role"));
+
+                Timestamp created = rs.getTimestamp("created_date");
+                Timestamp updated = rs.getTimestamp("updated_date");
+
+                if (created != null) u.setCreatedDate(created.toLocalDateTime());
+                if (updated != null) u.setUpdatedDate(updated.toLocalDateTime());
+
+                u.setDepartmentId(rs.getInt("department_id"));
+
+                list.add(u);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
     }
 
 

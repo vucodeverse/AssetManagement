@@ -14,7 +14,7 @@ SELECT 1 FROM Departments WHERE department_name = 'Technology Department'
 CREATE TABLE departments (
   department_id   INT IDENTITY(1,1) NOT NULL,
   department_name VARCHAR(150) NOT NULL,
-  manager_user_id INT NULL UNIQUE,
+  manager_user_id INT NULL,
   status VARCHAR(40) NOT NULL DEFAULT 'ACTIVE',
   created_date DATETIME NOT NULL DEFAULT GETDATE(),
   updated_date DATETIME NULL,
@@ -41,6 +41,10 @@ CREATE TABLE users (
 ALTER TABLE departments
 ADD CONSTRAINT FK_departments_manager_user
 FOREIGN KEY (manager_user_id) REFERENCES users(user_id);
+
+CREATE UNIQUE INDEX UQ_departments_manager_user
+ON departments(manager_user_id)
+WHERE manager_user_id IS NOT NULL;
 
 -- =============================================
 -- 2. KHO VÀ DANH MỤC
