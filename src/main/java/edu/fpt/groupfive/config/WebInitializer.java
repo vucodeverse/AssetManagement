@@ -6,8 +6,13 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 public class WebInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
     @Override
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[]{RootConfig.class, DatabaseConfig.class, SecurityConfig.class};
+    }
+
+    @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[]{WebConfig.class};
+        return new Class[]{WebConfig.class}; // hoặc WebMvcConfig nếu bạn dùng cái này
     }
 
     @Override
@@ -15,8 +20,4 @@ public class WebInitializer extends AbstractAnnotationConfigDispatcherServletIni
         return new String[]{"/"};
     }
 
-    @Override
-    protected Class<?>[] getRootConfigClasses() {
-        return null;
-    }
 }

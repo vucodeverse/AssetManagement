@@ -5,25 +5,37 @@
     <title>Login</title>
 </head>
 <body>
-<h2>Login</h2>
+<div class="wrap">
+    <div class="card">
+        <h1>Đăng nhập</h1>
+        <p class="muted">Nhập tài khoản và mật khẩu để tiếp tục.</p>
 
-<div th:if="${param.error}">
-    <p style="color: red;">Invalid username or password.</p>
-</div>
-<div th:if="${param.logout}">
-    <p style="color: green;">You have been logged out.</p>
-</div>
+        <div
+             th:if="${errorLogin != null and #strings.isNotEmpty(errorLogin)}"
+             th:text="${errorLogin}">
+            Lỗi đăng nhập
+        </div>
 
-<form th:action="@{/login}" method="post">
-    <div>
-        <label>Username: <input type="text" name="username" required/></label>
+        <form th:action="@{/login}" method="post" autocomplete="off">
+            <input type="hidden" th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text"
+                   placeholder="vd: admin"
+                   th:value="${param.username}" />
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password"/>
+
+            <div class="row">
+                <a class="link" th:href="@{/forgot-password}">Quên mật khẩu?</a>
+            </div>
+
+            <button type="submit">Đăng nhập</button>
+        </form>
     </div>
-    <div>
-        <label>Password: <input type="password" name="password" required/></label>
-    </div>
-    <div>
-        <input type="submit" value="Sign In"/>
-    </div>
-</form>
+</div>
 </body>
+
 </html>

@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -20,13 +21,14 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomerUserDetailsService userDetailsService;
+    private final CustomerAuthenticationFailureHandler customerAuthenticationFailureHandler;
 
     // các url dc truy cập tự do
-    private final String[] WHITE_LIST = {"/login","/css/**"};
+    private final String[] WHITE_LIST = {"/auth/login","/css/**"};
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(10);
     }
 
     @Bean
@@ -39,15 +41,15 @@ public class SecurityConfig {
                         .requestMatchers("/dept-manager/**").hasAnyRole("DEPARTMENT_MANAGER", "ADMIN")
                         .requestMatchers("/director/**").hasAnyRole("DIRECTOR", "ADMIN")
                         .requestMatchers("/purchase-staff/**").hasAnyRole("PURCHASE_STAFF", "ADMIN")
-                        .requestMatchers("/asset-managaer/**").hasAnyRole("ASSET_MANAGER", "ADMIN")
+                        .requestMatchers("/asset-manager/**").hasAnyRole("ASSET_MANAGER", "ADMIN")
                         .requestMatchers("/warehouse/**").hasAnyRole("WAREHOUSE_STAFF", "ADMIN")
                         .anyRequest()
                         .authenticated())
                 .authenticationProvider(authenticationProvider())
-                .formLogin(f -> f.loginPage("/login")
+                .formLogin(f -> f.loginPage("/auth/login")
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/home", true)
-                        .failureUrl("/login?error")
+                        .failureHandler(customerAuthenticationFailureHandler)
                         .permitAll())
                 .logout(l -> l.logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")

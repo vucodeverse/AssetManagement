@@ -1,17 +1,31 @@
 package edu.fpt.groupfive.controller.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-@Controller
+@Controller()
+@RequestMapping("/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class LoginController {
 
-    private static final String MSG_LOGIN = "login";
 
     @GetMapping("/login")
-    public String loginPage(){
-        return MSG_LOGIN;
+    public String loginPage(Model model, HttpServletRequest request){
+        log.info("Login controller");
+
+        Object errLogin = request.getSession().getAttribute("error_login");
+        if(errLogin != null){
+            model.addAttribute("errorLogin", errLogin.toString());
+
+            // xóa session sau khi đã gửi lỗi
+            request.getSession().removeAttribute("error_login");
+        }
+        return "auth/login";
     }
 }

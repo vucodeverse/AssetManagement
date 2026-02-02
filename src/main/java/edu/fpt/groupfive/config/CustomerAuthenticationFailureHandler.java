@@ -24,9 +24,9 @@ public class CustomerAuthenticationFailureHandler implements AuthenticationFailu
         String msg = "";
 
         // check blank
-        if(username.trim().isEmpty() || username == null){
+        if(username == null || username.trim().isEmpty()  ){
 
-        }else if(password.trim().isEmpty() || password == null){
+        }else if(password == null || password.trim().isEmpty() ){
 
         }else{
             if(exception instanceof UsernameNotFoundException){
@@ -39,6 +39,6 @@ public class CustomerAuthenticationFailureHandler implements AuthenticationFailu
         }
 
         request.getSession().setAttribute("error_login", msg);
-        response.sendRedirect("/login");
+        response.sendRedirect(request.getContextPath() + "/login");
     }
 }
