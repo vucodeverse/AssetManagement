@@ -7,7 +7,6 @@ import edu.fpt.groupfive.model.Department;
 import edu.fpt.groupfive.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 

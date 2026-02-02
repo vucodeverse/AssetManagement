@@ -13,8 +13,3 @@ spring:
     username: sa
     password: 123
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-
-  thymeleaf:
-    cache: false
-    prefix: classpath:/templates/
-    suffix: .html
