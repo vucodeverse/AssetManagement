@@ -3,6 +3,7 @@ package edu.fpt.groupfive.dao.impl;
 import edu.fpt.groupfive.config.DatabaseConfig;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.model.Users;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -14,7 +15,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class UserDAOImpl implements UserDAO {
+
+    private final DatabaseConfig databaseConfig;
 
     @Override
     public Optional<Users> findUserByUsername(String username) {
@@ -29,7 +33,7 @@ public class UserDAOImpl implements UserDAO {
                     status, role, created_date, department_id)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
-        try (Connection connection = DatabaseConfig.getConnection();
+        try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query);
         ) {
             preparedStatement.setString(1, users.getUsername());
@@ -63,7 +67,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                   SELECT 1 FROM Users WHERE username = ?
                 """;
-        try (Connection connection = DatabaseConfig.getConnection();
+        try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
             preparedStatement.setString(1, username);
@@ -82,7 +86,7 @@ public class UserDAOImpl implements UserDAO {
 
         List<Users> list = new ArrayList<>();
 
-        try (Connection connection = DatabaseConfig.getConnection();
+        try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
 

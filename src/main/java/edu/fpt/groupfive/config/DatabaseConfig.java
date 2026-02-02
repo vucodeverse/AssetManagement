@@ -1,34 +1,30 @@
 package edu.fpt.groupfive.config;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Map;
 
+@Configuration
 public class DatabaseConfig {
 
-    private static final String url;
-    private static final String username;
-    private static final String password;
+    @Value("${spring.datasource.url}")
+    private String url;
 
-    static {
+    @Value("${spring.datasource.username}")
+    private String username;
+
+    @Value("${spring.datasource.password}")
+    private String password;
+
+    @Value("${spring.datasource.driver-class-name}")
+    private String driverClassName;
+
+    public Connection getConnection() {
         try {
-            Map<String, Object> yaml = YamlConfigLoader.load();
-            Map<String, Object> spring = (Map<String, Object>) yaml.get("spring");
-            Map<String, Object> datasource = (Map<String, Object>) spring.get("datasource");
-
-            url = datasource.get("url").toString();
-            username = datasource.get("username").toString();
-            password = datasource.get("password").toString();
-
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load DB config from YAML", e);
-        }
-    }
-
-    public static Connection getConnection() {
-        try {
+            Class.forName(driverClassName);
             return DriverManager.getConnection(url, username, password);
         } catch (Exception e) {
             throw new RuntimeException("Cannot connect to database", e);

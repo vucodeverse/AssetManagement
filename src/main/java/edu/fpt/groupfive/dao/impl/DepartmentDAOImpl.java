@@ -3,6 +3,7 @@ package edu.fpt.groupfive.dao.impl;
 import edu.fpt.groupfive.config.DatabaseConfig;
 import edu.fpt.groupfive.dao.DepartmentDAO;
 import edu.fpt.groupfive.model.Department;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -12,7 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class DepartmentDAOImpl implements DepartmentDAO {
+
+    private final DatabaseConfig databaseConfig;
 
     @Override
     public void insert(Department department) {
@@ -22,7 +26,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
                     VALUES (?, ?, ?, ?)
                 """;
         try (
-                Connection connection = DatabaseConfig.getConnection();
+                Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(query)
                 ) {
             preparedStatement.setString(1, department.getDepartmentName());
@@ -48,7 +52,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
             WHERE department_id = ?
         """;
         try (
-                Connection connection = DatabaseConfig.getConnection();
+                Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)
         ) {
             preparedStatement.setString(1, department.getDepartmentName());
@@ -70,7 +74,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         """;
 
         try (
-                Connection connection = DatabaseConfig.getConnection();
+                Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)
         ) {
             preparedStatement.setInt(1, departmentId);
@@ -96,7 +100,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         String sql = "SELECT 1 FROM Departments WHERE department_name = ?";
 
         try (
-                Connection connection = DatabaseConfig.getConnection();
+                Connection connection = databaseConfig.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql)
         ) {
             ps.setString(1, departmentName);

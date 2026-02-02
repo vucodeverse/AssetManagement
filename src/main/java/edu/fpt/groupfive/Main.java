@@ -17,7 +17,10 @@ import java.sql.PreparedStatement;
 
 public class Main {
     public static void main(String[] args) {
-        try (Connection conn = DatabaseConfig.getConnection()) {
+
+        DatabaseConfig databaseConfig = new DatabaseConfig();
+
+        try (Connection conn = databaseConfig.getConnection()) {
             if (conn != null && !conn.isClosed()) {
                 System.out.println("✅ KẾT NỐI DATABASE THÀNH CÔNG!");
             } else {
