@@ -22,7 +22,7 @@ public class SecurityConfig {
     private final CustomerUserDetailsService userDetailsService;
 
     // các url dc truy cập tự do
-    private final String[] WHITE_LIST = {"/login","/ccs/**"};
+    private final String[] WHITE_LIST = {"/login","/css/**"};
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -35,13 +35,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
                         .requestMatchers(WHITE_LIST)
                         .permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/dept-manager/**").hasAnyRole("DEPARTMENT_MANAGER", "ADMIN")
+                        .requestMatchers("/director/**").hasAnyRole("DIRECTOR", "ADMIN")
+                        .requestMatchers("/purchase-staff/**").hasAnyRole("PURCHASE_STAFF", "ADMIN")
+                        .requestMatchers("/asset-managaer/**").hasAnyRole("ASSET_MANAGER", "ADMIN")
+                        .requestMatchers("/warehouse/**").hasAnyRole("WAREHOUSE_STAFF", "ADMIN")
                         .anyRequest()
                         .authenticated())
                 .authenticationProvider(authenticationProvider())
                 .formLogin(f -> f.loginPage("/login")
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/home", true)
-                        .failureUrl("/error")
+                        .failureUrl("/login?error")
                         .permitAll())
                 .logout(l -> l.logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
@@ -60,6 +66,9 @@ public class SecurityConfig {
 
     daoAuthenticationProvider.setUserDetailsService(userDetailsService);
     daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+
+    // hiển thị lỗi
+    daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
 
     return daoAuthenticationProvider;
     }
