@@ -17,7 +17,7 @@ public class UseCreateRequest {
 
     private String phoneNumber;
 
-    private String Role;
+    private String role;
 
     private Integer departmentId;
 
