@@ -1,6 +1,7 @@
-package edu.fpt.groupfive.config;
+package edu.fpt.groupfive.config.web;
 
-import org.springframework.lang.Nullable;
+import edu.fpt.groupfive.config.database.DatabaseConfig;
+import edu.fpt.groupfive.config.auth.SecurityConfig;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class WebInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
@@ -12,7 +13,7 @@ public class WebInitializer extends AbstractAnnotationConfigDispatcherServletIni
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[]{WebConfig.class}; // hoặc WebMvcConfig nếu bạn dùng cái này
+        return new Class[]{WebConfig.class};
     }
 
     @Override

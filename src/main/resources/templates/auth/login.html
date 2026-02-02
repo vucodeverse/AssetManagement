@@ -10,10 +10,8 @@
         <h1>Đăng nhập</h1>
         <p class="muted">Nhập tài khoản và mật khẩu để tiếp tục.</p>
 
-        <div
-             th:if="${errorLogin != null and #strings.isNotEmpty(errorLogin)}"
+        <div th:if="${errorLogin != null}"
              th:text="${errorLogin}">
-            Lỗi đăng nhập
         </div>
 
         <form th:action="@{/login}" method="post" autocomplete="off">

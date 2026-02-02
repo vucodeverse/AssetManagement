@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.config;
+package edu.fpt.groupfive.config.web;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,6 @@ import org.thymeleaf.templatemode.TemplateMode;
 @EnableWebMvc
 @RequiredArgsConstructor
 @ComponentScan(basePackages = "edu.fpt.groupfive")
-@PropertySource("classpath:application.properties")
 public class WebConfig implements WebMvcConfigurer {
 
     private final ApplicationContext applicationContext;
@@ -33,11 +32,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Value("${spring.thymeleaf.cache}")
     private boolean cache;
-
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
-        return new PropertySourcesPlaceholderConfigurer();
-    }
 
     // ======== Nơi chứa file HTML ========
     @Bean
