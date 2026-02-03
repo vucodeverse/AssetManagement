@@ -40,7 +40,7 @@ public class UserDAOImpl implements UserDAO {
             preparedStatement.setString(2, users.getPasswordHash());
             preparedStatement.setString(3, users.getFullName());
             preparedStatement.setString(4, users.getPhoneNumber());
-            preparedStatement.setString(5, users.getPhoneNumber());
+            preparedStatement.setString(5, users.getEmail());
             preparedStatement.setString(6, users.getStatus());
             preparedStatement.setString(7, users.getRole());
             preparedStatement.setTimestamp(8, Timestamp.valueOf(users.getCreatedDate()));
