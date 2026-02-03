@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.controller.user;
+package edu.fpt.groupfive.controller.admin;
 
 import edu.fpt.groupfive.dto.request.UseCreateRequest;
 import edu.fpt.groupfive.service.UserService;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/admin")
 public class UserController {
     private final UserService userService;
 

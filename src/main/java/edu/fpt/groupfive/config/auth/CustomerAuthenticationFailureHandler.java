@@ -20,7 +20,6 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class CustomerAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
-    private final Environment environment;
     private final MessageSource messageSource;
 
 

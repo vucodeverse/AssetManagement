@@ -5,6 +5,10 @@
 -- 1. NHÓM TỔ CHỨC & NGƯỜI DÙNG
 -- =============================================
 
+UPDATE users
+SET role = 'ROLE_ADMIN'
+WHERE user_id = 10;
+
 SELECT * FROM departments
 SELECT * FROM users u JOIN departments d ON u.department_id = d.department_id
 
@@ -21,6 +25,8 @@ CREATE TABLE departments (
   status VARCHAR(40) NOT NULL DEFAULT 'ACTIVE',
   created_date DATETIME NOT NULL DEFAULT GETDATE(),
   updated_date DATETIME NULL,
+    --Thêm description
+  description VARCHAR(1000),
   PRIMARY KEY (department_id)
 );
 
