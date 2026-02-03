@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.config;
+package edu.fpt.groupfive.config.web;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

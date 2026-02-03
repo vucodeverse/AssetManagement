@@ -1,6 +1,5 @@
-package edu.fpt.groupfive.config;
+package edu.fpt.groupfive.config.web;
 
-import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class WebInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {

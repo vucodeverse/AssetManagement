@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao.impl;
 
-import edu.fpt.groupfive.config.DatabaseConfig;
+import edu.fpt.groupfive.config.database.DatabaseConfig;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.model.Users;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class UserDAOImpl implements UserDAO {
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
             preparedStatement.setString(1, users.getUsername());
             preparedStatement.setString(2, users.getPasswordHash());

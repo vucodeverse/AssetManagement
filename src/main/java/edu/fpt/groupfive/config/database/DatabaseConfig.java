@@ -1,11 +1,10 @@
-package edu.fpt.groupfive.config;
+package edu.fpt.groupfive.config.database;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.Map;
 
 @Configuration
 public class DatabaseConfig {
