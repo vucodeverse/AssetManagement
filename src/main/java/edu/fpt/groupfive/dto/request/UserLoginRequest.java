@@ -1,10 +1,12 @@
 package edu.fpt.groupfive.dto.request;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserLoginRequest {
 
     private String username;
