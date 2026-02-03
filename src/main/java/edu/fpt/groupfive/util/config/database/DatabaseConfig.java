@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.config.database;
+package edu.fpt.groupfive.util.config.database;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

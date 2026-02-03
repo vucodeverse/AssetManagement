@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.config.web;
+package edu.fpt.groupfive.util.config.web;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;

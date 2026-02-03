@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.config.auth;
+package edu.fpt.groupfive.util.config.auth;
 
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 

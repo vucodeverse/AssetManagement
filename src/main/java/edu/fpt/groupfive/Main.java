@@ -1,9 +1,5 @@
 package edu.fpt.groupfive;
 
-import edu.fpt.groupfive.config.database.DatabaseConfig;
-
-import java.sql.Connection;
-
 public class Main {
     public static void main(String[] args) {
         //testDatabaseConnection();

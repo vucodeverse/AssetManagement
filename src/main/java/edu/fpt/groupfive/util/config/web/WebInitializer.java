@@ -1,7 +1,7 @@
-package edu.fpt.groupfive.config.web;
+package edu.fpt.groupfive.util.config.web;
 
-import edu.fpt.groupfive.config.database.DatabaseConfig;
-import edu.fpt.groupfive.config.auth.SecurityConfig;
+import edu.fpt.groupfive.util.config.database.DatabaseConfig;
+import edu.fpt.groupfive.util.config.auth.SecurityConfig;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class WebInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {

@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao.impl;
 
-import edu.fpt.groupfive.config.database.DatabaseConfig;
+import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.model.Users;
 import lombok.RequiredArgsConstructor;

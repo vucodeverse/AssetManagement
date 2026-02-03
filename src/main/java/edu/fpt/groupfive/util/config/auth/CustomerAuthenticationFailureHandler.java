@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.config.auth;
+package edu.fpt.groupfive.util.config.auth;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
