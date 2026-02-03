@@ -11,5 +11,6 @@ public interface UserDAO {
     void update (Users users);
     void delete (Integer id);
     boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
     List<Users> findAll();
 }

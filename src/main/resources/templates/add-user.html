@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Management</title>
+</head>
+<body>
+
+<h2>Danh sách Users</h2>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Full Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Role</th>
+    </tr>
+    <tr th:each="u : ${users}">
+        <td th:text="${u.userId}"></td>
+        <td th:text="${u.username}"></td>
+        <td th:text="${u.fullName}"></td>
+        <td th:text="${u.email}"></td>
+        <td th:text="${u.status}"></td>
+        <td th:text="${u.role}"></td>
+    </tr>
+</table>
+
+<hr>
+
+<h2>Thêm User mới</h2>
+
+<form th:action="@{/user/save}" th:object="${newUser}" method="post">
+    Username: <input type="text" th:field="*{username}" /> <br>
+    Password: <input type="password" th:field="*{password}" /> <br>
+    Full Name: <input type="text" th:field="*{fullName}" /> <br>
+    Email: <input type="email" th:field="*{email}" /> <br>
+    Phone: <input type="text" th:field="*{phoneNumber}" /> <br>
+    Role: <input type="text" th:field="*{role}" /> <br>
+    Department ID: <input type="number" th:field="*{departmentId}" /> <br>
+
+    <button type="submit">Add User</button>
+</form>
+
+</body>
+</html>

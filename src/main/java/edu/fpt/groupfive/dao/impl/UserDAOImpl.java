@@ -39,8 +39,8 @@ public class UserDAOImpl implements UserDAO {
             preparedStatement.setString(1, users.getUsername());
             preparedStatement.setString(2, users.getPasswordHash());
             preparedStatement.setString(3, users.getFullName());
-            preparedStatement.setString(4, users.getEmail());
-            preparedStatement.setString(5, users.getPhoneNumber());
+            preparedStatement.setString(4, users.getPhoneNumber());
+            preparedStatement.setString(5, users.getEmail());
             preparedStatement.setString(6, users.getStatus());
             preparedStatement.setString(7, users.getRole());
             preparedStatement.setTimestamp(8, Timestamp.valueOf(users.getCreatedDate()));
@@ -54,11 +54,55 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void update(Users users) {
+        String query = """
+                UPDATE Users
+                SET
+                    password_hash = ?,
+                    full_name = ?,
+                    phone_number = ?,
+                    email = ?,
+                    status = ?,
+                    role = ?,
+                    updated_date = ?,
+                    department_id = ?
+                WHERE user_id = ?
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)
+        ) {
+            preparedStatement.setString(1, users.getPasswordHash());
+            preparedStatement.setString(2, users.getFullName());
+            preparedStatement.setString(3, users.getPhoneNumber());
+            preparedStatement.setString(4, users.getEmail());
+            preparedStatement.setString(5, users.getStatus());
+            preparedStatement.setTimestamp(6, Timestamp.valueOf(users.getCreatedDate()));
+            preparedStatement.setInt(7, users.getDepartmentId());
+            preparedStatement.setInt(8, users.getUserId());
+
+            preparedStatement.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
     @Override
     public void delete(Integer id) {
+        String query = """
+                UPDATE Users
+                SET status = 'INACTIVE', updated_date = GETDATE()
+                WHERE user_id = ?;
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)
+        ) {
+            preparedStatement.setInt(1, id);
+
+            preparedStatement.executeQuery().next();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -79,10 +123,26 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public boolean existsByEmail(String email) {
+        String query = """
+                  SELECT 1 FROM Users WHERE email = ?
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)
+        ) {
+            preparedStatement.setString(1, email);
+
+            return preparedStatement.executeQuery().next();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public List<Users> findAll() {
         String query = """
-            SELECT * FROM users
-            """;
+                SELECT * FROM users WHERE status = 'ACTIVE'
+                """;
 
         List<Users> list = new ArrayList<>();
 
