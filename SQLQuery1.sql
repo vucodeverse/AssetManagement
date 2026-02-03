@@ -9,11 +9,7 @@
 SELECT * FROM departments
 SELECT * FROM users u JOIN departments d ON u.department_id = d.department_id
 
-SELECT 1 FROM Departments WHERE department_name = 'Information Technology Department'
-
-UPDATE Users SET status = 'INACTIVE', updated_date = GETDATE() WHERE user_id = 7;
-
-SELECT 1 FROM Users WHERE email = '0123456789'
+SELECT 1 FROM Departments WHERE department_name = 'Technology Department'
 
 CREATE TABLE departments (
   department_id   INT IDENTITY(1,1) NOT NULL,
