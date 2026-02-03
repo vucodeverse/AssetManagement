@@ -7,7 +7,7 @@ CREATE TABLE users (
   email VARCHAR(100) NULL UNIQUE,
   created_date DATE NOT NULL,
   status VARCHAR(40) NOT NULL,
-  role VARCHAR(40) NOT NULL,
+  role VARCHAR(40) NOT NUL
   updated_date DATE NULL,
   PRIMARY KEY (user_id)
 );

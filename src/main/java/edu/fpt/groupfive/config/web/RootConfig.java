@@ -8,10 +8,6 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 @PropertySource("classpath:application.properties")
 @PropertySource("classpath:message-login.properties")
 public class RootConfig {
-    private RootConfig(){
-        throw new IllegalStateException("DDaay laf class Utility");
-    }
-
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
         PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer =
