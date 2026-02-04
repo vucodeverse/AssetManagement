@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class PurchaseDetail extends AbstractEntity<Integer>{
     private Integer quantity;
-    private String specification_requirement;
+    private String specificationRequirement;
     private String note;
     private Integer assetTypeId;
     private Integer purchaseRequestId;
