@@ -20,18 +20,18 @@ public class UserController {
     public String addForm(Model model) {
         model.addAttribute("users", userService.getAllUsers());
         model.addAttribute("newUser", new UseCreateRequest());
-        return "add-user";
+        return "user-form";
     }
 
     @PostMapping("/save")
     public String addUser(@ModelAttribute("newUser") UseCreateRequest request) {
         userService.createUser(request);
-        return "redirect:/user/home";
+        return "redirect:/admin/home";
     }
 
     @GetMapping("/home")
     public String home(Model model) {
         model.addAttribute("users", userService.getAllUsers());
-        return "home";
+        return "admin/home";
     }
 }
