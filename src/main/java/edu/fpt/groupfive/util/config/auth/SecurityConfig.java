@@ -48,17 +48,17 @@ public class SecurityConfig {
 
         // bật bth
         httpSecurity
-                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                        .requestMatchers(WHITE_LIST)
-                        .permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/dept-manager/**").hasAnyAuthority("DEPARTMENT_MANAGER", "ADMIN")
-                        .requestMatchers("/director/**").hasAnyAuthority("DIRECTOR", "ADMIN")
-                        .requestMatchers("/purchase-staff/**").hasAnyAuthority("PURCHASE_STAFF", "ADMIN")
-                        .requestMatchers("/asset-manager/**").hasAnyAuthority("ASSET_MANAGER", "ADMIN")
-                        .requestMatchers("/warehouse/**").hasAnyAuthority("WAREHOUSE_STAFF", "ADMIN")
-                        .anyRequest()
-                        .authenticated())
+//                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
+//                        .requestMatchers(WHITE_LIST)
+//                        .permitAll()
+//                        .requestMatchers("/admin/**").hasRole("ADMIN")
+//                        .requestMatchers("/dept-manager/**").hasAnyAuthority("DEPARTMENT_MANAGER", "ADMIN")
+//                        .requestMatchers("/director/**").hasAnyAuthority("DIRECTOR", "ADMIN")
+//                        .requestMatchers("/purchase-staff/**").hasAnyAuthority("PURCHASE_STAFF", "ADMIN")
+//                        .requestMatchers("/asset-manager/**").hasAnyAuthority("ASSET_MANAGER", "ADMIN")
+//                        .requestMatchers("/warehouse/**").hasAnyAuthority("WAREHOUSE_STAFF", "ADMIN")
+//                        .anyRequest()
+//                        .authenticated())
                 .authorizeHttpRequests(auth ->
                 auth.anyRequest().permitAll())
                 .authenticationProvider(authenticationProvider())

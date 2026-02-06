@@ -39,4 +39,9 @@ public class UserServiceImpl implements UserService {
     public List<Users> getAllUsers() {
         return userDAO.findAll();
     }
+
+    @Override
+    public Integer getUserIdByUsername(String username) {
+        return userDAO.findUserIdByUsername(username);
+    }
 }

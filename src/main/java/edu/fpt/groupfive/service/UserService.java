@@ -8,4 +8,5 @@ import java.util.List;
 public interface UserService {
     void createUser(UseCreateRequest request);
     List<Users> getAllUsers();
+    Integer getUserIdByUsername(String username);
 }

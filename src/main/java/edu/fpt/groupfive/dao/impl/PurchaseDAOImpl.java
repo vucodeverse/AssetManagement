@@ -22,20 +22,53 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
 
-            preparedStatement.setString(1, purchase.getStatus().toString());
+            preparedStatement.setString(1, purchase.getStatus() != null ? purchase.getStatus().toString() : null);
             preparedStatement.setString(2, purchase.getNote());
             preparedStatement.setInt(3, purchase.getCreatedByUser());
-            preparedStatement.setDate(4, Date.valueOf(purchase.getNeededByDate().toString()));
+            
+            if (purchase.getNeededByDate() != null) {
+                preparedStatement.setDate(4, new java.sql.Date(purchase.getNeededByDate().getTime()));
+            } else {
+                preparedStatement.setNull(4, Types.DATE);
+            }
+            
             preparedStatement.setString(5, purchase.getPriority());
-            preparedStatement.setInt(6, purchase.getApprovedByDirector());
-            preparedStatement.setString(7, purchase.getRejectReason());
-            preparedStatement.setDate(8,  Date.valueOf(purchase.getCreatedAt().toString()));
-            preparedStatement.setDate(9,  Date.valueOf(purchase.getUpdatedAt().toString()));
-            preparedStatement.setString(10, purchase.getReason());
-            preparedStatement.setDate(11, Date.valueOf(purchase.getApprovedAt().toString()));
-            preparedStatement.setInt(12, purchase.getPurchaseStaffId());
+            
+            if (purchase.getApprovedByDirector() != null) {
+                preparedStatement.setInt(6, purchase.getApprovedByDirector());
+            } else {
+                preparedStatement.setNull(6, Types.INTEGER);
+            }
 
-            preparedStatement.executeQuery();
+            preparedStatement.setString(7, purchase.getRejectReason());
+            
+            if (purchase.getCreatedAt() != null) {
+                preparedStatement.setTimestamp(8,  new java.sql.Timestamp(purchase.getCreatedAt().getTime()));
+            } else {
+                preparedStatement.setNull(8, Types.TIMESTAMP);
+            }
+            
+            if (purchase.getUpdatedAt() != null) {
+                preparedStatement.setTimestamp(9,  new java.sql.Timestamp(purchase.getUpdatedAt().getTime()));
+            } else {
+                preparedStatement.setNull(9, Types.TIMESTAMP);
+            }
+
+            preparedStatement.setString(10, purchase.getReason());
+
+            if (purchase.getApprovedAt() != null) {
+                preparedStatement.setTimestamp(11, Timestamp.valueOf(purchase.getApprovedAt()));
+            } else {
+                preparedStatement.setNull(11, Types.TIMESTAMP);
+            }
+            
+            if (purchase.getPurchaseStaffId() != null) {
+                preparedStatement.setInt(12, purchase.getPurchaseStaffId());
+            } else {
+                preparedStatement.setNull(12, Types.INTEGER);
+            }
+
+            preparedStatement.executeUpdate();
             ResultSet rs = preparedStatement.getGeneratedKeys();
             if(rs.next()) return rs.getInt(1);
 

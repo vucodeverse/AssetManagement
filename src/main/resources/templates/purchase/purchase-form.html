@@ -1,0 +1,73 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Form</title>
+</head>
+
+<body>
+
+    <form th:action="@{/asset-manager/purchase-form}" th:object="${purchaseCreateRequest}" method="post">
+
+        <input type="text" th:field="*{note}" placeholder="Note">
+        <div th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></div>
+        <br>
+
+        <input type="text" th:field="*{reason}" placeholder="Reason">
+        <div th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}"></div>
+        <br>
+
+        <input type="text" th:field="*{priority}" placeholder="Priority">
+        <div th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}"></div>
+        <br>
+
+        <input type="date" th:field="*{neededByDate}">
+        <div th:if="${#fields.hasErrors('neededByDate')}" th:errors="*{neededByDate}"></div>
+        <br>
+
+
+        <hr>
+        <h4>Purchase Details</h4>
+
+        <div th:each="d, stat : *{purchaseDetailCreateRequests}">
+
+            <input type="number" min="1" th:field="*{purchaseDetailCreateRequests[__${stat.index}__].quantity}"
+                placeholder="Quantity" />
+            <div th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].quantity')}"
+                th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].quantity}">
+            </div>
+
+            <input type="text" th:field="*{purchaseDetailCreateRequests[__${stat.index}__].specificationRequirement}"
+                placeholder="Specification Requirement" />
+            <div th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].specificationRequirement')}"
+                th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].specificationRequirement}">
+            </div>
+
+            <input type="text" th:field="*{purchaseDetailCreateRequests[__${stat.index}__].note}"
+                placeholder="Detail Note" />
+            <div th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].note')}"
+                th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].note}">
+            </div>
+
+            <select th:field="*{purchaseDetailCreateRequests[__${stat.index}__].assetTypeId}">
+                <option value="">-- Chọn loại tài sản --</option>
+                <option th:each="c : ${assetTypes}" th:value="${c.typeId}" th:text="${c.typeName}">
+                </option>
+            </select>
+
+            <button type="submit" name="remove" th:value="${stat.index}">-</button>
+            <hr>
+        </div>
+
+        <button type="submit" name="addDetail" value="true">+</button>
+
+        <br><br>
+        <button type="submit">Submit</button>
+    </form>
+
+
+</body>
+
+</html>

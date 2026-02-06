@@ -8,9 +8,7 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
         uses = PurchaseDetailMapper.class,
-        unmappedTargetPolicy = ReportingPolicy.ERROR)
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PurchaseMapper {
-
-    @Mapping(source = "purchaseDetailCreateRequests", target = "purchaseDetails")
     Purchase toPurchase(PurchaseCreateRequest purchaseCreateRequest);
 }
