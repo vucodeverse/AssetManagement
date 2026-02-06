@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Category</title>
+</head>
+<body>
+
+<h2>Add Category</h2>
+
+<form th:action="@{/manager/addCategory}"
+      method="post"
+      th:object="${category}">
+
+    Category Name:
+    <input type="text" th:field="*{categoryName}">
+    <br><br>
+
+    Description:
+    <input type="text" th:field="*{description}">
+    <br><br>
+
+    Status:
+    <select th:field="*{status}">
+        <option value="ACTIVE">ACTIVE</option>
+        <option value="INACTIVE">INACTIVE</option>
+    </select>
+    <br><br>
+
+    <button type="submit">Save</button>
+</form>
+
+</body>
+</html>
