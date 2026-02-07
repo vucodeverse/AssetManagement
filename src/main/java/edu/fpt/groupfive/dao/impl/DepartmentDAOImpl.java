@@ -24,18 +24,19 @@ public class DepartmentDAOImpl implements DepartmentDAO {
     public void insert(Department department) {
         String query = """
                     INSERT INTO Departments
-                        (department_name, created_date, status, manager_user_id)
+                        (department_name, description,
+                         status, manager_user_id)
                     VALUES (?, ?, ?, ?)
                 """;
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)
+             PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            preparedStatement.setString(1, department.getDepartmentName());
-            preparedStatement.setTimestamp(2, Timestamp.valueOf(department.getCreatedDate()));
-            preparedStatement.setString(3, department.getStatus());
-            preparedStatement.setObject(4, department.getManagerId());
+            ps.setString(1, department.getDepartmentName());
+            ps.setString(2, department.getDescription());
+            ps.setString(3, department.getStatus());
+            ps.setObject(4, department.getManagerId());
 
-            preparedStatement.executeUpdate();
+            ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -47,21 +48,23 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         String sql = """
                     UPDATE Departments
                     SET department_name = ?,
+                        description = ?,
                         updated_date = ?,
                         status = ?,
                         manager_user_id = ?
                     WHERE department_id = ?
                 """;
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)
+             PreparedStatement ps = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setString(1, department.getDepartmentName());
-            preparedStatement.setTimestamp(2, Timestamp.valueOf(department.getUpdatedDate()));
-            preparedStatement.setString(3, department.getStatus());
-            preparedStatement.setObject(4, department.getManagerId());
-            preparedStatement.setInt(5, department.getDepartmentId());
+            ps.setString(1, department.getDepartmentName());
+            ps.setString(2, department.getDescription());
+            ps.setTimestamp(3, Timestamp.valueOf(department.getUpdatedDate()));
+            ps.setString(4, department.getStatus());
+            ps.setObject(5, department.getManagerId());
+            ps.setInt(6, department.getDepartmentId());
 
-            preparedStatement.executeUpdate();
+            ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -70,18 +73,18 @@ public class DepartmentDAOImpl implements DepartmentDAO {
     @Override
     public void delete(Integer departmentId) {
         String sql = """
-                    UPDATE Departments 
-                    SET WHERE status = 'INACTIVE',
-                        updated_date = GETDATE() 
+                    UPDATE Departments
+                    SET status = 'INACTIVE',
+                        updated_date = GETDATE()
                     WHERE department_id = ?
                 """;
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)
+             PreparedStatement ps = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setInt(1, departmentId);
+            ps.setInt(1, departmentId);
 
-            preparedStatement.executeUpdate();
+            ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -89,6 +92,35 @@ public class DepartmentDAOImpl implements DepartmentDAO {
 
     @Override
     public Optional<Department> findById(Integer departmentId) {
+        String query = """
+                SELECT * FROM Departments
+                WHERE department_id = ? AND status = 'ACTIVE'
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)
+        ) {
+            ps.setInt(1, departmentId);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                Department department = new Department();
+                department.setDepartmentId(rs.getInt("department_id"));
+                department.setDepartmentName(rs.getString("department_name"));
+                department.setDescription(rs.getString("description"));
+                department.setStatus(rs.getString("status"));
+                Timestamp created = rs.getTimestamp("created_date");
+                Timestamp updated = rs.getTimestamp("updated_date");
+
+                if (created != null) department.setCreatedDate(created.toLocalDateTime());
+                if (updated != null) department.setUpdatedDate(updated.toLocalDateTime());
+
+                department.setManagerId(rs.getInt("manager_user_id"));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        
         return Optional.empty();
     }
 
@@ -101,13 +133,14 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         List<Department> list = new ArrayList<>();
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query);
-             ResultSet rs = preparedStatement.executeQuery()
-        ){
+             PreparedStatement ps = connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()
+        ) {
             while (rs.next()) {
                 Department d = new Department();
                 d.setDepartmentId(rs.getInt("department_id"));
                 d.setDepartmentName(rs.getString("department_name"));
+                d.setDescription(rs.getString("description"));
                 d.setStatus(rs.getString("status"));
                 d.setManagerId(rs.getInt("manager_user_id"));
 
@@ -128,10 +161,13 @@ public class DepartmentDAOImpl implements DepartmentDAO {
 
     @Override
     public boolean existsByName(String departmentName) {
-        String sql = "SELECT 1 FROM Departments WHERE department_name = ?";
+        String query = """
+                SELECT 1 FROM Departments
+                WHERE department_name = ? AND status = 'ACTIVE'
+                """;
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)
+             PreparedStatement ps = connection.prepareStatement(query)
         ) {
             ps.setString(1, departmentName);
             return ps.executeQuery().next();

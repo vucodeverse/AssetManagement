@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.model;
 
+import edu.fpt.groupfive.common.Role;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,7 +24,7 @@ public class Users {
 
     private String status;
 
-    private String role;
+    private Role role;
 
     private LocalDateTime createdDate;
 

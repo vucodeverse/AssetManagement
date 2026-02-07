@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,5 +35,20 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public void updateDepartment(DepartmentUpdateRequest request) {
 
+    }
+
+    @Override
+    public void removeDepartment(Integer id) {
+
+    }
+
+    @Override
+    public List<Department> getAllDepartments() {
+        return List.of();
+    }
+
+    @Override
+    public Department getDepartById(Integer id) {
+        return null;
     }
 }

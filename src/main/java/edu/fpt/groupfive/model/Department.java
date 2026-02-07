@@ -14,6 +14,8 @@ public class Department {
 
     private String departmentName;
 
+    private String description;
+
     private LocalDateTime createdDate;
 
     private LocalDateTime updatedDate;

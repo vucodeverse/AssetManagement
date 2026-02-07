@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao.impl;
 
+import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.model.Users;
@@ -22,7 +23,7 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public Optional<Users> findUserByUsername(String username) {
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -30,23 +31,23 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                    INSERT INTO Users
                    (username, password_hash, full_name, phone_number, email,
-                    status, role, created_date, department_id)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    status, role, department_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query);
+             PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            preparedStatement.setString(1, users.getUsername());
-            preparedStatement.setString(2, users.getPasswordHash());
-            preparedStatement.setString(3, users.getFullName());
-            preparedStatement.setString(4, users.getPhoneNumber());
-            preparedStatement.setString(5, users.getEmail());
-            preparedStatement.setString(6, users.getStatus());
-            preparedStatement.setString(7, users.getRole());
-            preparedStatement.setTimestamp(8, Timestamp.valueOf(users.getCreatedDate()));
-            preparedStatement.setInt(9, users.getDepartmentId());
+            ps.setString(1, users.getUsername());
+            ps.setString(2, users.getPasswordHash());
+            ps.setString(3, users.getFullName());
+            ps.setString(4, users.getPhoneNumber());
+            ps.setString(5, users.getEmail());
+            ps.setString(6, users.getStatus());
+            ps.setString(7, users.getRole().name());
+            ps.setTimestamp(8, Timestamp.valueOf(users.getCreatedDate()));
+            ps.setInt(9, users.getDepartmentId());
 
-            preparedStatement.executeUpdate();
+            ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -55,51 +56,53 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public void update(Users users) {
         String query = """
-                UPDATE Users
-                SET
-                    password_hash = ?,
-                    full_name = ?,
-                    phone_number = ?,
-                    email = ?,
-                    status = ?,
-                    role = ?,
-                    updated_date = ?,
-                    department_id = ?
-                WHERE user_id = ?
-                """;
+            UPDATE Users
+            SET
+                password_hash = ?,
+                full_name = ?,
+                phone_number = ?,
+                email = ?,
+                status = ?,
+                role = ?,
+                updated_date = ?,
+                department_id = ?
+            WHERE user_id = ?
+            """;
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)
-        ) {
-            preparedStatement.setString(1, users.getPasswordHash());
-            preparedStatement.setString(2, users.getFullName());
-            preparedStatement.setString(3, users.getPhoneNumber());
-            preparedStatement.setString(4, users.getEmail());
-            preparedStatement.setString(5, users.getStatus());
-            preparedStatement.setTimestamp(6, Timestamp.valueOf(users.getCreatedDate()));
-            preparedStatement.setInt(7, users.getDepartmentId());
-            preparedStatement.setInt(8, users.getUserId());
+             PreparedStatement ps = connection.prepareStatement(query)) {
 
-            preparedStatement.executeUpdate();
+            ps.setString(1, users.getPasswordHash());
+            ps.setString(2, users.getFullName());
+            ps.setString(3, users.getPhoneNumber());
+            ps.setString(4, users.getEmail());
+            ps.setString(5, users.getStatus());
+            ps.setString(6, users.getRole().name());
+            ps.setTimestamp(7, Timestamp.valueOf(users.getUpdatedDate()));
+            ps.setInt(8, users.getDepartmentId());
+            ps.setInt(9, users.getUserId());
+
+            ps.executeUpdate();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
     public void delete(Integer id) {
         String query = """
                 UPDATE Users
-                SET status = 'INACTIVE', updated_date = GETDATE()
+                SET
+                    status = 'INACTIVE',
+                    updated_date = GETDATE()
                 WHERE user_id = ?;
                 """;
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)
+             PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            preparedStatement.setInt(1, id);
+            ps.setInt(1, id);
 
-            preparedStatement.executeQuery().next();
+            ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -109,14 +112,15 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public boolean existsByUsername(String username) {
         String query = """
-                  SELECT 1 FROM Users WHERE username = ?
+                  SELECT 1 FROM Users
+                           WHERE username = ? AND status = 'ACTIVE'
                 """;
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)
+             PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            preparedStatement.setString(1, username);
+            ps.setString(1, username);
 
-            return preparedStatement.executeQuery().next();
+            return ps.executeQuery().next();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -128,11 +132,12 @@ public class UserDAOImpl implements UserDAO {
                   SELECT 1 FROM Users WHERE email = ?
                 """;
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)
+             PreparedStatement ps = connection.prepareStatement(query)
         ) {
-            preparedStatement.setString(1, email);
+            ps.setString(1, email);
 
-            return preparedStatement.executeQuery().next();
+            return ps.executeQuery().next();
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -151,6 +156,47 @@ public class UserDAOImpl implements UserDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
+                Users user = new Users();
+                user.setUserId(rs.getInt("user_id"));
+                user.setUsername(rs.getString("username"));
+                user.setPasswordHash(rs.getString("password_hash"));
+                user.setFullName(rs.getString("full_name"));
+                user.setPhoneNumber(rs.getString("phone_number"));
+                user.setEmail(rs.getString("email"));
+                user.setStatus(rs.getString("status"));
+                user.setRole(Role.valueOf(rs.getString("role")));
+
+                Timestamp created = rs.getTimestamp("created_date");
+                Timestamp updated = rs.getTimestamp("updated_date");
+
+                if (created != null) user.setCreatedDate(created.toLocalDateTime());
+                if (updated != null) user.setUpdatedDate(updated.toLocalDateTime());
+
+                user.setDepartmentId(rs.getInt("department_id"));
+
+                list.add(user);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public Optional<Users> findById(Integer id) {
+        String query = """
+            SELECT * FROM Users
+            WHERE user_id = ? AND status = 'ACTIVE'
+            """;
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
                 Users u = new Users();
                 u.setUserId(rs.getInt("user_id"));
                 u.setUsername(rs.getString("username"));
@@ -159,7 +205,8 @@ public class UserDAOImpl implements UserDAO {
                 u.setPhoneNumber(rs.getString("phone_number"));
                 u.setEmail(rs.getString("email"));
                 u.setStatus(rs.getString("status"));
-                u.setRole(rs.getString("role"));
+                u.setRole(Role.valueOf(rs.getString("role")));
+                u.setDepartmentId(rs.getInt("department_id"));
 
                 Timestamp created = rs.getTimestamp("created_date");
                 Timestamp updated = rs.getTimestamp("updated_date");
@@ -167,15 +214,14 @@ public class UserDAOImpl implements UserDAO {
                 if (created != null) u.setCreatedDate(created.toLocalDateTime());
                 if (updated != null) u.setUpdatedDate(updated.toLocalDateTime());
 
-                u.setDepartmentId(rs.getInt("department_id"));
-
-                list.add(u);
+                return Optional.of(u);
             }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        return list;
+        return Optional.empty();
     }
 
 

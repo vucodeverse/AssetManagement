@@ -1,13 +1,15 @@
 package edu.fpt.groupfive.dto.request;
 
+import edu.fpt.groupfive.common.Role;
 import lombok.*;
+
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class UseCreateRequest {
-    private String username;
+public class UserUpdateRequest {
+    private Integer userId;
 
     private String password;
 
@@ -17,8 +19,9 @@ public class UseCreateRequest {
 
     private String phoneNumber;
 
-    private String role;
+    private Role role;
+
+    private String status;
 
     private Integer departmentId;
-
 }
