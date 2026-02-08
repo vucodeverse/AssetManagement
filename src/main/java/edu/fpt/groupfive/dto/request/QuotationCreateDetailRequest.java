@@ -1,11 +1,9 @@
-package edu.fpt.groupfive.model;
+package edu.fpt.groupfive.dto.request;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class QuotationDetail extends AbstractEntity<Integer>{
-    private AssetType assetType;
-    private Quotation quotation;
+public class QuotationCreateDetailRequest {
     private Integer quantity;
     private String note;
     private LocalDate warrantyMonths;
