@@ -18,6 +18,7 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    // tim kiem asset type theo id
     @Override
     public AssetType findById(Integer id) {
        String sql= "select * from asset_type a where a.type_id = ?";
@@ -36,6 +37,7 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
         return null;
     }
 
+    // tim kiem toan bo asset type
     @Override
     public List<AssetType> findAll() {
         String sql = "select * from asset_type";
