@@ -1,5 +1,5 @@
 package edu.fpt.groupfive.common;
 
 public enum Request {
-    PENDING, SUBMITTED
+    PENDING, SUBMITTED, APPROVED
 }

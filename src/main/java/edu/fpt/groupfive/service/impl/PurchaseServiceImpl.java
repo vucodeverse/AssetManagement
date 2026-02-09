@@ -14,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +41,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         //set các thuộc tính chưa map được
         purchase.setStatus(Request.PENDING);
         purchase.setCreatedByUser(userId);
-        purchase.setCreatedAt(new Date());
+        purchase.setCreatedAt(LocalDate.now());
         int purchaseId = purchaseDAO.insert(purchase);
 
         //insert purchase detail

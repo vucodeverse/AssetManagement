@@ -1,4 +1,7 @@
-
+CREATE DATABASE AssetManager;
+GO
+USE AssetManager;
+GO
 
 CREATE TABLE category (
                           category_id   INT IDENTITY(1,1) NOT NULL,
@@ -34,7 +37,7 @@ CREATE TABLE users (
                        department_id  INT NOT NULL,
                        PRIMARY KEY (user_id),
                        CONSTRAINT UQ_users_username UNIQUE (username),
-                       CONSTRAINT UQ_users_email    UNIQUE (email),
+                       CONSTRAINT UQ_users_email UNIQUE (email),
                        CONSTRAINT FK_users_department
                            FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
@@ -102,109 +105,114 @@ CREATE TABLE supplier (
 );
 
 CREATE TABLE asset_type (
-                            type_id                     INT IDENTITY(1,1) NOT NULL,
-                            type_name                   NVARCHAR(255) NOT NULL,
-                            type_class                  NVARCHAR(255) NOT NULL,
-                            status                      NVARCHAR(40)  NOT NULL,
-                            default_depreciation_method NVARCHAR(30)  NULL,
-                            default_useful_life_months  INT NULL,
-                            specification               NVARCHAR(255) NULL,
-                            category_id                 INT NOT NULL,
-                            model                       NVARCHAR(255) NULL,
-                            PRIMARY KEY (type_id),
+                            asset_type_id                INT IDENTITY(1,1) NOT NULL,
+                            asset_type_name              NVARCHAR(255) NOT NULL,
+                            asset_type_class             NVARCHAR(255) NOT NULL,
+                            status                       NVARCHAR(40)  NOT NULL,
+                            default_depreciation_method  NVARCHAR(30)  NULL,
+                            default_useful_life_months   INT NULL,
+                            specification                NVARCHAR(255) NULL,
+                            category_id                  INT NOT NULL,
+                            model                        NVARCHAR(255) NULL,
+                            PRIMARY KEY (asset_type_id),
                             CONSTRAINT FK_asset_type_category
                                 FOREIGN KEY (category_id) REFERENCES category(category_id)
 );
 
-
 CREATE TABLE purchase_request (
-                                  pr_id                    INT IDENTITY(1,1) NOT NULL,
-                                  status                   NVARCHAR(40)  NOT NULL,
-                                  note                     NVARCHAR(255) NULL,
-                                  creator_id               INT NOT NULL,
-                                  requesting_department_id INT NOT NULL,
-                                  needed_by_date           DATETIME2(0)  NULL,
-                                  priority                 NVARCHAR(255) NOT NULL,
-                                  approved_by_director_id  INT NULL,
-                                  reject_reason            NVARCHAR(255) NULL,
-                                  created_at               DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                                  updated_at               DATETIME2(0) NULL,
-                                  PRIMARY KEY (pr_id),
+                                  purchase_request_id         INT IDENTITY(1,1) NOT NULL,
+                                  status                      NVARCHAR(40)  NOT NULL,
+                                  request_reason              NVARCHAR(255) NOT NULL,
+                                  note                        NVARCHAR(255) NULL,
+                                  creator_id                  INT NOT NULL,
+                                  requesting_department_id    INT NOT NULL,
+                                  needed_by_date              DATETIME2(0)  NULL,
+                                  priority                    NVARCHAR(255) NOT NULL,
+                                  approved_by_director_id     INT NULL,
+                                  approved_by_director_at     DATETIME2(0)  NULL,
+                                  purchase_staff_user_id      INT NULL,
+                                  reject_reason               NVARCHAR(255) NULL,
+                                  created_at                  DATETIME2(0)  NOT NULL DEFAULT SYSDATETIME(),
+                                  updated_at                  DATETIME2(0)  NULL,
+                                  PRIMARY KEY (purchase_request_id),
                                   CONSTRAINT FK_purchase_request_creator
                                       FOREIGN KEY (creator_id) REFERENCES users(user_id),
                                   CONSTRAINT FK_purchase_request_dept
                                       FOREIGN KEY (requesting_department_id) REFERENCES departments(department_id),
                                   CONSTRAINT FK_purchase_request_director
-                                      FOREIGN KEY (approved_by_director_id) REFERENCES users(user_id)
+                                      FOREIGN KEY (approved_by_director_id) REFERENCES users(user_id),
+                                  CONSTRAINT FK_purchase_request_purchase_staff
+                                      FOREIGN KEY (purchase_staff_user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE pr_detail (
-                           pr_detail_id     INT IDENTITY(1,1) NOT NULL,
-                           estimated_price  NUMERIC(19,0) NOT NULL,
-                           quantity         INT NOT NULL,
-                           pr_id            INT NOT NULL,
-                           asset_type_id    INT NOT NULL,
-                           spec_requirement NVARCHAR(255) NULL,
-                           note             NVARCHAR(255) NULL,
-                           PRIMARY KEY (pr_detail_id),
-                           CONSTRAINT FK_pr_detail_pr
-                               FOREIGN KEY (pr_id) REFERENCES purchase_request(pr_id),
-                           CONSTRAINT FK_pr_detail_asset_type
-                               FOREIGN KEY (asset_type_id) REFERENCES asset_type(type_id),
-                           CONSTRAINT UQ_pr_detail_line UNIQUE (pr_id, asset_type_id)
+CREATE TABLE purchase_request_detail (
+                                         purchase_request_detail_id INT IDENTITY(1,1) NOT NULL,
+                                         estimated_price            NUMERIC(19,0) NOT NULL,
+                                         quantity                   INT NOT NULL,
+                                         purchase_request_id        INT NOT NULL,
+                                         asset_type_id              INT NOT NULL,
+                                         spec_requirement           NVARCHAR(255) NULL,
+                                         note                       NVARCHAR(255) NULL,
+                                         PRIMARY KEY (purchase_request_detail_id),
+                                         CONSTRAINT FK_purchase_request_detail_purchase_request
+                                             FOREIGN KEY (purchase_request_id) REFERENCES purchase_request(purchase_request_id),
+                                         CONSTRAINT FK_purchase_request_detail_asset_type
+                                             FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id),
+                                         CONSTRAINT UQ_purchase_request_detail UNIQUE (purchase_request_id, asset_type_id)
 );
 
 CREATE TABLE quotation (
-                           quotation_id   INT IDENTITY(1,1) NOT NULL,
-                           pr_id          INT NOT NULL,
-                           supplier_id    INT NOT NULL,
-                           quotation_date DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                           status         NVARCHAR(255) NOT NULL,
-                           total_amount   NUMERIC(19,0) NULL,
-                           note           NVARCHAR(255) NULL,
-                           created_at     DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                           updated_at     DATETIME2(0) NULL,
+                           quotation_id        INT IDENTITY(1,1) NOT NULL,
+                           purchase_request_id INT NOT NULL,
+                           supplier_id         INT NOT NULL,
+                           quotation_date      DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+                           status              NVARCHAR(255) NOT NULL,
+                           total_amount        NUMERIC(19,0) NULL,
+                           note                NVARCHAR(255) NULL,
+                           created_at          DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+                           updated_at          DATETIME2(0) NULL,
                            PRIMARY KEY (quotation_id),
-                           CONSTRAINT FK_quotation_pr
-                               FOREIGN KEY (pr_id) REFERENCES purchase_request(pr_id),
+                           CONSTRAINT FK_quotation_purchase_request
+                               FOREIGN KEY (purchase_request_id) REFERENCES purchase_request(purchase_request_id),
                            CONSTRAINT FK_quotation_supplier
                                FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id)
 );
 
 CREATE TABLE quotation_detail (
-                                  quotation_detail_id INT IDENTITY(1,1) NOT NULL,
-                                  quotation_id        INT NOT NULL,
-                                  pr_detail_id        INT NOT NULL,
-                                  asset_type_id       INT NOT NULL,
-                                  quantity            INT NOT NULL,
-                                  note                NVARCHAR(255) NULL,
-                                  warranty_months     INT NULL,
+                                  quotation_detail_id       INT IDENTITY(1,1) NOT NULL,
+                                  quotation_id              INT NOT NULL,
+                                  purchase_request_detail_id INT NOT NULL,
+                                  asset_type_id             INT NOT NULL,
+                                  quantity                  INT NOT NULL,
+                                  note                      NVARCHAR(255) NULL,
+                                  warranty_months           INT NULL,
+                                  price                     INT NOT NULL ,
                                   PRIMARY KEY (quotation_detail_id),
                                   CONSTRAINT FK_quotation_detail_quotation
                                       FOREIGN KEY (quotation_id) REFERENCES quotation(quotation_id),
-                                  CONSTRAINT FK_quotation_detail_pr_detail
-                                      FOREIGN KEY (pr_detail_id) REFERENCES pr_detail(pr_detail_id),
+                                  CONSTRAINT FK_quotation_detail_purchase_request_detail
+                                      FOREIGN KEY (purchase_request_detail_id) REFERENCES purchase_request_detail(purchase_request_detail_id),
                                   CONSTRAINT FK_quotation_detail_asset_type
-                                      FOREIGN KEY (asset_type_id) REFERENCES asset_type(type_id),
-                                  CONSTRAINT UQ_quotation_detail_line UNIQUE (quotation_id, pr_detail_id)
+                                      FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id),
+                                  CONSTRAINT UQ_quotation_detail UNIQUE (quotation_id, purchase_request_detail_id)
 );
 
 CREATE TABLE purchase_orders (
-                                 po_id        INT IDENTITY(1,1) NOT NULL,
-                                 order_date   DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                                 total_amount NUMERIC(19,0) NULL,
-                                 note         NVARCHAR(255) NULL,
-                                 status       NVARCHAR(40)  NOT NULL,
-                                 created_at   DATETIME2(0)  NOT NULL DEFAULT SYSDATETIME(),
-                                 pr_id        INT NOT NULL,
-                                 supplier_id  INT NOT NULL,
-                                 quotation_id INT NOT NULL,
-                                 approved_by  INT NULL,
-                                 updated_at   DATETIME2(0) NULL,
-                                 updated_by   INT NULL,
-                                 PRIMARY KEY (po_id),
-                                 CONSTRAINT FK_purchase_orders_pr
-                                     FOREIGN KEY (pr_id) REFERENCES purchase_request(pr_id),
+                                 purchase_order_id   INT IDENTITY(1,1) NOT NULL,
+                                 order_date          DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+                                 total_amount        NUMERIC(19,0) NULL,
+                                 note                NVARCHAR(255) NULL,
+                                 status              NVARCHAR(40)  NOT NULL,
+                                 created_at          DATETIME2(0)  NOT NULL DEFAULT SYSDATETIME(),
+                                 purchase_request_id INT NOT NULL,
+                                 supplier_id         INT NOT NULL,
+                                 quotation_id        INT NOT NULL,
+                                 approved_by         INT NULL,
+                                 updated_at          DATETIME2(0) NULL,
+                                 updated_by          INT NULL,
+                                 PRIMARY KEY (purchase_order_id),
+                                 CONSTRAINT FK_purchase_orders_purchase_request
+                                     FOREIGN KEY (purchase_request_id) REFERENCES purchase_request(purchase_request_id),
                                  CONSTRAINT FK_purchase_orders_supplier
                                      FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id),
                                  CONSTRAINT FK_purchase_orders_quotation
@@ -213,37 +221,39 @@ CREATE TABLE purchase_orders (
                                      FOREIGN KEY (approved_by) REFERENCES users(user_id),
                                  CONSTRAINT FK_purchase_orders_updated_by
                                      FOREIGN KEY (updated_by) REFERENCES users(user_id),
-                                 CONSTRAINT UQ_purchase_orders_quotation UNIQUE (quotation_id));
+                                 CONSTRAINT UQ_purchase_orders_quotation UNIQUE (quotation_id)
+);
 
 CREATE TABLE purchase_order_details (
-                                        po_detail_id  INT IDENTITY(1,1) NOT NULL,
-                                        quantity      INT NOT NULL,
-                                        unit_price    NUMERIC(19,0) NOT NULL,
-                                        tax_rate      NUMERIC(5,2) NULL,
-                                        po_id         INT NOT NULL,
-                                        asset_type_id INT NOT NULL,
-                                        discount      NUMERIC(19,0) NULL,
-                                        note          NVARCHAR(255) NULL,
-                                        PRIMARY KEY (po_detail_id),
-                                        CONSTRAINT FK_purchase_order_details_po
-                                            FOREIGN KEY (po_id) REFERENCES purchase_orders(po_id),
+                                        purchase_order_detail_id INT IDENTITY(1,1) NOT NULL,
+                                        quantity                 INT NOT NULL,
+                                        unit_price               NUMERIC(19,0) NOT NULL,
+                                        tax_rate                 NUMERIC(5,2) NULL,
+                                        purchase_order_id        INT NOT NULL,
+                                        asset_type_id            INT NOT NULL,
+                                        discount                 NUMERIC(19,0) NULL,
+                                        note                     NVARCHAR(255) NULL,
+                                        PRIMARY KEY (purchase_order_detail_id),
+                                        CONSTRAINT FK_purchase_order_details_purchase_order
+                                            FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(purchase_order_id),
                                         CONSTRAINT FK_purchase_order_details_asset_type
-                                            FOREIGN KEY (asset_type_id) REFERENCES asset_type(type_id),
-                                        CONSTRAINT UQ_po_detail_line UNIQUE (po_id, asset_type_id));
+                                            FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id),
+                                        CONSTRAINT UQ_purchase_order_details UNIQUE (purchase_order_id, asset_type_id)
+);
 
 CREATE TABLE goods_receipt (
-                               receipt_id   INT IDENTITY(1,1) NOT NULL,
-                               receipt_date DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                               po_id        INT NOT NULL,
-                               received_by  INT NOT NULL,
-                               warehouse_id INT NOT NULL,
-                               inspected_by INT NULL,
-                               status       NVARCHAR(40) NOT NULL,
-                               created_at   DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                               updated_at   DATETIME2(0) NULL,
+                               receipt_id       INT IDENTITY(1,1) NOT NULL,
+                               receipt_date     DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+                               purchase_order_id INT NOT NULL,
+                               received_by      INT NOT NULL,
+                               warehouse_id     INT NOT NULL,
+                               inspected_by     INT NULL,
+                               status           NVARCHAR(40) NOT NULL,
+                               created_at       DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+                               updated_at       DATETIME2(0) NULL,
                                PRIMARY KEY (receipt_id),
-                               CONSTRAINT FK_goods_receipt_po
-                                   FOREIGN KEY (po_id) REFERENCES purchase_orders(po_id),
+                               CONSTRAINT FK_goods_receipt_purchase_order
+                                   FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(purchase_order_id),
                                CONSTRAINT FK_goods_receipt_received_by
                                    FOREIGN KEY (received_by) REFERENCES users(user_id),
                                CONSTRAINT FK_goods_receipt_inspected_by
@@ -255,7 +265,7 @@ CREATE TABLE goods_receipt (
 CREATE TABLE goods_receipt_details (
                                        receipt_detail_id    INT IDENTITY(1,1) NOT NULL,
                                        receipt_id           INT NOT NULL,
-                                       po_detail_id         INT NOT NULL,
+                                       purchase_order_detail_id INT NOT NULL,
                                        asset_type_id        INT NOT NULL,
                                        received_quantity    INT NOT NULL,
                                        accepted_quantity    INT NOT NULL,
@@ -266,11 +276,11 @@ CREATE TABLE goods_receipt_details (
                                        PRIMARY KEY (receipt_detail_id),
                                        CONSTRAINT FK_goods_receipt_details_receipt
                                            FOREIGN KEY (receipt_id) REFERENCES goods_receipt(receipt_id),
-                                       CONSTRAINT FK_goods_receipt_details_po_detail
-                                           FOREIGN KEY (po_detail_id) REFERENCES purchase_order_details(po_detail_id),
+                                       CONSTRAINT FK_goods_receipt_details_purchase_order_detail
+                                           FOREIGN KEY (purchase_order_detail_id) REFERENCES purchase_order_details(purchase_order_detail_id),
                                        CONSTRAINT FK_goods_receipt_details_asset_type
-                                           FOREIGN KEY (asset_type_id) REFERENCES asset_type(type_id),
-                                       CONSTRAINT UQ_goods_receipt_details_line UNIQUE (receipt_id, po_detail_id)
+                                           FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id),
+                                       CONSTRAINT UQ_goods_receipt_details UNIQUE (receipt_id, purchase_order_detail_id)
 );
 
 CREATE TABLE asset (
@@ -297,12 +307,10 @@ CREATE TABLE asset (
                        CONSTRAINT FK_asset_receipt
                            FOREIGN KEY (receipt_request_id) REFERENCES goods_receipt(receipt_id),
                        CONSTRAINT FK_asset_asset_type
-                           FOREIGN KEY (asset_type_id) REFERENCES asset_type(type_id),
+                           FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id),
                        CONSTRAINT FK_asset_department
                            FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
-
-
 
 CREATE TABLE allocation_request (
                                     request_id              INT IDENTITY(1,1) NOT NULL,
@@ -313,12 +321,10 @@ CREATE TABLE allocation_request (
                                     approve_by              INT NULL,
                                     requested_department_id INT NOT NULL,
                                     needed_by_date          DATETIME2(0) NULL,
-
                                     dm_approved_by          INT NULL,
                                     dm_approved_at          DATETIME2(0) NULL,
                                     am_approved_by          INT NULL,
                                     am_approved_at          DATETIME2(0) NULL,
-
                                     created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
                                     updated_at              DATETIME2(0) NULL,
                                     PRIMARY KEY (request_id),
@@ -332,7 +338,6 @@ CREATE TABLE allocation_request (
                                         FOREIGN KEY (am_approved_by) REFERENCES users(user_id)
 );
 
-
 CREATE TABLE allocation_request_details (
                                             allocation_detail_id INT IDENTITY(1,1) NOT NULL,
                                             allocation_id        INT NOT NULL,
@@ -341,11 +346,11 @@ CREATE TABLE allocation_request_details (
                                             unit_value           NUMERIC(19,0) NOT NULL,
                                             note                 NVARCHAR(255) NULL,
                                             PRIMARY KEY (allocation_detail_id),
-                                            CONSTRAINT FK_allocation_req_details_request
+                                            CONSTRAINT FK_allocation_request_details_request
                                                 FOREIGN KEY (allocation_id) REFERENCES allocation_request(request_id),
-                                            CONSTRAINT FK_allocation_req_details_asset
+                                            CONSTRAINT FK_allocation_request_details_asset
                                                 FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
-                                            CONSTRAINT UQ_allocation_req_details_line UNIQUE (allocation_id, asset_id)
+                                            CONSTRAINT UQ_allocation_request_details UNIQUE (allocation_id, asset_id)
 );
 
 CREATE TABLE allocation (
@@ -386,9 +391,8 @@ CREATE TABLE allocation_detail (
                                        FOREIGN KEY (allocation_id) REFERENCES allocation(allocation_id),
                                    CONSTRAINT FK_allocation_detail_asset
                                        FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
-                                   CONSTRAINT UQ_allocation_detail_line UNIQUE (allocation_id, asset_id)
+                                   CONSTRAINT UQ_allocation_detail UNIQUE (allocation_id, asset_id)
 );
-
 
 CREATE TABLE stock_issue (
                              stock_issue_id        INT IDENTITY(1,1) NOT NULL,
@@ -418,7 +422,7 @@ CREATE TABLE stock_issue_detail (
                                         FOREIGN KEY (stock_issue_id) REFERENCES stock_issue(stock_issue_id),
                                     CONSTRAINT FK_stock_issue_detail_asset
                                         FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
-                                    CONSTRAINT UQ_stock_issue_detail_line UNIQUE (stock_issue_id, asset_id)
+                                    CONSTRAINT UQ_stock_issue_detail UNIQUE (stock_issue_id, asset_id)
 );
 
 CREATE TABLE asset_users (
@@ -464,8 +468,6 @@ CREATE TABLE asset_logs (
                                 FOREIGN KEY (related_allocation_id) REFERENCES allocation(allocation_id)
 );
 
-
-
 CREATE TABLE revocation (
                             revocation_id              INT IDENTITY(1,1) NOT NULL,
                             revocation_date            DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
@@ -483,7 +485,6 @@ CREATE TABLE revocation (
                                 FOREIGN KEY (created_by) REFERENCES users(user_id)
 );
 
-
 CREATE TABLE revocation_detail (
                                    revocation_detail_id INT IDENTITY(1,1) NOT NULL,
                                    revocation_id        INT NOT NULL,
@@ -497,5 +498,5 @@ CREATE TABLE revocation_detail (
                                        FOREIGN KEY (revocation_id) REFERENCES revocation(revocation_id),
                                    CONSTRAINT FK_revocation_detail_asset
                                        FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
-                                   CONSTRAINT UQ_revocation_detail_line UNIQUE (revocation_id, asset_id)
+                                   CONSTRAINT UQ_revocation_detail UNIQUE (revocation_id, asset_id)
 );

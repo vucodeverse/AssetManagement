@@ -10,7 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AssetType {
-
     private Integer typeId;
     private String typeName;
 }

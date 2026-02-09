@@ -1,18 +1,22 @@
 package edu.fpt.groupfive.dao.impl;
 
+import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
+import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
 public class PurchaseDAOImpl implements PurchaseDAO {
 
     private final DatabaseConfig databaseConfig;
+    private final PurchaseDetailDAO purchaseDetailDAO;
 
     @Override
     public int insert(Purchase purchase) {
@@ -43,13 +47,13 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             preparedStatement.setString(7, purchase.getRejectReason());
             
             if (purchase.getCreatedAt() != null) {
-                preparedStatement.setTimestamp(8,  new java.sql.Timestamp(purchase.getCreatedAt().getTime()));
+                preparedStatement.setTimestamp(8,  Timestamp.valueOf(purchase.getCreatedAt().atStartOfDay()));
             } else {
                 preparedStatement.setNull(8, Types.TIMESTAMP);
             }
             
             if (purchase.getUpdatedAt() != null) {
-                preparedStatement.setTimestamp(9,  new java.sql.Timestamp(purchase.getUpdatedAt().getTime()));
+                preparedStatement.setTimestamp(9, Timestamp.valueOf(purchase.getUpdatedAt().atStartOfDay()));
             } else {
                 preparedStatement.setNull(9, Types.TIMESTAMP);
             }
@@ -77,5 +81,97 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         }
 
         return 0;
+    }
+
+    @Override
+    public Optional<Purchase> findById(Integer purchaseId) {
+
+        String sql = "select * from purchase_request where purchase_request_id = ?";
+
+        try (Connection connection = databaseConfig.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+            preparedStatement.setInt(1, purchaseId);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()){
+
+                //set data
+                Purchase purchase = new Purchase();
+                purchase.setId(rs.getInt("purchase_request_id"));
+                purchase.setStatus(Request.valueOf(rs.getString("status")));
+                purchase.setNote(rs.getString("note"));
+                purchase.setRejectReason(rs.getString("reject_reason"));
+                purchase.setCreatedByUser(rs.getInt("created_by_user"));
+                purchase.setNeededByDate(rs.getDate("needed_by_date"));
+                purchase.setReason(rs.getString("reason"));
+                purchase.setPriority(rs.getString("priority"));
+                purchase.setApprovedByDirector(rs.getInt("approved_by_director"));
+
+                Timestamp approvedAt = rs.getTimestamp("approved_at");
+                if (approvedAt != null) {
+                    purchase.setApprovedAt(approvedAt.toLocalDateTime());
+                }
+
+                purchase.setPurchaseStaffId(rs.getInt("purchase_staff_id"));
+                purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
+                purchase.setUpdatedAt(rs.getDate("updated_at").toLocalDate());
+
+                purchase.setPurchaseDetails(
+                        purchaseDetailDAO.findByPurchaseRequestId(purchaseId)
+                );
+
+                return Optional.of(purchase);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Purchase> findByIdAndApproved(Integer purchaseId, String status) {
+        String sql = "select * from purchase_request where purchase_request_id = ? and status = ?";
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+            preparedStatement.setInt(1, purchaseId);
+            preparedStatement.setString(2, status);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()){
+
+                //set data
+                Purchase purchase = new Purchase();
+                purchase.setId(rs.getInt("purchase_request_id"));
+                purchase.setStatus(Request.valueOf(rs.getString("status")));
+                purchase.setNote(rs.getString("note"));
+                purchase.setRejectReason(rs.getString("reject_reason"));
+                purchase.setCreatedByUser(rs.getInt("created_by_user"));
+                purchase.setNeededByDate(rs.getDate("needed_by_date"));
+                purchase.setReason(rs.getString("reason"));
+                purchase.setPriority(rs.getString("priority"));
+                purchase.setApprovedByDirector(rs.getInt("approved_by_director"));
+
+                Timestamp approvedAt = rs.getTimestamp("approved_at");
+                if (approvedAt != null) {
+                    purchase.setApprovedAt(approvedAt.toLocalDateTime());
+                }
+
+                purchase.setPurchaseStaffId(rs.getInt("purchase_staff_id"));
+                purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
+                purchase.setUpdatedAt(rs.getDate("updated_at").toLocalDate());
+
+                purchase.setPurchaseDetails(
+                        purchaseDetailDAO.findByPurchaseRequestId(purchaseId)
+                );
+
+                return Optional.of(purchase);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return Optional.empty();
     }
 }

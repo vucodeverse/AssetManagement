@@ -62,8 +62,7 @@ public class PurchaseController {
     }
 
     @PostMapping("/purchase-form")
-    public String processingForm(@Valid @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, BindingResult result,
-                                 Model model){
+    public String processingForm(@Valid @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, BindingResult result,Model model){
         if(result.hasErrors()){
             getAssetType(model);
             return "purchase/purchase-form";

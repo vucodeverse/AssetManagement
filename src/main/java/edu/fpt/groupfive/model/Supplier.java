@@ -1,4 +1,10 @@
 package edu.fpt.groupfive.model;
 
-public class Supplier {
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class Supplier extends AbstractEntity<Integer>{
+    private String supplierName;
 }
