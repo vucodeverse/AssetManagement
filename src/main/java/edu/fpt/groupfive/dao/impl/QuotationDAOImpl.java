@@ -16,18 +16,17 @@ public class QuotationDAOImpl implements QuotationDAO {
     @Override
     public Integer insert(Quotation quotation) {
 
-        String sql = "insert into quotation (purchase_request_id, supplier_id, quotation_date, status, total_amount, " +
-                "created_at) VALUES (?,?,?,?,?,?,?)";
+        String sql = "insert into quotation (purchase_request_id, supplier_id, status, total_amount, " +
+                "created_at) VALUES (?,?,?,?,?)";
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
 
-            preparedStatement.setInt(1, quotation.getPurchase().getId());
+            preparedStatement.setInt(1, quotation.getPurchaseId());
             preparedStatement.setInt(2, quotation.getSupplier().getId());
-            preparedStatement.setTimestamp(3, Timestamp.valueOf(quotation.getQuoationDate().atStartOfDay()));
-            preparedStatement.setString(4, quotation.getStatus().toString());
-            preparedStatement.setBigDecimal(5, quotation.getTotalAmount());
-            preparedStatement.setTimestamp(6, Timestamp.valueOf(quotation.getCreatedAt().atStartOfDay()));
+            preparedStatement.setString(3, quotation.getStatus().toString());
+            preparedStatement.setBigDecimal(4, quotation.getTotalAmount());
+            preparedStatement.setTimestamp(5, Timestamp.valueOf(quotation.getCreatedAt().atStartOfDay()));
 
             preparedStatement.executeUpdate();
             ResultSet rs  = preparedStatement.getGeneratedKeys();

@@ -58,13 +58,12 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
                     detail.setId(rs.getInt("purchase_request_detail_id"));
                     detail.setQuantity(rs.getInt("quantity"));
                     detail.setSpecificationRequirement(
-                            rs.getString("specification_requirement")
+                            rs.getString("spec_requirement")
                     );
                     detail.setNote(rs.getString("note"));
                     detail.setAssetTypeId(rs.getInt("asset_type_id"));
                     detail.setPurchaseRequestId(rs.getInt("purchase_request_id"));
-                    detail.setCreatedAt(rs.getDate("created_at").toLocalDate());
-                    detail.setUpdatedAt(rs.getDate("updated_at").toLocalDate());
+                    detail.setPrice(rs.getBigDecimal("estimated_price"));
 
                     purchaseDetails.add(detail);
                 }

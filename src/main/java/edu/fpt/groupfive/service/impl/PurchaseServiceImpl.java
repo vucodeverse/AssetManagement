@@ -54,4 +54,9 @@ public class PurchaseServiceImpl implements PurchaseService {
         }
         log.info("Saved");
     }
+
+    @Override
+    public Purchase findById(Integer id) {
+        return purchaseDAO.findById(id).orElseThrow(() -> new RuntimeException("Purchase not found"));
+    }
 }

@@ -15,5 +15,7 @@ public class QuotationCreateRequest {
     private Integer purchaseRequestId;
     private String quotationNote;
     private Integer supplierId;
+
+    @Builder.Default
     private List<QuotationCreateDetailRequest> quotationCreateDetailRequestList = new ArrayList<>();
 }

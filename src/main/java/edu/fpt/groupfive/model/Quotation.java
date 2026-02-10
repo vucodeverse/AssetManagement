@@ -14,8 +14,7 @@ public class Quotation extends AbstractEntity<Integer>{
 
     private QuotationStatus status;
     private String quotationDetailNote;
-    private LocalDate quoationDate;
     private Supplier supplier;
-    private Purchase purchase;
+    private Integer purchaseId;
     private BigDecimal totalAmount;
 }

@@ -10,12 +10,12 @@ import java.time.LocalDate;
 @Setter
 public class QuotationDetail extends AbstractEntity<Integer>{
     private AssetType assetType;
-    private Quotation quotation;
+    private Integer quotationId;
     private Integer quantity;
     private String quotationDetailNote;
     private Integer warrantyMonths;
     private BigDecimal price;
     private BigDecimal taxRate;
     private BigDecimal discountRate;
-    private PurchaseDetail purchaseDetail;
+    private Integer purchaseDetailId;
 }

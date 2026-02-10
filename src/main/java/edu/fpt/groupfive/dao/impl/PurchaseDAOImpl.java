@@ -100,20 +100,27 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 purchase.setStatus(Request.valueOf(rs.getString("status")));
                 purchase.setNote(rs.getString("note"));
                 purchase.setRejectReason(rs.getString("reject_reason"));
-                purchase.setCreatedByUser(rs.getInt("created_by_user"));
-                purchase.setNeededByDate(rs.getDate("needed_by_date"));
-                purchase.setReason(rs.getString("reason"));
-                purchase.setPriority(rs.getString("priority"));
-                purchase.setApprovedByDirector(rs.getInt("approved_by_director"));
+                purchase.setCreatedByUser(rs.getInt("creator_id"));
+                Date neededByDate = rs.getDate("needed_by_date");
+                purchase.setNeededByDate(
+                        neededByDate != null ? Date.valueOf(neededByDate.toLocalDate()) : null
+                );
 
-                Timestamp approvedAt = rs.getTimestamp("approved_at");
+                purchase.setReason(rs.getString("request_reason"));
+                purchase.setPriority(rs.getString("priority"));
+                purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
+
+                Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
                 if (approvedAt != null) {
                     purchase.setApprovedAt(approvedAt.toLocalDateTime());
                 }
 
-                purchase.setPurchaseStaffId(rs.getInt("purchase_staff_id"));
+                purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
                 purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
-                purchase.setUpdatedAt(rs.getDate("updated_at").toLocalDate());
+                Date updatedAt = rs.getDate("updated_at");
+                purchase.setUpdatedAt(
+                        updatedAt != null ? updatedAt.toLocalDate() : null
+                );
 
                 purchase.setPurchaseDetails(
                         purchaseDetailDAO.findByPurchaseRequestId(purchaseId)
@@ -140,26 +147,32 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             ResultSet rs = preparedStatement.executeQuery();
             if (rs.next()){
 
-                //set data
                 Purchase purchase = new Purchase();
                 purchase.setId(rs.getInt("purchase_request_id"));
                 purchase.setStatus(Request.valueOf(rs.getString("status")));
                 purchase.setNote(rs.getString("note"));
                 purchase.setRejectReason(rs.getString("reject_reason"));
-                purchase.setCreatedByUser(rs.getInt("created_by_user"));
-                purchase.setNeededByDate(rs.getDate("needed_by_date"));
-                purchase.setReason(rs.getString("reason"));
-                purchase.setPriority(rs.getString("priority"));
-                purchase.setApprovedByDirector(rs.getInt("approved_by_director"));
+                purchase.setCreatedByUser(rs.getInt("creator_id"));
+                Date neededByDate = rs.getDate("needed_by_date");
+                purchase.setNeededByDate(
+                        neededByDate != null ? Date.valueOf(neededByDate.toLocalDate()) : null
+                );
 
-                Timestamp approvedAt = rs.getTimestamp("approved_at");
+                purchase.setReason(rs.getString("request_reason"));
+                purchase.setPriority(rs.getString("priority"));
+                purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
+
+                Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
                 if (approvedAt != null) {
                     purchase.setApprovedAt(approvedAt.toLocalDateTime());
                 }
 
-                purchase.setPurchaseStaffId(rs.getInt("purchase_staff_id"));
+                purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
                 purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
-                purchase.setUpdatedAt(rs.getDate("updated_at").toLocalDate());
+                Date updatedAt = rs.getDate("updated_at");
+                purchase.setUpdatedAt(
+                        updatedAt != null ? updatedAt.toLocalDate() : null
+                );
 
                 purchase.setPurchaseDetails(
                         purchaseDetailDAO.findByPurchaseRequestId(purchaseId)

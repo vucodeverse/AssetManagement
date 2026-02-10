@@ -11,5 +11,6 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface QuotationMapper {
 
+    @Mapping(target = "quotationDetailNote", source = "quotationNote")
     Quotation toQuotation(QuotationCreateRequest quotationCreateRequest);
 }

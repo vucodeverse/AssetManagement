@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class SupplierResponse {
 
     private String supplierName;
-    private Integer supplierId;
+    private Integer id;
 }

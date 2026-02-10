@@ -2,128 +2,116 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Form</title>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Purchase Form</title>
 </head>
 
 <body>
 
-<form th:action="@{/asset-manager/purchase-form}"
-      th:object="${purchaseCreateRequest}"
-      method="post">
-    <h3>Purchase / Quotation Form</h3>
+     <form th:action="@{/purchase-staff/purchases/{id}/quotation(id=${purchaseId})}"
+          th:object="${quotationCreateRequest}" method="post">
+          <h3>Purchase / Quotation Form</h3>
 
-    <label>Note</label>
-    <input type="text" th:field="*{note}" placeholder="Note">
-    <div th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></div>
+          <label>Note</label>
+          <input type="text" th:field="*{quotationNote}" placeholder="Note">
+          <div th:if="${#fields.hasErrors('quotationNote')}" th:errors="*{quotationNote}"></div>
 
-    <hr>
-    <div th:if="*{quotationCreateRequest != null}">
-        <h4>Quotation Info</h4>
+          <hr>
+          <div>
+               <h4>Quotation Info</h4>
 
-        <label>Supplier</label>
-        <select th:field="*{quotationCreateRequest.supplierId}">
-            <option value="">-- Choose supplier --</option>
-            <option th:each="s : ${suppliers}"
-                    th:value="${s.id}"
-                    th:text="${s.name}">
-            </option>
-        </select>
-        <div th:if="${#fields.hasErrors('quotationCreateRequest.supplierId')}"
-             th:errors="*{quotationCreateRequest.supplierId}"></div>
+               <label>Supplier</label>
+               <select th:field="*{supplierId}">
+                    <option value="">-- Choose supplier --</option>
+                    <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.supplierName}">
+                    </option>
+               </select>
+               <div th:if="${#fields.hasErrors('supplierId')}" th:errors="*{supplierId}"></div>
+               <br>
 
-        <br>
+               <hr>
+          </div>
 
-        <label>Quotation Date</label>
-        <input type="date" th:field="*{quotationCreateRequest.quotationDate}">
-        <div th:if="${#fields.hasErrors('quotationCreateRequest.quotationDate')}"
-             th:errors="*{quotationCreateRequest.quotationDate}"></div>
+          <!-- ===== Detail ===== -->
+          <h4>Quotation Details</h4>
 
-        <hr>
-    </div>
+          <div th:if="${#lists.isEmpty(quotationCreateRequest.quotationCreateDetailRequestList)}">
+               <p>No detail rows.</p>
+          </div>
 
-    <!-- ===== Detail ===== -->
-    <h4>Quotation Details</h4>
+          <div th:each="item, stat : *{quotationCreateDetailRequestList}">
 
-    <div th:if="${#lists.isEmpty(purchaseCreateRequest.quotationCreateDetailRequest)}">
-        <p>No detail rows. Click "Add Row" to insert one.</p>
-    </div>
+               <h5 th:text="'Line ' + (${stat.index} + 1)"></h5>
 
-    <div th:each="item, stat : *{quotationCreateDetailRequest}">
+               <!-- Asset Info (Read-only) -->
+               <div>
+                    <strong th:text="${item.assetTypeName}"></strong>
+                    <span th:text="' - ' + ${item.specificationRequirement}"></span>
+               </div>
 
-        <h5 th:text="'Line ' + (${stat.index} + 1)"></h5>
+               <input type="hidden"
+                    th:field="*{quotationCreateDetailRequestList[__${stat.index}__].purchaseRequestDetailId}">
+               <input type="hidden" th:field="*{quotationCreateDetailRequestList[__${stat.index}__].assetTypeName}">
+               <input type="hidden"
+                    th:field="*{quotationCreateDetailRequestList[__${stat.index}__].specificationRequirement}">
 
-        <!-- Quantity -->
-        <label>Quantity</label>
-        <input type="number" min="1"
-               th:field="*{quotationCreateDetailRequest[__${stat.index}__].quantity}">
-        <div th:if="${#fields.hasErrors('quotationCreateDetailRequest[' + stat.index + '].quantity')}"
-             th:errors="*{quotationCreateDetailRequest[__${stat.index}__].quantity}"></div>
 
-        <br>
+               <!-- Quantity -->
+               <label>Quantity</label>
+               <input type="number" min="1" th:field="*{quotationCreateDetailRequestList[__${stat.index}__].quantity}">
+               <div th:if="${#fields.hasErrors('quotationCreateDetailRequestList[' + stat.index + '].quantity')}"
+                    th:errors="*{quotationCreateDetailRequestList[__${stat.index}__].quantity}"></div>
 
-        <!-- Description / Note -->
-        <label>Description</label>
-        <input type="text"
-               th:field="*{quotationCreateDetailRequest[__${stat.index}__].description}"
-               placeholder="Description / detail note">
-        <div th:if="${#fields.hasErrors('quotationCreateDetailRequest[' + stat.index + '].description')}"
-             th:errors="*{quotationCreateDetailRequest[__${stat.index}__].description}"></div>
+               <br>
 
-        <br>
+               <!-- Description / Note -->
+               <label>Quotation Detail Note</label>
+               <input type="text" th:field="*{quotationCreateDetailRequestList[__${stat.index}__].quotationDetailNote}"
+                    placeholder="Detail note">
+               <div th:if="${#fields.hasErrors('quotationCreateDetailRequestList[' + stat.index + '].quotationDetailNote')}"
+                    th:errors="*{quotationCreateDetailRequestList[__${stat.index}__].quotationDetailNote}"></div>
 
-        <!-- Warranty months -->
-        <label>Warranty (months)</label>
-        <input type="number" min="0"
-               th:field="*{quotationCreateDetailRequest[__${stat.index}__].warrantyMonths}">
-        <div th:if="${#fields.hasErrors('quotationCreateDetailRequest[' + stat.index + '].warrantyMonths')}"
-             th:errors="*{quotationCreateDetailRequest[__${stat.index}__].warrantyMonths}"></div>
+               <br>
 
-        <br>
+               <!-- Warranty months -->
+               <label>Warranty (months)</label>
+               <input type="number" min="0"
+                    th:field="*{quotationCreateDetailRequestList[__${stat.index}__].warrantyMonths}">
+               <div th:if="${#fields.hasErrors('quotationCreateDetailRequestList[' + stat.index + '].warrantyMonths')}"
+                    th:errors="*{quotationCreateDetailRequestList[__${stat.index}__].warrantyMonths}"></div>
 
-        <!-- Price -->
-        <label>Unit Price</label>
-        <input type="number" min="0" step="1"
-               th:field="*{quotationCreateDetailRequest[__${stat.index}__].price}">
-        <div th:if="${#fields.hasErrors('quotationCreateDetailRequest[' + stat.index + '].price')}"
-             th:errors="*{quotationCreateDetailRequest[__${stat.index}__].price}"></div>
+               <br>
 
-        <br>
+               <!-- Price -->
+               <label>Unit Price</label>
+               <input type="number" min="0" step="1"
+                    th:field="*{quotationCreateDetailRequestList[__${stat.index}__].price}">
+               <div th:if="${#fields.hasErrors('quotationCreateDetailRequestList[' + stat.index + '].price')}"
+                    th:errors="*{quotationCreateDetailRequestList[__${stat.index}__].price}"></div>
 
-        <!-- Tax rate -->
-        <label>Tax Rate (%)</label>
-        <input type="number" min="0" max="100" step="0.01"
-               th:field="*{quotationCreateDetailRequest[__${stat.index}__].taxRate}">
-        <div th:if="${#fields.hasErrors('quotationCreateDetailRequest[' + stat.index + '].taxRate')}"
-             th:errors="*{quotationCreateDetailRequest[__${stat.index}__].taxRate}"></div>
+               <br>
 
-        <br>
+               <!-- Tax rate -->
+               <!-- <label>Tax Rate (%)</label> -->
+               <input type="hidden" min="0" max="100" step="0.01"
+                    th:field="*{quotationCreateDetailRequestList[__${stat.index}__].taxRate}">
 
-        <!-- Discount rate -->
-        <label>Discount Rate (%)</label>
-        <input type="number" min="0" max="100" step="0.01"
-               th:field="*{quotationCreateDetailRequest[__${stat.index}__].discountRate}">
-        <div th:if="${#fields.hasErrors('quotationCreateDetailRequest[' + stat.index + '].discountRate')}"
-             th:errors="*{quotationCreateDetailRequest[__${stat.index}__].discountRate}"></div>
+               <!-- Discount rate -->
+               <!-- <label>Discount Rate (%)</label> -->
+               <input type="hidden" min="0" max="100" step="0.01"
+                    th:field="*{quotationCreateDetailRequestList[__${stat.index}__].discountRate}">
 
-        <br>
 
-        <!-- Remove row -->
-        <button type="submit" name="removeDetail" th:value="${stat.index}">Remove this line</button>
+               <hr>
+          </div>
 
-        <hr>
-    </div>
+          <br><br>
 
-    <!-- Add row -->
-    <button type="submit" name="addDetail" value="true">Add Row</button>
+          <!-- Submit -->
+          <button type="submit">Submit</button>
 
-    <br><br>
-
-    <!-- Submit -->
-    <button type="submit" name="submit" value="true">Submit</button>
-
-</form>
+     </form>
 
 
 </body>

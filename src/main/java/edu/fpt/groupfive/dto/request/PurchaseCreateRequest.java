@@ -29,5 +29,6 @@ public class PurchaseCreateRequest {
 
     @NotBlank(message = "Priority Không được để trống")
     private String priority;
+
     private List<PurchaseDetailCreateRequest> purchaseDetailCreateRequests = new ArrayList<>();
 }

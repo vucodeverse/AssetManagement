@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j(topic = "SUPPLIER-SERVICE")
-public class SupplierServiceDTO implements SupplierService {
+public class SupplierServiceImpl implements SupplierService {
 
     private final SupplierDAO supplierDAO;
 
@@ -22,7 +22,7 @@ public class SupplierServiceDTO implements SupplierService {
 
         return supplierDAO.getAllSupplier().stream().map(supplier -> SupplierResponse.builder()
                 .supplierName(supplier.getSupplierName())
-                .supplierId(supplier.getId())
+                .id(supplier.getId())
                 .build()).toList();
     }
 }

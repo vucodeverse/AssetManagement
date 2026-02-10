@@ -42,6 +42,14 @@ public class PurchaseController {
         return "purchase/purchase-form";
     }
 
+    // show detail
+    @GetMapping("/purchase-detail/{purchaseId}")
+    public String showPurchaseDetail(@PathVariable("purchaseId") Integer purchaseId, Model model) {
+        model.addAttribute("purchase", purchaseService.findById(purchaseId));
+        model.addAttribute("assetTypes", assetTypeService.getAllAssetType());
+        return "purchase/purchase-detail";
+    }
+
 
     // khi add 1 purchase detail mowis
     @PostMapping(value = "/purchase-form", params = "addDetail")

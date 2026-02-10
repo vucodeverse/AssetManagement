@@ -23,16 +23,19 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 
-            preparedStatement.setInt(1, quotationDetail.getQuotation().getId());
-            preparedStatement.setInt(2, quotationDetail.getPurchaseDetail().getId());
-            preparedStatement.setInt(3, quotationDetail.getAssetType().getTypeId());
+            preparedStatement.setInt(1, quotationDetail.getQuotationId());
+            preparedStatement.setInt(2, quotationDetail.getPurchaseDetailId());
+            
+            if (quotationDetail.getAssetType() != null) {
+                 preparedStatement.setInt(3, quotationDetail.getAssetType().getTypeId());
+            } else {
+                 preparedStatement.setNull(3, Types.INTEGER);
+            }
+            
             preparedStatement.setInt(4, quotationDetail.getQuantity());
-            preparedStatement.setInt(5,quotationDetail.getWarrantyMonths());
-
-            preparedStatement.setBigDecimal(6, quotationDetail.getPrice());
-            preparedStatement.setBigDecimal(7, quotationDetail.getTaxRate());
-            preparedStatement.setBigDecimal(8, quotationDetail.getDiscountRate());
-            preparedStatement.setString(9, quotationDetail.getQuotationDetailNote());
+            preparedStatement.setString(5, quotationDetail.getQuotationDetailNote());
+            preparedStatement.setInt(6, quotationDetail.getWarrantyMonths());
+            preparedStatement.setBigDecimal(7, quotationDetail.getPrice());
 
             preparedStatement.executeUpdate();
 

@@ -1,0 +1,61 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Detail</title>
+</head>
+
+<body>
+
+    <h3>Purchase Request Detail</h3>
+
+    <div>
+        <label>ID: </label> <span th:text="${purchase.id}"></span><br>
+        <label>Reason: </label> <span th:text="${purchase.reason}"></span><br>
+        <label>Note: </label> <span th:text="${purchase.note}"></span><br>
+        <label>Priority: </label> <span th:text="${purchase.priority}"></span><br>
+        <label>Needed By: </label> <span th:text="${purchase.neededByDate}"></span><br>
+        <label>Status: </label> <span th:text="${purchase.status}"></span><br>
+    </div>
+
+    <hr>
+    <h4>Details</h4>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Asset Type</th>
+                <th>Quantity</th>
+                <th>Spec Requirement</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="d : ${purchase.purchaseDetails}">
+                <td>
+                    <span th:each="type : ${assetTypes}" th:if="${type.typeId == d.assetTypeId}"
+                        th:text="${type.typeName}"></span>
+                </td>
+                <td th:text="${d.quantity}"></td>
+                <td th:text="${d.specificationRequirement}"></td>
+                <td th:text="${d.note}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+    <!-- Only show Create Quotation if status is APPROVED -->
+    <div th:if="${purchase.status.name() == 'APPROVED'}">
+        <a th:href="@{/purchase-staff/purchases/{id}/quotation-form(id=${purchase.id})}">
+            <button>Create Quotation</button>
+        </a>
+    </div>
+
+    <br>
+    <a th:href="@{/asset-manager/purchase-form}">Back to Form (or List)</a>
+
+</body>
+
+</html>
