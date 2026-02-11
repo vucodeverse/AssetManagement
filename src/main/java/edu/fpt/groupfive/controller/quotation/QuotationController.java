@@ -47,7 +47,52 @@ public class QuotationController {
 
 
 
-    // thêm 1 dòng quotation detail
+
+    // add quotation detail (duplicate the selected line)
+    @PostMapping(value = "/purchases/{purchaseId}/quotation", params = "addDetail")
+    public String addQuotationDetail(@PathVariable("purchaseId") Integer purchaseId,
+                                     @ModelAttribute("quotationCreateRequest") QuotationCreateRequest quotationCreateRequest,
+                                     @RequestParam("addDetail") int index,
+                                     Model model) {
+        if (index >= 0 && index < quotationCreateRequest.getQuotationCreateDetailRequestList().size()) {
+            QuotationCreateDetailRequest originalItem = quotationCreateRequest.getQuotationCreateDetailRequestList().get(index);
+            
+            // Create a copy of the item
+            QuotationCreateDetailRequest newItem = new QuotationCreateDetailRequest();
+            newItem.setPurchaseRequestDetailId(originalItem.getPurchaseRequestDetailId());
+            newItem.setQuantity(originalItem.getQuantity());
+            newItem.setAssetTypeName(originalItem.getAssetTypeName()); // Copy display info
+            newItem.setSpecificationRequirement(originalItem.getSpecificationRequirement()); // Copy display info
+            
+            // Insert after the current item
+            quotationCreateRequest.getQuotationCreateDetailRequestList().add(index + 1, newItem);
+        }
+        
+        model.addAttribute("quotationCreateRequest", quotationCreateRequest);
+        model.addAttribute("suppliers", supplierService.getAllSupplier());
+        model.addAttribute("purchaseId", purchaseId);
+        return "quotation/quotation-form";
+    }
+
+
+    // xóa 1 dòng quoationdetail
+    @PostMapping(value = "/purchases/{purchaseId}/quotation", params = "removeDetail")
+    public String removeQuotationDetail(@PathVariable("purchaseId") Integer purchaseId,
+                                        @ModelAttribute("quotationCreateRequest") QuotationCreateRequest quotationCreateRequest,
+                                        @RequestParam("removeDetail") int index,
+                                        Model model) {
+        if (index >= 0 && index < quotationCreateRequest.getQuotationCreateDetailRequestList().size()) {
+            quotationCreateRequest.getQuotationCreateDetailRequestList().remove(index);
+        }
+
+        model.addAttribute("quotationCreateRequest", quotationCreateRequest);
+        model.addAttribute("suppliers", supplierService.getAllSupplier());
+        model.addAttribute("purchaseId", purchaseId);
+        return "quotation/quotation-form";
+    }
+
+
+    // thêm dòng quotation detail
     @PostMapping("/purchases/{purchaseId}/quotation")
     public String createQuotation(@PathVariable("purchaseId") Integer purchaseId,
             @ModelAttribute("quotationCreateRequest") QuotationCreateRequest quotationCreateRequest, BindingResult bindingResult, Model model){
@@ -61,5 +106,7 @@ public class QuotationController {
 
         return "redirect:/asset-manager/purchase-form"; 
     }
+
+
 
 }

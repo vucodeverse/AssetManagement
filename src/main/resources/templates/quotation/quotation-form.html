@@ -103,6 +103,17 @@
                     th:field="*{quotationCreateDetailRequestList[__${stat.index}__].discountRate}">
 
 
+
+               <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <!-- Add Option (Duplicate this line) -->
+                    <button type="submit" name="addDetail" th:value="${stat.index}"
+                         title="Add another option for this item">+</button>
+
+                    <!-- Remove row -->
+                    <button type="submit" name="removeDetail" th:value="${stat.index}"
+                         title="Remove this line">Remove</button>
+               </div>
+
                <hr>
           </div>
 

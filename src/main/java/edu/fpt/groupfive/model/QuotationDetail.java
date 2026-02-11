@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class QuotationDetail extends AbstractEntity<Integer>{
-    private AssetType assetType;
+    private Integer assetTypeId;
     private Integer quotationId;
     private Integer quantity;
     private String quotationDetailNote;

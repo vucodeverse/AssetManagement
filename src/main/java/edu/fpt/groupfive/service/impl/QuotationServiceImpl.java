@@ -1,12 +1,12 @@
 package edu.fpt.groupfive.service.impl;
 
+import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.common.Request;
-import edu.fpt.groupfive.dao.PurchaseDAO;
-import edu.fpt.groupfive.dao.PurchaseDetailDAO;
-import edu.fpt.groupfive.dao.QuotationDAO;
-import edu.fpt.groupfive.dao.QuotationDetailDAO;
+import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dto.request.QuotationCreateDetailRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
+import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
+import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.mapper.QuotationDetailMapper;
 import edu.fpt.groupfive.mapper.QuotationMapper;
 import edu.fpt.groupfive.model.*;
@@ -15,10 +15,10 @@ import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,8 +35,10 @@ public class QuotationServiceImpl implements QuotationService {
     private final PurchaseDetailDAO purchaseDetailDAO;
     private final QuotationMapper quotationMapper;
     private final QuotationDetailMapper quotationDetailMapper;
+    private final SupplierDAO supplierDAO;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void createQuotation(Integer purchaseId ,QuotationCreateRequest quotationCreateRequest) {
 
         // cheecjk purchase có tồn tại hay ko vs status la APPROVED
@@ -49,7 +51,6 @@ public class QuotationServiceImpl implements QuotationService {
 
         // luu cac detail vao map de tien so sanh lieu purchaseDetail client gửi lên có thuộc purchase đang xử lí ko
         Map<Integer, PurchaseDetail> purchaseDetailMap = new HashMap<>();
-
         for (PurchaseDetail d : details) {
             purchaseDetailMap.put(d.getId(), d);
         }
@@ -58,15 +59,14 @@ public class QuotationServiceImpl implements QuotationService {
         // tạo quotation
         Quotation q = quotationMapper.toQuotation(quotationCreateRequest);
         q.setPurchaseId(purchaseId);
-        q.setStatus(edu.fpt.groupfive.common.QuotationStatus.PENDING);
+        q.setStatus(QuotationStatus.PENDING);
         q.setCreatedAt(LocalDate.now());
-        q.setUpdatedAt(LocalDate.now());
         
         // gắn supplier
         if (quotationCreateRequest.getSupplierId() != null) {
             Supplier s = new Supplier();
             s.setId(quotationCreateRequest.getSupplierId());
-            q.setSupplier(s);
+            q.setSupplierId(quotationCreateRequest.getSupplierId());
         }
 
         // tính total amount
@@ -80,8 +80,10 @@ public class QuotationServiceImpl implements QuotationService {
 
         Integer quotationIdAfterInsert = quotationDAO.insert(q);
 
-        // chèn từng từng purchase detail vào quotation detail
+        // nếu tạo thành công
         if(quotationIdAfterInsert != 0){
+
+            // chèn từng từng purchase detail vào quotation detail
             for(QuotationCreateDetailRequest qd : quotationCreateRequest.getQuotationCreateDetailRequestList()){
                 PurchaseDetail pd = purchaseDetailMap.get(qd.getPurchaseRequestDetailId());
 
@@ -99,7 +101,7 @@ public class QuotationServiceImpl implements QuotationService {
                 if (pd.getAssetTypeId() != null) {
                     AssetType at = new AssetType();
                     at.setTypeId(pd.getAssetTypeId());
-                    quotationDetail.setAssetType(at);
+                    quotationDetail.setAssetTypeId(pd.getAssetTypeId());
                 }
 
                 quotationDetailDAO.insert(quotationDetail);
@@ -126,7 +128,6 @@ public class QuotationServiceImpl implements QuotationService {
 
         // chuyen tu purchase detail vào quotation create
         for(PurchaseDetail purchaseDetail : purchaseDetailList){
-            QuotationCreateDetailRequest quotationCreateDetailRequest = new QuotationCreateDetailRequest();
 
             //set san id va quantity
             QuotationCreateDetailRequest item = QuotationCreateDetailRequest.builder()
@@ -145,4 +146,47 @@ public class QuotationServiceImpl implements QuotationService {
                 .build();
 
     }
+
+
+    // lấy ra 1 list các quoation theo purchase request id
+    @Override
+    public List<QuotationResponse> getQuotationsByPurchase(Integer purchaseId) {
+
+        Purchase purchase = purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException("Purchase " +
+                "request này không tồn tại"));
+
+        return quotationDAO.findByPurchaseId(purchaseId).stream().map(q -> QuotationResponse.builder()
+                .quotationStatus(q.getStatus())
+                .supllierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException(
+                        "Supplier này không tồn tại")).getSupplierName())
+                .totalAmount(q.getTotalAmount())
+                .createdAt(q.getCreatedAt())
+                .build()).toList();
+    }
+
+    // lấy ra list các quoationdetail theo purchase request id
+    @Override
+    public List<QuotationDetailResponse> getQuotationDetailByPurchase(Integer purchaseId) {
+
+        // lấy ra all quotation
+        List<QuotationDetail> quotationDetails = quotationDetailDAO.getAll();
+        List<Quotation> quotations  =quotationDAO.getAll();
+
+        Map<Integer, List<QuotationDetail>> map = new HashMap<>();
+        for(QuotationDetail qd : quotationDetails){
+
+            // group theo tung quotationId r gắn vào list
+            map.computeIfAbsent(qd.getQuotationId(), q -> new ArrayList<>()).add(qd);
+        }
+
+        for(Quotation q : quotations){
+
+            // trả về list quotationdetail từ map nếu có ko thì trả về list rỗng
+            q.setQuotationDetails(map.getOrDefault(q.getId(), new ArrayList<>()));
+        }
+
+        return List.of();
+    }
+
+
 }

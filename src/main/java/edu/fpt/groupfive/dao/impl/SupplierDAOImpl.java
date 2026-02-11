@@ -45,4 +45,9 @@ public class SupplierDAOImpl implements SupplierDAO {
 
         return suppliers;
     }
+
+    @Override
+    public Optional<Supplier> findById(Integer supplierId) {
+        return Optional.empty();
+    }
 }

@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface SupplierDAO{
 
     List<Supplier> getAllSupplier();
+    Optional<Supplier> findById(Integer supplierId);
 }
