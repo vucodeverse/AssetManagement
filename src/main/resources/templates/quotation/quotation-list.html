@@ -1,0 +1,45 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation List</title>
+</head>
+
+<body>
+    <h1>Quotation List</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Quotation ID</th>
+                <th>Purchase Request ID</th>
+                <th>Supplier Name</th>
+                <th>Status</th>
+                <th>Total Amount</th>
+                <th>Created At</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="q : ${quotations}">
+                <td>
+                    <a th:href="@{/purchase-staff/quotations/{id}(id=${q.quotationId})}" th:text="${q.quotationId}"></a>
+                </td>
+                <td th:text="${q.purchaseId}"></td>
+                <td th:text="${q.supplierName}"></td>
+                <td th:text="${q.quotationStatus}"></td>
+                <td th:text="${q.totalAmount}"></td>
+                <td th:text="${q.createdAt}"></td>
+                <td>
+                    <form th:action="@{/purchase-staff/quotations/{quotationId}/create-po(id=${q.quotationId})}"
+                        method="post">
+                        <button type="submit">Create PO</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+</html>

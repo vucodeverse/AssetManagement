@@ -10,5 +10,6 @@ public interface QuotationService {
     void createQuotation(Integer purchaseId,QuotationCreateRequest quotationCreateRequest);
     QuotationCreateRequest checkFormQuotation(Integer purchaseId);
     List<QuotationResponse> getQuotationsByPurchase(Integer purchaseId);
-    List<QuotationDetailResponse> getQuotationDetailByPurchase(Integer purchaseId);
+
+    QuotationResponse getQuotationById(Integer quotationId);
 }

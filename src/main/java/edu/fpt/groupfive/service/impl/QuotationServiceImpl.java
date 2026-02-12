@@ -36,6 +36,7 @@ public class QuotationServiceImpl implements QuotationService {
     private final QuotationMapper quotationMapper;
     private final QuotationDetailMapper quotationDetailMapper;
     private final SupplierDAO supplierDAO;
+    private final AssetTypeDAO assetTypeDAO;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -156,37 +157,43 @@ public class QuotationServiceImpl implements QuotationService {
                 "request này không tồn tại"));
 
         return quotationDAO.findByPurchaseId(purchaseId).stream().map(q -> QuotationResponse.builder()
+                .quotationId(q.getId())
+                .purchaseId(q.getPurchaseId())
                 .quotationStatus(q.getStatus())
-                .supllierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException(
+                .supplierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException(
                         "Supplier này không tồn tại")).getSupplierName())
                 .totalAmount(q.getTotalAmount())
                 .createdAt(q.getCreatedAt())
                 .build()).toList();
     }
 
-    // lấy ra list các quoationdetail theo purchase request id
     @Override
-    public List<QuotationDetailResponse> getQuotationDetailByPurchase(Integer purchaseId) {
+    public QuotationResponse getQuotationById(Integer quotationId) {
+        Quotation q = quotationDAO.findById(quotationId).orElseThrow(() -> new InvalidDataException("Quotation not found"));
+        
+        List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(quotationId);
 
-        // lấy ra all quotation
-        List<QuotationDetail> quotationDetails = quotationDetailDAO.getAll();
-        List<Quotation> quotations  =quotationDAO.getAll();
+        // lấy ra list detail response
+        List<QuotationDetailResponse> detailResponses = details.stream().map(d -> QuotationDetailResponse.builder()
+                .quotationDetailId(d.getId())
+                .quotationId(d.getQuotationId())
+                .purchaseDetailId(d.getPurchaseDetailId())
+                .assetTypeName(assetTypeDAO.findById(d.getAssetTypeId()).getTypeName())
+                .quantity(d.getQuantity())
+                .warrantyMonths(d.getWarrantyMonths())
+                .price(d.getPrice())
+                .quotationDetailNote(d.getQuotationDetailNote())
+                .build()).toList();
 
-        Map<Integer, List<QuotationDetail>> map = new HashMap<>();
-        for(QuotationDetail qd : quotationDetails){
-
-            // group theo tung quotationId r gắn vào list
-            map.computeIfAbsent(qd.getQuotationId(), q -> new ArrayList<>()).add(qd);
-        }
-
-        for(Quotation q : quotations){
-
-            // trả về list quotationdetail từ map nếu có ko thì trả về list rỗng
-            q.setQuotationDetails(map.getOrDefault(q.getId(), new ArrayList<>()));
-        }
-
-        return List.of();
+        return QuotationResponse.builder()
+                .quotationId(q.getId())
+                .purchaseId(q.getPurchaseId())
+                .quotationStatus(q.getStatus())
+                .supplierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException("Supplier not found")).getSupplierName())
+                .totalAmount(q.getTotalAmount())
+                .createdAt(q.getCreatedAt())
+                .quotationDetails(detailResponses)
+                .build();
     }
-
 
 }

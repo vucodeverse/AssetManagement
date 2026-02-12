@@ -47,7 +47,7 @@ public class QuotationDAOImpl implements QuotationDAO {
     @Override
     public Optional<Quotation> findById(Integer quotationId) {
 
-        String sql = "select  * from quotation_detail where quotation_id = ?";
+        String sql = "select * from quotation where quotation_id = ?";
 
 
         try (Connection connection = databaseConfig.getConnection();
@@ -62,8 +62,10 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setSupplierId(rs.getInt("supplier_id"));
                 quotation.setStatus(QuotationStatus.valueOf(rs.getString("status")));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                quotation.setCreatedAt(rs.getDate("created_at").toLocalDate());
-                quotation.setUpdatedAt(rs.getDate("updated_at").toLocalDate());
+                quotation.setCreatedAt(rs.getDate("created_at") != null ?
+                        rs.getDate("created_at").toLocalDate() : null );
+                quotation.setUpdatedAt(rs.getDate("updated_at") != null ?
+                        rs.getDate("updated_at").toLocalDate() : null);
 
                 return Optional.of(quotation);
             }
@@ -96,9 +98,10 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setSupplierId(rs.getInt("supplier_id"));
                 quotation.setStatus(QuotationStatus.valueOf(rs.getString("status")));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                quotation.setCreatedAt(rs.getDate("created_at").toLocalDate());
-                quotation.setUpdatedAt(rs.getDate("updated_at").toLocalDate());
-
+                quotation.setCreatedAt(rs.getDate("created_at") != null ?
+                        rs.getDate("created_at").toLocalDate() : null );
+                quotation.setUpdatedAt(rs.getDate("updated_at") != null ?
+                        rs.getDate("updated_at").toLocalDate() : null);
                 quotations.add(quotation);
             }
 

@@ -21,14 +21,19 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
     // tim kiem asset type theo id
     @Override
     public AssetType findById(Integer id) {
-       String sql= "select * from asset_type a where a.type_id = ?";
+       String sql= "select * from asset_type a where a.asset_type_id = ?";
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 
+
+            preparedStatement.setInt(1, id);
             ResultSet rs = preparedStatement.executeQuery();
             if(rs.next()){
-                return new AssetType();
+                AssetType assetType = new AssetType();
+                assetType.setTypeId(rs.getInt(1));
+                assetType.setTypeName(rs.getString(2));
+                return assetType;
             }
 
         } catch (SQLException e) {

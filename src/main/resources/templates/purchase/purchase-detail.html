@@ -46,10 +46,12 @@
 
     <br>
 
-    <!-- Only show Create Quotation if status is APPROVED -->
     <div th:if="${purchase.status.name() == 'APPROVED'}">
         <a th:href="@{/purchase-staff/purchases/{id}/quotation-form(id=${purchase.id})}">
             <button>Create Quotation</button>
+        </a>
+        <a th:href="@{/purchase-staff/purchases/{id}/quotation-list(id=${purchase.id})}">
+            <button>Show Quotations</button>
         </a>
     </div>
 

@@ -13,5 +13,5 @@ public interface QuotationDetailDAO {
 
     List<QuotationDetail> findByPurchaseId(Integer purchaseId);
 
-    List<QuotationDetail> getAll();
+    List<QuotationDetail> findByQuotationId(Integer quotationId);
 }

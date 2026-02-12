@@ -58,7 +58,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 " q.purchase_request_id = ?";
         List<QuotationDetail> quotationDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)){
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 
             preparedStatement.setInt(1, purchaseId);
 
@@ -85,7 +85,35 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
     }
 
     @Override
-    public List<QuotationDetail> getAll() {
-        return List.of();
+    public List<QuotationDetail> findByQuotationId(Integer quotationId) {
+
+        String sql = "select * from quotation_detail where  quotation_id = ?";
+
+        List<QuotationDetail> quotationDetails = new ArrayList<>();
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
+            preparedStatement.setInt(1, quotationId);
+
+            ResultSet rs = preparedStatement.executeQuery();
+            while(rs.next()){
+
+                QuotationDetail q = new QuotationDetail();
+                q.setQuotationId(rs.getInt("quotation_id"));
+                q.setId(rs.getInt("quotation_detail_id"));
+                q.setPurchaseDetailId(rs.getInt("purchase_request_detail_id"));
+                q.setAssetTypeId(rs.getInt("asset_type_id"));
+                q.setQuantity(rs.getInt("quantity"));
+                q.setQuotationDetailNote(rs.getString("quotation_detail_note"));
+                q.setWarrantyMonths(rs.getInt("warranty_months"));
+                q.setPrice(BigDecimal.valueOf(rs.getInt("price")));
+
+                quotationDetails.add(q);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return quotationDetails;
     }
+
 }

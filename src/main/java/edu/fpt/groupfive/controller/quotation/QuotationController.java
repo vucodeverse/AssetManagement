@@ -4,6 +4,7 @@ import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateDetailRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
+import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.service.QuotationService;
 import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j(topic = "CONTROLLER-QUOTATION[]")
 @Controller
@@ -107,6 +110,18 @@ public class QuotationController {
         return "redirect:/asset-manager/purchase-form"; 
     }
 
+    @GetMapping("/purchases/{purchaseId}/quotation-list")
+    public String showQuotationList(@PathVariable("purchaseId") Integer purchaseId ,Model model){
+        List<QuotationResponse> quotations= quotationService.getQuotationsByPurchase(purchaseId);
+        model.addAttribute("quotations", quotations);
+        return "quotation/quotation-list.html";
+    }
 
+    @GetMapping("/quotations/{id}")
+    public String getQuotation(@PathVariable("id") Integer id, Model model) {
+        QuotationResponse quotation = quotationService.getQuotationById(id);
+        model.addAttribute("quotation", quotation);
+        return "quotation/quotation-detail";
+    }
 
 }

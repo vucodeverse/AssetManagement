@@ -48,6 +48,23 @@ public class SupplierDAOImpl implements SupplierDAO {
 
     @Override
     public Optional<Supplier> findById(Integer supplierId) {
+
+        String sql = "select * from supplier where supplier_id = ?";
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)){
+            ps.setInt(1, supplierId);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                Supplier supplier = new Supplier();
+                supplier.setId(rs.getInt("supplier_id"));
+                supplier.setSupplierName(rs.getString("supplier_name"));
+
+                return Optional.of(supplier);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return Optional.empty();
     }
 }

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,5 +23,12 @@ public class AssetTypeServiceImpl implements AssetTypeService {
                 .typeId(assetType.getTypeId())
                 .typeName(assetType.getTypeName()).build()
         ).collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<AssetType> findById(Integer assetTypeId) {
+
+
+        return Optional.empty();
     }
 }

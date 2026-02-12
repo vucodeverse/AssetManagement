@@ -10,8 +10,11 @@ import java.time.LocalDate;
 @Getter
 @Builder
 public class QuotationResponse {
+    private Integer quotationId;
+    private Integer purchaseId;
     private QuotationStatus quotationStatus;
     private BigDecimal totalAmount;
     private LocalDate createdAt;
-    private String supllierName;
+    private String supplierName;
+    private java.util.List<QuotationDetailResponse> quotationDetails;
 }
