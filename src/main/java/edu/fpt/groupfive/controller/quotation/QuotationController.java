@@ -51,7 +51,6 @@ public class QuotationController {
 
 
 
-    // add quotation detail (duplicate the selected line)
     @PostMapping(value = "/purchases/{purchaseId}/quotation", params = "addDetail")
     public String addQuotationDetail(@PathVariable("purchaseId") Integer purchaseId,
                                      @ModelAttribute("quotationCreateRequest") QuotationCreateRequest quotationCreateRequest,

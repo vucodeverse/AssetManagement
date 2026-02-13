@@ -65,8 +65,6 @@ public class QuotationServiceImpl implements QuotationService {
         
         // gắn supplier
         if (quotationCreateRequest.getSupplierId() != null) {
-            Supplier s = new Supplier();
-            s.setId(quotationCreateRequest.getSupplierId());
             q.setSupplierId(quotationCreateRequest.getSupplierId());
         }
 
@@ -100,8 +98,6 @@ public class QuotationServiceImpl implements QuotationService {
                 
                 // set AssetType tu purchaseDetail
                 if (pd.getAssetTypeId() != null) {
-                    AssetType at = new AssetType();
-                    at.setTypeId(pd.getAssetTypeId());
                     quotationDetail.setAssetTypeId(pd.getAssetTypeId());
                 }
 
