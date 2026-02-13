@@ -43,7 +43,7 @@ public class QuotationServiceImpl implements QuotationService {
     public void createQuotation(Integer purchaseId ,QuotationCreateRequest quotationCreateRequest) {
 
         // cheecjk purchase có tồn tại hay ko vs status la APPROVED
-        Purchase purchase = purchaseDAO.findByIdAndApproved(purchaseId, "APPROVED")
+        purchaseDAO.findByIdAndApproved(purchaseId, "APPROVED")
                 .orElseThrow(() -> new InvalidDataException("Purchase " +
                 "request này không tồn tại"));
 
