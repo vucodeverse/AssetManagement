@@ -1,0 +1,62 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Detail</title>
+</head>
+
+<body>
+    <h3>Quotation Detail</h3>
+
+    <div>
+        <label>ID: </label> <span th:text="${quotation.quotationId}"></span><br>
+        <label>Purchase Request ID: </label> <span th:text="${quotation.purchaseId}"></span><br>
+        <label>Supplier: </label> <span th:text="${quotation.supplierName}"></span><br>
+        <label>Status: </label> <span th:text="${quotation.quotationStatus}"></span><br>
+        <label>Created At: </label> <span th:text="${quotation.createdAt}"></span><br>
+        <label>Total Amount: </label> <span th:text="${quotation.totalAmount}"></span><br>
+
+        <!-- Create PO Button -->
+        <form th:action="@{/director/quotations/{quotationId}/create-po(id=${quotation.quotationId})}" method="post">
+            <button type="submit">Create PO</button>
+        </form>
+    </div>
+
+    <hr>
+    <h4>Details</h4>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Quotation Detail ID</th>
+                <th>Quotation ID</th>
+                <th>PR Detail ID</th>
+                <th>Asset Type ID</th>
+                <th>Quantity</th>
+                <th>Note</th>
+                <th>Warranty (Months)</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Assuming the backend DTO will be updated to support these fields as requested -->
+            <tr th:each="d : ${quotation.quotationDetails}">
+                <td th:text="${d.quotationDetailId}"></td> <!-- quotation_detail_id -->
+                <td th:text="${d.quotationId}"></td> <!-- quotation_id -->
+                <td th:text="${d.purchaseDetailId}"></td> <!-- purchase_request_detail_id -->
+                <td th:text="${d.assetTypeName}"></td> <!-- asset_type_id -->
+                <td th:text="${d.quantity}"></td>
+                <td th:text="${d.quotationDetailNote}"></td>
+                <td th:text="${d.warrantyMonths}"></td>
+                <td th:text="${d.price}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+    <a th:href="@{/purchase-staff/purchases/{pid}/quotation-list(pid=${quotation.purchaseId})}">Back to List</a>
+
+</body>
+
+</html>
