@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Request Management - Procurex</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <i class="fas fa-cube"></i> <span>PROCUREX</span>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item"><i class="fas fa-th-large"></i> DASHBOARD</div>
+            <div class="nav-group">
+                <div class="nav-item active"><i class="fas fa-check-circle"></i> APPROVAL CENTER</div>
+                <div class="sub-nav">
+                    <div class="sub-item active">PURCHASE REQUESTS</div>
+                    <div class="sub-item">QUOTATIONS</div>
+                </div>
+            </div>
+            <div class="nav-item"><i class="fas fa-file-invoice-dollar"></i> PURCHASE ORDERS</div>
+        </nav>
+        <div class="sidebar-user">
+            <div class="user-avatar">MT</div>
+            <div class="user-info">
+                <span class="user-name">Marcus Thorne</span>
+                <span class="user-role">Director</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Top Header Bar -->
+        <header class="top-bar">
+            <h1>PURCHASE REQUEST MANAGEMENT</h1>
+            <div class="top-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search by ID or Creator...">
+                </div>
+                <i class="far fa-bell icon-btn"></i>
+                <i class="fas fa-cog icon-btn"></i>
+            </div>
+        </header>
+
+        <!-- Filters Section -->
+        <section class="filters-bar">
+            <div class="filter-group">
+                <select><option>Status: All</option></select>
+                <select><option>Priority: All</option></select>
+                <select><option>Deadline: Any</option></select>
+                <button class="btn-reset">RESET FILTERS</button>
+            </div>
+        </section>
+
+        <!-- Data Table Section -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>PR ID <i class="fas fa-chevron-down"></i></th>
+                    <th>STATUS <i class="fas fa-chevron-down"></i></th>
+                    <th>CREATOR <i class="fas fa-chevron-down"></i></th>
+                    <th>NEEDED DATE <i class="fas fa-chevron-down"></i></th>
+                    <th>PRIORITY <i class="fas fa-chevron-down"></i></th>
+                    <th>CREATED AT <i class="fas fa-chevron-down"></i></th>
+                    <th>ACTIONS</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>PR-2024-001</td>
+                    <td><span class="badge pending">PENDING APPROVAL</span></td>
+                    <td>
+                        <div class="cell-creator">
+                            <strong>Jane Doe</strong>
+                            <span>Marketing</span>
+                        </div>
+                    </td>
+                    <td>2024-06-15</td>
+                    <td><span class="badge-priority high">HIGH</span></td>
+                    <td>2024-05-24</td>
+                    <td class="cell-actions">
+                        <button class="btn-approve">APPROVE</button>
+                        <button class="btn-reject">REJECT</button>
+                    </td>
+                </tr>
+                <!-- More rows as needed -->
+                </tbody>
+            </table>
+            <footer class="table-footer">
+                <span>SHOWING 5 OF 24 PURCHASE REQUESTS</span>
+                <div class="pagination">
+                    <button class="p-btn"><i class="fas fa-chevron-left"></i></button>
+                    <button class="p-btn active">1</button>
+                    <button class="p-btn">2</button>
+                    <button class="p-btn">3</button>
+                    <button class="p-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </footer>
+        </div>
+    </main>
+</div>
+</body>
+</html>
