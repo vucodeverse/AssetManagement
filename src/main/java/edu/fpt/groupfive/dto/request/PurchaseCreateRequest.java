@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dto.request;
 
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -22,6 +23,7 @@ public class PurchaseCreateRequest {
     private String note;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Future(message = "Thời gian nhập vào phải lớn hơn thời gian hiện tại")
     private LocalDate neededByDate;
 
     @NotBlank(message = "Reason Không được để trống")

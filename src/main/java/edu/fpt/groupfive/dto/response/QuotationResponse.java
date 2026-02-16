@@ -6,6 +6,7 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Builder
@@ -16,5 +17,5 @@ public class QuotationResponse {
     private BigDecimal totalAmount;
     private LocalDate createdAt;
     private String supplierName;
-    private java.util.List<QuotationDetailResponse> quotationDetails;
+    private List<QuotationDetailResponse> quotationDetails;
 }

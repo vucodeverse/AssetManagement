@@ -19,7 +19,6 @@ public class OrderDAOImpl implements OrderDAO
 {
 
     private final DatabaseConfig databaseConfig;
-    private final PriorityOrdered priorityOrdered;
 
     @Override
     public Integer insert(Order order) {

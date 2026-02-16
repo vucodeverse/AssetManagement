@@ -16,6 +16,6 @@ public class PurchaseDetail extends AbstractEntity<Integer>{
     private String note;
     private Integer assetTypeId;
     private Integer purchaseRequestId;
-    private BigDecimal price;
+    private BigDecimal estimatePrice;
     private List<QuotationDetail> quotationDetails = new ArrayList<>();
 }

@@ -10,5 +10,7 @@ import org.mapstruct.ReportingPolicy;
         uses = PurchaseDetailMapper.class,
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PurchaseMapper {
+    
+    @Mapping(source = "purchaseDetailCreateRequests", target = "purchaseDetails")
     Purchase toPurchase(PurchaseCreateRequest purchaseCreateRequest);
 }

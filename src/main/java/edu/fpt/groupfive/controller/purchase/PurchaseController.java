@@ -1,13 +1,13 @@
 package edu.fpt.groupfive.controller.purchase;
 
 
+import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseDetailCreateRequest;
 import edu.fpt.groupfive.dto.response.AssetTypeResponse;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -29,18 +29,18 @@ public class PurchaseController {
     private final AssetTypeService assetTypeService;
     private final UserService userService;
 
+
+    // hiển thị form nhập
+    // Sửa thành:
     @GetMapping("/purchase-form")
     public String showPurchaseForm(Model model){
-        log.info("Show form purchase request");
-
-        // tạo bind object
         PurchaseCreateRequest purchaseCreateRequest = new PurchaseCreateRequest();
         purchaseCreateRequest.getPurchaseDetailCreateRequests().add(new PurchaseDetailCreateRequest());
-
-        getAssetType(model);
         model.addAttribute("purchaseCreateRequest", purchaseCreateRequest);
+        getAssetType(model);
         return "purchase/purchase-form";
     }
+
 
     // show detail
     @GetMapping("/purchase-detail/{purchaseId}")
@@ -69,21 +69,33 @@ public class PurchaseController {
         return "purchase/purchase-form";
     }
 
-    @PostMapping("/purchase-form")
-    public String processingForm(@Valid @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, BindingResult result,Model model){
+    // xử lí form nhập
+    @PostMapping(value = "/purchase-form", params = "actions")
+    public String processingForm( @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, BindingResult result,Model model, @RequestParam("actions") String actions){
         if(result.hasErrors()){
             getAssetType(model);
             return "purchase/purchase-form";
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        purchaseService.createPurchaseRequest(purchaseCreateRequest,userService.getUserIdByUsername(authentication.getName()));
 
-        return "redirect/:purchase/purchase-form";
+        if("draft".equals(actions))
+            purchaseService.createPurchaseRequest(purchaseCreateRequest,
+                    userService.getUserIdByUsername(authentication.getName()), Request.DRAFT);
+
+        else
+            purchaseService.createPurchaseRequest(purchaseCreateRequest,
+                userService.getUserIdByUsername(authentication.getName()), Request.PENDING);
+
+        return "purchase/purchase-form";
     }
+
+    // lấy ra taatscar các asset type
     private void getAssetType(Model model) {
         List<AssetTypeResponse> assetTypes = assetTypeService.getAllAssetType();
         model.addAttribute("assetTypes", assetTypes);
     }
+
+
 
 }

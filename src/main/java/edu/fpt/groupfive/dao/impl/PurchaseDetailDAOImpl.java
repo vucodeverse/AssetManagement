@@ -19,16 +19,18 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
 
     @Override
     public void insert(PurchaseDetail purchaseDetail) {
-        String sql ="insert into purchase_request_detail (quantity, pr_id, asset_type_id, spec_requirement, note) " +
-                "values (?, ?, ?,?, ?)";
+        String sql ="insert into purchase_request_detail (estimated_price, quantity, purchase_request_id, " +
+                "asset_type_id, spec_requirement, note) values (?, ?, ?,?, ?,?)";
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-             preparedStatement.setInt(1,purchaseDetail.getQuantity());
-             preparedStatement.setInt(2,purchaseDetail.getPurchaseRequestId());
-             preparedStatement.setInt(3,purchaseDetail.getAssetTypeId());
-             preparedStatement.setString(4,purchaseDetail.getSpecificationRequirement());
-             preparedStatement.setString(5,purchaseDetail.getNote());
+             preparedStatement.setBigDecimal(1, purchaseDetail.getEstimatePrice());
+             preparedStatement.setInt(2, purchaseDetail.getQuantity());
+             preparedStatement.setInt(3, purchaseDetail.getPurchaseRequestId());
+             preparedStatement.setInt(4, purchaseDetail.getAssetTypeId());
+             preparedStatement.setString(5, purchaseDetail.getSpecificationRequirement());
+             preparedStatement.setString(6, purchaseDetail.getNote());
+
              preparedStatement.executeUpdate();
         }catch (Exception exception){
             throw new RuntimeException(exception);
@@ -63,7 +65,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
                     detail.setNote(rs.getString("note"));
                     detail.setAssetTypeId(rs.getInt("asset_type_id"));
                     detail.setPurchaseRequestId(rs.getInt("purchase_request_id"));
-                    detail.setPrice(rs.getBigDecimal("estimated_price"));
+                    detail.setEstimatePrice(rs.getBigDecimal("estimated_price"));
 
                     purchaseDetails.add(detail);
                 }

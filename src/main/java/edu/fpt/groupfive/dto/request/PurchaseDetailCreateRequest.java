@@ -5,7 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,4 +26,6 @@ public class PurchaseDetailCreateRequest {
 
     @NotNull(message = "Loại tài sản không được để trống")
     private Integer assetTypeId;
+
+    private BigDecimal estimatePrice;
 }
