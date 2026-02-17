@@ -4,6 +4,7 @@ import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
+import edu.fpt.groupfive.dto.response.PurchaseResponse;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.service.PurchaseService;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,5 +55,12 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     public Purchase findById(Integer id) {
         return purchaseDAO.findById(id).orElseThrow(() -> new RuntimeException("Purchase not found"));
+    }
+
+    @Override
+    public List<PurchaseResponse> findAllPurchases() {
+
+         return purchaseDAO.findAll().stream().map(purchaseMapper::toPurchaseResponse).toList();
+
     }
 }

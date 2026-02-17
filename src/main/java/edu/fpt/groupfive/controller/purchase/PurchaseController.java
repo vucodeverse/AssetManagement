@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.controller.purchase;
 
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseDetailCreateRequest;
@@ -79,6 +80,7 @@ public class PurchaseController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        // nếu save draft
         if("draft".equals(actions))
             purchaseService.createPurchaseRequest(purchaseCreateRequest,
                     userService.getUserIdByUsername(authentication.getName()), Request.DRAFT);
@@ -88,6 +90,13 @@ public class PurchaseController {
                 userService.getUserIdByUsername(authentication.getName()), Request.PENDING);
 
         return "purchase/purchase-form";
+    }
+
+    // gửi list request lên
+    @GetMapping("/purchase-list")
+    public String getListPurchase(Model model){
+        model.addAttribute("purchases",purchaseService.findAllPurchases());
+        return "purchase/purchase-list";
     }
 
     // lấy ra taatscar các asset type

@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.mapper;
 
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
+import edu.fpt.groupfive.dto.response.PurchaseResponse;
 import edu.fpt.groupfive.model.Purchase;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,4 +14,6 @@ public interface PurchaseMapper {
     
     @Mapping(source = "purchaseDetailCreateRequests", target = "purchaseDetails")
     Purchase toPurchase(PurchaseCreateRequest purchaseCreateRequest);
+
+    PurchaseResponse toPurchaseResponse(Purchase purchase);
 }

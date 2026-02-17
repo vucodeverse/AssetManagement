@@ -1,6 +1,5 @@
 package edu.fpt.groupfive.model;
 
-import edu.fpt.groupfive.common.PurchaseRequestStatus;
 import edu.fpt.groupfive.common.Request;
 import lombok.Builder;
 import lombok.Getter;
