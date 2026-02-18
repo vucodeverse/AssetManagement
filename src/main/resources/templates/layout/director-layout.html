@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${pageTitle} ?: 'PROCUREX'">PROCUREX</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" th:href="@{/css/layout/style.css}">
+    <th:block layout:fragment="extra-css"></th:block>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+
+        <!-- Sidebar cố định -->
+        <!--  th:replace giúp thay thế div này bằng div dc chỉ định  -->
+        <!--cấu trúc của fragemnt call: templatePath :: fragmentName(parameters). :: để lấy fragment bên trong thymleaf
+     . active... là những tham số truyền vào sidebar-->
+        <div th:replace="~{fragment/sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
+
+        <!-- Content bên phải dc inject-->
+        <!--layout:fragment : đánh dấu nội dung sẽ dc inject vào layout cha    -->
+        <main class="dashboard-content" layout:fragment="content">
+
+        </main>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <th:block layout:fragment="extra-js"></th:block>
+</body>
+
+</html>

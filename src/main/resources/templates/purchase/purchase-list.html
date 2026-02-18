@@ -1,111 +1,100 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/director-layout}">
+<!--~{}: link -->
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase Request Management - Procurex</title>
-    <link rel="stylesheet" th:href="@{/css/purchase/purchase-list.css}">
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/purchase/purchase-list.css}">
+    </th:block>
 
 </head>
+
 <body>
-<div class="dashboard-wrapper">
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <i class="fas fa-cube"></i> <span>PROCUREX</span>
-        </div>
-        <nav class="sidebar-nav">
-            <div class="nav-item"><i class="fas fa-th-large"></i> DASHBOARD</div>
-            <div class="nav-group">
-                <div class="nav-item active"><i class="fas fa-check-circle"></i> APPROVAL CENTER</div>
-                <div class="sub-nav">
-                    <div class="sub-item active">PURCHASE REQUESTS</div>
-                    <div class="sub-item">QUOTATIONS</div>
-                </div>
-            </div>
-            <div class="nav-item"><i class="fas fa-file-invoice-dollar"></i> PURCHASE ORDERS</div>
-        </nav>
-        <div class="sidebar-user">
-            <div class="user-avatar">MT</div>
-            <div class="user-info">
-                <span class="user-name">Marcus Thorne</span>
-                <span class="user-role">Director</span>
-            </div>
-        </div>
-    </aside>
+    <th:block layout:fragment="content">
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-        <!-- Top Header Bar -->
-        <header class="top-bar">
-            <h1>PURCHASE REQUEST MANAGEMENT</h1>
-            <div class="top-actions">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search by ID or Creator...">
-                </div>
-                <i class="far fa-bell icon-btn"></i>
-                <i class="fas fa-cog icon-btn"></i>
-            </div>
-        </header>
-
-        <!-- Filters Section -->
-        <section class="filters-bar">
-            <div class="filter-group">
-                <select><option>Status: All</option></select>
-                <select><option>Priority: All</option></select>
-                <select><option>Deadline: Any</option></select>
-                <button class="btn-reset">RESET FILTERS</button>
-            </div>
-        </section>
-
-        <!-- Data Table Section -->
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                <tr>
-                    <th>PR ID <i class="fas fa-chevron-down"></i></th>
-                    <th>STATUS <i class="fas fa-chevron-down"></i></th>
-                    <th>CREATOR <i class="fas fa-chevron-down"></i></th>
-                    <th>NEEDED DATE <i class="fas fa-chevron-down"></i></th>
-                    <th>PRIORITY <i class="fas fa-chevron-down"></i></th>
-                    <th>CREATED AT <i class="fas fa-chevron-down"></i></th>
-                    <th>ACTIONS</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>PR-2024-001</td>
-                    <td><span class="badge pending">PENDING APPROVAL</span></td>
-                    <td>
-                        <div class="cell-creator">
-                            <strong>Jane Doe</strong>
-                            <span>Marketing</span>
+        <div class="purchase-content-wrapper">
+            <form method="get" th:action="@{/director/purchase/search-filter}" id="filterForm">
+                <header class="top-bar">
+                    <h1>PURCHASE REQUEST MANAGEMENT</h1>
+                    <div class="top-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="p" th:value="${param.p}" placeholder="Search by PR ID...">
                         </div>
-                    </td>
-                    <td>2024-06-15</td>
-                    <td><span class="badge-priority high">HIGH</span></td>
-                    <td>2024-05-24</td>
-                    <td class="cell-actions">
-                        <button class="btn-approve">APPROVE</button>
-                        <button class="btn-reject">REJECT</button>
-                    </td>
-                </tr>
-                <!-- More rows as needed -->
-                </tbody>
-            </table>
-            <footer class="table-footer">
-                <span>SHOWING 5 OF 24 PURCHASE REQUESTS</span>
-                <div class="pagination">
-                    <button class="p-btn"><i class="fas fa-chevron-left"></i></button>
-                    <button class="p-btn active">1</button>
-                    <button class="p-btn">2</button>
-                    <button class="p-btn">3</button>
-                    <button class="p-btn"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </footer>
+                        <i class="far fa-bell icon-btn"></i>
+                        <i class="fas fa-cog icon-btn"></i>
+                    </div>
+                </header>
+
+                <!-- Filters Section -->
+                <section class="filters-bar">
+                    <div class="filter-group">
+                        <select id="statusFilter" name="status">
+                            <option value="">Status: All</option>
+                            <option th:each="s : ${status}" th:value="${s}" th:text="${s}"
+                                th:selected="${param.status != null and  param.status[0] == s}">
+                            </option>
+                        </select><select id="priorityFilter" name="priority">
+                            <option value="All">Priority: All</option>
+                            <option th:each="pi : ${priorities}" th:value="${pi}" th:text="${pi}"
+                                th:selected="${param.priority != null and param.priority[0] == pi}">
+                            </option>
+                        </select>
+
+                        <input type="date" name="from" th:value="${param.from}">
+                        <input type="date" name="to" th:value="${param.to}">
+                        <a class="btn-reset" th:href="@{/director/purchases}">RESET</a>
+                    </div>
+                </section>
+            </form>
+
+            <!-- Data Table Section -->
+            <div class="table-container">
+                <table class="data-table" id="purchaseTO">
+                    <thead>
+                        <tr>
+                            <th>PR ID </th>
+                            <th>STATUS </th>
+                            <th>CREATOR </th>
+                            <th>NEEDED DATE</th>
+                            <th>PRIORITY </th>
+                            <th>CREATED AT </th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${purchases}">
+
+                            <td th:text="'PR-' + ${p.id}"></td>
+                            <td th:text="${p.status}"></td>
+                            <td th:text="${p.createdByUser}"></td>
+                            <td th:text="${#temporals.format(p.neededByDate,'dd-MM-yyyy')}"></td>
+                            <td th:text="${p.priority}"></td>
+                            <td th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></td>
+                            <td class="cell-actions">
+                                <form method="post" th:action="@{/director/purchases/{id}(id=${p.id})}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
+                                    <button type="submit" name="actions" value="r" class="btn-reject">REJECT</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </main>
-</div>
+
+
+    </th:block>
+
+
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/purchase/pr-list.js}"></script>
+    </th:block>
 </body>
+
 </html>

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -17,7 +18,7 @@ public class Purchase extends AbstractEntity<Integer>{
     private String note;
     private String rejectReason;
     private Integer createdByUser;
-    private Date neededByDate;
+    private LocalDate neededByDate;
     private String reason;
     private String priority;
     private Integer approvedByDirector;

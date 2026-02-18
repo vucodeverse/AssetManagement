@@ -9,6 +9,7 @@
 
     <nav class="sidebar-nav">
         <!-- DASHBOARD -->
+<!--th:classappend = Thymeleaf attribute để thêm class vào class đã có sẵn-->
         <a class="nav-item"
            th:href="@{/director/dashboard}"
            th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
