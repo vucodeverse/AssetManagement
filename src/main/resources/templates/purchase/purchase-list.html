@@ -17,40 +17,51 @@
     <th:block layout:fragment="content">
 
         <div class="purchase-content-wrapper">
-            <form method="get" th:action="@{/director/purchase/search-filter}" id="filterForm">
+            <form id="filterForm"
+                  method="get"
+                  th:action="@{/director/purchase/search-filter}"
+                  th:object="${searchAndFilter}">
+
                 <header class="top-bar">
                     <h1>PURCHASE REQUEST MANAGEMENT</h1>
                     <div class="top-actions">
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" name="p" th:value="${param.p}" placeholder="Search by PR ID...">
+                            <input type="text"
+                                   placeholder="Search by PR ID..."
+                                   th:field="*{keyword}">
                         </div>
-                        <i class="far fa-bell icon-btn"></i>
-                        <i class="fas fa-cog icon-btn"></i>
                     </div>
                 </header>
 
-                <!-- Filters Section -->
                 <section class="filters-bar">
                     <div class="filter-group">
-                        <select id="statusFilter" name="status">
+
+                        <select id="statusFilter" th:field="*{status}">
                             <option value="">Status: All</option>
-                            <option th:each="s : ${status}" th:value="${s}" th:text="${s}"
-                                th:selected="${param.status != null and  param.status[0] == s}">
-                            </option>
-                        </select><select id="priorityFilter" name="priority">
-                            <option value="All">Priority: All</option>
-                            <option th:each="pi : ${priorities}" th:value="${pi}" th:text="${pi}"
-                                th:selected="${param.priority != null and param.priority[0] == pi}">
+                            <option th:each="s : ${status}"
+                                    th:value="${s}"
+                                    th:text="${s}">
                             </option>
                         </select>
 
-                        <input type="date" name="from" th:value="${param.from}">
-                        <input type="date" name="to" th:value="${param.to}">
+                        <select id="priorityFilter" th:field="*{priority}">
+                            <option value="">Priority: All</option>
+                            <option th:each="pi : ${priorities}"
+                                    th:value="${pi}"
+                                    th:text="${pi}">
+                            </option>
+                        </select>
+
+                        <input type="date" th:field="*{from}">
+                        <input type="date" th:field="*{to}">
+
+                        <button type="submit">APPLY</button>
                         <a class="btn-reset" th:href="@{/director/purchases}">RESET</a>
                     </div>
                 </section>
             </form>
+
 
             <!-- Data Table Section -->
             <div class="table-container">
@@ -87,7 +98,6 @@
                 </table>
             </div>
         </div>
-
 
     </th:block>
 

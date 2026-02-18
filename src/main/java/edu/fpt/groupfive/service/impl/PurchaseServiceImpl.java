@@ -4,10 +4,12 @@ import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
 import edu.fpt.groupfive.dto.response.PurchaseResponse;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.service.PurchaseService;
+import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,5 +64,16 @@ public class PurchaseServiceImpl implements PurchaseService {
 
          return purchaseDAO.findAll().stream().map(purchaseMapper::toPurchaseResponse).toList();
 
+    }
+
+    @Override
+    public List<PurchaseResponse> searchAndFilter(PurchaseSearchAndFilter p) {
+
+        if (p.getFrom() != null && p.getTo() != null
+                && p.getFrom().isAfter(p.getTo())) {
+            throw new InvalidDataException("From phải trước To");
+        }
+
+        return purchaseDAO.getPurchaseByFilter(p).stream().map(purchaseMapper::toPurchaseResponse).toList();
     }
 }

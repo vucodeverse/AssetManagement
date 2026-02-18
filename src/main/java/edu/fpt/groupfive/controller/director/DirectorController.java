@@ -2,12 +2,15 @@ package edu.fpt.groupfive.controller.director;
 
 import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
 import edu.fpt.groupfive.service.PurchaseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -36,14 +39,20 @@ public class DirectorController {
 
     // search and filter
     @GetMapping("/purchase/search-filter")
-    public String searchAndfilter(@RequestParam(required = false) String status,
-                                  @RequestParam(required = false) String priority,
-                                  @RequestParam(required = false) String p,
-                                  @RequestParam(required = false) @DateTimeFormat(fallbackPatterns = "yyyy-MM-dd") LocalDate from,
-                                  @RequestParam(required = false)  @DateTimeFormat(fallbackPatterns = "yyyy-MM-dd") LocalDate to,
-                                  Model model) {
+    public String searchAndfilter(@ModelAttribute("searchAndFilter") PurchaseSearchAndFilter purchaseSearchAndFilter
+            , Model model) {
         model.addAttribute("activeSub", "pr");
-
+        model.addAttribute("activeSub", "pr");
+        model.addAttribute("activeMenu", "approval");
+        model.addAttribute("purchases", purchaseService.searchAndFilter(purchaseSearchAndFilter));
+        model.addAttribute("priorities", Priority.values());
+        model.addAttribute("status", Request.values());
         return "purchase/purchase-list";
     }
+
+    @ModelAttribute("searchAndFilter")
+    public PurchaseSearchAndFilter initSearchAndFilter() {
+        return new PurchaseSearchAndFilter();
+    }
+
 }

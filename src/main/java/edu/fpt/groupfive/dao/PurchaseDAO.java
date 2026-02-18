@@ -2,6 +2,7 @@ package edu.fpt.groupfive.dao;
 
 import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
 import edu.fpt.groupfive.model.Purchase;
 
 import java.time.LocalDate;
@@ -13,5 +14,5 @@ public interface PurchaseDAO {
     Optional<Purchase> findById(Integer purchaseId);
     Optional<Purchase> findByIdAndApproved(Integer purchaseId, String status);
     List<Purchase> findAll();
-    List<Purchase> getPurchaseByFilter(Request status, Priority priority, Integer id, String keyword, LocalDate from, LocalDate to);
+    List<Purchase> getPurchaseByFilter(PurchaseSearchAndFilter purchaseSearchAndFilter);
 }

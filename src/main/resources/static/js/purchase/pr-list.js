@@ -16,6 +16,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 form.submit(); // dropdown đổi value sẽ tự submit
             });
         }
+
+        const from = form.querySelector('input[name="from"]');
+        const to = form.querySelector('input[name="to"]');
+
+        [from, to].forEach(el =>{
+            if(!el) return;
+            el.addEventListener("change", () => form.submit());
+        })
     });
 
 });

@@ -92,12 +92,6 @@ public class PurchaseController {
         return "purchase/purchase-form";
     }
 
-    // gửi list request lên
-    @GetMapping("/purchase-list")
-    public String getListPurchase(Model model){
-        model.addAttribute("purchases",purchaseService.findAllPurchases());
-        return "purchase/purchase-list";
-    }
 
     // lấy ra taatscar các asset type
     private void getAssetType(Model model) {

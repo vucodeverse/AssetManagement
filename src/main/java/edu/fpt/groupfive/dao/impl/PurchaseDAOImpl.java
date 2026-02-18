@@ -4,6 +4,7 @@ import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
+import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -217,8 +219,8 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     }
 
     @Override
-    public List<Purchase> getPurchaseByFilter(Request status, Priority priority, Integer id ,String keyword, LocalDate from, LocalDate to) {
-        String sql ="\n" +
+    public List<Purchase> getPurchaseByFilter(PurchaseSearchAndFilter p) {
+        String a ="\n" +
                 "select p.* from purchase_request p\n" +
                 "left join users u on p.creator_id = u.user_id\n" +
                 "where p.status = ? and p.priority = ? \n" +
@@ -228,16 +230,59 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 "    or u.last_name like ? \n" +
                 "    )";
 
+
+        StringBuilder sql = new StringBuilder("select p.* from purchase_request p left join users u on p.creator_id =" +
+                " " +
+                "u.user_id where 1 = 1");
         List<Purchase> purchases = new ArrayList<>();
+
+
+        List<Object> params = new ArrayList<>();
+
+        if(p.getStatus() != null){
+            sql.append(" and p.status = ? ");
+            params.add(p.getStatus().name());
+        }
+
+        if(p.getPriority() != null){
+            sql.append(" and p.priority = ? ");
+            params.add(p.getPriority().name());
+        }
+
+        if(p.getFrom() != null){
+            sql.append(" and p.needed_by_date >= ? ");
+            params.add(Date.valueOf(p.getFrom()));
+        }
+
+        if(p.getTo() != null){
+            sql.append(" and p.needed_by_date < ? ");
+            params.add(Date.valueOf(p.getTo()));
+        }
+
+        if(p.getKeyword() != null && !p.getKeyword().isBlank()){
+            sql.append(" and (");
+
+            // nếu keyword là số → search id
+            if (p.getKeyword().matches("\\d+")) {
+                sql.append(" p.purchase_request_id = ? or ");
+                params.add(Integer.parseInt(p.getKeyword()));
+            }
+
+            sql.append(" u.first_name like ? or u.last_name like ? )");
+
+            params.add("%" + p.getKeyword().toLowerCase() + "%");
+            params.add("%" + p.getKeyword().toLowerCase() + "%");
+        }
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-            preparedStatement.setString(1, status.toString());
-            preparedStatement.setString(2, priority.toString());
-            preparedStatement.setInt(5, id);
-            preparedStatement.setTimestamp(3, Timestamp.valueOf(from.atStartOfDay()));
-            preparedStatement.setTimestamp(4, Timestamp.valueOf(to.plusDays(1).atStartOfDay()));
-            preparedStatement.setString(6, "%" + (keyword == null ? "" : keyword) + "%");
-            preparedStatement.setString(7, "%" + (keyword == null ? "" : keyword) + "%");
+             PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())){
+
+            int i = 1;
+
+            if(params.size() > 0){
+                for(Object str : params){
+                    preparedStatement.setObject(i++, str);
+                }
+            }
 
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()){
