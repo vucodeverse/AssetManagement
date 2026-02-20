@@ -1,6 +1,5 @@
 package edu.fpt.groupfive.dao.impl;
 
-import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
@@ -11,10 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -317,6 +314,28 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             throw new RuntimeException(e);
         }
         return purchases;
+    }
+
+    @Override
+    public void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject) {
+        String sql = "update purchase_request set status = ? , reject_reason = ? where purchase_request_id = ?";
+
+        try (Connection connection = databaseConfig.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
+            preparedStatement.setString(1,request.name());
+            preparedStatement.setInt(3,purchaseId);
+
+            if (reasonReject == null || reasonReject.isBlank()) {
+                preparedStatement.setNull(2, Types.NVARCHAR);
+            } else {
+                preparedStatement.setString(2, reasonReject);
+            }
+            preparedStatement.executeUpdate();
+
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
     }
 
 

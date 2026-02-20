@@ -174,7 +174,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .quotationDetailId(d.getId())
                 .quotationId(d.getQuotationId())
                 .purchaseDetailId(d.getPurchaseDetailId())
-                .assetTypeName(assetTypeDAO.findById(d.getAssetTypeId()).getTypeName())
+                .assetTypeName(assetTypeDAO.findById(d.getAssetTypeId()))
                 .quantity(d.getQuantity())
                 .warrantyMonths(d.getWarrantyMonths())
                 .price(d.getPrice())

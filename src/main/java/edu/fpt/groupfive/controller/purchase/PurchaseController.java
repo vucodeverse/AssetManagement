@@ -1,7 +1,6 @@
 package edu.fpt.groupfive.controller.purchase;
 
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseDetailCreateRequest;
@@ -32,7 +31,6 @@ public class PurchaseController {
 
 
     // hiển thị form nhập
-    // Sửa thành:
     @GetMapping("/purchase-form")
     public String showPurchaseForm(Model model){
         PurchaseCreateRequest purchaseCreateRequest = new PurchaseCreateRequest();
@@ -43,16 +41,15 @@ public class PurchaseController {
     }
 
 
-    // show detail
+    // show detail - creatorName và assetTypeName đã được JOIN sẵn ở DAO, không cần gửi users/assetTypes lên
     @GetMapping("/purchase-detail/{purchaseId}")
     public String showPurchaseDetail(@PathVariable("purchaseId") Integer purchaseId, Model model) {
         model.addAttribute("purchase", purchaseService.findById(purchaseId));
-        model.addAttribute("assetTypes", assetTypeService.getAllAssetType());
         return "purchase/purchase-detail";
     }
 
 
-    // khi add 1 purchase detail mowis
+    // khi add 1 purchase detail mới
     @PostMapping(value = "/purchase-form", params = "addDetail")
     public String addPurchaseDetail(@ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, Model model){
         purchaseCreateRequest.getPurchaseDetailCreateRequests().add(new PurchaseDetailCreateRequest());
@@ -93,12 +90,11 @@ public class PurchaseController {
     }
 
 
-    // lấy ra taatscar các asset type
+    // lấy ra tất cả các asset type (chỉ dùng cho purchase-form, không dùng cho detail nữa)
     private void getAssetType(Model model) {
         List<AssetTypeResponse> assetTypes = assetTypeService.getAllAssetType();
         model.addAttribute("assetTypes", assetTypes);
     }
-
 
 
 }

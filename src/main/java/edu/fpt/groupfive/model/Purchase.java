@@ -18,6 +18,7 @@ public class Purchase extends AbstractEntity<Integer>{
     private String note;
     private String rejectReason;
     private Integer createdByUser;
+    private String creatorName;
     private LocalDate neededByDate;
     private String reason;
     private String priority;

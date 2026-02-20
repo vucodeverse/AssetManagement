@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface AssetTypeService {
     List<AssetTypeResponse> getAllAssetType();
     Optional<AssetType> findById(Integer assetTypeId);
+    String findNameById(Integer assetTypeId);
 }

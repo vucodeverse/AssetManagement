@@ -1,62 +1,149 @@
-<!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/director-layout}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Detail</title>
+    <title>Quản lý Đơn mua hàng - Procurex</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/purchase/purchase-detail.css}">
+    </th:block> <!-- Import icon FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
 
-    <h3>Purchase Request Detail</h3>
+        <th:block layout:fragment="content">
 
-    <div>
-        <label>ID: </label> <span th:text="${purchase.id}"></span><br>
-        <label>Reason: </label> <span th:text="${purchase.reason}"></span><br>
-        <label>Note: </label> <span th:text="${purchase.note}"></span><br>
-        <label>Priority: </label> <span th:text="${purchase.priority}"></span><br>
-        <label>Needed By: </label> <span th:text="${purchase.neededByDate}"></span><br>
-        <label>Status: </label> <span th:text="${purchase.status}"></span><br>
-    </div>
+            <main class="main-content">
+                <!-- Header -->
+                <header class="top-bar">
+                    <div class="title-section">
+                        <a th:href="@{/director/purchases}">
+                            <i class="fas fa-arrow-left back-icon"></i>
+                        </a>                        <h1>PURCHASE REQUEST DETAIL</h1>
+                    </div>
+                    <div class="header-actions">
+                        <form method="post" th:action="@{/director/purchases/{id}/actions(id=${purchase.id})}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <div th:if="${purchase.status.name() != 'APPROVED' && purchase.status.name() != 'REJECTED'}">
+                                <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
+                                <!-- đổi reject thành button để mở popup -->
+                                <a class="btn-reject"
+                                   th:href="'#reject-' + ${purchase.id}"
+                                   onclick="event.stopPropagation();">
+                                    REJECT
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </header>
 
-    <hr>
-    <h4>Details</h4>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Asset Type</th>
-                <th>Quantity</th>
-                <th>Spec Requirement</th>
-                <th>Note</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="d : ${purchase.purchaseDetails}">
-                <td>
-                    <span th:each="type : ${assetTypes}" th:if="${type.typeId == d.assetTypeId}"
-                        th:text="${type.typeName}"></span>
-                </td>
-                <td th:text="${d.quantity}"></td>
-                <td th:text="${d.specificationRequirement}"></td>
-                <td th:text="${d.note}"></td>
-            </tr>
-        </tbody>
-    </table>
+                <!-- PR Detail Content -->
+                <div class="content-card">
+                    <!-- Info Grid -->
+                    <div class="info-grid">
+                        <div class="info-block">
+                            <label>REQUEST ID</label>
+                            <div class="val" th:text="${purchase.id}">PR-2023-0842</div>
+                        </div>
+                        <div class="info-block">
+                            <label>STATUS</label>
+                            <div class="badge-status" th:text="${purchase.status}">PENDING APPROVAL</div>
+                        </div>
+                        <div class="info-block">
+                            <label>CREATOR</label>
+                            <!-- creatorName đã được JOIN sẵn ở DAO, không cần loop qua list users -->
+                            <div class="val" th:text="${purchase.creatorName}">N/A</div>
+                        </div>
+                        <div class="info-block">
+                            <label>CREATED AT</label>
+                            <div class="val" th:text="${#temporals.format(purchase.createdAt,'dd-MM-yyyy')}">Oct 24,
+                                2023</div>
+                        </div>
+                    </div>
 
-    <br>
+                    <hr class="separator">
 
-    <div th:if="${purchase.status.name() == 'APPROVED'}">
-        <a th:href="@{/purchase-staff/purchases/{id}/quotation-form(id=${purchase.id})}">
-            <button>Create Quotation</button>
-        </a>
-        <a th:href="@{/purchase-staff/purchases/{id}/quotation-list(id=${purchase.id})}">
-            <button>Show Quotations</button>
-        </a>
-    </div>
+                    <!-- Table Section -->
+                    <div class="table-section">
+                        <h3>REQUESTED ITEMS</h3>
+                        <table class="item-table">
+                            <thead>
+                                <tr>
+                                    <th>ASSET TYPE NAME</th>
+                                    <th>QUANTITY</th>
+                                    <th>EST. PRICE</th>
+                                    <th>SPEC REQUIREMENT</th>
+                                    <th>NOTE</th>
+                                </tr>
+                            </thead>
 
-    <br>
-    <a th:href="@{/asset-manager/purchase-form}">Back to Form (or List)</a>
+                            <tbody>
+
+                                <tr th:each="prd : ${purchase.purchaseDetails}"
+                                    th:attr="data-qty=${prd.quantity}, data-price=${prd.estPrice}">
+
+                                    <td th:text="${prd.assetTypeName}"></td>
+
+                                    <td th:text="${prd.quantity}"></td>
+
+                                    <td th:text="${#numbers.formatInteger(prd.estPrice, 1, 'POINT')}"></td>
+
+                                    <td th:text="${prd.specification}"></td>
+
+                                    <td class="italic-note" th:text="${prd.note != null ? prd.note : 'None'}">
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                    <!-- Financial Summary -->
+                    <div class="summary-area">
+                        <div class="summary-line">
+                            <span>SUBTOTAL ESTIMATED</span>
+                            <strong id="subtotal">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        <!-- Reject Modal  -->
+        <div th:id="'reject-' + ${purchase.id}" class="modal-overlay">
+            <div class="modal" role="dialog" aria-modal="true">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        Reject Reason - PR-<span th:text="${purchase.id}"></span>
+                    </h3>
+                    <a href="#" class="modal-close" aria-label="Close">✕</a>
+                </div>
+
+                <form method="post" th:action="@{/director/purchases/{id}/actions(id=${purchase.id})}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                    <div class="modal-body">
+                <textarea name="rejectReason"
+                          placeholder="Enter reject reason..."
+                          required></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-submit" name="actions" value="r">Submit</button>
+                        <a href="#" class="btn-cancel">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        </th:block>
+
+        <th:block layout:fragment="extra-js">
+            <script th:src="@{/js/purchase/pr-detail.js}"></script>
+        </th:block>
+
+
 
 </body>
 

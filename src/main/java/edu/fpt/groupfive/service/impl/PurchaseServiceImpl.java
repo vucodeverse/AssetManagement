@@ -5,10 +5,13 @@ import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
+import edu.fpt.groupfive.dto.response.PurchaseDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseResponse;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.model.Purchase;
+import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
+import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,8 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final PurchaseDAO purchaseDAO;
     private final PurchaseMapper purchaseMapper;
     private final PurchaseDetailDAO purchaseDetailDAO;
+    private final UserService userService;
+    private final AssetTypeService assetTypeService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -55,14 +60,56 @@ public class PurchaseServiceImpl implements PurchaseService {
     }
 
     @Override
-    public Purchase findById(Integer id) {
-        return purchaseDAO.findById(id).orElseThrow(() -> new RuntimeException("Purchase not found"));
+    public PurchaseResponse findById(Integer id) {
+            return purchaseDAO.findById(id)
+                    .map(p -> PurchaseResponse.builder()
+                            .id(p.getId())
+                            .status(p.getStatus())
+                            .creatorName(userService.findNameById(p.getCreatedByUser()))
+                            .neededByDate(p.getNeededByDate())
+                            .priority(p.getPriority())
+                            .createdAt(p.getCreatedAt())
+                            .purchaseDetails(
+                                    p.getPurchaseDetails().stream()
+                                            .map(pd -> PurchaseDetailResponse.builder()
+                                                    .id(pd.getId())
+                                                    .note(pd.getNote())
+                                                    .estPrice(pd.getEstimatePrice())
+                                                    .quantity(pd.getQuantity())
+                                                    .specification(pd.getSpecificationRequirement())
+                                                    .assetTypeName(
+                                                            assetTypeService.findNameById(pd.getAssetTypeId())
+                                                    )
+                                                    .build()
+                                            ).toList()
+                            )
+                            .build()
+                    )
+                    .orElseThrow(() -> new RuntimeException("Purchase tồn tại + id"));
+
     }
 
     @Override
     public List<PurchaseResponse> findAllPurchases() {
 
-         return purchaseDAO.findAll().stream().map(purchaseMapper::toPurchaseResponse).toList();
+        return purchaseDAO.findAll().stream().map(p ->
+                  PurchaseResponse.builder()
+                          .id(p.getId())
+                          .status(p.getStatus())
+                          .creatorName(userService.findNameById(p.getCreatedByUser()))
+                          .neededByDate(p.getNeededByDate())
+                          .priority(p.getPriority())
+                          .createdAt(p.getCreatedAt())
+                          .purchaseDetails(p.getPurchaseDetails().stream().map(pd -> PurchaseDetailResponse.builder()
+                                  .id(pd.getId())
+                                  .note(pd.getNote())
+                                  .estPrice(pd.getEstimatePrice())
+                                  .quantity(pd.getQuantity())
+                                  .specification(pd.getSpecificationRequirement())
+                                  .assetTypeName(assetTypeService.findNameById(pd.getAssetTypeId()))
+                                  .build()).toList())
+                          .build()
+          ).toList();
 
     }
 
@@ -74,6 +121,37 @@ public class PurchaseServiceImpl implements PurchaseService {
             throw new InvalidDataException("From phải trước To");
         }
 
-        return purchaseDAO.getPurchaseByFilter(p).stream().map(purchaseMapper::toPurchaseResponse).toList();
+        return purchaseDAO.getPurchaseByFilter(p).stream().map(pr ->
+                PurchaseResponse.builder()
+                        .id(pr.getId())
+                        .status(pr.getStatus())
+                        .creatorName(userService.findNameById(pr.getCreatedByUser()))
+                        .neededByDate(pr.getNeededByDate())
+                        .priority(pr.getPriority())
+                        .createdAt(pr.getCreatedAt())
+                        .purchaseDetails(pr.getPurchaseDetails().stream().map(pd -> PurchaseDetailResponse.builder()
+                                .id(pd.getId())
+                                .note(pd.getNote())
+                                .estPrice(pd.getEstimatePrice())
+                                .quantity(pd.getQuantity())
+                                .specification(pd.getSpecificationRequirement())
+                                .assetTypeName(assetTypeService.findNameById(pd.getAssetTypeId()))
+                                .build()).toList())
+                        .build()
+        ).toList();
+    }
+
+    @Override
+    public void actionsWithPurchase(Integer purchaseId, String action, String reasonReject) {
+        Purchase p = purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException("Purchase request " +
+                "không tộn tại"));
+
+        if ("a".equals(action)) {
+            purchaseDAO.updatePurchaseStatus(Request.APPROVED, purchaseId, null);
+        } else if ("r".equals(action)) {
+            purchaseDAO.updatePurchaseStatus(Request.REJECTED, purchaseId, reasonReject);
+        } else {
+            throw new InvalidDataException("Action không hợp lệ: " + action);
+        }
     }
 }

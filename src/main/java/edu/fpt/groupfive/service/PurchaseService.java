@@ -11,8 +11,10 @@ import java.util.List;
 
 public interface PurchaseService {
     void createPurchaseRequest(PurchaseCreateRequest purchaseCreateRequest, int userId, Request draft);
-    Purchase findById(Integer id);
+    PurchaseResponse findById(Integer id);
     List<PurchaseResponse> findAllPurchases();
 
     List<PurchaseResponse> searchAndFilter(PurchaseSearchAndFilter purchaseSearchAndFilter);
+
+    void actionsWithPurchase(Integer purchaseId, String action, String reasonReject);
 }

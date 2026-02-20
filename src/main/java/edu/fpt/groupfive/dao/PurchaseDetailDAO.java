@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao;
 
+import edu.fpt.groupfive.dto.response.PurchaseDetailResponse;
 import edu.fpt.groupfive.model.PurchaseDetail;
 
 import java.util.List;
@@ -10,3 +11,4 @@ public interface PurchaseDetailDAO {
     Optional<PurchaseDetail> findById(Integer purchaseDetailId);
     List<PurchaseDetail> findByPurchaseRequestId(Integer purchaseRequestId);
 }
+

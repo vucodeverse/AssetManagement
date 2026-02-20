@@ -78,27 +78,70 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="p : ${purchases}">
+                    <tr th:each="p : ${purchases}"
+                        class="clickable-row"
+                        th:attr="onclick=|window.location.href='@{/director/purchases/{id}/purchase-detail(id=${p.id})}'|">
 
-                            <td th:text="'PR-' + ${p.id}"></td>
-                            <td th:text="${p.status}"></td>
-                            <td th:text="${p.createdByUser}"></td>
-                            <td th:text="${#temporals.format(p.neededByDate,'dd-MM-yyyy')}"></td>
-                            <td th:text="${p.priority}"></td>
-                            <td th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></td>
-                            <td class="cell-actions">
-                                <form method="post" th:action="@{/director/purchases/{id}(id=${p.id})}">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <td th:text="'PR-' + ${p.id}"></td>
+                        <td th:text="${p.status}"></td>
+                        <td th:text="${p.creatorName}"></td>
+                        <td th:text="${#temporals.format(p.neededByDate,'dd-MM-yyyy')}"></td>
+                        <td th:text="${p.priority}"></td>
+                        <td th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></td>
+
+                        <td class="cell-actions" onclick="event.stopPropagation();">
+                            <form method="post" th:action="@{/director/purchases/{id}/actions(id=${p.id})}">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <div th:if="${p.status.name() != 'APPROVED' && p.status.name() != 'REJECTED'}">
                                     <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
-                                    <button type="submit" name="actions" value="r" class="btn-reject">REJECT</button>
-                                </form>
-                            </td>
-                        </tr>
+                                    <!-- đổi reject thành button để mở popup -->
+                                    <a class="btn-reject"
+                                       th:href="'#reject-' + ${p.id}"
+                                       onclick="event.stopPropagation();">
+                                        REJECT
+                                    </a>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
         </div>
+            <!-- Reject Modals -->
+        <div th:each="p : ${purchases}"
+             th:id="'reject-' + ${p.id}"
+             class="modal-overlay">
 
+            <div class="modal" role="dialog" aria-modal="true">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        Reject Reason - PR-<span th:text="${p.id}"></span>
+                    </h3>
+
+                    <!-- Nút X: đóng modal -->
+                    <a href="#" class="modal-close" aria-label="Close">✕</a>
+                </div>
+
+                <form method="post"
+                      th:action="@{/director/purchases/{id}/actions(id=${p.id})}">
+                    <input type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
+
+                    <div class="modal-body">
+                <textarea name="reasonReject"
+                          placeholder="Enter reject reason..."
+                          required></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-submit" name="actions" value="r">Submit</button>
+                        <a href="#" class="btn-cancel">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </th:block>
 
 

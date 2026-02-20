@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // $ trong jQuery là biến đại diện cho object jQuery hay $ === jQuery
 $(function (){
     $('#purchaseTO').DataTable({
-        pageLength: 10,
+        pageLength: 6,
         lengthChange: false,
         ordering: true,
         info: true,
@@ -48,7 +48,7 @@ $(function (){
     ],
         language: {
             paginate: { previous: "‹", next: "›" }
-        }
+        },
     })
 
 })

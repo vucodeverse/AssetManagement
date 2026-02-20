@@ -1,425 +1,401 @@
-/* =========================================================
-   PURCHASE LIST - match reference screenshot (no HTML change)
-   Works with purchase-list.html
-   ========================================================= */
-
-:root {
-    --bg: #f6f7fb;
-    --panel: #ffffff;
-    --text: #111827;
-    --muted: #6b7280;
-    --muted2: #9ca3af;
-    --border: #e5e7eb;
-    --border2: #eef2f7;
-    --shadow: 0 10px 28px rgba(0, 0, 0, .06);
-    --radius: 14px;
-
-    /* card width giống ảnh (giữa màn) */
-    --page-max: 1120px;
+:root{
+    --panel:#ffffff;
+    --text:#111827;
+    --muted2:#9ca3af;
+    --border:#e5e7eb;
+    --border2:#eef2f7;
+    --shadow:0 10px 28px rgba(0,0,0,.06);
+    --radius:14px;
+    --page-max:1120px;
 }
 
-/* đảm bảo không bị “xếp 2 cột” bởi CSS khác */
-main.dashboard-content {
-    display: block !important;
-    margin-left: 280px !important;
-    /* Force sidebar spacing */
-    width: calc(100% - 280px) !important;
+.purchase-content-wrapper{
+    max-width:var(--page-max);
+    width:100%;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
 }
 
-/* =========================
-   WRAPPER CONTAINER (Fix layout split)
-   ========================= */
-.purchase-content-wrapper {
-    max-width: var(--page-max);
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    /* gap between form(header+filter) and table */
-}
-
-/* Children now take full width of the wrapper */
 #filterForm,
-.table-container {
-    width: 100%;
-    max-width: 100%;
+.table-container{
+    width:100%;
+    max-width:100%;
 }
 
-/* =========================
-   TOP BAR (title + search + icons)
-   ========================= */
-.top-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    padding: 10px 4px 18px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 14px;
+.top-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:10px 4px 18px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:14px;
 }
 
-.top-bar h1 {
-    font-size: 20px;
-    font-weight: 900;
-    letter-spacing: .2px;
-    color: var(--text);
-    white-space: nowrap;
+.top-bar h1{
+    font-size:20px;
+    font-weight:900;
+    letter-spacing:.2px;
+    color:var(--text);
+    white-space:nowrap;
 }
 
-.top-actions {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    justify-content: flex-end;
+.top-actions{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    justify-content:flex-end;
 }
 
-.icon-btn {
-    color: var(--muted);
-    font-size: 18px;
-    cursor: pointer;
-    transition: .15s ease;
+.search-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:10px 14px;
+    width:520px;
+    max-width:50vw;
 }
 
-.icon-btn:hover {
-    color: var(--text);
+.search-box i{ color:var(--muted2); }
+
+.search-box input{
+    border:none;
+    outline:none;
+    background:transparent;
+    width:100%;
+    font-size:13px;
+    color:var(--text);
 }
 
-.search-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 10px 14px;
-    width: 420px;
-    max-width: 42vw;
-}
-
-.search-box i {
-    color: var(--muted2);
-}
-
-.search-box input {
-    border: none;
-    outline: none;
-    background: transparent;
-    width: 100%;
-    font-size: 13px;
-    color: var(--text);
-}
-
-/* responsive top */
-@media (max-width: 980px) {
-    .top-bar {
-        flex-direction: column;
-        align-items: flex-start;
+@media (max-width:980px){
+    .top-bar{
+        flex-direction:column;
+        align-items:flex-start;
     }
-
-    .top-actions {
-        width: 100%;
-        justify-content: space-between;
+    .top-actions{
+        width:100%;
+        justify-content:space-between;
     }
-
-    .search-box {
-        width: 100%;
-        max-width: 100%;
+    .search-box{
+        width:100%;
+        max-width:100%;
     }
 }
 
-/* =========================
-   FILTER BAR (pills) giống ảnh
-   ========================= */
-.filters-bar {
-    padding: 10px 4px 8px;
+.filters-bar{
+    padding:10px 4px 8px;
 }
 
-/* thêm chữ FILTER BY: dù HTML không có */
-.filter-group::before {
-    content: "FILTER BY:";
-    font-size: 11px;
-    letter-spacing: .12em;
-    font-weight: 800;
-    color: var(--muted2);
-    margin-right: 8px;
+.filter-group{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
 }
 
-.filter-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+.filter-group::before{
+    content:"FILTER BY:";
+    font-size:11px;
+    letter-spacing:.12em;
+    font-weight:800;
+    color:var(--muted2);
+    margin-right:8px;
 }
 
 .filter-group select,
-.filter-group input[type="date"] {
-    appearance: none;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 12px;
-    font-size: 12px;
-    color: var(--text);
-    outline: none;
-    min-width: 170px;
+.filter-group input[type="date"]{
+    appearance:none;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:12px;
+    color:var(--text);
+    outline:none;
+    min-width:180px;
 }
 
-/* arrow dropdown */
-.filter-group select {
-    padding-right: 34px;
+.filter-group select{
+    padding-right:34px;
     background-image:
-        linear-gradient(45deg, transparent 50%, #9ca3af 50%),
-        linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+            linear-gradient(45deg,transparent 50%,#9ca3af 50%),
+            linear-gradient(135deg,#9ca3af 50%,transparent 50%);
     background-position:
-        calc(100% - 16px) calc(50% - 2px),
-        calc(100% - 11px) calc(50% - 2px);
-    background-size: 5px 5px, 5px 5px;
-    background-repeat: no-repeat;
+            calc(100% - 16px) calc(50% - 2px),
+            calc(100% - 11px) calc(50% - 2px);
+    background-size:5px 5px,5px 5px;
+    background-repeat:no-repeat;
 }
 
-.btn-reset {
-    margin-left: auto;
-    font-size: 11px;
-    letter-spacing: .12em;
-    font-weight: 900;
-    color: var(--muted2);
-    text-decoration: none;
-    padding: 10px 12px;
-    border-radius: 10px;
-    transition: .15s ease;
+.filter-group button[type="submit"]{
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--text);
+    border-radius:12px;
+    padding:10px 16px;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
 }
 
-.btn-reset:hover {
-    background: #f3f4f6;
-    color: var(--text);
+.filter-group button[type="submit"]:hover{
+    background:#f3f4f6;
 }
 
-/* =========================
-   TABLE CARD (outer card)
-   ========================= */
-.table-container {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 14px;
-    margin-top: 14px;
+.btn-reset{
+    margin-left:auto;
+    font-size:11px;
+    letter-spacing:.12em;
+    font-weight:900;
+    color:var(--muted2);
+    text-decoration:none;
+    padding:10px 12px;
+    border-radius:10px;
+    transition:.15s ease;
 }
 
-/* =========================
-   DataTables: chống float phá layout + style pagination
-   ========================= */
-.dataTables_wrapper::after {
-    content: "";
-    display: block;
-    clear: both;
+.btn-reset:hover{
+    background:#f3f4f6;
+    color:var(--text);
 }
 
-/* ẩn search mặc định (dùng search-box phía trên) */
-.dataTables_filter {
-    display: none !important;
+.table-container{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:14px;
+    margin-top:14px;
 }
 
-/* ẩn "Show N entries" nếu muốn giống ảnh (ảnh không có) */
-.dataTables_length {
-    display: none !important;
+.dataTables_wrapper{
+    width:100%;
 }
 
-.dataTables_info {
-    font-size: 11px;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--muted2);
-    padding-top: 16px !important;
+.dataTables_filter,
+.dataTables_length{
+    display:none !important;
 }
 
-/* paginate giống ảnh */
-.dataTables_paginate {
-    padding-top: 12px !important;
+table.dataTable{
+    width:100% !important;
+    border-collapse:separate !important;
+    border-spacing:0 !important;
 }
 
-.dataTables_paginate .paginate_button {
-    border: 1px solid var(--border) !important;
-    background: #fff !important;
-    color: var(--text) !important;
-    border-radius: 10px !important;
-    padding: 7px 11px !important;
-    margin: 0 4px !important;
-    font-size: 12px !important;
+table.dataTable thead th{
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted2);
+    border-bottom:1px solid var(--border) !important;
+    padding:16px 14px !important;
+    background:#fff !important;
 }
 
-.dataTables_paginate .paginate_button.current {
-    background: #111827 !important;
-    color: #fff !important;
-    border-color: #111827 !important;
+table.dataTable tbody td{
+    padding:22px 14px !important;
+    border-bottom:1px solid var(--border2) !important;
+    font-size:13px;
+    color:var(--text);
+    vertical-align:middle;
 }
 
-.dataTables_paginate .paginate_button:hover {
-    background: #f3f4f6 !important;
+table.dataTable tbody tr:hover{
+    background:#fafafa !important;
 }
 
-/* =========================
-   TABLE (inner)
-   ========================= */
-table.dataTable {
-    width: 100% !important;
-    border-collapse: separate !important;
-    border-spacing: 0 !important;
+.cell-actions{
+    white-space:nowrap;
 }
 
-/* header giống ảnh (uppercase + spacing) */
-table.dataTable thead th {
-    font-size: 11px;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--muted2);
-    border-bottom: 1px solid var(--border) !important;
-    padding: 16px 14px !important;
-    background: #fff !important;
-}
-
-/* row spacing lớn giống ảnh */
-table.dataTable tbody td {
-    padding: 22px 14px !important;
-    border-bottom: 1px solid var(--border2) !important;
-    font-size: 13px;
-    color: var(--text);
-    vertical-align: middle;
-}
-
-table.dataTable tbody tr:hover {
-    background: #fafafa !important;
-}
-
-/* PR-ID nếu dài thì cho xuống dòng gọn */
-table.dataTable td:first-child {
-    white-space: normal;
-    word-break: break-word;
-    font-weight: 700;
-}
-
-/* =========================
-   ACTION BUTTONS (match reference)
-   ========================= */
-.cell-actions {
-    white-space: nowrap;
-}
-
-.cell-actions form {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
+.cell-actions form{
+    display:flex;
+    gap:12px;
+    justify-content:flex-end;
 }
 
 .btn-approve,
-.btn-reject {
-    border-radius: 12px;
-    padding: 10px 16px;
-    font-size: 12px;
-    font-weight: 900;
-    cursor: pointer;
-    border: 1px solid #111827;
-    transition: .15s ease;
+.btn-reject{
+    border-radius:12px;
+    padding:10px 16px;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+    border:1px solid #111827;
+    transition:.15s ease;
 }
 
-.btn-approve {
-    background: #111827;
-    color: #fff;
+.btn-approve{
+    background:#111827;
+    color:#fff;
 }
 
-.btn-approve:hover {
-    background: #0b0f19;
+.btn-approve:hover{
+    background:#0b0f19;
 }
 
-.btn-reject {
-    background: #fff;
-    color: #111827;
+.row-link{
+    display:block;
+    width:100%;
+    height:100%;
+    color:inherit;
+    text-decoration:none;
 }
 
-.btn-reject:hover {
-    background: #f3f4f6;
+.row-link:hover{
+    background:#fafafa;
 }
 
-/* =========================================
-   FIX DỨT ĐIỂM: DataTables float làm table bị đẩy sang phải
-   ========================================= */
+.btn-reject{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
 
-/* 1) Tắt float + ép full width cho các khối DataTables */
-.dataTables_wrapper .dataTables_length,
-.dataTables_wrapper .dataTables_filter,
-.dataTables_wrapper .dataTables_info,
-.dataTables_wrapper .dataTables_paginate {
-    float: none !important;
-    width: 100% !important;
+    border-radius:12px;
+    padding:10px 16px;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+
+    border:1px solid #111827;
+    background:#fff;
+    color:#111827;
+
+    text-decoration:none;
+    transition:.15s ease;
 }
 
-/* 2) Info bên trái, paginate bên phải (giống ảnh mẫu) */
-.dataTables_wrapper .dataTables_info {
-    display: inline-block !important;
-    width: auto !important;
-    margin-top: 10px;
+.btn-reject:hover{
+    background:#f3f4f6;
 }
 
-.dataTables_wrapper .dataTables_paginate {
-    display: inline-block !important;
-    width: auto !important;
-    float: right !important;
-    /* chỉ paginate float phải */
-    margin-top: 10px;
+/* ===== MODAL (NO JS) ===== */
+.modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    z-index:2147483647; /* cực cao tránh bị layout/table đè */
+    align-items:center;
+    justify-content:center;
+    padding:24px; /* để mobile không sát mép */
 }
 
-/* 3) Quan trọng: table phải clear float */
-.dataTables_wrapper table.dataTable {
-    clear: both !important;
-    width: 100% !important;
+/* Khi hash trùng id modal => hiện */
+.modal-overlay:target{
+    display:flex;
 }
 
-/* 4) Tránh wrapper tự giới hạn */
-.dataTables_wrapper {
-    width: 100% !important;
+/* Box modal */
+.modal{
+    width:min(560px, 92vw);
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 18px 60px rgba(0,0,0,.25);
+    overflow:hidden;
 }
 
-/* 5) Đảm bảo 2 khối (form + table) luôn xếp dọc */
-main.dashboard-content {
-    display: block !important;
+/* Header */
+.modal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
 }
 
-#filterForm,
-.table-container {
-    display: block !important;
-    width: 100% !important;
+.modal-title{
+    margin:0;
+    font-size:18px;
+    font-weight:900;
+    color:var(--text);
 }
 
-/* =============================
-   FORCE: table không wrap quanh float của DataTables
-   + luôn xuống dòng
-   ============================= */
-
-/* tắt float mặc định của DataTables */
-.dataTables_wrapper .dataTables_length,
-.dataTables_wrapper .dataTables_filter,
-.dataTables_wrapper .dataTables_info,
-.dataTables_wrapper .dataTables_paginate {
-    float: none !important;
-    width: auto !important;
+/* Nút X */
+.modal-close{
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    text-decoration:none;
+    color:var(--text);
+    border:1px solid var(--border);
+    background:#fff;
+    font-weight:900;
 }
 
-/* table bắt buộc clear */
-.dataTables_wrapper table.dataTable {
-    clear: both !important;
-    width: 100% !important;
+.modal-close:hover{
+    background:#f3f4f6;
 }
 
-/* info trái, paginate phải (giống ảnh) */
-.dataTables_wrapper .dataTables_info {
-    display: inline-block !important;
-    margin-top: 12px !important;
+/* Body */
+.modal-body{
+    padding:16px;
 }
 
-.dataTables_wrapper .dataTables_paginate {
-    float: right !important;
-    display: inline-block !important;
-    margin-top: 8px !important;
+.modal textarea{
+    width:100%;
+    min-height:120px;
+    resize:vertical;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px;
+    outline:none;
+    font-size:13px;
+    color:var(--text);
+}
+
+.modal textarea:focus{
+    border-color:#9ca3af;
+}
+
+/* Actions */
+.modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    padding:14px 16px;
+    border-top:1px solid var(--border);
+}
+
+.btn-submit{
+    border-radius:12px;
+    padding:10px 16px;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+    border:1px solid #111827;
+    background:#111827;
+    color:#fff;
+}
+
+.btn-submit:hover{
+    background:#0b0f19;
+}
+
+.btn-cancel{
+    border-radius:12px;
+    padding:10px 16px;
+    font-size:12px;
+    font-weight:900;
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--text);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.btn-cancel:hover{
+    background:#f3f4f6;
 }

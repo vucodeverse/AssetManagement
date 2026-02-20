@@ -4,6 +4,7 @@ import edu.fpt.groupfive.dao.AssetTypeDAO;
 import edu.fpt.groupfive.dto.response.AssetTypeResponse;
 import edu.fpt.groupfive.model.AssetType;
 import edu.fpt.groupfive.service.AssetTypeService;
+import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,5 +31,10 @@ public class AssetTypeServiceImpl implements AssetTypeService {
 
 
         return Optional.empty();
+    }
+
+    @Override
+    public String findNameById(Integer assetTypeId) {
+        return assetTypeDAO.findById(assetTypeId);
     }
 }

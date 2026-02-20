@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface UserDAO {
     Optional<Users> findUserByUsername(String username);
+    String findFullNameById(Integer purchaseId);
     void insert (Users users);
     void update (Users users);
     void delete (Integer id);
