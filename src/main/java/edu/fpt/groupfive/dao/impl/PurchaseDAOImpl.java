@@ -335,6 +335,9 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     public List<Purchase> purchaseGropedQuotation(SearchForQuotation s) {
         StringBuilder sql = new StringBuilder("select p.* from purchase_request p where 1=1 ");
         List<Object> params = new ArrayList<>();
+
+        sql.append(" AND p.status = ? ");
+        params.add(Request.APPROVED.name());
         if(s.getPurchaseId() != null){
             sql.append(" and p.purchase_request_id = ? ");
             params.add(s.getPurchaseId());
@@ -349,14 +352,14 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             sql.append(" and exists (select 1 from quotation q where p.purchase_request_id = q.purchase_request_id");
 
             if(s.getMinAmount() != null){
-                sql.append("q.total_amount >= ?");
+                sql.append(" and q.total_amount >= ? ");
                params.add(s.getMinAmount());
             }
             if(s.getMaxAmount() != null){
-                sql.append("q.total_amount <= ?");
+                sql.append("and q.total_amount <= ?");
                params.add(s.getMaxAmount());
             }
-            sql.append(")");
+            sql.append(" ) ");
         }
 
         List<Purchase> purchases = new ArrayList<>();
@@ -402,7 +405,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         }catch (SQLException e){
             throw new RuntimeException(e);
         }
-        return List.of();
+        return purchases;
     }
 
     @Override
@@ -415,7 +418,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         String sql ="select " +
                 "q.purchase_request_id, count(*) as number_of_quotation" +
                 " , min(q.total_amount) as lowest_est" +
-                " from quotation q where q.purchase_request_id = ? group by q.purchase_request_id".formatted(placeholders);
+                " from quotation q where q.purchase_request_id in (%s) group by q.purchase_request_id".formatted(placeholders);
 
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -427,10 +430,10 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 int prId = rs.getInt("purchase_request_id");
-                int count = rs.getInt("total_quotes");
-                BigDecimal min = rs.getBigDecimal("lowest_quote");
+                int count = rs.getInt("number_of_quotation");
+                BigDecimal minEst = rs.getBigDecimal("lowest_est");
 
-                map.put(prId, new Object[]{count, min});
+                map.put(prId, new Object[]{count, minEst});
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

@@ -133,11 +133,17 @@ public class QuotationController {
 
     // search and filter
     @GetMapping("/quotation/search-filter")
-    public String searchAndfilter(@ModelAttribute("searchAndFilter") PurchaseSearchAndFilter purchaseSearchAndFilter
+    public String searchAndfilter(@ModelAttribute("searchForQuotation") SearchForQuotation searchForQuotation
             , Model model) {
         model.addAttribute("activeSub", "pr");
         model.addAttribute("activeMenu", "approval");
-
+        model.addAttribute("q", quotationService.searchAndFilterForQuotation(searchForQuotation));
         return "purchase/purchase-list";
+    }
+
+    // khởi tạo
+    @ModelAttribute("searchForQuotation")
+    public SearchForQuotation initSearchForQuotation() {
+        return new SearchForQuotation();
     }
 }

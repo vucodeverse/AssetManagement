@@ -7,7 +7,7 @@ import edu.fpt.groupfive.dto.request.QuotationCreateDetailRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
 import edu.fpt.groupfive.dto.request.SearchForQuotation;
 import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
-import edu.fpt.groupfive.dto.response.QuotationForPurchase;
+import edu.fpt.groupfive.dto.response.QuotationForPurchaseResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.mapper.QuotationDetailMapper;
 import edu.fpt.groupfive.mapper.QuotationMapper;
@@ -195,27 +195,44 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     @Override
-    public List<SearchForQuotation> searchAndFilterForQuotation(SearchForQuotation searchForQuotation) {
+    public List<QuotationForPurchaseResponse> searchAndFilterForQuotation(SearchForQuotation s) {
 
-        if(searchForQuotation.getFrom() != null && searchForQuotation.getTo() != null && searchForQuotation.getFrom().isAfter(searchForQuotation.getTo())) {
+        if (s.getFrom() != null && s.getTo() != null && s.getFrom().isAfter(s.getTo())) {
             throw new InvalidDataException("From phải trước To");
         }
 
-        Purchase purchases = purchaseDAO.findByIdAndApproved(searchForQuotation.getPurchaseId(),
-                Request.APPROVED.name()).orElseThrow(() -> new InvalidDataException("ko t"));
-        List<SearchForQuotation> searchForQuotations = new ArrayList<>();
-        return List.of();
+        List<Purchase> purchaseList = purchaseDAO.purchaseGropedQuotation(s);
+
+        List<Integer> ids = purchaseList.stream().map(Purchase::getId).toList();
+        Map<Integer, Object[]> summaryMap = purchaseDAO.getCountAndTotalAmout(ids);
+
+        List<QuotationForPurchaseResponse> out = new ArrayList<>();
+        for (Purchase p : purchaseList) {
+            Object[] sum = summaryMap.get(p.getId());
+
+            int totalQuo = (sum == null) ? 0 : (Integer) sum[0];
+            BigDecimal lowestPrice = (sum == null) ? null : (BigDecimal) sum[1];
+
+            out.add(QuotationForPurchaseResponse.builder()
+                    .purchaseId(p.getId())
+                    .needByDate(p.getNeededByDate())
+                    .priority(p.getPriority().name())
+                    .quotationOfNumber(totalQuo)
+                    .estPrice(lowestPrice)
+                    .build());
+        }
+        return out;
     }
 
     @Override
-    public List<QuotationForPurchase> getQuotationAndPurchase() {
+    public List<QuotationForPurchaseResponse> getQuotationAndPurchase() {
         List<Purchase> purchases = purchaseDAO.findAll();
-        List<QuotationForPurchase> quotationForPurchases = new ArrayList<>();
+        List<QuotationForPurchaseResponse> quotationForPurchaseResponses = new ArrayList<>();
         for(Purchase p : purchases){
             int countQuotation = quotationDAO.countQuotationFromPurchaseId(p.getId());
             BigDecimal estPrice = quotationDAO.totalAmoutForPurchaseId(p.getId());
 
-            quotationForPurchases.add( QuotationForPurchase.builder()
+            quotationForPurchaseResponses.add( QuotationForPurchaseResponse.builder()
                     .priority(p.getPriority().name())
                     .quotationOfNumber(countQuotation)
                     .estPrice(estPrice)
@@ -223,7 +240,7 @@ public class QuotationServiceImpl implements QuotationService {
                     .build());
         }
 
-        return quotationForPurchases;
+        return quotationForPurchaseResponses;
     }
 
 }

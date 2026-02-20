@@ -16,6 +16,8 @@ public class SearchForQuotation {
     private Priority priority;
     private BigDecimal minAmount;
     private BigDecimal maxAmount;
+
+    private String amountRange;
     private String keyword;
     private Integer purchaseId;
 
