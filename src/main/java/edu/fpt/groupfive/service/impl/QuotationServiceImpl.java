@@ -5,7 +5,9 @@ import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dto.request.QuotationCreateDetailRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
+import edu.fpt.groupfive.dto.request.SearchForQuotation;
 import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
+import edu.fpt.groupfive.dto.response.QuotationForPurchase;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.mapper.QuotationDetailMapper;
 import edu.fpt.groupfive.mapper.QuotationMapper;
@@ -190,6 +192,38 @@ public class QuotationServiceImpl implements QuotationService {
                 .createdAt(q.getCreatedAt())
                 .quotationDetails(detailResponses)
                 .build();
+    }
+
+    @Override
+    public List<SearchForQuotation> searchAndFilterForQuotation(SearchForQuotation searchForQuotation) {
+
+        if(searchForQuotation.getFrom() != null && searchForQuotation.getTo() != null && searchForQuotation.getFrom().isAfter(searchForQuotation.getTo())) {
+            throw new InvalidDataException("From phải trước To");
+        }
+
+        Purchase purchases = purchaseDAO.findByIdAndApproved(searchForQuotation.getPurchaseId(),
+                Request.APPROVED.name()).orElseThrow(() -> new InvalidDataException("ko t"));
+        List<SearchForQuotation> searchForQuotations = new ArrayList<>();
+        return List.of();
+    }
+
+    @Override
+    public List<QuotationForPurchase> getQuotationAndPurchase() {
+        List<Purchase> purchases = purchaseDAO.findAll();
+        List<QuotationForPurchase> quotationForPurchases = new ArrayList<>();
+        for(Purchase p : purchases){
+            int countQuotation = quotationDAO.countQuotationFromPurchaseId(p.getId());
+            BigDecimal estPrice = quotationDAO.totalAmoutForPurchaseId(p.getId());
+
+            quotationForPurchases.add( QuotationForPurchase.builder()
+                    .priority(p.getPriority().name())
+                    .quotationOfNumber(countQuotation)
+                    .estPrice(estPrice)
+                    .needByDate(p.getNeededByDate())
+                    .build());
+        }
+
+        return quotationForPurchases;
     }
 
 }

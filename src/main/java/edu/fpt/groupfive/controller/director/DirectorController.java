@@ -44,7 +44,6 @@ public class DirectorController {
     public String searchAndfilter(@ModelAttribute("searchAndFilter") PurchaseSearchAndFilter purchaseSearchAndFilter
             , Model model) {
         model.addAttribute("activeSub", "pr");
-        model.addAttribute("activeSub", "pr");
         model.addAttribute("activeMenu", "approval");
         model.addAttribute("purchases", purchaseService.searchAndFilter(purchaseSearchAndFilter));
         addStaPri(model);

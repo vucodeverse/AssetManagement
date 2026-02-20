@@ -9,6 +9,7 @@ import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -114,5 +115,48 @@ public class QuotationDAOImpl implements QuotationDAO {
     @Override
     public List<Quotation> getAll() {
         return List.of();
+    }
+
+    @Override
+    public Integer countQuotationFromPurchaseId(Integer purchaseId) {
+
+        String sql = "select p.purchase_request_id, count(distinct q.quotation_id) from purchase_request p left join quotation q on p\n" +
+                "    .purchase_request_id = q\n" +
+                "    .purchase_request_id where p\n" +
+                "    .purchase_request_id = ? group by p.purchase_request_id";
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+            preparedStatement.setInt(1, purchaseId);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()){
+                return rs.getInt(2);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
+
+    @Override
+    public BigDecimal totalAmoutForPurchaseId(Integer purchaseId) {
+
+        String sql = "select min(q.total_amount) from quotation q where q.purchase_request_id = ?";
+
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+            preparedStatement.setInt(1, purchaseId);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()){
+
+                return rs.getBigDecimal(1);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return  BigDecimal.ZERO;
     }
 }

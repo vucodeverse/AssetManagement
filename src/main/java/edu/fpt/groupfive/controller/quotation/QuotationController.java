@@ -1,9 +1,7 @@
 package edu.fpt.groupfive.controller.quotation;
 
-import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
-import edu.fpt.groupfive.dto.request.PurchaseDetailCreateRequest;
-import edu.fpt.groupfive.dto.request.QuotationCreateDetailRequest;
-import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
+import edu.fpt.groupfive.common.Priority;
+import edu.fpt.groupfive.dto.request.*;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.service.QuotationService;
 import edu.fpt.groupfive.service.SupplierService;
@@ -123,4 +121,23 @@ public class QuotationController {
         return "quotation/quotation-detail";
     }
 
+    // search and filter cho quotation
+    @GetMapping("/search")
+    public String searchQuotation(Model model) {
+        model.addAttribute("activeSub", "qt");
+        model.addAttribute("activeMenu", "approval");
+        model.addAttribute("priorities", Priority.values());
+        model.addAttribute("quotations", quotationService.getQuotationAndPurchase());
+        return "quotation/quotation-list";
+    }
+
+    // search and filter
+    @GetMapping("/quotation/search-filter")
+    public String searchAndfilter(@ModelAttribute("searchAndFilter") PurchaseSearchAndFilter purchaseSearchAndFilter
+            , Model model) {
+        model.addAttribute("activeSub", "pr");
+        model.addAttribute("activeMenu", "approval");
+
+        return "purchase/purchase-list";
+    }
 }

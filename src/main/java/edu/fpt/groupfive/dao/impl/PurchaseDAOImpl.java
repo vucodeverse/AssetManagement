@@ -1,18 +1,21 @@
 package edu.fpt.groupfive.dao.impl;
 
+import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
+import edu.fpt.groupfive.dto.request.SearchForQuotation;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.sql.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -37,7 +40,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             preparedStatement.setInt(3, purchase.getCreatedByUser());
             
                 preparedStatement.setDate(4, Date.valueOf(purchase.getNeededByDate()));
-            preparedStatement.setString(5, purchase.getPriority());
+            preparedStatement.setString(5, purchase.getPriority().name());
             
 
                 preparedStatement.setObject(6, purchase.getApprovedByDirector());
@@ -90,7 +93,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 );
 
                 purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(rs.getString("priority"));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
                 purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
 
                 Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -142,7 +145,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 );
 
                 purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(rs.getString("priority"));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
                 purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
 
                 Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -194,7 +197,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                         neededByDate != null ? neededByDate.toLocalDate() : null
                 );
                 purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(rs.getString("priority"));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
                 purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
                 purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
                 Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -217,16 +220,6 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
     @Override
     public List<Purchase> getPurchaseByFilter(PurchaseSearchAndFilter p) {
-        String a ="\n" +
-                "select p.* from purchase_request p\n" +
-                "left join users u on p.creator_id = u.user_id\n" +
-                "where p.status = ? and p.priority = ? \n" +
-                "and p.needed_by_date >= ? and needed_by_date < ?\n"+
-                "and(\n" +
-                "    p.purchase_request_id = ? or u.first_name like ? \n" +
-                "    or u.last_name like ? \n" +
-                "    )";
-
 
         StringBuilder sql = new StringBuilder("select p.* from purchase_request p left join users u on p.creator_id =" +
                 " " +
@@ -295,7 +288,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                         neededByDate != null ? neededByDate.toLocalDate() : null
                 );
                 purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(rs.getString("priority"));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
                 purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
                 purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
                 Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -336,6 +329,113 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         }catch (SQLException e){
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<Purchase> purchaseGropedQuotation(SearchForQuotation s) {
+        StringBuilder sql = new StringBuilder("select p.* from purchase_request p where 1=1 ");
+        List<Object> params = new ArrayList<>();
+        if(s.getPurchaseId() != null){
+            sql.append(" and p.purchase_request_id = ? ");
+            params.add(s.getPurchaseId());
+        }
+
+        if(s.getPriority() != null){
+            sql.append(" and p.priority = ? ");
+            params.add(s.getPriority().name());
+        }
+
+        if(s.getMinAmount() != null ||  s.getMaxAmount() != null){
+            sql.append(" and exists (select 1 from quotation q where p.purchase_request_id = q.purchase_request_id");
+
+            if(s.getMinAmount() != null){
+                sql.append("q.total_amount >= ?");
+               params.add(s.getMinAmount());
+            }
+            if(s.getMaxAmount() != null){
+                sql.append("q.total_amount <= ?");
+               params.add(s.getMaxAmount());
+            }
+            sql.append(")");
+        }
+
+        List<Purchase> purchases = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())){
+
+            int i = 1;
+
+            if(params.size() > 0){
+                for(Object str : params){
+                    preparedStatement.setObject(i++, str);
+                }
+            }
+
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()){
+                Purchase purchase = new Purchase();
+
+                purchase.setId(rs.getInt("purchase_request_id"));
+                purchase.setStatus(Request.valueOf(rs.getString("status")));
+                purchase.setNote(rs.getString("note"));
+                purchase.setRejectReason(rs.getString("reject_reason"));
+                purchase.setCreatedByUser(rs.getInt("creator_id"));
+                Date neededByDate = rs.getDate("needed_by_date");
+                purchase.setNeededByDate(
+                        neededByDate != null ? neededByDate.toLocalDate() : null
+                );
+                purchase.setReason(rs.getString("request_reason"));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
+                purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
+                purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
+                Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
+                if (approvedAt != null) {
+                    purchase.setApprovedAt(approvedAt.toLocalDateTime());
+                }
+                purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
+
+                Date updatedAt = rs.getDate("updated_at");
+                purchase.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDate() : null);
+                purchases.add(purchase);
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return List.of();
+    }
+
+    @Override
+    public Map<Integer, Object[]> getCountAndTotalAmout(List<Integer> purchaseIds) {
+        Map<Integer, Object[]> map = new HashMap<>();
+
+        if(purchaseIds.isEmpty()){ return map;}
+        String placeholders = purchaseIds.stream().map(i -> "?").collect(Collectors.joining(","));
+
+        String sql ="select " +
+                "q.purchase_request_id, count(*) as number_of_quotation" +
+                " , min(q.total_amount) as lowest_est" +
+                " from quotation q where q.purchase_request_id = ? group by q.purchase_request_id".formatted(placeholders);
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < purchaseIds.size(); i++) {
+                ps.setInt(i + 1, purchaseIds.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int prId = rs.getInt("purchase_request_id");
+                int count = rs.getInt("total_quotes");
+                BigDecimal min = rs.getBigDecimal("lowest_quote");
+
+                map.put(prId, new Object[]{count, min});
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return map;
     }
 
 

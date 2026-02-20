@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.model;
 
+import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.Request;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +22,7 @@ public class Purchase extends AbstractEntity<Integer>{
     private String creatorName;
     private LocalDate neededByDate;
     private String reason;
-    private String priority;
+    private Priority priority;
     private Integer approvedByDirector;
     private LocalDateTime approvedAt;
     private Integer purchaseStaffId;
