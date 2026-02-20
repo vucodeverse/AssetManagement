@@ -9,6 +9,7 @@ import edu.fpt.groupfive.model.Category;
 import edu.fpt.groupfive.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,44 +21,38 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryMapper categoryMapper;
 
     @Override
-    public void createCategory(CategoryCreateRequest request) {
-
-    }
-
-    @Override
-    public void create(CategoryCreateRequest request) {
-        if (categoryDAO.existsByName(request.getCategoryName())) {
-            throw new IllegalArgumentException("Category already exists");
-        }
-
-        Category c = categoryMapper.toCategory(request);
-        c.setStatus("ACTIVE");
-
-        categoryDAO.insert(c);
-    }
-
-
-
-    @Override
-    public void update(CategoryUpdateRequest request) {
-        Category c = new Category();
-        c.setCategoryId(request.getCategoryId());
-        c.setCategoryName(request.getCategoryName());
-        c.setDescription(request.getDescription());
-        c.setStatus(request.getStatus());
-
-        categoryDAO.update(c);
-    }
-
-    @Override
     public List<CategoryResponse> getAll() {
-        return categoryDAO.findAll()
-                .stream()
-                .map(categoryMapper::toResponse)
-                .toList();
+        List<Category> categories = categoryDAO.findAll();
+        return categoryMapper.toCategoryResponseList(categories);
+    }
+
+
+    @Override
+    public CategoryResponse getById(Integer id) {
+        Category category = categoryDAO.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục ID: " + id));
+
+        return categoryMapper.toCategoryResponse(category);
+    }
+
+
+    @Override
+    @Transactional
+    public void create(CategoryCreateRequest request) {
+        Category category = categoryMapper.toCategory(request);
+        category.setStatus("ACTIVE");
+        categoryDAO.insert(category);
     }
 
     @Override
+    @Transactional
+    public void update(CategoryUpdateRequest request) {
+        Category category = categoryDAO.findById(request.getCategoryId()).orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục ID: " + request.getCategoryId()));
+        categoryMapper.updateFromRequest(request, category);
+        categoryDAO.update(category);
+    }
+
+    @Override
+    @Transactional
     public void delete(Integer id) {
         categoryDAO.delete(id);
     }
