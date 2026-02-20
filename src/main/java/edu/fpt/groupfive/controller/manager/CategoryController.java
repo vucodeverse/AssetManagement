@@ -4,6 +4,7 @@ import edu.fpt.groupfive.dto.request.CategoryCreateRequest;
 import edu.fpt.groupfive.dto.request.CategoryUpdateRequest;
 import edu.fpt.groupfive.dto.response.CategoryResponse;
 import edu.fpt.groupfive.service.CategoryService;
+import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,19 +25,18 @@ public class CategoryController {
     @GetMapping
     public String viewPage(
 
-            @RequestParam( value = "id", required = false) Integer id,
-            @RequestParam(value = "mode", required = false, defaultValue = "create") String mode,
-            Model model
+            @RequestParam( value = "id", required = false) Integer id, Model model
     ) {
   //load view form ben trai
         List<CategoryResponse> categories = categoryService.getAll();
         model.addAttribute("categories", categories);
+        String mode = "create";
 
 
 
         //form create ben trai
         if(id !=null){
-            mode="update";
+
             CategoryResponse response = categoryService.getById(id);
 
             CategoryUpdateRequest dto = new CategoryUpdateRequest();
@@ -46,10 +46,9 @@ public class CategoryController {
             dto.setStatus(response.getStatus());
 
             model.addAttribute("category", dto);
-
+            mode="update";
         }else{
             model.addAttribute("category", new CategoryCreateRequest());
-            mode="create";
         }
         model.addAttribute("mode", mode);
         return "manager/category-page";
@@ -58,15 +57,36 @@ public class CategoryController {
 
     //create
     @PostMapping(params = "add")
-    public  String create(@ModelAttribute("category") CategoryCreateRequest request){
-        categoryService.create(request);
+    public  String create(@ModelAttribute("category") CategoryCreateRequest request, Model model){
+        try {
+            categoryService.create(request);
+        }catch (InvalidDataException e){
+
+            model.addAttribute("categories", categoryService.getAll());
+            model.addAttribute("mode", "create");
+            model.addAttribute("errorMessage", e.getMessage());
+
+            return "manager/category-page";
+        }
+
         return "redirect:/manager/categories";
     }
 
     //update
     @PostMapping(params = "save")
-    public String update(@ModelAttribute("category") CategoryUpdateRequest request){
-        categoryService.update(request);
+    public String update(@ModelAttribute("category") CategoryUpdateRequest request, Model model){
+
+        try {
+            categoryService.update(request);
+        } catch (RuntimeException e) {
+
+            model.addAttribute("categories", categoryService.getAll());
+            model.addAttribute("mode", "update");
+            model.addAttribute("errorMessage", e.getMessage());
+
+            return "manager/category-page";
+        }
+
         return "redirect:/manager/categories";
     }
 

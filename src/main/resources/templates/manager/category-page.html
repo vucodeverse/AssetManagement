@@ -4,13 +4,37 @@
     <meta charset="UTF-8">
     <title>Quản lý danh mục</title>
     <style>
-        .container { display: flex; gap: 40px; }
-        .left { width: 60%; }
-        .right { width: 40%; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border-bottom: 1px solid #ccc; padding: 8px; }
-        .actions a { margin-right: 8px; }
-        .btn { padding: 6px 12px; cursor: pointer; }
+        .container {
+            display: flex;
+            gap: 40px;
+        }
+
+        .left {
+            width: 60%;
+        }
+
+        .right {
+            width: 40%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border-bottom: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        .actions a {
+            margin-right: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -49,37 +73,52 @@
     <!--    bên phải -->
     <div class="right">
 
+        <h3 th:text="${mode == 'update'} ? 'Cập nhật danh mục' : 'Tạo danh mục'"></h3>
+
+        <div style="color:red; margin-bottom:10px;"
+             th:if="${errorMessage}"
+             th:text="${errorMessage}">
+        </div>
+
+
         <form th:action="@{/manager/categories}"
               th:object="${category}"
               method="post">
 
-            <input type="hidden" th:field="*{categoryId}"/>
-
+            <div th:if="${mode=='update'}">
+                <label>Mã danh mục</label><br/>
+                <input type="text" th:field="*{categoryId}" readonly/>
+                <input type="hidden" th:field="*{categoryId}">
+            </div>
             <label>Tên danh mục</label><br/>
             <input type="text" th:field="*{categoryName}" placeholder="Nhập tên danh mục" required><br/>
 
             <label>Mô tả</label><br/>
             <textarea th:field="*{description}" placeholder="Nhập mô tả"></textarea> <br/>
 
-            <label>Trạng thái</label><br/>
-            <select th:field="*{status}">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
-            </select><br/>
-
+            <div th:if="${mode=='update'}">
+                <label>Trạng thái</label><br/>
+                <select th:field="*{status}">
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                </select><br/>
+            </div>
             <button type="submit" name="add"
-                    th:if="${mode == 'create'}">Thêm mới</button>
+                    th:if="${mode == 'create'}">Thêm mới
+            </button>
 
             <button type="submit" name="save"
-                    th:if="${mode == 'update'}">Cập nhật</button>
+                    th:if="${mode == 'update'}">Cập nhật
+            </button>
 
-            <button type="reset" class="btn">Hủy</button>
-
+            <button type="button"
+                    onclick="window.location.href='/manager/categories'">
+                Huỷ
+            </button>
 
         </form>
 
     </div>
-
 </div>
 
 </body>
