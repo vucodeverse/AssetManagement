@@ -17,4 +17,7 @@ public interface CategoryDAO {
     List<Category> findAll();
 
     boolean existsByName(String name);
+
+    List<Category> findByName(String keyword);
+    List<Category> searchAndSort(String keyword, String direction);
 }

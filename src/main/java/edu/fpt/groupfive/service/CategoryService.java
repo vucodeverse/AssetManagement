@@ -18,4 +18,7 @@ public interface CategoryService {
 
     void delete(Integer id);
 
+    List<CategoryResponse> findByName(String keyword);
+
+    List<CategoryResponse> searchAndSort(String keyword, String direction);
 }

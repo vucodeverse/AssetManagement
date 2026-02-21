@@ -22,9 +22,9 @@ public class CategoryDAOImpl implements CategoryDAO {
     @Override
     public void insert(Category category) {
         String sql = """
-            INSERT INTO category (category_name, description, status)
-            VALUES (?, ?, ?)
-        """;
+                    INSERT INTO category (category_name, description, status)
+                    VALUES (?, ?, ?)
+                """;
 
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -42,10 +42,10 @@ public class CategoryDAOImpl implements CategoryDAO {
     @Override
     public void update(Category category) {
         String sql = """
-            UPDATE category
-            SET category_name = ?, description = ?, status = ?
-            WHERE category_id = ?
-        """;
+                    UPDATE category
+                    SET category_name = ?, description = ?, status = ?
+                    WHERE category_id = ?
+                """;
 
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -64,9 +64,9 @@ public class CategoryDAOImpl implements CategoryDAO {
     @Override
     public void delete(Integer id) {
         String sql = """
-            UPDATE category SET status = 'INACTIVE'
-            WHERE category_id = ?
-        """;
+                    UPDATE category SET status = 'INACTIVE'
+                    WHERE category_id = ?
+                """;
 
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -138,4 +138,66 @@ public class CategoryDAOImpl implements CategoryDAO {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public List<Category> findByName(String keyword) {
+        String sql = "select * from category where status='ACTIVE' and category_name like ?";
+        List<Category> categories = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setString(1, "%" + keyword + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Category c = new Category();
+                c.setCategoryId(rs.getInt("category_id"));
+                c.setCategoryName(rs.getString("category_name"));
+                c.setDescription(rs.getString("description"));
+                c.setStatus(rs.getString("status"));
+                categories.add(c);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return categories;
+    }
+
+    @Override
+    public List<Category> searchAndSort(String keyword, String direction) {
+        StringBuilder sql = new StringBuilder("select * from category where status='ACTIVE'");
+
+        //neu co keyword thi search
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" and category_name like ?");
+        }
+
+        //neu co sort
+        if (direction != null) {
+            sql.append(" order by category_name ").append(direction);
+        }
+
+        List<Category> categories = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(1, "%" + keyword.trim() + "%");
+            }
+
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                Category c = new Category();
+                c.setCategoryId(rs.getInt("category_id"));
+                c.setCategoryName(rs.getString("category_name"));
+                c.setDescription(rs.getString("description"));
+                c.setStatus(rs.getString("status"));
+                categories.add(c);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return categories;
+    }
+
+
 }

@@ -43,11 +43,24 @@
 <div class="container">
     <!--    bên trái -->
     <div class="left">
+        <form method="get" th:action="@{/manager/categories}">
+            <input type="text" name="keyword" placeholder="Tìm theo tên danh mục"
+                   th:value="${keyword}">
+
+            <!-- giữ lại sort nếu đang sort -->
+            <input type="hidden" name="sort" th:value="${sort}">
+
+            <button type="submit">Tìm</button>
+        </form>
         <table>
             <thead>
             <tr>
                 <th>Mã danh mục</th>
-                <th>Tên danh mục</th>
+                <th>Tên danh mục
+                    <a th:href="@{/manager/categories(keyword=${keyword}, sort='asc')}">▲</a>
+                    <a th:href="@{/manager/categories(keyword=${keyword}, sort='desc')}">▼</a>
+                </th>
+
                 <th>Hành động</th>
             </tr>
             </thead>
@@ -75,12 +88,6 @@
 
         <h3 th:text="${mode == 'update'} ? 'Cập nhật danh mục' : 'Tạo danh mục'"></h3>
 
-        <div style="color:red; margin-bottom:10px;"
-             th:if="${errorMessage}"
-             th:text="${errorMessage}">
-        </div>
-
-
         <form th:action="@{/manager/categories}"
               th:object="${category}"
               method="post">
@@ -90,8 +97,12 @@
                 <input type="text" th:field="*{categoryId}" readonly/>
                 <input type="hidden" th:field="*{categoryId}">
             </div>
+
             <label>Tên danh mục</label><br/>
             <input type="text" th:field="*{categoryName}" placeholder="Nhập tên danh mục" required><br/>
+            <div style="color:red"
+                 th:errors="*{categoryName}">
+            </div>
 
             <label>Mô tả</label><br/>
             <textarea th:field="*{description}" placeholder="Nhập mô tả"></textarea> <br/>

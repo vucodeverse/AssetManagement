@@ -5,9 +5,11 @@ import edu.fpt.groupfive.dto.request.CategoryUpdateRequest;
 import edu.fpt.groupfive.dto.response.CategoryResponse;
 import edu.fpt.groupfive.service.CategoryService;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,18 +26,27 @@ public class CategoryController {
 
     @GetMapping
     public String viewPage(
-
-            @RequestParam( value = "id", required = false) Integer id, Model model
+            @RequestParam(value = "id", required = false) Integer id,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "sort", required = false) String sort,
+            Model model
     ) {
-  //load view form ben trai
-        List<CategoryResponse> categories = categoryService.getAll();
+        String direction = null;
+        if ("asc".equalsIgnoreCase(sort)) {
+            direction = "ASC";
+        } else if ("desc".equalsIgnoreCase(sort)) {
+            direction = "DESC";
+        }
+        //load view form ben trai
+        List<CategoryResponse> categories=categoryService.searchAndSort(keyword,direction);
+
         model.addAttribute("categories", categories);
+        model.addAttribute("keyword", keyword);
         String mode = "create";
 
 
-
         //form create ben trai
-        if(id !=null){
+        if (id != null) {
 
             CategoryResponse response = categoryService.getById(id);
 
@@ -46,8 +57,8 @@ public class CategoryController {
             dto.setStatus(response.getStatus());
 
             model.addAttribute("category", dto);
-            mode="update";
-        }else{
+            mode = "update";
+        } else {
             model.addAttribute("category", new CategoryCreateRequest());
         }
         model.addAttribute("mode", mode);
@@ -57,45 +68,55 @@ public class CategoryController {
 
     //create
     @PostMapping(params = "add")
-    public  String create(@ModelAttribute("category") CategoryCreateRequest request, Model model){
-        try {
-            categoryService.create(request);
-        }catch (InvalidDataException e){
+    public String create(@Valid @ModelAttribute("category") CategoryCreateRequest request, BindingResult result, Model model) {
 
+        if (!result.hasErrors()) {
+            try {
+                categoryService.create(request);
+            } catch (InvalidDataException e) {
+
+                // thêm lỗi vào BindingResult
+                result.rejectValue("categoryName", null, e.getMessage());
+            }
+        }
+
+        if (result.hasErrors()) {
             model.addAttribute("categories", categoryService.getAll());
             model.addAttribute("mode", "create");
-            model.addAttribute("errorMessage", e.getMessage());
-
             return "manager/category-page";
         }
+
 
         return "redirect:/manager/categories";
     }
 
     //update
     @PostMapping(params = "save")
-    public String update(@ModelAttribute("category") CategoryUpdateRequest request, Model model){
+    public String update(@Valid @ModelAttribute("category") CategoryUpdateRequest request, BindingResult result, Model model) {
 
-        try {
-            categoryService.update(request);
-        } catch (RuntimeException e) {
-
-            model.addAttribute("categories", categoryService.getAll());
-            model.addAttribute("mode", "update");
-            model.addAttribute("errorMessage", e.getMessage());
-
-            return "manager/category-page";
+        if (!result.hasErrors()) {
+            try {
+                categoryService.update(request);
+            } catch (InvalidDataException e) {
+                result.rejectValue("categoryName", null, e.getMessage());
+            }
         }
 
+        if (result.hasErrors()) {
+            model.addAttribute("categories", categoryService.getAll());
+            model.addAttribute("mode", "update");
+            return "manager/category-page";
+        }
         return "redirect:/manager/categories";
     }
 
     //delete
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable("id") Integer id){
+    public String delete(@PathVariable("id") Integer id) {
         categoryService.delete(id);
         return "redirect:/manager/categories";
     }
+
 
 }
 

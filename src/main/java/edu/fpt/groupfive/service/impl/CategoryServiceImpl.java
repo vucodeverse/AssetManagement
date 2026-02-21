@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -39,9 +40,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void create(CategoryCreateRequest request) {
-      //check trùng name
-        String name=request.getCategoryName().trim();
-        if(categoryDAO.existsByName(name)){
+        //check trùng name
+        String name = request.getCategoryName().trim();
+        if (categoryDAO.existsByName(name)) {
             throw new InvalidDataException("Tên danh mục đã tồn tại.");
 
         }
@@ -56,12 +57,12 @@ public class CategoryServiceImpl implements CategoryService {
     public void update(CategoryUpdateRequest request) {
         Category category = categoryDAO.findById(request.getCategoryId()).orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục ID: " + request.getCategoryId()));
 
-        String newName=request.getCategoryName().trim();
+        String newName = request.getCategoryName().trim();
 
-        String oldName=category.getCategoryName();
+        String oldName = category.getCategoryName();
 
-        if(!oldName.equalsIgnoreCase(newName)){
-            if(categoryDAO.existsByName(newName)){
+        if (!oldName.equalsIgnoreCase(newName)) {
+            if (categoryDAO.existsByName(newName)) {
                 throw new InvalidDataException("Tên danh mục đã tồn tại");
             }
         }
@@ -77,7 +78,23 @@ public class CategoryServiceImpl implements CategoryService {
         categoryDAO.delete(id);
     }
 
+    @Override
+    public List<CategoryResponse> findByName(String keyword) {
+        List<Category> categories = new ArrayList<>();
+        if (keyword == null || keyword.isBlank()) {
+            categories = categoryDAO.findAll();
+            return categoryMapper.toCategoryResponseList(categories);
+        }
+        categories = categoryDAO.findByName(keyword);
+        return categoryMapper.toCategoryResponseList(categories);
+    }
 
+    @Override
+    public List<CategoryResponse> searchAndSort(String keyword, String direction) {
+        List<Category> categories = categoryDAO.searchAndSort(keyword, direction);
+
+        return categoryMapper.toCategoryResponseList(categories);
+    }
 
 
 }
