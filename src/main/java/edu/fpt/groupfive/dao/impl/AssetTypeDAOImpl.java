@@ -67,7 +67,7 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
+            if (rs.next()) {
                 AssetType assetType = new AssetType();
 
                 assetType.setTypeId(rs.getInt("type_id"));
@@ -162,13 +162,9 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
     @Override
     public void delete(Integer typeId) {
 
-        //kiem tra xem co asset nao trong asse type ko
-        if (existAssetUsingType(typeId)) {
-            throw new RuntimeException("khoong the xoa. Loai tai san da duoc su dung");
-        }
         String sql = "update asset_type" +
-                "set status = 'INACTIVE'" +
-                " where type_id = ? and status = 'ACTIVE'";
+                " set status = 'INACTIVE'" +
+                " where type_id = ? and status ='ACTIVE'";
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, typeId);
@@ -184,6 +180,24 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, typeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    //check trung ten
+    @Override
+    public boolean existByTypeName(String typeName) {
+        String sql = "select count(*) from asset_type where lower(type_name) = lower(?) and status = 'ACTIVE'";
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, typeName);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1) > 0;

@@ -24,14 +24,20 @@
             text-align: left;
         }
 
-        .actions a {
-            margin-right: 8px;
-            text-decoration: none;
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
         .error {
             color: red;
             font-size: 13px;
+        }
+
+        .success {
+            color: green;
+            margin-bottom: 10px;
         }
 
         input, select, textarea {
@@ -45,11 +51,24 @@
             margin-right: 6px;
             cursor: pointer;
         }
+
+        a button {
+            margin-right: 0;
+        }
     </style>
 </head>
 <body>
 
 <h2>QUẢN LÝ LOẠI TÀI SẢN</h2>
+
+<!-- Flash Message -->
+<div th:if="${successMessage}" class="success">
+    <span th:text="${successMessage}"></span>
+</div>
+
+<div th:if="${errorMessage}" class="error">
+    <span th:text="${errorMessage}"></span>
+</div>
 
 <div class="container">
 
@@ -79,12 +98,18 @@
                 <td th:text="${t.defaultUsefulLifeMonths}"></td>
 
                 <td class="actions">
+
                     <!-- EDIT -->
                     <a th:href="@{'/manager/asset-types/edit/' + ${t.typeId}}">✏</a>
 
-                    <!-- DELETE -->
-                    <a th:href="@{'/manager/asset-types/delete/' + ${t.typeId}}"
-                       onclick="return confirm('Bạn có chắc chắn muốn xóa?')">🗑</a>
+                    <!-- DELETE (POST) -->
+                    <form th:action="@{'/manager/asset-types/delete/' + ${t.typeId}}"
+                          method="post"
+                          style="display:inline;"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
+                        <button type="submit">🗑</button>
+                    </form>
+
                 </td>
             </tr>
             </tbody>
@@ -97,7 +122,6 @@
 
         <h3 th:text="${mode == 'update'} ? 'Cập nhật loại tài sản' : 'Tạo loại tài sản'"></h3>
 
-        <!-- FORM -->
         <form th:action="${mode == 'create'}
                 ? @{/manager/asset-types/create}
                 : @{/manager/asset-types/update}"
@@ -115,7 +139,8 @@
             <label>Tên loại</label>
             <input type="text"
                    th:field="*{typeName}"
-                   placeholder="Nhập tên loại tài sản">
+                   placeholder="Nhập tên loại tài sản"
+                   required>
             <div class="error" th:errors="*{typeName}"></div>
 
             <!-- Mô tả -->
@@ -124,9 +149,22 @@
                       placeholder="Nhập mô tả"></textarea>
             <div class="error" th:errors="*{description}"></div>
 
+            <!-- Specification -->
+            <label>Thông số kỹ thuật</label>
+            <textarea th:field="*{specification}"
+                      placeholder="Nhập thông số kỹ thuật"></textarea>
+            <div class="error" th:errors="*{specification}"></div>
+
+            <!-- Model -->
+            <label>Model</label>
+            <input type="text"
+                   th:field="*{model}"
+                   placeholder="Nhập model">
+            <div class="error" th:errors="*{model}"></div>
+
             <!-- Danh mục -->
             <label>Danh mục</label>
-            <select th:field="*{categoryId}">
+            <select th:field="*{categoryId}" required>
                 <option value="">-- Chọn danh mục --</option>
                 <option th:each="c : ${categories}"
                         th:value="${c.categoryId}"
@@ -137,7 +175,7 @@
 
             <!-- Phân loại -->
             <label>Phân loại</label>
-            <select th:field="*{typeClass}">
+            <select th:field="*{typeClass}" required>
                 <option value="">-- Chọn phân loại --</option>
                 <option th:each="c : ${typeClasses}"
                         th:value="${c}"
@@ -148,7 +186,7 @@
 
             <!-- Phương pháp khấu hao -->
             <label>Phương pháp khấu hao</label>
-            <select th:field="*{defaultDepreciationMethod}">
+            <select th:field="*{defaultDepreciationMethod}" required>
                 <option value="">-- Chọn phương pháp --</option>
                 <option th:each="d : ${depreciationMethods}"
                         th:value="${d}"
@@ -160,7 +198,9 @@
             <!-- Thời gian sử dụng -->
             <label>Thời gian sử dụng (tháng)</label>
             <input type="number"
-                   th:field="*{defaultUsefulLifeMonths}">
+                   th:field="*{defaultUsefulLifeMonths}"
+                   min="1"
+                   required>
             <div class="error" th:errors="*{defaultUsefulLifeMonths}"></div>
 
             <br/>
@@ -176,10 +216,10 @@
                 Cập nhật
             </button>
 
-            <button type="button"
-                    onclick="window.location.href='/manager/asset-types'">
-                Huỷ
-            </button>
+            <!-- HUỶ -->
+            <a th:href="@{/manager/asset-types}">
+                <button type="button">Huỷ</button>
+            </a>
 
         </form>
 

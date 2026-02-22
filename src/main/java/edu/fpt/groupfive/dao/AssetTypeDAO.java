@@ -14,5 +14,9 @@ public interface AssetTypeDAO {
     void update(AssetType assetType);
 
     void delete(Integer id);
+
     boolean existAssetUsingType(Integer typeId);
+
+    boolean existByTypeName(String typeName);
+
 }
