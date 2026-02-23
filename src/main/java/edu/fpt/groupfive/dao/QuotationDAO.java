@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao;
 
+import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.model.Quotation;
 
 import java.math.BigDecimal;
@@ -16,5 +17,5 @@ public interface QuotationDAO {
 
     Integer countQuotationFromPurchaseId(Integer purchaseId);
 
-
+    List<Quotation> searchAndFilterQuotationOfPurchase(QuotationSearchCriteria criteria);
 }

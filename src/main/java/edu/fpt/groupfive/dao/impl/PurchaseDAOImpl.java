@@ -83,7 +83,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 //set data
                 Purchase purchase = new Purchase();
                 purchase.setId(rs.getInt("purchase_request_id"));
-                purchase.setStatus(Request.valueOf(rs.getString("status")));
+                purchase.setStatus(Request.valueOf(rs.getString("status").toUpperCase()));
                 purchase.setNote(rs.getString("note"));
                 purchase.setRejectReason(rs.getString("reject_reason"));
                 purchase.setCreatedByUser(rs.getInt("creator_id"));
@@ -93,7 +93,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 );
 
                 purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority").toUpperCase()));
                 purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
 
                 Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -135,7 +135,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
                 Purchase purchase = new Purchase();
                 purchase.setId(rs.getInt("purchase_request_id"));
-                purchase.setStatus(Request.valueOf(rs.getString("status")));
+                purchase.setStatus(Request.valueOf(rs.getString("status").toUpperCase()));
                 purchase.setNote(rs.getString("note"));
                 purchase.setRejectReason(rs.getString("reject_reason"));
                 purchase.setCreatedByUser(rs.getInt("creator_id"));
@@ -145,7 +145,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 );
 
                 purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority").toUpperCase()));
                 purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
 
                 Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -188,7 +188,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 Purchase purchase = new Purchase();
 
                 purchase.setId(rs.getInt("purchase_request_id"));
-                purchase.setStatus(Request.valueOf(rs.getString("status")));
+                purchase.setStatus(Request.valueOf(rs.getString("status").toUpperCase()));
                 purchase.setNote(rs.getString("note"));
                 purchase.setRejectReason(rs.getString("reject_reason"));
                 purchase.setCreatedByUser(rs.getInt("creator_id"));
@@ -197,7 +197,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                         neededByDate != null ? neededByDate.toLocalDate() : null
                 );
                 purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority").toUpperCase()));
                 purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
                 purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
                 Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -279,7 +279,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 Purchase purchase = new Purchase();
 
                 purchase.setId(rs.getInt("purchase_request_id"));
-                purchase.setStatus(Request.valueOf(rs.getString("status")));
+                purchase.setStatus(Request.valueOf(rs.getString("status").toUpperCase()));
                 purchase.setNote(rs.getString("note"));
                 purchase.setRejectReason(rs.getString("reject_reason"));
                 purchase.setCreatedByUser(rs.getInt("creator_id"));
@@ -288,7 +288,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                         neededByDate != null ? neededByDate.toLocalDate() : null
                 );
                 purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority").toUpperCase()));
                 purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
                 purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
                 Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -333,33 +333,51 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
     @Override
     public List<Purchase> purchaseGropedQuotation(SearchForQuotation s) {
-        StringBuilder sql = new StringBuilder("select p.* from purchase_request p where 1=1 ");
+        StringBuilder sql = new StringBuilder("select p.* from purchase_request p " +
+                "left join users u on p.creator_id = u.user_id where 1=1 ");
         List<Object> params = new ArrayList<>();
 
         sql.append(" AND p.status = ? ");
         params.add(Request.APPROVED.name());
-        if(s.getPurchaseId() != null){
-            sql.append(" and p.purchase_request_id = ? ");
-            params.add(s.getPurchaseId());
-        }
 
-        if(s.getPriority() != null){
+        if (s.getPriority() != null) {
             sql.append(" and p.priority = ? ");
             params.add(s.getPriority().name());
         }
 
-        if(s.getMinAmount() != null ||  s.getMaxAmount() != null){
-            sql.append(" and exists (select 1 from quotation q where p.purchase_request_id = q.purchase_request_id");
+        if (s.getFrom() != null) {
+            sql.append(" and p.needed_by_date >= ? ");
+            params.add(Date.valueOf(s.getFrom()));
+        }
 
-            if(s.getMinAmount() != null){
-                sql.append(" and q.total_amount >= ? ");
-               params.add(s.getMinAmount());
+        if (s.getTo() != null) {
+            sql.append(" and p.needed_by_date <= ? ");
+            params.add(Date.valueOf(s.getTo()));
+        }
+
+        if (s.getKeyword() != null && !s.getKeyword().isBlank()) {
+            sql.append(" and ( ");
+            if (s.getKeyword().matches("\\d+")) {
+                sql.append(" p.purchase_request_id = ? or ");
+                params.add(Integer.parseInt(s.getKeyword()));
             }
-            if(s.getMaxAmount() != null){
-                sql.append("and q.total_amount <= ?");
-               params.add(s.getMaxAmount());
+            sql.append(" u.first_name like ? or u.last_name like ? )");
+            params.add("%" + s.getKeyword().toLowerCase() + "%");
+            params.add("%" + s.getKeyword().toLowerCase() + "%");
+        }
+
+        if (s.getMinAmount() != null || s.getMaxAmount() != null) {
+            String subquery = "(select min(q_inner.total_amount) from quotation q_inner where q_inner.purchase_request_id = p.purchase_request_id)";
+            sql.append(" and ").append(subquery).append(" is not null ");
+
+            if (s.getMinAmount() != null) {
+                sql.append(" and ").append(subquery).append(" >= ? ");
+                params.add(s.getMinAmount());
             }
-            sql.append(" ) ");
+            if (s.getMaxAmount() != null) {
+                sql.append(" and ").append(subquery).append(" <= ? ");
+                params.add(s.getMaxAmount());
+            }
         }
 
         List<Purchase> purchases = new ArrayList<>();
@@ -380,7 +398,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 Purchase purchase = new Purchase();
 
                 purchase.setId(rs.getInt("purchase_request_id"));
-                purchase.setStatus(Request.valueOf(rs.getString("status")));
+                purchase.setStatus(Request.valueOf(rs.getString("status").toUpperCase()));
                 purchase.setNote(rs.getString("note"));
                 purchase.setRejectReason(rs.getString("reject_reason"));
                 purchase.setCreatedByUser(rs.getInt("creator_id"));
@@ -389,7 +407,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                         neededByDate != null ? neededByDate.toLocalDate() : null
                 );
                 purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(Priority.valueOf(rs.getString("priority")));
+                purchase.setPriority(Priority.valueOf(rs.getString("priority").toUpperCase()));
                 purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
                 purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
                 Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");

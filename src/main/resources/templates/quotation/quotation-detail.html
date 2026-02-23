@@ -16,7 +16,8 @@
         <label>Supplier: </label> <span th:text="${quotation.supplierName}"></span><br>
         <label>Status: </label> <span th:text="${quotation.quotationStatus}"></span><br>
         <label>Created At: </label> <span th:text="${quotation.createdAt}"></span><br>
-        <label>Total Amount: </label> <span th:text="${quotation.totalAmount}"></span><br>
+        <label>Total Amount: </label> <span
+            th:text="${#numbers.formatDecimal(quotation.totalAmount, 1, 'COMMA', 0, 'POINT')}"></span><br>
 
         <!-- Create PO Button -->
         <form th:action="@{/director/quotations/{quotationId}/create-po(id=${quotation.quotationId})}" method="post">
@@ -49,7 +50,7 @@
                 <td th:text="${d.quantity}"></td>
                 <td th:text="${d.quotationDetailNote}"></td>
                 <td th:text="${d.warrantyMonths}"></td>
-                <td th:text="${d.price}"></td>
+                <td th:text="${#numbers.formatDecimal(d.price, 1, 'COMMA', 0, 'POINT')}"></td>
             </tr>
         </tbody>
     </table>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/director-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Quotations for PR-' + ${purchaseId}">Quotations for PR-000052</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/quotation/quotation-of-purchase.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <main class="main-content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                Dashboard / Approval Center / Purchase Requests / <span class="active"
+                    th:text="'PR-' + ${purchaseId}">PR-000052</span>
+            </div>
+
+            <!-- Page Title Area -->
+            <header class="page-header">
+                <div class="header-text">
+                    <h1 th:text="'Quotations for PR-' + ${purchaseId}">Quotations for
+                        PR-000052</h1>
+                    <p>Review and compare received vendor bids for the requested hardware assets.</p>
+                </div>
+                <button class="btn-solid"><i class="fas fa-plus"></i> Request New Quote</button>
+            </header>
+
+
+            <!-- Filters & Search -->
+            <div class="table-actions">
+                <div class="search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="tableSearch" placeholder="Search by QT ID or Supplier...">
+                </div>
+                <div class="filter-group-wrap">
+                    <div class="filter-select">
+                        <label>Status:</label>
+                        <select id="statusFilter">
+                            <option value="">All</option>
+                            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+                        </select>
+                    </div>
+                    <div class="filter-select">
+                        <label>Supplier:</label>
+                        <select id="supplierFilter">
+                            <option value="">All</option>
+                            <option th:each="sup : ${suppliers}" th:value="${sup.supplierName}"
+                                th:text="${sup.supplierName}"></option>
+                        </select>
+                    </div>
+                    <div class="filter-select">
+                        <label>Amount:</label>
+                        <select id="amountFilter">
+                            <option value="">All</option>
+                            <option value="0-5000">$0 - $5,000</option>
+                            <option value="5000-10000">$5,000 - $10,000</option>
+                            <option value="10000-20000">$10,000 - $20,000</option>
+                            <option value="20000+">$20,000+</option>
+                        </select>
+                    </div>
+                    <button class="btn-more"><i class="fas fa-sliders-h"></i> More Filters</button>
+                </div>
+            </div>
+
+            <!-- Quotation Table -->
+            <div class="table-container">
+                <table class="data-table" id="quotationDetailTable">
+                    <thead>
+                        <tr>
+                            <th>QUOTATION ID</th>
+                            <th>SUPPLIER NAME</th>
+                            <th>CREATED AT</th>
+                            <th>TOTAL AMOUNT</th>
+                            <th>STATUS</th>
+                            <th class="actions-head">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="q : ${quotations}">
+                            <td th:text="'QT-' + ${q.quotationId}">QT-100293</td>
+                            <td>
+                                <div class="supplier-cell">
+                                    <i class="fas fa-building supplier-icon"></i>
+                                    <div class="supplier-info">
+                                        <strong th:text="${q.supplierName}">Nexus Systems Ltd.</strong>
+                                        <span>Standard Vendor</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${#temporals.format(q.createdAt, 'MMM dd, yyyy')}">Oct 12, 2023</td>
+                            <td>
+                                <strong
+                                    th:text="'$' + ${#numbers.formatDecimal(q.totalAmount, 1, 'COMMA', 0, 'POINT')}">$11,240</strong>
+
+                            </td>
+                            <td><span th:class="'status-tag ' + ${#strings.toLowerCase(q.quotationStatus)}"
+                                    th:text="${q.quotationStatus}">PENDING REVIEW</span></td>
+                            <td class="cell-actions">
+                                <a th:href="@{/purchase-staff/quotations/{id}(id=${q.quotationId})}" title="View"><i
+                                        class="far fa-eye action-icon"></i></a>
+                                <button class="btn-approve-sm">APPROVE & PO</button>
+                                <button class="btn-reject-sm">REJECT</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+
+            </div>
+        </main>
+    </th:block>
+
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/quotation/quotation-of-purchase.js}"></script>
+    </th:block>
+</body>
+
+</html>

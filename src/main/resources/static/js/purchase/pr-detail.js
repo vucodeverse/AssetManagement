@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Format số theo kiểu VN
-    const formatted = subtotal.toLocaleString('vi-VN');
+    const formatted = subtotal.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
     // Gán vào
     document.getElementById("subtotal").textContent = formatted;

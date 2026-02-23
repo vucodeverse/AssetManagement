@@ -34,7 +34,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createPurchaseRequest(PurchaseCreateRequest purchaseCreateRequest, int userId, Request request) {
+    public Integer createPurchaseRequest(PurchaseCreateRequest purchaseCreateRequest, int userId, Request request) {
         log.info("Saving purchase request: {}", purchaseCreateRequest);
 
         //map sang purchase
@@ -56,7 +56,8 @@ public class PurchaseServiceImpl implements PurchaseService {
                 purchaseDetailDAO.insert(d);
             });
         }
-        log.info("Saved");
+        log.info("Saved with ID: {}", purchaseId);
+        return purchaseId;
     }
 
     @Override

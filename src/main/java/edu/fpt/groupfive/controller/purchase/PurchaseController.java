@@ -84,7 +84,7 @@ public class PurchaseController {
 
         else
             purchaseService.createPurchaseRequest(purchaseCreateRequest,
-                userService.getUserIdByUsername(authentication.getName()), Request.PENDING);
+                    userService.getUserIdByUsername(authentication.getName()), Request.PENDING);
 
         return "purchase/purchase-form";
     }

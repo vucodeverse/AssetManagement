@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Order Form - Procurex</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<div class="po-container">
+    <!-- Header Section -->
+    <header class="po-header">
+        <div class="header-titles">
+            <h1>PURCHASE ORDER</h1>
+            <p>Systemic procurement management interface.</p>
+        </div>
+        <button class="btn-top-save">SAVE PURCHASE ORDER</button>
+    </header>
+
+    <hr class="po-divider">
+
+    <!-- General Information -->
+    <section class="po-section">
+        <h2 class="section-label">GENERAL INFORMATION</h2>
+        <div class="form-grid">
+            <div class="form-item">
+                <label>QUOTATION ID</label>
+                <div class="input-lock">
+                    <input type="text" value="QUO-2024-001" readonly>
+                    <i class="fas fa-lock"></i>
+                </div>
+            </div>
+            <div class="form-item">
+                <label>SUPPLIER NAME</label>
+                <input type="text" value="Tech Solutions Inc." readonly>
+            </div>
+            <div class="form-item">
+                <label>ORDER DATE</label>
+                <input type="text" value="2024-05-24" readonly>
+            </div>
+            <div class="form-item">
+                <label>TOTAL AMOUNT (USD)</label>
+                <input type="text" value="8,868.75" readonly>
+            </div>
+            <div class="form-item full-width">
+                <label>ORDER NOTE</label>
+                <textarea placeholder="INTERNAL REMARKS OR DELIVERY INSTRUCTIONS..."></textarea>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Details Section -->
+    <section class="po-section table-section">
+        <h2 class="section-label">ORDER DETAILS</h2>
+        <table class="details-table">
+            <thead>
+            <tr>
+                <th>ASSET TYPE NAME</th>
+                <th>QTY</th>
+                <th>PRICE</th>
+                <th>TAX%</th>
+                <th>DISC%</th>
+                <th>NOTE</th>
+                <th class="align-center">EXPECTED DELIVERY</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Workstation PC - Grade A</td>
+                <td>5</td>
+                <td>1,200.00</td>
+                <td>7.5</td>
+                <td>2.0</td>
+                <td><input type="text" class="inline-input" placeholder="Add note..."></td>
+                <td class="align-center">11/15/2024 <i class="far fa-calendar-alt"></i></td>
+                <td class="align-center"><i class="far fa-trash-alt btn-del"></i></td>
+            </tr>
+            <tr>
+                <td>UltraWide Monitor 34''</td>
+                <td>5</td>
+                <td>450.00</td>
+                <td>7.5</td>
+                <td>0.0</td>
+                <td><input type="text" class="inline-input" value="Includes monitor arms"></td>
+                <td class="align-center">11/15/2024 <i class="far fa-calendar-alt"></i></td>
+                <td class="align-center"><i class="far fa-trash-alt btn-del"></i></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Financial Summary -->
+        <div class="financial-summary">
+            <div class="summary-line">
+                <span>SUBTOTAL:</span>
+                <strong>$8,250.00</strong>
+            </div>
+            <div class="summary-line">
+                <span>TOTAL TAX:</span>
+                <strong>$618.75</strong>
+            </div>
+            <div class="total-line">
+                <span>TOTAL AMOUNT:</span>
+                <span class="grand-total">$8,868.75</span>
+            </div>
+        </div>
+    </section>
+
+    <hr class="po-divider">
+
+    <!-- Footer -->
+    <footer class="po-footer">
+        <div class="footer-info">
+            <i class="fas fa-info-circle"></i> DRAFT POS ARE SAVED AUTOMATICALLY.
+        </div>
+        <div class="footer-actions">
+            <button class="btn-cancel">CANCEL</button>
+            <button class="btn-generate">GENERATE PURCHASE ORDER</button>
+        </div>
+    </footer>
+</div>
+</body>
+</html>

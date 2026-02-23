@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purchase Orders Management - Procurex</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<div class="dashboard-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <i class="fas fa-cube"></i> <span>PROCUREX</span>
+    </div>
+    <nav class="nav">
+      <div class="nav-item"><i class="fas fa-th-large"></i> DASHBOARD</div>
+      <div class="nav-group">
+        <div class="nav-item"><i class="fas fa-check-circle"></i> APPROVAL CENTER</div>
+        <div class="sub-nav">
+          <div class="sub-item">PURCHASE REQUESTS</div>
+          <div class="sub-item">QUOTATIONS</div>
+        </div>
+      </div>
+      <div class="nav-item active"><i class="fas fa-file-invoice-dollar"></i> PURCHASE ORDERS</div>
+    </nav>
+    <div class="profile">
+      <div class="avatar">MT</div>
+      <div class="info">
+        <p class="name">Marcus Thorne</p>
+        <p class="role">Director</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Top Header Bar -->
+    <header class="header">
+      <h1>PURCHASE ORDERS GROUPED BY PR</h1>
+      <div class="header-tools">
+        <select class="fy-select"><option>FY 2024</option></select>
+        <i class="far fa-bell icon"></i>
+        <i class="fas fa-cog icon"></i>
+      </div>
+    </header>
+
+    <!-- Search & Filters -->
+    <section class="controls">
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search by PO ID, PR ID or Supplier...">
+      </div>
+      <div class="filter-row">
+        <select><option>Status</option></select>
+        <select><option>Date Range</option></select>
+        <select><option>Supplier</option></select>
+        <select><option>Amount</option></select>
+        <button class="btn-clear">CLEAR FILTERS</button>
+      </div>
+    </section>
+
+    <!-- Grouped Data Section -->
+    <div class="content-body">
+      <!-- PR Group 1 -->
+      <article class="pr-group">
+        <header class="pr-header">
+          <span class="pr-id">PR-2024-045</span>
+          <span class="pr-label">Grouped Purchase Orders</span>
+        </header>
+        <table class="po-table">
+          <thead>
+          <tr>
+            <th>PO-ID</th>
+            <th>CREATED AT</th>
+            <th>SUPPLIER NAME</th>
+            <th>TOTAL AMOUNT</th>
+            <th>NOTE</th>
+            <th>STATUS</th>
+            <th>APPROVED BY</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><strong>PO-2024-0012</strong></td>
+            <td>May 24, 2024</td>
+            <td>Tech Solutions Inc.</td>
+            <td><strong>$4,250.00</strong></td>
+            <td class="note">High priority hardware update</td>
+            <td><span class="badge shipped">SHIPPED</span></td>
+            <td>Director Marcus</td>
+          </tr>
+          </tbody>
+        </table>
+      </article>
+
+      <!-- PR Group 2 -->
+      <article class="pr-group">
+        <header class="pr-header">
+          <span class="pr-id">PR-2024-052</span>
+          <span class="pr-label">Grouped Purchase Orders</span>
+        </header>
+        <table class="po-table">
+          <thead>
+          <tr>
+            <th>PO-ID</th>
+            <th>CREATED AT</th>
+            <th>SUPPLIER NAME</th>
+            <th>TOTAL AMOUNT</th>
+            <th>NOTE</th>
+            <th>STATUS</th>
+            <th>APPROVED BY</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><strong>PO-2024-0015</strong></td>
+            <td>May 26, 2024</td>
+            <td>Office Depot</td>
+            <td><strong>$1,120.00</strong></td>
+            <td class="note">Consumables for Marketing dept</td>
+            <td><span class="badge active">ACTIVE</span></td>
+            <td>Director Marcus</td>
+          </tr>
+          </tbody>
+        </table>
+      </article>
+    </div>
+  </main>
+</div>
+</body>
+</html>

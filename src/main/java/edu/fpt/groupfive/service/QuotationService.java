@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.service;
 
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
+import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.dto.request.SearchForQuotation;
 import edu.fpt.groupfive.dto.response.QuotationForPurchaseResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
@@ -16,6 +17,6 @@ public interface QuotationService {
     List<QuotationForPurchaseResponse> searchAndFilterForQuotation(SearchForQuotation searchForQuotation);
 
     List<QuotationForPurchaseResponse> getQuotationAndPurchase();
-
+    List<QuotationResponse> QuotationCriteria(QuotationSearchCriteria quotationSearchCriteria);
 
 }

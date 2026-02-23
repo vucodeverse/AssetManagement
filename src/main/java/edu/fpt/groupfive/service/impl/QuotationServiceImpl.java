@@ -5,6 +5,7 @@ import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dto.request.QuotationCreateDetailRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
+import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.dto.request.SearchForQuotation;
 import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
 import edu.fpt.groupfive.dto.response.QuotationForPurchaseResponse;
@@ -13,6 +14,7 @@ import edu.fpt.groupfive.mapper.QuotationDetailMapper;
 import edu.fpt.groupfive.mapper.QuotationMapper;
 import edu.fpt.groupfive.model.*;
 import edu.fpt.groupfive.service.QuotationService;
+import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,7 @@ public class QuotationServiceImpl implements QuotationService {
     private final QuotationDetailMapper quotationDetailMapper;
     private final SupplierDAO supplierDAO;
     private final AssetTypeDAO assetTypeDAO;
+    private final RangeAmount rangeAmount;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -62,7 +65,7 @@ public class QuotationServiceImpl implements QuotationService {
         // tạo quotation
         Quotation q = quotationMapper.toQuotation(quotationCreateRequest);
         q.setPurchaseId(purchaseId);
-        q.setStatus(QuotationStatus.PENDING);
+        q.setQuotationStatus(QuotationStatus.PENDING);
         q.setCreatedAt(LocalDate.now());
         
         // gắn supplier
@@ -157,7 +160,7 @@ public class QuotationServiceImpl implements QuotationService {
         return quotationDAO.findByPurchaseId(purchaseId).stream().map(q -> QuotationResponse.builder()
                 .quotationId(q.getId())
                 .purchaseId(q.getPurchaseId())
-                .quotationStatus(q.getStatus())
+                .quotationStatus(q.getQuotationStatus())
                 .supplierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException(
                         "Supplier này không tồn tại")).getSupplierName())
                 .totalAmount(q.getTotalAmount())
@@ -186,7 +189,7 @@ public class QuotationServiceImpl implements QuotationService {
         return QuotationResponse.builder()
                 .quotationId(q.getId())
                 .purchaseId(q.getPurchaseId())
-                .quotationStatus(q.getStatus())
+                .quotationStatus(q.getQuotationStatus())
                 .supplierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException("Supplier not found")).getSupplierName())
                 .totalAmount(q.getTotalAmount())
                 .createdAt(q.getCreatedAt())
@@ -196,11 +199,22 @@ public class QuotationServiceImpl implements QuotationService {
 
     @Override
     public List<QuotationForPurchaseResponse> searchAndFilterForQuotation(SearchForQuotation s) {
-
+        s.setMinAmount(null);
+        s.setMaxAmount(null);
+        List<BigDecimal> list = new ArrayList<>();
         if (s.getFrom() != null && s.getTo() != null && s.getFrom().isAfter(s.getTo())) {
             throw new InvalidDataException("From phải trước To");
         }
+        if(s.getAmountRange() != null && !s.getAmountRange().isBlank()){
+            list = rangeAmount.applyRangeAMount(s.getAmountRange());
 
+            if(list.size() == 1){
+                s.setMinAmount(list.get(0));
+            } else if (list.size() == 2) {
+                s.setMinAmount(list.get(0));
+                s.setMaxAmount(list.get(1));
+            }
+        }
         List<Purchase> purchaseList = purchaseDAO.purchaseGropedQuotation(s);
 
         List<Integer> ids = purchaseList.stream().map(Purchase::getId).toList();
@@ -217,7 +231,7 @@ public class QuotationServiceImpl implements QuotationService {
                     .purchaseId(p.getId())
                     .needByDate(p.getNeededByDate())
                     .priority(p.getPriority().name())
-                    .quotationOfNumber(totalQuo)
+                    .numberOfQuotation(totalQuo)
                     .estPrice(lowestPrice)
                     .build());
         }
@@ -226,21 +240,23 @@ public class QuotationServiceImpl implements QuotationService {
 
     @Override
     public List<QuotationForPurchaseResponse> getQuotationAndPurchase() {
-        List<Purchase> purchases = purchaseDAO.findAll();
-        List<QuotationForPurchaseResponse> quotationForPurchaseResponses = new ArrayList<>();
-        for(Purchase p : purchases){
-            int countQuotation = quotationDAO.countQuotationFromPurchaseId(p.getId());
-            BigDecimal estPrice = quotationDAO.totalAmoutForPurchaseId(p.getId());
+        return searchAndFilterForQuotation(new SearchForQuotation());
+    }
 
-            quotationForPurchaseResponses.add( QuotationForPurchaseResponse.builder()
-                    .priority(p.getPriority().name())
-                    .quotationOfNumber(countQuotation)
-                    .estPrice(estPrice)
-                    .needByDate(p.getNeededByDate())
-                    .build());
-        }
+    @Override
+    public List<QuotationResponse> QuotationCriteria(QuotationSearchCriteria quotationSearchCriteria) {
 
-        return quotationForPurchaseResponses;
+        // trả về list quotationResponse
+        return quotationDAO.searchAndFilterQuotationOfPurchase(quotationSearchCriteria).stream().map(q ->
+                QuotationResponse.builder()
+                        .quotationStatus(q.getQuotationStatus())
+                        .quotationId(q.getId())
+                        .createdAt(q.getCreatedAt())
+                        .supplierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException("Supplier not found")).getSupplierName())
+                        .totalAmount(q.getTotalAmount())
+                        .purchaseId(q.getPurchaseId())
+                        .build()
+        ).toList();
     }
 
 }

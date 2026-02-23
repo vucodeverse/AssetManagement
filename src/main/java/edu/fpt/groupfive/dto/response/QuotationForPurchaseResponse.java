@@ -14,7 +14,9 @@ public class QuotationForPurchaseResponse {
 
     private Integer purchaseId;
     private LocalDate needByDate;
-    private Integer quotationOfNumber;
+    private Integer numberOfQuotation;
     private BigDecimal estPrice;
     private String  priority;
+    private LocalDate createdAt;
 }
+

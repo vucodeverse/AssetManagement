@@ -21,11 +21,12 @@ public class PurchaseDetailCreateRequest {
     @NotBlank(message = "Specification Requirement Không được để trống")
     private String specificationRequirement;
 
-    @NotBlank(message = "Không được để trống")
+    @NotBlank(message = "Note Không được để trống")
     private String note;
 
     @NotNull(message = "Loại tài sản không được để trống")
     private Integer assetTypeId;
 
+    @Min(value = 1, message = "Estimate Price phải lớn hơn 0")
     private BigDecimal estimatePrice;
 }

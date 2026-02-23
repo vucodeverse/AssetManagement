@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purchase Order Details - Procurex</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <i class="fas fa-cube"></i> PROCUREX
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item">DASHBOARD</div>
+      <div class="nav-item">APPROVAL CENTER</div>
+      <div class="nav-item active">PURCHASE ORDERS</div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar">MT</div>
+      <div class="user-meta">
+        <p class="name">Marcus Thorne</p>
+        <p class="role">Director</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="content-header">
+      <div class="header-left">
+        <i class="fas fa-arrow-left back-btn"></i>
+        <h1>PURCHASE ORDER DETAILS</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn-outline">DOWNLOAD PDF</button>
+        <button class="btn-solid">APPROVE PO</button>
+      </div>
+    </header>
+
+    <div class="details-card">
+      <!-- Header Info -->
+      <div class="header-info">
+        <div class="info-item">
+          <label>PURCHASE ORDER ID</label>
+          <p class="val-bold">PO-2024-00892</p>
+        </div>
+        <div class="info-item">
+          <label>SUPPLIER VENDOR</label>
+          <p class="val-bold">Global Tech Solutions Inc. <i class="fas fa-check-circle verified"></i></p>
+        </div>
+        <div class="info-item">
+          <label>CURRENT STATUS</label>
+          <span class="status-badge">PENDING REVIEW</span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Line Items Table -->
+      <section class="items-section">
+        <h2 class="section-title">LINE ITEM DETAILS</h2>
+        <table class="details-table">
+          <thead>
+          <tr>
+            <th>PO DETAIL ID</th>
+            <th>ASSET TYPE NAME</th>
+            <th>QUANTITY</th>
+            <th>PRICE</th>
+            <th>TAX (%)</th>
+            <th>DISCOUNT (%)</th>
+            <th>NOTE</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>#8821</td>
+            <td>Advanced Workstation Pro V1</td>
+            <td>10</td>
+            <td>$1,850.00</td>
+            <td>8%</td>
+            <td>2.5%</td>
+            <td class="italic-note">Include 3y warranty</td>
+          </tr>
+          <tr>
+            <td>#8822</td>
+            <td>27" Retina Display Monitor</td>
+            <td>5</td>
+            <td>$420.00</td>
+            <td>8%</td>
+            <td>0%</td>
+            <td class="italic-note">Wall mount kits incl.</td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Footer Summary Area -->
+      <div class="footer-summary">
+        <div class="terms-box">
+          <label>GENERAL TERMS</label>
+          <p>Net 30 payment terms apply. Delivery within 14 business days upon approval.</p>
+        </div>
+        <div class="total-summary">
+          <div class="summary-line">
+            <span>Subtotal</span>
+            <span>$20,600.00</span>
+          </div>
+          <div class="summary-line">
+            <span>Total Discount</span>
+            <span class="discount-val">-$462.50</span>
+          </div>
+          <div class="summary-line">
+            <span>Tax Est. (Avg 8%)</span>
+            <span>$0.00</span>
+          </div>
+          <div class="grand-total-row">
+            <span>GRAND TOTAL</span>
+            <span class="grand-total">$20,137.14</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

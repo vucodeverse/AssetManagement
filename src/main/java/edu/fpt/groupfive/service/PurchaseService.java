@@ -10,7 +10,7 @@ import edu.fpt.groupfive.model.Purchase;
 import java.util.List;
 
 public interface PurchaseService {
-    void createPurchaseRequest(PurchaseCreateRequest purchaseCreateRequest, int userId, Request draft);
+    Integer createPurchaseRequest(PurchaseCreateRequest purchaseCreateRequest, int userId, Request draft);
     PurchaseResponse findById(Integer id);
     List<PurchaseResponse> findAllPurchases();
 
