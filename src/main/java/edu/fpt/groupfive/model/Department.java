@@ -23,7 +23,9 @@ public class Department {
     // ACTIVE or INACTIVE
     private String status;
 
-    //Foreign user_id of Table Users
+    //Foreign user_id of table Users
     private Integer managerId;
+
+    private String managerName;
 
 }

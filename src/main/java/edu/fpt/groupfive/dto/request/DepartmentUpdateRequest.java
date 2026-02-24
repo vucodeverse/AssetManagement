@@ -11,7 +11,7 @@ public class DepartmentUpdateRequest {
 
     private String departmentName;
 
-    private String status;
+    private String description;
 
     private Integer managerId;
 }
