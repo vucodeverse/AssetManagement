@@ -21,6 +21,29 @@ public class UserDAOImpl implements UserDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    private Users mapRowToUser(ResultSet rs) throws Exception {
+        Users user = new Users();
+
+        user.setUserId(rs.getInt("user_id"));
+        user.setUsername(rs.getString("username"));
+        user.setPasswordHash(rs.getString("password_hash"));
+        user.setFirstName(rs.getString("first_name"));
+        user.setLastName(rs.getString("last_name"));
+        user.setPhoneNumber(rs.getString("phone_number"));
+        user.setEmail(rs.getString("email"));
+        user.setStatus(rs.getString("status"));
+        user.setRole(Role.valueOf(rs.getString("role")));
+        user.setDepartmentId(rs.getInt("department_id"));
+
+        Timestamp created = rs.getTimestamp("created_date");
+        Timestamp updated = rs.getTimestamp("updated_date");
+
+        if (created != null) user.setCreatedDate(created.toLocalDateTime());
+        if (updated != null) user.setUpdatedDate(updated.toLocalDateTime());
+
+        return user;
+    }
+
     @Override
     public Optional<Users> findUserByUsername(String username) {
         return Optional.empty();
@@ -30,24 +53,31 @@ public class UserDAOImpl implements UserDAO {
     public void insert(Users users) {
         String query = """
                    INSERT INTO Users
-                   (username, password_hash, full_name, phone_number, email,
+                   (username, password_hash, first_name, last_name,
+                    phone_number, email,
                     status, role, department_id)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)
+             PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)
         ) {
             ps.setString(1, users.getUsername());
             ps.setString(2, users.getPasswordHash());
-            ps.setString(3, users.getFullName());
-            ps.setString(4, users.getPhoneNumber());
-            ps.setString(5, users.getEmail());
-            ps.setString(6, users.getStatus());
-            ps.setString(7, users.getRole().name());
-            ps.setTimestamp(8, Timestamp.valueOf(users.getCreatedDate()));
+            ps.setString(3, users.getFirstName());
+            ps.setString(4, users.getLastName());
+            ps.setString(5, users.getPhoneNumber());
+            ps.setString(6, users.getEmail());
+            ps.setString(7, users.getStatus());
+            ps.setString(8, users.getRole().name());
             ps.setInt(9, users.getDepartmentId());
 
             ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                users.setUserId(rs.getInt(1));
+            }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -56,30 +86,32 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public void update(Users users) {
         String query = """
-            UPDATE Users
-            SET
-                password_hash = ?,
-                full_name = ?,
-                phone_number = ?,
-                email = ?,
-                status = ?,
-                role = ?,
-                updated_date = ?,
-                department_id = ?
-            WHERE user_id = ?
-            """;
+                UPDATE Users
+                SET
+                    password_hash = ?,
+                    first_name = ?,
+                    last_name = ?,
+                    phone_number = ?,
+                    email = ?,
+                    status = ?,
+                    role = ?,
+                    updated_date = ?,
+                    department_id = ?
+                WHERE user_id = ?
+                """;
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query)) {
 
             ps.setString(1, users.getPasswordHash());
-            ps.setString(2, users.getFullName());
-            ps.setString(3, users.getPhoneNumber());
-            ps.setString(4, users.getEmail());
-            ps.setString(5, users.getStatus());
-            ps.setString(6, users.getRole().name());
-            ps.setTimestamp(7, Timestamp.valueOf(users.getUpdatedDate()));
-            ps.setInt(8, users.getDepartmentId());
-            ps.setInt(9, users.getUserId());
+            ps.setString(2, users.getFirstName());
+            ps.setString(3, users.getLastName());
+            ps.setString(4, users.getPhoneNumber());
+            ps.setString(5, users.getEmail());
+            ps.setString(6, users.getStatus());
+            ps.setString(7, users.getRole().name());
+            ps.setTimestamp(8, Timestamp.valueOf(users.getUpdatedDate()));
+            ps.setInt(9, users.getDepartmentId());
+            ps.setInt(10, users.getUserId());
 
             ps.executeUpdate();
 
@@ -112,8 +144,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public boolean existsByUsername(String username) {
         String query = """
-                  SELECT 1 FROM Users
-                           WHERE username = ? AND status = 'ACTIVE'
+                  SELECT 1 FROM Users WHERE username = ?
                 """;
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query)
@@ -146,7 +177,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public List<Users> findAll() {
         String query = """
-                SELECT * FROM users WHERE status = 'ACTIVE'
+                SELECT * FROM users
                 """;
 
         List<Users> list = new ArrayList<>();
@@ -156,26 +187,9 @@ public class UserDAOImpl implements UserDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Users user = new Users();
-                user.setUserId(rs.getInt("user_id"));
-                user.setUsername(rs.getString("username"));
-                user.setPasswordHash(rs.getString("password_hash"));
-                user.setFullName(rs.getString("full_name"));
-                user.setPhoneNumber(rs.getString("phone_number"));
-                user.setEmail(rs.getString("email"));
-                user.setStatus(rs.getString("status"));
-                user.setRole(Role.valueOf(rs.getString("role")));
-
-                Timestamp created = rs.getTimestamp("created_date");
-                Timestamp updated = rs.getTimestamp("updated_date");
-
-                if (created != null) user.setCreatedDate(created.toLocalDateTime());
-                if (updated != null) user.setUpdatedDate(updated.toLocalDateTime());
-
-                user.setDepartmentId(rs.getInt("department_id"));
-
-                list.add(user);
+                list.add(mapRowToUser(rs));
             }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -186,9 +200,8 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public Optional<Users> findById(Integer id) {
         String query = """
-            SELECT * FROM Users
-            WHERE user_id = ? AND status = 'ACTIVE'
-            """;
+                SELECT * FROM Users WHERE user_id = ?
+                """;
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query)) {
@@ -197,24 +210,7 @@ public class UserDAOImpl implements UserDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                Users u = new Users();
-                u.setUserId(rs.getInt("user_id"));
-                u.setUsername(rs.getString("username"));
-                u.setPasswordHash(rs.getString("password_hash"));
-                u.setFullName(rs.getString("full_name"));
-                u.setPhoneNumber(rs.getString("phone_number"));
-                u.setEmail(rs.getString("email"));
-                u.setStatus(rs.getString("status"));
-                u.setRole(Role.valueOf(rs.getString("role")));
-                u.setDepartmentId(rs.getInt("department_id"));
-
-                Timestamp created = rs.getTimestamp("created_date");
-                Timestamp updated = rs.getTimestamp("updated_date");
-
-                if (created != null) u.setCreatedDate(created.toLocalDateTime());
-                if (updated != null) u.setUpdatedDate(updated.toLocalDateTime());
-
-                return Optional.of(u);
+                return Optional.of(mapRowToUser(rs));
             }
 
         } catch (Exception e) {
@@ -224,5 +220,249 @@ public class UserDAOImpl implements UserDAO {
         return Optional.empty();
     }
 
+    @Override
+    public List<Users> findByDepartmentId(Integer departmentId) {
+        String query = """
+                SELECT * FROM users WHERE department_id = ? AND status = 'ACTIVE'
+                """;
 
+        List<Users> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, departmentId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapRowToUser(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+
+    }
+
+
+    @Override
+    public List<Users> findAllByFirstNameDesc() {
+        String query = """
+                SELECT * FROM users ORDER BY first_name DESC
+                """;
+        List<Users> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapRowToUser(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public List<Users> findAllByFirstNameAsc() {
+        String query = """
+                SELECT * FROM users ORDER BY first_name ASC
+                """;
+        List<Users> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapRowToUser(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public List<Users> findAllByCreateDateAsc() {
+        String query = """
+                SELECT * FROM users ORDER BY created_date ASC
+                """;
+        List<Users> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapRowToUser(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public List<Users> findAllByCreateDateDesc() {
+        String query = """
+                SELECT * FROM users ORDER BY created_date DESC
+                """;
+        List<Users> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapRowToUser(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public int countUsersInDepartment(Integer departmentId) {
+        String sql = """
+                    SELECT COUNT(*)
+                    FROM Users
+                    WHERE department_id = ?
+                      AND status = 'ACTIVE'
+                """;
+
+        try (Connection c = databaseConfig.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setInt(1, departmentId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<Users> searchUsers(int offset, int size, String status, Integer departmentId,
+                                   Role role, String keyword) {
+        StringBuilder query = new StringBuilder("""
+                SELECT * FROM Users WHERE 1 = 1
+                """);
+        List<Object> param = new ArrayList<>();
+
+        if (status != null) {
+            query.append(" AND status = ?");
+            param.add(status);
+        }
+
+        if (departmentId != null) {
+            query.append(" AND department_id = ?");
+            param.add(departmentId);
+        }
+
+        if (role != null) {
+            query.append(" AND role = ?");
+            param.add(role.name());
+        }
+
+        if (keyword != null) {
+            query.append(" AND (username LIKE ? OR email LIKE ?)");
+            param.add("%" + keyword + "%");
+            param.add("%" + keyword + "%");
+        }
+
+        query.append(" ORDER BY user_id");
+        query.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        param.add(offset);
+        param.add(size);
+
+        List<Users> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query.toString())) {
+
+            for (int i = 0; i < param.size(); i++) {
+                ps.setObject(i + 1, param.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRowToUser(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+
+    }
+
+    @Override
+    public int countUsersWithFilter(String status, Integer departmentId, Role role, String keyword) {
+        StringBuilder sql = new StringBuilder("""
+                    SELECT COUNT(*)
+                    FROM Users
+                    WHERE 1=1
+                """);
+
+        List<Object> params = new ArrayList<>();
+
+        if (status != null) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+
+        if (departmentId != null) {
+            sql.append(" AND department_id = ?");
+            params.add(departmentId);
+        }
+
+        if (role != null) {
+            sql.append(" AND role = ?");
+            params.add(role.name());
+        }
+
+        if (keyword != null) {
+            sql.append(" AND (username LIKE ? OR email LIKE ?)");
+            params.add("%" + keyword + "%");
+            params.add("%" + keyword + "%");
+        }
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+
+    }
 }
