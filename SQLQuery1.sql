@@ -1,6 +1,6 @@
 ﻿CREATE DATABASE AssetManager
 
-
+USE AssetManager
 -- =============================================
 -- 1. NHÓM TỔ CHỨC & NGƯỜI DÙNG
 -- =============================================
