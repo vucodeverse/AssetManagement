@@ -11,9 +11,13 @@ import lombok.*;
 public class UserUpdateRequest {
     private Integer userId;
 
+    private String username;
+
     private String password;
 
-    private String fullName;
+    private String firstName;
+
+    private String lastName;
 
     private String email;
 
