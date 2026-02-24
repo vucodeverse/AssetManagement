@@ -16,7 +16,9 @@ public class Users {
 
     private String passwordHash;
 
-    private String fullName;
+    private String firstName;
+
+    private String lastName;
 
     private String phoneNumber;
 
