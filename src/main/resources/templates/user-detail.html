@@ -29,13 +29,10 @@
 
 <div class="form-container mx-auto" style="max-width: 800px;">
 
-    <h2 class="mb-2"
+    <h2 style="text-align:center" class="mb-2"
         th:text="${mode == 'Edit' ? 'Edit User' : 'Add New User'}">
     </h2>
 
-    <p class="text-muted mb-4">
-        Please fill in all required fields.
-    </p>
 
     <form th:action="${mode == 'Edit' ? '/admin/update' : '/admin/create'}"
           th:object="${user}"
@@ -43,18 +40,17 @@
 
         <input type="hidden" name="mode" th:value="${mode}"/>
 
-        <!-- ===== USER ID (chỉ khi Edit) ===== -->
+        <!-- ===== User ID  ===== -->
         <div class="form-group" th:if="${mode == 'Edit'}">
-            <label>User ID</label>
-            <input type="text"
-                   th:field="*{userId}"
-                   class="form-control"
-                   readonly>
+            <div class="card-header bg-primary text-white">
+                <h3>ID người dùng: <span th:text="${user.userId}"></span></h3>
+                <input type="hidden" th:field="*{userId}"/>
+            </div>
         </div>
 
-        <!-- ===== USERNAME ===== -->
+        <!-- ===== Username ===== -->
         <div class="form-group">
-            <label>Username</label>
+            <label>Tên đăng nhập</label>
             <input type="text"
                    th:field="*{username}"
                    class="form-control"
@@ -66,9 +62,9 @@
             </span>
         </div>
 
-        <!-- ===== PASSWORD (chỉ khi Add) ===== -->
-        <div class="form-group" th:if="${mode == 'Add'}">
-            <label>Password</label>
+        <!-- ===== Password  ===== -->
+        <div class="form-group">
+            <label>Mật khẩu</label>
             <input type="password"
                    th:field="*{password}"
                    class="form-control">
@@ -79,51 +75,70 @@
             </span>
         </div>
 
-        <!-- ===== Full name ===== -->
-        <div class="form-group">
-            <label>Full Name</label>
-            <input type="text"
-                   th:field="*{fullName}"
-                   class="form-control">
 
-            <span class="error-message"
-                  th:if="${#fields.hasErrors('fullName')}"
-                  th:errors="*{fullName}">
-            </span>
+        <div class="row form-group">
+            <!-- ===== First name ===== -->
+            <div class="col-md-6">
+                <label>Tên</label>
+                <input type="text"
+                       th:field="*{firstName}"
+                       class="form-control">
+
+                <span class="error-message"
+                      th:if="${#fields.hasErrors('firstName')}"
+                      th:errors="*{firstName}">
+                </span>
+            </div>
+
+            <!-- ===== Last name ===== -->
+            <div class="col-md-6">
+                <label>Họ</label>
+                <input type="text"
+                       th:field="*{lastName}"
+                       class="form-control">
+
+                <span class="error-message"
+                      th:if="${#fields.hasErrors('lastName')}"
+                      th:errors="*{lastName}">
+                </span>
+            </div>
         </div>
 
         <!-- ===== Email ===== -->
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email"
-                   th:field="*{email}"
-                   class="form-control"
-                   placeholder="example@gmail.com">
+        <div class="row form-group">
+            <div class="col-md-6">
+                <label>Email</label>
+                <input type="email"
+                       th:field="*{email}"
+                       class="form-control"
+                       placeholder="example@gmail.com">
 
-            <span class="error-message"
-                  th:if="${#fields.hasErrors('email')}"
-                  th:errors="*{email}">
+                <span class="error-message"
+                      th:if="${#fields.hasErrors('email')}"
+                      th:errors="*{email}">
             </span>
+            </div>
+
+            <!-- ===== Phone ===== -->
+            <div class="col-md-6">
+                <label>Số điện thoại</label>
+                <input type="text"
+                       th:field="*{phoneNumber}"
+                       class="form-control">
+
+                <span class="error-message"
+                      th:if="${#fields.hasErrors('phoneNumber')}"
+                      th:errors="*{phoneNumber}">
+            </span>
+            </div>
         </div>
 
-        <!-- ===== Phone ===== -->
-        <div class="form-group">
-            <label>Phone</label>
-            <input type="text"
-                   th:field="*{phoneNumber}"
-                   class="form-control">
-
-            <span class="error-message"
-                  th:if="${#fields.hasErrors('phoneNumber')}"
-                  th:errors="*{phoneNumber}">
-            </span>
-        </div>
 
         <!-- ---------------- -->
         <div class="row form-group">
             <!-- ===== Role =====-->
             <div class="col-md-6">
-                <label>Role</label>
+                <label>Vai trò</label>
                 <select th:field="*{role}" class="form-control">
                     <option value="" hidden>Select Role</option>
 
@@ -141,10 +156,15 @@
 
             <!-- ===== Department =====-->
             <div class="col-md-6">
-                <label>Department ID</label>
-                <input type="number"
-                       th:field="*{departmentId}"
-                       class="form-control">
+                <label>Phòng ban</label>
+                <select th:field="*{departmentId}" class="form-control">
+                    <option value="" hidden="">Select Department</option>
+                    <option th:each="d : ${departments}"
+                            th:value="${d.departmentId}"
+                            th:text="${d.departmentName}">
+                    </option>
+
+                </select>
 
                 <span class="error-message"
                       th:if="${#fields.hasErrors('departmentId')}"
@@ -158,12 +178,12 @@
             <div class="custom-control custom-radio custom-control-inline">
                 <input type="radio" id="statusActive" th:field="*{status}"
                        value="ACTIVE" class="custom-control-input">
-                <label class="custom-control-label" for="statusActive">Active</label>
+                <label class="custom-control-label" for="statusActive">Hoạt động</label>
             </div>
             <div class="custom-control custom-radio custom-control-inline">
                 <input type="radio" id="statusInactive" th:field="*{status}"
                        value="INACTIVE" class="custom-control-input">
-                <label class="custom-control-label" for="statusInactive">Inactive</label>
+                <label class="custom-control-label" for="statusInactive">Ngừng hoạt động</label>
             </div>
 
             <span class="error-message d-block"
@@ -175,12 +195,12 @@
         <div class="mt-4 d-flex justify-content-center">
             <button type="submit"
                     class="btn btn-primary px-4 mx-3"
-                    th:text="${mode == 'Edit' ? 'Update User' : 'Add User'}">
+                    th:text="${mode == 'Edit' ? 'Sửa' : 'Thêm'}">
             </button>
 
             <a th:href="@{/admin/home}"
                class="btn btn-outline-secondary px-4">
-                Cancel
+                Quay lại
             </a>
         </div>
 
