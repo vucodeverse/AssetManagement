@@ -199,14 +199,13 @@
             <label>Thời gian sử dụng (tháng)</label>
             <input type="number"
                    th:field="*{defaultUsefulLifeMonths}"
-                   min="1"
                    required>
             <div class="error" th:errors="*{defaultUsefulLifeMonths}"></div>
 
             <br/>
 
             <!-- BUTTON -->
-            <button type="submit"
+            <button id="btnCreate" type="submit"
                     th:if="${mode == 'create'}">
                 Thêm mới
             </button>

@@ -19,7 +19,7 @@ public class SecurityConfig {
     private final CustomerAuthenticationFailureHandler customerAuthenticationFailureHandler;
 
     // các url dc truy cập tự do
-    private final String[] WHITE_LIST = {"/auth/login","/css/**"};
+    private final String[] WHITE_LIST = {"/auth/login", "/static/css/**"};
 
     @Bean
     public PasswordEncoder passwordEncoder() {

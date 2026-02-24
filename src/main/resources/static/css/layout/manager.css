@@ -1,0 +1,29 @@
+.manager-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.manager-sidebar {
+    width: 220px;
+    background: #343a40;
+    color: white;
+    padding-top: 20px;
+}
+
+.sidebar-link {
+    display: block;
+    padding: 10px 20px;
+    color: #ccc;
+    text-decoration: none;
+}
+
+.sidebar-link:hover {
+    background: #495057;
+    color: white;
+}
+
+.manager-main {
+    flex: 1;
+    padding: 20px;
+    background: #f8f9fa;
+}

@@ -1,136 +1,177 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Quản lý danh mục</title>
-    <style>
-        .container {
-            display: flex;
-            gap: 40px;
-        }
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/manager :: layout(~{::content})">
 
-        .left {
-            width: 60%;
-        }
 
-        .right {
-            width: 40%;
-        }
+<div th:fragment="content">
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    <div class="container-fluid mt-4">
 
-        th, td {
-            border-bottom: 1px solid #ccc;
-            padding: 8px;
-        }
+        <h3 class="mb-4">Quản lý danh mục tài sản</h3>
 
-        .actions a {
-            margin-right: 8px;
-        }
+        <div class="row">
 
-        .btn {
-            padding: 6px 12px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
+            <!-- ================== BÊN TRÁI ================== -->
+            <div class="col-md-7">
 
-<h2>QUẢN LÍ DANH MỤC TÀI SẢN</h2>
-<div class="container">
-    <!--    bên trái -->
-    <div class="left">
-        <form method="get" th:action="@{/manager/categories}">
-            <input type="text" name="keyword" placeholder="Tìm theo tên danh mục"
-                   th:value="${keyword}">
+                <div class="card table-box">
+                    <div class="card-body">
 
-            <!-- giữ lại sort nếu đang sort -->
-            <input type="hidden" name="sort" th:value="${sort}">
+                        <!-- Tìm kiếm -->
+                        <form method="get"
+                              th:action="@{/manager/categories}"
+                              class="row g-2 mb-3">
 
-            <button type="submit">Tìm</button>
-        </form>
-        <table>
-            <thead>
-            <tr>
-                <th>Mã danh mục</th>
-                <th>Tên danh mục
-                    <a th:href="@{/manager/categories(keyword=${keyword}, sort='asc')}">▲</a>
-                    <a th:href="@{/manager/categories(keyword=${keyword}, sort='desc')}">▼</a>
-                </th>
+                            <div class="col-md-8">
+                                <input type="text"
+                                       class="form-control"
+                                       name="keyword"
+                                       placeholder="Tìm theo tên danh mục"
+                                       th:value="${keyword}">
+                            </div>
 
-                <th>Hành động</th>
-            </tr>
-            </thead>
+                            <input type="hidden"
+                                   name="sort"
+                                   th:value="${sort}">
 
-            <tbody>
-            <tr th:each="c: ${categories}">
-                <td th:text="${c.categoryId}"></td>
-                <td th:text="${c.categoryName}"></td>
-                <td class="actions">
-                    <a th:href="@{'/manager/categories?id=' +${c.categoryId}}">✏</a>
-                    <a th:href="@{'/manager/categories/delete/' +${c.categoryId}}"
-                       onclick="return confirm('Bạn có chắc chắn muốn xóa?')">🗑</a>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary w-100">
+                                    Tìm kiếm
+                                </button>
+                            </div>
+                        </form>
 
-                </td>
+                        <!-- Bảng -->
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Mã</th>
+                                <th>
+                                    Tên danh mục
+                                    <a th:href="@{/manager/categories(keyword=${keyword}, sort='asc')}"
+                                       class="text-decoration-none">▲</a>
+                                    <a th:href="@{/manager/categories(keyword=${keyword}, sort='desc')}"
+                                       class="text-decoration-none">▼</a>
+                                </th>
+                                <th width="120">Hành động</th>
+                            </tr>
+                            </thead>
 
-            </tr>
+                            <tbody>
+                            <tr th:each="c : ${categories}">
+                                <td th:text="${c.categoryId}"></td>
+                                <td th:text="${c.categoryName}"></td>
+                                <td>
+                                    <a th:href="@{'/manager/categories?id=' + ${c.categoryId}}"
+                                       class="btn btn-sm btn-warning">
+                                        Sửa
+                                    </a>
 
-            </tbody>
-        </table>
+                                    <a th:href="@{'/manager/categories/delete/' + ${c.categoryId}}"
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa?')"
+                                       class="btn btn-sm btn-danger">
+                                        Xóa
+                                    </a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
 
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================== BÊN PHẢI ================== -->
+            <div class="col-md-5">
+
+                <div class="card form-box">
+                    <div class="card-body">
+
+                        <h5 class="mb-3"
+                            th:text="${mode == 'update'} ? 'Cập nhật danh mục' : 'Tạo danh mục'">
+                        </h5>
+
+                        <form th:action="@{/manager/categories}"
+                              th:object="${category}"
+                              method="post">
+
+                            <!-- ID -->
+                            <div th:if="${mode=='update'}" class="mb-3">
+                                <label class="form-label">Mã danh mục</label>
+                                <input type="text"
+                                       class="form-control"
+                                       th:field="*{categoryId}"
+                                       readonly>
+                                <input type="hidden"
+                                       th:field="*{categoryId}">
+                            </div>
+
+                            <!-- Tên -->
+                            <div class="mb-3">
+                                <label class="form-label">Tên danh mục</label>
+                                <input type="text"
+                                       class="form-control"
+                                       th:field="*{categoryName}"
+                                       placeholder="Nhập tên danh mục"
+                                       required>
+                                <div class="text-danger"
+                                     th:errors="*{categoryName}">
+                                </div>
+                            </div>
+
+                            <!-- Mô tả -->
+                            <div class="mb-3">
+                                <label class="form-label">Mô tả</label>
+                                <textarea class="form-control"
+                                          th:field="*{description}"
+                                          rows="3"
+                                          placeholder="Nhập mô tả"></textarea>
+                            </div>
+
+                            <!-- Trạng thái -->
+                            <div th:if="${mode=='update'}" class="mb-3">
+                                <label class="form-label">Trạng thái</label>
+                                <select class="form-select"
+                                        th:field="*{status}">
+                                    <option value="ACTIVE">Hoạt động</option>
+                                    <option value="INACTIVE">Ngưng</option>
+                                </select>
+                            </div>
+
+                            <!-- Nút -->
+                            <div class="d-flex gap-2">
+                                <button type="submit"
+                                        name="add"
+                                        th:if="${mode == 'create'}"
+                                        class="btn btn-success">
+                                    Thêm mới
+                                </button>
+
+                                <button type="submit"
+                                        name="save"
+                                        th:if="${mode == 'update'}"
+                                        class="btn btn-primary">
+                                    Cập nhật
+                                </button>
+
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        onclick="window.location.href='/manager/categories'">
+                                    Hủy
+                                </button>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
     </div>
 
-    <!--    bên phải -->
-    <div class="right">
-
-        <h3 th:text="${mode == 'update'} ? 'Cập nhật danh mục' : 'Tạo danh mục'"></h3>
-
-        <form th:action="@{/manager/categories}"
-              th:object="${category}"
-              method="post">
-
-            <div th:if="${mode=='update'}">
-                <label>Mã danh mục</label><br/>
-                <input type="text" th:field="*{categoryId}" readonly/>
-                <input type="hidden" th:field="*{categoryId}">
-            </div>
-
-            <label>Tên danh mục</label><br/>
-            <input type="text" th:field="*{categoryName}" placeholder="Nhập tên danh mục" required><br/>
-            <div style="color:red"
-                 th:errors="*{categoryName}">
-            </div>
-
-            <label>Mô tả</label><br/>
-            <textarea th:field="*{description}" placeholder="Nhập mô tả"></textarea> <br/>
-
-            <div th:if="${mode=='update'}">
-                <label>Trạng thái</label><br/>
-                <select th:field="*{status}">
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="INACTIVE">INACTIVE</option>
-                </select><br/>
-            </div>
-            <button type="submit" name="add"
-                    th:if="${mode == 'create'}">Thêm mới
-            </button>
-
-            <button type="submit" name="save"
-                    th:if="${mode == 'update'}">Cập nhật
-            </button>
-
-            <button type="button"
-                    onclick="window.location.href='/manager/categories'">
-                Huỷ
-            </button>
-
-        </form>
-
-    </div>
 </div>
-
-</body>
 </html>
