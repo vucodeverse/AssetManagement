@@ -16,15 +16,18 @@ public class UserCreateRequest {
     @Size(min = 2, message = "Password must be at least {min} characters")
     private String password;
 
-    @NotBlank(message = "Full name is required")
-    private String fullName;
+    @NotBlank(message = "First name is required")
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    private String lastName;
 
     @Email(message = "Invalid email format")
     private String email;
 
     private String phoneNumber;
 
-    @NotBlank(message = "Role is required")
+    @NotNull(message = "Role is required")
     private Role role;
 
     @NotNull(message = "Department is required")
