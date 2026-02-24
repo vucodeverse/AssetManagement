@@ -2,7 +2,6 @@ package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
-import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
 import edu.fpt.groupfive.dto.response.PurchaseDetailResponse;
@@ -16,7 +15,6 @@ import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,125 +26,65 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     private final PurchaseDAO purchaseDAO;
     private final PurchaseMapper purchaseMapper;
-    private final PurchaseDetailDAO purchaseDetailDAO;
-    private final UserService userService;
-    private final AssetTypeService assetTypeService;
 
+    // tạo 1 purchase request
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Integer createPurchaseRequest(PurchaseCreateRequest purchaseCreateRequest, int userId, Request request) {
         log.info("Saving purchase request: {}", purchaseCreateRequest);
 
-        //map sang purchase
+        // map từ dto sang purchase
         Purchase purchase = purchaseMapper.toPurchase(purchaseCreateRequest);
 
-        //set các thuộc tính chưa map được
+        //set các data có sẵn
         purchase.setStatus(request);
         purchase.setCreatedByUser(2);
         purchase.setCreatedAt(LocalDate.now());
 
-
+        // trả lại id sau khi insert
         Integer purchaseId = purchaseDAO.insert(purchase);
 
-        //insert purchase detail
-        if(purchase.getPurchaseDetails() != null && purchaseId != null){
-
-            purchase.getPurchaseDetails().forEach(d -> {
-                d.setPurchaseRequestId(purchaseId);
-                purchaseDetailDAO.insert(d);
-            });
-        }
         log.info("Saved with ID: {}", purchaseId);
         return purchaseId;
     }
 
     @Override
     public PurchaseResponse findById(Integer id) {
-            return purchaseDAO.findById(id)
-                    .map(p -> PurchaseResponse.builder()
-                            .id(p.getId())
-                            .status(p.getStatus())
-                            .creatorName(userService.findNameById(p.getCreatedByUser()))
-                            .neededByDate(p.getNeededByDate())
-                            .priority(p.getPriority().name())
-                            .createdAt(p.getCreatedAt())
-                            .purchaseDetails(
-                                    p.getPurchaseDetails().stream()
-                                            .map(pd -> PurchaseDetailResponse.builder()
-                                                    .id(pd.getId())
-                                                    .note(pd.getNote())
-                                                    .estPrice(pd.getEstimatePrice())
-                                                    .quantity(pd.getQuantity())
-                                                    .specification(pd.getSpecificationRequirement())
-                                                    .assetTypeName(
-                                                            assetTypeService.findNameById(pd.getAssetTypeId())
-                                                    )
-                                                    .build()
-                                            ).toList()
-                            )
-                            .build()
-                    )
-                    .orElseThrow(() -> new RuntimeException("Purchase tồn tại + id"));
-
+        return purchaseDAO.findById(id)
+                .map(purchaseMapper::toPurchaseResponse)
+                .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại: " + id));
     }
 
+    // lấy ra tấy cả purchase
     @Override
     public List<PurchaseResponse> findAllPurchases() {
-
-        return purchaseDAO.findAll().stream().map(p ->
-                  PurchaseResponse.builder()
-                          .id(p.getId())
-                          .status(p.getStatus())
-                          .creatorName(userService.findNameById(p.getCreatedByUser()))
-                          .neededByDate(p.getNeededByDate())
-                          .priority(p.getPriority().name())
-                          .createdAt(p.getCreatedAt())
-                          .purchaseDetails(p.getPurchaseDetails().stream().map(pd -> PurchaseDetailResponse.builder()
-                                  .id(pd.getId())
-                                  .note(pd.getNote())
-                                  .estPrice(pd.getEstimatePrice())
-                                  .quantity(pd.getQuantity())
-                                  .specification(pd.getSpecificationRequirement())
-                                  .assetTypeName(assetTypeService.findNameById(pd.getAssetTypeId()))
-                                  .build()).toList())
-                          .build()
-          ).toList();
-
+        return purchaseDAO.findAll().stream().map(purchaseMapper::toPurchaseResponse).toList();
     }
 
+    // thực hiện search và filter
     @Override
     public List<PurchaseResponse> searchAndFilter(PurchaseSearchAndFilter p) {
 
+        // validate ngày tháng nhập vào có hợp lí ko
         if (p.getFrom() != null && p.getTo() != null
                 && p.getFrom().isAfter(p.getTo())) {
             throw new InvalidDataException("From phải trước To");
         }
 
-        return purchaseDAO.getPurchaseByFilter(p).stream().map(pr ->
-                PurchaseResponse.builder()
-                        .id(pr.getId())
-                        .status(pr.getStatus())
-                        .creatorName(userService.findNameById(pr.getCreatedByUser()))
-                        .neededByDate(pr.getNeededByDate())
-                        .priority(pr.getPriority().name())
-                        .createdAt(pr.getCreatedAt())
-                        .purchaseDetails(pr.getPurchaseDetails().stream().map(pd -> PurchaseDetailResponse.builder()
-                                .id(pd.getId())
-                                .note(pd.getNote())
-                                .estPrice(pd.getEstimatePrice())
-                                .quantity(pd.getQuantity())
-                                .specification(pd.getSpecificationRequirement())
-                                .assetTypeName(assetTypeService.findNameById(pd.getAssetTypeId()))
-                                .build()).toList())
-                        .build()
-        ).toList();
+        // map sang Purchase response để hiển thị
+        return purchaseDAO.getPurchaseByFilter(p).stream()
+                .map(purchaseMapper::toPurchaseResponse)
+                .toList();
     }
 
+    // thực hiện save và draft
     @Override
     public void actionsWithPurchase(Integer purchaseId, String action, String reasonReject) {
-        Purchase p = purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException("Purchase request " +
+
+        // check purchase có tồn tại hay ko
+        purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException("Purchase request " +
                 "không tộn tại"));
 
+        // xử lí các trường hợp nhận về actions
         if ("a".equals(action)) {
             purchaseDAO.updatePurchaseStatus(Request.APPROVED, purchaseId, null);
         } else if ("r".equals(action)) {

@@ -27,6 +27,7 @@ public class PurchaseDetailCreateRequest {
     @NotNull(message = "Loại tài sản không được để trống")
     private Integer assetTypeId;
 
+    @NotNull(message = "Estimate Price Không được để trống")
     @Min(value = 1, message = "Estimate Price phải lớn hơn 0")
     private BigDecimal estimatePrice;
 }

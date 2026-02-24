@@ -15,6 +15,7 @@ public class PurchaseDetail extends AbstractEntity<Integer>{
     private String specificationRequirement;
     private String note;
     private Integer assetTypeId;
+    private String assetTypeName; // Field added to hold JOINed name
     private Integer purchaseRequestId;
     private BigDecimal estimatePrice;
     private List<QuotationDetail> quotationDetails = new ArrayList<>();

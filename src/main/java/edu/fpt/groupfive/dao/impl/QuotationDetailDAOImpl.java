@@ -73,7 +73,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 q.setQuantity(rs.getInt("quantity"));
                 q.setQuotationDetailNote(rs.getString("quotation_detail_note"));
                 q.setWarrantyMonths(rs.getInt("warranty_months"));
-                q.setPrice(BigDecimal.valueOf(rs.getInt("price")));
+                q.setPrice(rs.getBigDecimal("price"));
 
                 quotationDetails.add(q);
             }
@@ -106,7 +106,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 q.setQuantity(rs.getInt("quantity"));
                 q.setQuotationDetailNote(rs.getString("quotation_detail_note"));
                 q.setWarrantyMonths(rs.getInt("warranty_months"));
-                q.setPrice(BigDecimal.valueOf(rs.getInt("price")));
+                q.setPrice(rs.getBigDecimal("price"));
 
                 quotationDetails.add(q);
             }
@@ -116,4 +116,34 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
         return quotationDetails;
     }
 
+    @Override
+    public List<edu.fpt.groupfive.dto.response.QuotationDetailResponse> findDetailResponsesByQuotationId(Integer quotationId) {
+        String sql = "SELECT qd.*, at.asset_type_name " +
+                     "FROM quotation_detail qd " +
+                     "LEFT JOIN asset_type at ON qd.asset_type_id = at.asset_type_id " +
+                     "WHERE qd.quotation_id = ?";
+
+        List<edu.fpt.groupfive.dto.response.QuotationDetailResponse> responses = new ArrayList<>();
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setInt(1, quotationId);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                responses.add(edu.fpt.groupfive.dto.response.QuotationDetailResponse.builder()
+                        .quotationDetailId(rs.getInt("quotation_detail_id"))
+                        .quotationId(rs.getInt("quotation_id"))
+                        .purchaseDetailId(rs.getInt("purchase_request_detail_id"))
+                        .assetTypeName(rs.getString("asset_type_name"))
+                        .quantity(rs.getInt("quantity"))
+                        .warrantyMonths(rs.getInt("warranty_months"))
+                        .price(rs.getBigDecimal("price"))
+                        .quotationDetailNote(rs.getString("quotation_detail_note"))
+                        .build());
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return responses;
+    }
 }

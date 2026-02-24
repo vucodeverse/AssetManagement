@@ -4,6 +4,7 @@ import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
 import edu.fpt.groupfive.dto.response.AssetTypeResponse;
+import edu.fpt.groupfive.dto.response.PurchaseResponse;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;

@@ -17,6 +17,6 @@ public interface QuotationService {
     List<QuotationForPurchaseResponse> searchAndFilterForQuotation(SearchForQuotation searchForQuotation);
 
     List<QuotationForPurchaseResponse> getQuotationAndPurchase();
-    List<QuotationResponse> QuotationCriteria(QuotationSearchCriteria quotationSearchCriteria);
+    List<QuotationResponse> quotationCriteriaForPurchase(QuotationSearchCriteria quotationSearchCriteria);
 
 }

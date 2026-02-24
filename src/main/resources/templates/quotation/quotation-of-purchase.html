@@ -12,11 +12,11 @@
 
 <body>
     <th:block layout:fragment="content">
-        <main class="main-content">
+        <main class="quotation-content-wrapper">
             <!-- Breadcrumb -->
             <div class="breadcrumb">
-                Dashboard / Approval Center / Purchase Requests / <span class="active"
-                    th:text="'PR-' + ${purchaseId}">PR-000052</span>
+                DASHBOARD / APPROVAL CENTER / <a th:href="@{/purchase-staff/purchase-list}">PURCHASE REQUESTS</a> /
+                <span class="active" th:text="'PR-' + ${purchaseId}">PR-000052</span>
             </div>
 
             <!-- Page Title Area -->
@@ -28,43 +28,57 @@
                 </div>
                 <button class="btn-solid"><i class="fas fa-plus"></i> Request New Quote</button>
             </header>
-
-
-            <!-- Filters & Search -->
-            <div class="table-actions">
-                <div class="search-wrap">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="tableSearch" placeholder="Search by QT ID or Supplier...">
+            <form method="get" th:action="@{/purchase-staff/search/quotation-of-purchase/{id}(id=${purchaseId})}"
+                id="filterForm">
+                <div class="table-actions">
+                    <div class="search-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="tableSearch" name="keyword"
+                            th:value="${criteria != null ? criteria.keyword : ''}"
+                            placeholder="Search by QT ID or Supplier...">
+                    </div>
+                    <div class="filter-group-wrap">
+                        <div class="filter-select">
+                            <label>Status:</label>
+                            <select id="statusFilter" name="status">
+                                <option value="">All</option>
+                                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                                    th:selected="${criteria != null && criteria.status != null && criteria.status.name() == s.name()}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-select">
+                            <label>Supplier:</label>
+                            <select id="supplierFilter" name="supplierName">
+                                <option value="">All</option>
+                                <option th:each="sup : ${suppliers}" th:value="${sup.supplierName}"
+                                    th:text="${sup.supplierName}"
+                                    th:selected="${criteria != null && criteria.supplierName == sup.supplierName}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-select">
+                            <label>Amount:</label>
+                            <select id="amountFilter" name="amountRange">
+                                <option value="">All</option>
+                                <option value="0-5000"
+                                    th:selected="${criteria != null && criteria.amountRange == '0-5000'}">$0 - $5,000
+                                </option>
+                                <option value="5000-10000"
+                                    th:selected="${criteria != null && criteria.amountRange == '5000-10000'}">$5,000 -
+                                    $10,000</option>
+                                <option value="10000-20000"
+                                    th:selected="${criteria != null && criteria.amountRange == '10000-20000'}">$10,000 -
+                                    $20,000</option>
+                                <option value="20000+"
+                                    th:selected="${criteria != null && criteria.amountRange == '20000+'}">$20,000+
+                                </option>
+                            </select>
+                        </div>
+                        <button class="btn-more"><i class="fas fa-sliders-h"></i> More Filters</button>
+                    </div>
                 </div>
-                <div class="filter-group-wrap">
-                    <div class="filter-select">
-                        <label>Status:</label>
-                        <select id="statusFilter">
-                            <option value="">All</option>
-                            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
-                        </select>
-                    </div>
-                    <div class="filter-select">
-                        <label>Supplier:</label>
-                        <select id="supplierFilter">
-                            <option value="">All</option>
-                            <option th:each="sup : ${suppliers}" th:value="${sup.supplierName}"
-                                th:text="${sup.supplierName}"></option>
-                        </select>
-                    </div>
-                    <div class="filter-select">
-                        <label>Amount:</label>
-                        <select id="amountFilter">
-                            <option value="">All</option>
-                            <option value="0-5000">$0 - $5,000</option>
-                            <option value="5000-10000">$5,000 - $10,000</option>
-                            <option value="10000-20000">$10,000 - $20,000</option>
-                            <option value="20000+">$20,000+</option>
-                        </select>
-                    </div>
-                    <button class="btn-more"><i class="fas fa-sliders-h"></i> More Filters</button>
-                </div>
-            </div>
+            </form>
 
             <!-- Quotation Table -->
             <div class="table-container">

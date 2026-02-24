@@ -18,5 +18,6 @@ public class QuotationForPurchaseResponse {
     private BigDecimal estPrice;
     private String  priority;
     private LocalDate createdAt;
+
 }
 

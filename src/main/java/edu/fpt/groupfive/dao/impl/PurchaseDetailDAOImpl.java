@@ -17,25 +17,23 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    // insert purchase detail
     @Override
-    public void insert(PurchaseDetail purchaseDetail) {
-        String sql ="insert into purchase_request_detail (estimated_price, quantity, purchase_request_id, " +
+    public void insert(PurchaseDetail purchaseDetail, Connection connection) {
+        String sql = "insert into purchase_request_detail (estimated_price, quantity, purchase_request_id, " +
                 "asset_type_id, spec_requirement, note) values (?, ?, ?,?, ?,?)";
 
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-             preparedStatement.setBigDecimal(1, purchaseDetail.getEstimatePrice());
-             preparedStatement.setInt(2, purchaseDetail.getQuantity());
-             preparedStatement.setInt(3, purchaseDetail.getPurchaseRequestId());
-             preparedStatement.setInt(4, purchaseDetail.getAssetTypeId());
-             preparedStatement.setString(5, purchaseDetail.getSpecificationRequirement());
-             preparedStatement.setString(6, purchaseDetail.getNote());
-
-             preparedStatement.executeUpdate();
-        }catch (Exception exception){
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setBigDecimal(1, purchaseDetail.getEstimatePrice());
+            preparedStatement.setInt(2, purchaseDetail.getQuantity());
+            preparedStatement.setInt(3, purchaseDetail.getPurchaseRequestId());
+            preparedStatement.setInt(4, purchaseDetail.getAssetTypeId());
+            preparedStatement.setString(5, purchaseDetail.getSpecificationRequirement());
+            preparedStatement.setString(6, purchaseDetail.getNote());
+            preparedStatement.executeUpdate();
+        } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
-
     }
 
     @Override
@@ -43,9 +41,13 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
         return Optional.empty();
     }
 
+    // tìm purchase detail theo purchse request
     @Override
     public List<PurchaseDetail> findByPurchaseRequestId(Integer purchaseRequestId) {
-        String sql = "select * from purchase_request_detail where purchase_request_id = ?";
+        String sql = "select pd.*, at.asset_type_name " +
+                "from purchase_request_detail pd " +
+                "left join asset_type at on pd.asset_type_id = at.asset_type_id " +
+                "where pd.purchase_request_id = ?";
         List<PurchaseDetail> purchaseDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -64,6 +66,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
                     );
                     detail.setNote(rs.getString("note"));
                     detail.setAssetTypeId(rs.getInt("asset_type_id"));
+                    detail.setAssetTypeName(rs.getString("asset_type_name"));
                     detail.setPurchaseRequestId(rs.getInt("purchase_request_id"));
                     detail.setEstimatePrice(rs.getBigDecimal("estimated_price"));
 

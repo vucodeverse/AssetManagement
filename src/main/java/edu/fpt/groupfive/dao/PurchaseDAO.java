@@ -5,7 +5,6 @@ import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
 import edu.fpt.groupfive.dto.request.SearchForQuotation;
 import edu.fpt.groupfive.model.Purchase;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,7 +18,6 @@ public interface PurchaseDAO {
 
     void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject);
 
-    List<Purchase> purchaseGropedQuotation(SearchForQuotation s);
 
-    Map<Integer, Object[]> getCountAndTotalAmout(List<Integer> purchaseIds);
+    Map<Integer, Object[]> findQuotationSummaryByFilter(SearchForQuotation s);
 }

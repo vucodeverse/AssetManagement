@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.service.impl;
+    package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.common.Request;
@@ -13,6 +13,7 @@ import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.mapper.QuotationDetailMapper;
 import edu.fpt.groupfive.mapper.QuotationMapper;
 import edu.fpt.groupfive.model.*;
+
 import edu.fpt.groupfive.service.QuotationService;
 import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
@@ -150,89 +151,73 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
 
-    // lấy ra 1 list các quoation theo purchase request id
     @Override
     public List<QuotationResponse> getQuotationsByPurchase(Integer purchaseId) {
+        purchaseDAO.findById(purchaseId)
+                .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại"));
 
-        Purchase purchase = purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException("Purchase " +
-                "request này không tồn tại"));
+        List<Quotation> quotations = quotationDAO.findByPurchaseId(purchaseId);
 
-        return quotationDAO.findByPurchaseId(purchaseId).stream().map(q -> QuotationResponse.builder()
-                .quotationId(q.getId())
-                .purchaseId(q.getPurchaseId())
-                .quotationStatus(q.getQuotationStatus())
-                .supplierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException(
-                        "Supplier này không tồn tại")).getSupplierName())
-                .totalAmount(q.getTotalAmount())
-                .createdAt(q.getCreatedAt())
-                .build()).toList();
+        Map<Integer, String> supplierMap = new HashMap<>();
+        for (Supplier s : supplierDAO.getAllSupplier()) {
+            supplierMap.put(s.getId(), s.getSupplierName());
+        }
+
+        List<QuotationResponse> out = new ArrayList<>();
+        for (Quotation q : quotations) {
+            out.add(QuotationResponse.builder()
+                    .quotationId(q.getId())
+                    .purchaseId(q.getPurchaseId())
+                    .quotationStatus(q.getQuotationStatus())
+                    .totalAmount(q.getTotalAmount())
+                    .createdAt(q.getCreatedAt())
+                    .supplierName(supplierMap.getOrDefault(q.getSupplierId(), "Không tồn tại supplier"))
+                    .build());
+        }
+        return out;
     }
 
     @Override
     public QuotationResponse getQuotationById(Integer quotationId) {
-        Quotation q = quotationDAO.findById(quotationId).orElseThrow(() -> new InvalidDataException("Quotation not found"));
-        
-        List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(quotationId);
 
-        // lấy ra list detail response
-        List<QuotationDetailResponse> detailResponses = details.stream().map(d -> QuotationDetailResponse.builder()
-                .quotationDetailId(d.getId())
-                .quotationId(d.getQuotationId())
-                .purchaseDetailId(d.getPurchaseDetailId())
-                .assetTypeName(assetTypeDAO.findById(d.getAssetTypeId()))
-                .quantity(d.getQuantity())
-                .warrantyMonths(d.getWarrantyMonths())
-                .price(d.getPrice())
-                .quotationDetailNote(d.getQuotationDetailNote())
-                .build()).toList();
+         quotationDAO.findResponseById(quotationId)
+                .orElseThrow(() -> new InvalidDataException("Quotation not found"));
 
-        return QuotationResponse.builder()
-                .quotationId(q.getId())
-                .purchaseId(q.getPurchaseId())
-                .quotationStatus(q.getQuotationStatus())
-                .supplierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException("Supplier not found")).getSupplierName())
-                .totalAmount(q.getTotalAmount())
-                .createdAt(q.getCreatedAt())
-                .quotationDetails(detailResponses)
-                .build();
+        List<QuotationDetailResponse> detailResponses = quotationDetailDAO.findDetailResponsesByQuotationId(quotationId);
+
+        return null;
     }
 
     @Override
-    public List<QuotationForPurchaseResponse> searchAndFilterForQuotation(SearchForQuotation s) {
-        s.setMinAmount(null);
-        s.setMaxAmount(null);
-        List<BigDecimal> list = new ArrayList<>();
+    public List<QuotationForPurchaseResponse>   searchAndFilterForQuotation(SearchForQuotation s) {
         if (s.getFrom() != null && s.getTo() != null && s.getFrom().isAfter(s.getTo())) {
             throw new InvalidDataException("From phải trước To");
         }
-        if(s.getAmountRange() != null && !s.getAmountRange().isBlank()){
-            list = rangeAmount.applyRangeAMount(s.getAmountRange());
 
-            if(list.size() == 1){
+        s.setMinAmount(null);
+        s.setMaxAmount(null);
+
+        if (s.getAmountRange() != null && !s.getAmountRange().isBlank()) {
+            List<BigDecimal> list = rangeAmount.applyRangeAMount(s.getAmountRange());
+            if (list.size() == 1) {
                 s.setMinAmount(list.get(0));
             } else if (list.size() == 2) {
                 s.setMinAmount(list.get(0));
                 s.setMaxAmount(list.get(1));
             }
         }
-        List<Purchase> purchaseList = purchaseDAO.purchaseGropedQuotation(s);
 
-        List<Integer> ids = purchaseList.stream().map(Purchase::getId).toList();
-        Map<Integer, Object[]> summaryMap = purchaseDAO.getCountAndTotalAmout(ids);
+        Map<Integer, Object[]> summaryMap = purchaseDAO.findQuotationSummaryByFilter(s);
 
         List<QuotationForPurchaseResponse> out = new ArrayList<>();
-        for (Purchase p : purchaseList) {
-            Object[] sum = summaryMap.get(p.getId());
-
-            int totalQuo = (sum == null) ? 0 : (Integer) sum[0];
-            BigDecimal lowestPrice = (sum == null) ? null : (BigDecimal) sum[1];
-
+        for (Map.Entry<Integer, Object[]> entry : summaryMap.entrySet()) {
+            Object[] data = entry.getValue();
             out.add(QuotationForPurchaseResponse.builder()
-                    .purchaseId(p.getId())
-                    .needByDate(p.getNeededByDate())
-                    .priority(p.getPriority().name())
-                    .numberOfQuotation(totalQuo)
-                    .estPrice(lowestPrice)
+                    .purchaseId(entry.getKey())
+                    .needByDate((LocalDate) data[0])
+                    .priority((String) data[1])
+                    .numberOfQuotation((Integer) data[2])
+                    .estPrice((BigDecimal) data[3])
                     .build());
         }
         return out;
@@ -244,19 +229,39 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     @Override
-    public List<QuotationResponse> QuotationCriteria(QuotationSearchCriteria quotationSearchCriteria) {
+    public List<QuotationResponse> quotationCriteriaForPurchase(QuotationSearchCriteria criteria) {
+        criteria.setMinAmount(null);
+        criteria.setMaxAmount(null);
 
-        // trả về list quotationResponse
-        return quotationDAO.searchAndFilterQuotationOfPurchase(quotationSearchCriteria).stream().map(q ->
-                QuotationResponse.builder()
-                        .quotationStatus(q.getQuotationStatus())
-                        .quotationId(q.getId())
-                        .createdAt(q.getCreatedAt())
-                        .supplierName(supplierDAO.findById(q.getSupplierId()).orElseThrow(() -> new InvalidDataException("Supplier not found")).getSupplierName())
-                        .totalAmount(q.getTotalAmount())
-                        .purchaseId(q.getPurchaseId())
-                        .build()
-        ).toList();
+        if (criteria.getAmountRange() != null && !criteria.getAmountRange().isBlank()) {
+            List<BigDecimal> list = rangeAmount.applyRangeAMount(criteria.getAmountRange());
+            if (list.size() == 1) {
+                criteria.setMinAmount(list.get(0));
+            } else if (list.size() == 2) {
+                criteria.setMinAmount(list.get(0));
+                criteria.setMaxAmount(list.get(1));
+            }
+        }
+
+        List<Quotation> quotations = quotationDAO.searchAndFilterQuotationOfPurchase(criteria);
+
+        Map<Integer, String> supplierMap = new HashMap<>();
+        for (Supplier s : supplierDAO.getAllSupplier()) {
+            supplierMap.put(s.getId(), s.getSupplierName());
+        }
+
+        List<QuotationResponse> out = new ArrayList<>();
+        for (Quotation q : quotations) {
+            out.add(QuotationResponse.builder()
+                    .quotationId(q.getId())
+                    .purchaseId(q.getPurchaseId())
+                    .quotationStatus(q.getQuotationStatus())
+                    .totalAmount(q.getTotalAmount())
+                    .createdAt(q.getCreatedAt())
+                    .supplierName(supplierMap.getOrDefault(q.getSupplierId(), "Không tồn tại supplier"))
+                    .build());
+        }
+        return out;
     }
 
 }

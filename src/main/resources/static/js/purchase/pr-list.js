@@ -1,54 +1,36 @@
-//auto filter trong dropdown
 document.addEventListener("DOMContentLoaded", function () {
+    const tableEl = document.getElementById("purchaseTO");
 
-    // lấy form filter
-    const form = document.getElementById("filterForm");
-    if(!form) return;
-    // tạo mảng id của status và pri rồi duyệt
-    ["statusFilter", "priorityFilter"].forEach(id => {
+    if (tableEl && typeof $ !== 'undefined' && typeof $.fn.DataTable !== 'undefined') {
+        try {
+            $(tableEl).DataTable({
+                pageLength: 5,
+                lengthChange: false,
+                ordering: true,
+                info: true,
+                searching: false,
+                order: [[5, "desc"]],
+                columnDefs: [
+                    { orderable: false, targets: 6 }
+                ],
+                language: {
+                    paginate: { previous: "<", next: ">" },
+                    info: "SHOWING _START_ TO _END_ OF _TOTAL_ PURCHASE REQUESTS"
+                }
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
-        // lấy ra từng select
+    const filters = ["statusFilter", "priorityFilter", "from", "to"];
+    filters.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-
-            // gắn event
             el.addEventListener("change", function () {
-                form.submit(); // dropdown đổi value sẽ tự submit
+                const form = document.getElementById("filterForm");
+                if (form) form.submit();
             });
         }
-
-        const from = form.querySelector('input[name="from"]');
-        const to = form.querySelector('input[name="to"]');
-
-        [from, to].forEach(el =>{
-            if(!el) return;
-            el.addEventListener("change", () => form.submit());
-        })
     });
-
 });
-
-
-// $ trong jQuery là biến đại diện cho object jQuery hay $ === jQuery
-$(function (){
-    $('#purchaseTO').DataTable({
-        pageLength: 6,
-        lengthChange: false,
-        ordering: true,
-        info: true,
-        searching:false,
-        order: [[5, "desc"]],
-    // cấu hình theo từng cột
-    // owqr đây ko cho cột số 6 dc phép order
-    columnDefs: [
-        {
-            orderable:false,
-            targets: 6
-        }
-    ],
-        language: {
-            paginate: { previous: "‹", next: "›" }
-        },
-    })
-
-})

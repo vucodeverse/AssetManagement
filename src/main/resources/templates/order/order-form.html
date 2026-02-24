@@ -1,124 +1,211 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/director-layout}">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Order Form - Procurex</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Create Purchase Order</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/order/order-form.css}">
+    </th:block>
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/order/order-form.js}"></script>
+    </th:block>
 </head>
+
 <body>
-<div class="po-container">
-    <!-- Header Section -->
-    <header class="po-header">
-        <div class="header-titles">
-            <h1>PURCHASE ORDER</h1>
-            <p>Systemic procurement management interface.</p>
-        </div>
-        <button class="btn-top-save">SAVE PURCHASE ORDER</button>
-    </header>
+    <th:block layout:fragment="content">
+        <main class="po-content-wrapper">
 
-    <hr class="po-divider">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                DASHBOARD / <a th:href="@{/director/quotations}">QUOTATIONS</a> /
+                <span class="active">CREATE PURCHASE ORDER</span>
+            </div>
 
-    <!-- General Information -->
-    <section class="po-section">
-        <h2 class="section-label">GENERAL INFORMATION</h2>
-        <div class="form-grid">
-            <div class="form-item">
-                <label>QUOTATION ID</label>
-                <div class="input-lock">
-                    <input type="text" value="QUO-2024-001" readonly>
-                    <i class="fas fa-lock"></i>
+            <!-- Page Header -->
+            <header class="page-header">
+                <div class="header-text">
+                    <h1>CREATE PURCHASE ORDER</h1>
+                    <p>Review quotation details and issue a formal purchase order to the supplier.</p>
                 </div>
-            </div>
-            <div class="form-item">
-                <label>SUPPLIER NAME</label>
-                <input type="text" value="Tech Solutions Inc." readonly>
-            </div>
-            <div class="form-item">
-                <label>ORDER DATE</label>
-                <input type="text" value="2024-05-24" readonly>
-            </div>
-            <div class="form-item">
-                <label>TOTAL AMOUNT (USD)</label>
-                <input type="text" value="8,868.75" readonly>
-            </div>
-            <div class="form-item full-width">
-                <label>ORDER NOTE</label>
-                <textarea placeholder="INTERNAL REMARKS OR DELIVERY INSTRUCTIONS..."></textarea>
-            </div>
-        </div>
-    </section>
+            </header>
 
-    <!-- Order Details Section -->
-    <section class="po-section table-section">
-        <h2 class="section-label">ORDER DETAILS</h2>
-        <table class="details-table">
-            <thead>
-            <tr>
-                <th>ASSET TYPE NAME</th>
-                <th>QTY</th>
-                <th>PRICE</th>
-                <th>TAX%</th>
-                <th>DISC%</th>
-                <th>NOTE</th>
-                <th class="align-center">EXPECTED DELIVERY</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Workstation PC - Grade A</td>
-                <td>5</td>
-                <td>1,200.00</td>
-                <td>7.5</td>
-                <td>2.0</td>
-                <td><input type="text" class="inline-input" placeholder="Add note..."></td>
-                <td class="align-center">11/15/2024 <i class="far fa-calendar-alt"></i></td>
-                <td class="align-center"><i class="far fa-trash-alt btn-del"></i></td>
-            </tr>
-            <tr>
-                <td>UltraWide Monitor 34''</td>
-                <td>5</td>
-                <td>450.00</td>
-                <td>7.5</td>
-                <td>0.0</td>
-                <td><input type="text" class="inline-input" value="Includes monitor arms"></td>
-                <td class="align-center">11/15/2024 <i class="far fa-calendar-alt"></i></td>
-                <td class="align-center"><i class="far fa-trash-alt btn-del"></i></td>
-            </tr>
-            </tbody>
-        </table>
-
-        <!-- Financial Summary -->
-        <div class="financial-summary">
-            <div class="summary-line">
-                <span>SUBTOTAL:</span>
-                <strong>$8,250.00</strong>
+            <!-- Error Banner -->
+            <div class="alert-error" th:if="${error}">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
             </div>
-            <div class="summary-line">
-                <span>TOTAL TAX:</span>
-                <strong>$618.75</strong>
-            </div>
-            <div class="total-line">
-                <span>TOTAL AMOUNT:</span>
-                <span class="grand-total">$8,868.75</span>
-            </div>
-        </div>
-    </section>
 
-    <hr class="po-divider">
+            <form th:action="@{/director/quotations/{id}/create-po(id=${orderCreateRequest.quotationId})}"
+                th:object="${orderCreateRequest}" method="post">
 
-    <!-- Footer -->
-    <footer class="po-footer">
-        <div class="footer-info">
-            <i class="fas fa-info-circle"></i> DRAFT POS ARE SAVED AUTOMATICALLY.
-        </div>
-        <div class="footer-actions">
-            <button class="btn-cancel">CANCEL</button>
-            <button class="btn-generate">GENERATE PURCHASE ORDER</button>
-        </div>
-    </footer>
-</div>
+                <!-- General Information -->
+                <div class="po-card">
+                    <h2 class="section-label">General Information</h2>
+                    <div class="form-grid">
+
+                        <div class="form-item">
+                            <label>Quotation ID</label>
+                            <input type="text" th:value="'QT-' + *{quotationId}" readonly>
+                            <input type="hidden" th:field="*{quotationId}">
+                        </div>
+
+                        <div class="form-item">
+                            <label>Supplier</label>
+                            <th:block th:with="supplierName=${#strings.toString('')}">
+                                <th:block th:each="sup : ${suppliers}">
+                                    <th:block th:if="${sup.id == orderCreateRequest.supplierId}"
+                                        th:with="supplierName=${sup.supplierName}">
+                                        <input type="text" th:value="${sup.supplierName}" readonly>
+                                    </th:block>
+                                </th:block>
+                            </th:block>
+                            <input type="hidden" th:field="*{supplierId}">
+                        </div>
+
+                        <div class="form-item">
+                            <label>Total Amount (USD)</label>
+                            <input type="text" th:value="${orderCreateRequest.totalAmout != null ?
+                                       '$' + #numbers.formatDecimal(orderCreateRequest.totalAmout, 1, 'COMMA', 0, 'POINT')
+                                       : 'N/A'}" readonly>
+                            <input type="hidden" th:field="*{totalAmout}">
+                        </div>
+
+                        <div class="form-item full-width">
+                            <label>Order Note</label>
+                            <textarea th:field="*{orderNote}"
+                                placeholder="Internal remarks or delivery instructions..."></textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Order Details -->
+                <div class="po-card">
+                    <h2 class="section-label">Order Details</h2>
+                    <div class="table-container">
+                        <table class="po-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Detail ID</th>
+                                    <th>Unit Price</th>
+                                    <th>Tax %</th>
+                                    <th>Disc %</th>
+                                    <th>Quantity</th>
+                                    <th>Expected Delivery</th>
+                                    <th>Note</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="od, iter : *{orderDetailCreateRequests}">
+                                    <td class="td-value" th:text="${iter.index + 1}">1</td>
+
+                                    <!-- Detail ID display -->
+                                    <td class="td-value" th:text="'QD-' + ${od.quotationDetailId}">QD-001</td>
+
+                                    <!-- Unit price display -->
+                                    <td class="td-value"
+                                        th:text="${od.price != null ? '$' + #numbers.formatDecimal(od.price, 1, 'COMMA', 2, 'POINT') : '-'}">
+                                        -
+                                    </td>
+
+                                    <!-- Tax % display -->
+                                    <td class="td-value" th:text="${od.taxRate != null ? od.taxRate + '%' : '-'}">-</td>
+
+                                    <!-- Discount % display -->
+                                    <td class="td-value"
+                                        th:text="${od.discountRate != null ? od.discountRate + '%' : '-'}">-</td>
+
+                                    <!-- Hidden read-only bindings + Quantity display -->
+                                    <td>
+                                        <input type="hidden"
+                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].quotationDetailId'"
+                                            th:value="${od.quotationDetailId}">
+                                        <input type="hidden"
+                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].price'"
+                                            th:value="${od.price}">
+                                        <input type="hidden"
+                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].taxRate'"
+                                            th:value="${od.taxRate}">
+                                        <input type="hidden"
+                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].discountRate'"
+                                            th:value="${od.discountRate}">
+                                        <input type="hidden"
+                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].assetTypeId'"
+                                            th:value="${od.assetTypeId}">
+                                        <input type="hidden"
+                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].quantity'"
+                                            th:value="${od.quantity}">
+
+                                        <!-- Quantity: display only, fixed from DB -->
+                                        <span class="td-value" th:text="${od.quantity}">0</span>
+                                    </td>
+
+                                    <!-- Expected delivery date (editable) -->
+                                    <td>
+                                        <input class="table-input" type="date"
+                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].expectedDeliveryDate'"
+                                            th:value="${od.expectedDeliveryDate}">
+                                    </td>
+
+                                    <!-- Note (editable) -->
+                                    <td>
+                                        <input class="table-input" type="text"
+                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].orderDetailNote'"
+                                            th:value="${od.orderDetailNote}" placeholder="Add note...">
+                                    </td>
+
+                                    <!-- Delete row: mini form, no JS needed -->
+                                    <td class="td-delete">
+                                        <form
+                                            th:action="@{/director/quotations/{id}/create-po/remove-line(id=${orderCreateRequest.quotationId})}"
+                                            method="post" style="display:inline">
+                                            <input type="hidden" name="deleteIndex" th:value="${iter.index}">
+                                            <button type="submit" class="btn-del-row" title="Remove this line">
+                                                <i class="far fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Financial Summary -->
+                    <div class="financial-summary">
+                        <div class="total-line">
+                            <span>TOTAL AMOUNT</span>
+                            <span class="grand-total" th:text="${orderCreateRequest.totalAmout != null ?
+                                      '$' + #numbers.formatDecimal(orderCreateRequest.totalAmout, 1, 'COMMA', 0, 'POINT')
+                                      : 'N/A'}">
+                                $0
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="po-footer">
+                    <div class="footer-info">
+                        <i class="fas fa-info-circle"></i> Review all fields carefully before submitting.
+                    </div>
+                    <div class="footer-actions">
+                        <a th:href="@{/director/quotations}" class="btn-outline">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn-solid">
+                            <i class="fas fa-file-invoice"></i> Generate Purchase Order
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+
+        </main>
+    </th:block>
 </body>
+
 </html>

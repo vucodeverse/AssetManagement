@@ -3,6 +3,7 @@ package edu.fpt.groupfive.dao.impl;
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.dao.QuotationDAO;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
+import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.model.Quotation;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
@@ -111,6 +112,16 @@ public class QuotationDAOImpl implements QuotationDAO {
     }
 
     @Override
+    public Optional<Quotation> findResponseById(Integer quotationId) {
+        return Optional.empty();
+    }
+
+    @Override
+    public List<Quotation> findResponsesByPurchaseId(Integer purchaseId) {
+        return List.of();
+    }
+
+    @Override
     public List<Quotation> getAll() {
         return List.of();
     }
@@ -139,71 +150,68 @@ public class QuotationDAOImpl implements QuotationDAO {
 
     @Override
     public List<Quotation> searchAndFilterQuotationOfPurchase(QuotationSearchCriteria criteria) {
-        StringBuilder sql = new StringBuilder("select q.* from quotation q join supplier s on q.supplier_id = s" +
-                ".supplier_id where 1=1 ");
+        StringBuilder sql = new StringBuilder(
+                "select q.* from quotation q " +
+                "join supplier s on q.supplier_id = s.supplier_id " +
+                "where 1=1 "
+        );
 
         List<Object> params = new ArrayList<>();
 
-        if(criteria.getSupplierName() != null){
-            sql.append(" and s.supplier_name = ?");
+        if (criteria.getPurchaseId() != null) {
+            sql.append(" and q.purchase_request_id = ? ");
+                params.add(criteria.getPurchaseId());
+        }
+
+        if (criteria.getSupplierName() != null && !criteria.getSupplierName().isBlank()) {
+            sql.append(" and s.supplier_name = ? ");
             params.add(criteria.getSupplierName());
         }
 
-        if(criteria.getStatus() != null){
-            sql.append(" and s.status = ? ");
-            params.add(criteria.getStatus());
+        if (criteria.getStatus() != null) {
+            sql.append(" and q.status = ? ");
+            params.add(criteria.getStatus().name());
         }
 
-        if(criteria.getMinAmount() != null){
+        if (criteria.getMinAmount() != null) {
             sql.append(" and q.total_amount >= ? ");
             params.add(criteria.getMinAmount());
         }
 
-        if(criteria.getMaxAmount() != null){
+        if (criteria.getMaxAmount() != null) {
             sql.append(" and q.total_amount <= ? ");
             params.add(criteria.getMaxAmount());
         }
 
-        if(criteria.getKeyword() != null && !criteria.getKeyword().isBlank()){
+        if (criteria.getKeyword() != null && !criteria.getKeyword().isBlank()) {
             sql.append(" and ( ");
-
             if (criteria.getKeyword().matches("\\d+")) {
-                sql.append(" p.purchase_request_id = ? or ");
+                sql.append(" q.quotation_id = ? or ");
                 params.add(Integer.parseInt(criteria.getKeyword()));
             }
-
-            sql.append(" s.supplier_name = ?");
-
-            String keyword = "%" + criteria.getKeyword() + "%";
-            params.add(keyword);
+            sql.append(" s.supplier_name like ? ) ");
+            params.add("%" + criteria.getKeyword() + "%");
         }
-
 
         List<Quotation> quotations = new ArrayList<>();
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())){
+             PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
 
-            int i = 1;
-
-            if(params.size() > 0){
-                for(Object str : params){
-                    preparedStatement.setObject(i++, str);
-                }
+            for (int i = 0; i < params.size(); i++) {
+                preparedStatement.setObject(i + 1, params.get(i));
             }
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()){
 
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
                 Quotation quotation = new Quotation();
                 quotation.setId(rs.getInt("quotation_id"));
                 quotation.setPurchaseId(rs.getInt("purchase_request_id"));
                 quotation.setSupplierId(rs.getInt("supplier_id"));
                 quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                quotation.setCreatedAt(rs.getDate("created_at") != null ?
-                        rs.getDate("created_at").toLocalDate() : null );
-                quotation.setUpdatedAt(rs.getDate("updated_at") != null ?
-                        rs.getDate("updated_at").toLocalDate() : null);
+                quotation.setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                quotation.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
                 quotations.add(quotation);
             }
 

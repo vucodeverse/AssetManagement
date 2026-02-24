@@ -14,4 +14,7 @@ public interface QuotationDetailDAO {
     List<QuotationDetail> findByPurchaseId(Integer purchaseId);
 
     List<QuotationDetail> findByQuotationId(Integer quotationId);
+
+    // Optimized DTO projection method
+    List<edu.fpt.groupfive.dto.response.QuotationDetailResponse> findDetailResponsesByQuotationId(Integer quotationId);
 }

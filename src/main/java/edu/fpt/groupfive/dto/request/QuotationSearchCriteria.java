@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class QuotationSearchCriteria {
+    private Integer purchaseId;
     private String keyword;
     private QuotationStatus status;
     private String amountRange;

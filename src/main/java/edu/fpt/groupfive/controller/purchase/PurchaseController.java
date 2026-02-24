@@ -8,6 +8,7 @@ import edu.fpt.groupfive.dto.response.AssetTypeResponse;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -29,8 +31,7 @@ public class PurchaseController {
     private final AssetTypeService assetTypeService;
     private final UserService userService;
 
-
-    // hiển thị form nhập
+    // giển thị form tạo purchase
     @GetMapping("/purchase-form")
     public String showPurchaseForm(Model model){
         PurchaseCreateRequest purchaseCreateRequest = new PurchaseCreateRequest();
@@ -41,7 +42,7 @@ public class PurchaseController {
     }
 
 
-    // show detail - creatorName và assetTypeName đã được JOIN sẵn ở DAO, không cần gửi users/assetTypes lên
+    // purchase detail
     @GetMapping("/purchase-detail/{purchaseId}")
     public String showPurchaseDetail(@PathVariable("purchaseId") Integer purchaseId, Model model) {
         model.addAttribute("purchase", purchaseService.findById(purchaseId));
@@ -49,7 +50,7 @@ public class PurchaseController {
     }
 
 
-    // khi add 1 purchase detail mới
+    // them 1 row ở purchase dertail chỗ form nhập
     @PostMapping(value = "/purchase-form", params = "addDetail")
     public String addPurchaseDetail(@ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, Model model){
         purchaseCreateRequest.getPurchaseDetailCreateRequests().add(new PurchaseDetailCreateRequest());
@@ -57,7 +58,7 @@ public class PurchaseController {
         return "purchase/purchase-form";
     }
 
-    // khi xoa 1 purchase detail di
+    // xóa đi 1 row
     @PostMapping(value = "/purchase-form", params = "remove")
     public String removePurchaseDetail(@ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, @RequestParam("remove") int index, Model model){
         if(index >= 0 && purchaseCreateRequest.getPurchaseDetailCreateRequests().size() > 1){
@@ -67,30 +68,39 @@ public class PurchaseController {
         return "purchase/purchase-form";
     }
 
-    // xử lí form nhập
+    //xử lí form nhập
     @PostMapping(value = "/purchase-form", params = "actions")
-    public String processingForm( @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, BindingResult result,Model model, @RequestParam("actions") String actions){
-        if(result.hasErrors()){
-            getAssetType(model);
-            return "purchase/purchase-form";
+    public String processingForm(
+            @Valid @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest,
+            BindingResult result,
+            Model model,
+            @RequestParam("actions") String actions,
+            RedirectAttributes ra) {
+
+        boolean isDraft = "draft".equals(actions);
+
+        // có lỗi thì return
+            if (result.hasErrors()) {
+                getAssetType(model);
+                return "purchase/purchase-form";
+            }
+
+        // lấy ra user đang login
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        int userId = userService.getUserIdByUsername(authentication.getName());
+
+        Integer purchaseId;
+        if (isDraft) {
+            purchaseId = purchaseService.createPurchaseRequest(purchaseCreateRequest, userId, Request.DRAFT);
+        } else {
+            purchaseId = purchaseService.createPurchaseRequest(purchaseCreateRequest, userId, Request.PENDING);
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // nếu save draft
-        if("draft".equals(actions))
-            purchaseService.createPurchaseRequest(purchaseCreateRequest,
-                    userService.getUserIdByUsername(authentication.getName()), Request.DRAFT);
-
-        else
-            purchaseService.createPurchaseRequest(purchaseCreateRequest,
-                    userService.getUserIdByUsername(authentication.getName()), Request.PENDING);
-
-        return "purchase/purchase-form";
+        ra.addFlashAttribute("message", "Tạo Purchase Request thành công!");
+        return "redirect:/asset-manager/purchase-detail/" + purchaseId;
     }
 
-
-    // lấy ra tất cả các asset type (chỉ dùng cho purchase-form, không dùng cho detail nữa)
+    // gắn assetType
     private void getAssetType(Model model) {
         List<AssetTypeResponse> assetTypes = assetTypeService.getAllAssetType();
         model.addAttribute("assetTypes", assetTypes);

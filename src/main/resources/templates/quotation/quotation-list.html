@@ -14,94 +14,91 @@
 
 <body>
     <th:block layout:fragment="content">
-        <div class="dashboard-wrapper">
-            <main class="main-content">
-                <form id="filterForm" method="get" th:action="@{/purchase-staff/search}"
-                    th:object="${searchForQuotation}">
-                    <header class="top-bar">
-                        <h1>QUOTATIONS</h1>
-                        <div class="top-actions">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" th:field="*{keyword}" placeholder="Search by PR ID...">
-                            </div>
-                            <i class="far fa-bell icon-btn"></i>
-                            <i class="fas fa-cog icon-btn"></i>
+        <div class="quotation-content-wrapper">
+            <form id="filterForm" method="get" th:action="@{/purchase-staff/search}" th:object="${searchForQuotation}">
+                <header class="top-bar">
+                    <h1>QUOTATIONS</h1>
+                    <div class="top-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" th:field="*{keyword}" placeholder="Search by PR ID...">
                         </div>
-                    </header>
+                        <i class="far fa-bell icon-btn"></i>
+                        <i class="fas fa-cog icon-btn"></i>
+                    </div>
+                </header>
 
-                    <!-- Filters Section -->
-                    <section class="filters-bar">
-                        <div class="filter-group">
-                            <label>PRIORITY:</label>
-                            <select id="priorityFilter" th:field="*{priority}">
-                                <option value="">All Priorities</option>
-                                <option th:each="pi : ${priorities}" th:value="${pi}" th:text="${pi}">
-                                </option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>AMOUNT:</label>
-                            <select id="amountRange" th:field="*{amountRange}">
-                                <option value="">Any Range</option>
-                                <option value="0-5000">0 - 5,000</option>
-                                <option value="5000-10000">5,000 - 10,000</option>
-                                <option value="10000-20000">10,000 - 20,000</option>
-                                <option value="20000+">20,000+</option>
-                            </select>
-                        </div>
-                        <div class="filter-group dates">
-                            <input type="date" th:field="*{from}">
-                            <span class="to-text">to</span>
-                            <input type="date" th:field="*{to}">
-                        </div>
-                        <div class="filter-actions">
-                            <a class="btn-reset-filters" th:href="@{/purchase-staff/quotations}">
-                                <i class="fas fa-filter-circle-xmark"></i> Reset Filters
-                            </a>
-                        </div>
-                    </section>
-                </form>
+                <!-- Filters Section -->
+                <section class="filters-bar">
+                    <div class="filter-group">
+                        <label>PRIORITY:</label>
+                        <select id="priorityFilter" th:field="*{priority}">
+                            <option value="">All Priorities</option>
+                            <option th:each="pi : ${priorities}" th:value="${pi}" th:text="${pi}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>AMOUNT:</label>
+                        <select id="amountRange" th:field="*{amountRange}">
+                            <option value="">Any Range</option>
+                            <option value="0-5000">0 - 5,000</option>
+                            <option value="5000-10000">5,000 - 10,000</option>
+                            <option value="10000-20000">10,000 - 20,000</option>
+                            <option value="20000+">20,000+</option>
+                        </select>
+                    </div>
+                    <div class="filter-group dates">
+                        <label>DATES:</label>
+                        <input type="date" th:field="*{from}">
+                        <span class="to-text">to</span>
+                        <input type="date" th:field="*{to}">
+                    </div>
+                    <div class="filter-actions">
+                        <a class="btn-reset-filters" th:href="@{/purchase-staff/quotations}">
+                            <i class="fas fa-undo-alt"></i> RESET FILTERS
+                        </a>
+                    </div>
+                </section>
+            </form>
 
-                <!-- Data Table Section -->
-                <div class="table-container">
-                    <table class="data-table" id="quotation-table">
-                        <thead>
-                            <tr>
-                                <th>PR ID </th>
-                                <th>NEEDED BY DATE</th>
-                                <th>QUOTATIONS </th>
-                                <th>EST. AMOUNT </th>
-                                <th>PRIORITY </th>
-                                <th>ACTIONS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="q : ${quotations}">
-                                <td class="pr-id" th:text="${q.purchaseId}"></td>
-                                <td th:text="${#temporals.format(q.needByDate,'MMM dd, yyyy')}"></td>
-                                <td
-                                    th:text="${q.numberOfQuotation} + ${q.numberOfQuotation == 1 ? ' Quote' : ' Quotes'}">
-                                </td>
-                                <td class="amount"
-                                    th:text="${q.estPrice != null ? '$' + #numbers.formatDecimal(q.estPrice, 1, 'COMMA', 0, 'POINT') : 'N/A'}">
-                                </td>
-                                <td>
-                                    <span th:class="'badge ' + ${#strings.toLowerCase(q.priority)}"
-                                        th:text="${q.priority}"></span>
-                                </td>
-                                <td>
-                                    <form
-                                        th:action="@{/purchase-staff/view-quotation-of-purchase/{purchaseId}(purchaseId=${q.purchaseId})}"
-                                        th:method="post">
-                                        <button type="submit" class="btn-review">REVIEW ALL</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </main>
+            <!-- Data Table Section -->
+            <div class="table-container">
+                <table class="data-table" id="quotation-table">
+                    <thead>
+                        <tr>
+                            <th>PR ID </th>
+                            <th>NEEDED BY DATE</th>
+                            <th>QUOTATIONS </th>
+                            <th>EST. AMOUNT </th>
+                            <th>PRIORITY </th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="q : ${quotations}">
+                            <td class="pr-id" th:text="${q.purchaseId}"></td>
+                            <td th:text="${#temporals.format(q.needByDate,'MMM dd, yyyy')}"></td>
+                            <td th:text="${q.numberOfQuotation} + ${q.numberOfQuotation == 1 ? ' Quote' : ' Quotes'}">
+                            </td>
+                            <td class="amount"
+                                th:text="${q.estPrice != null ? '$' + #numbers.formatDecimal(q.estPrice, 1, 'COMMA', 0, 'POINT') : 'N/A'}">
+                            </td>
+                            <td>
+                                <span th:class="'badge ' + ${#strings.toLowerCase(q.priority)}"
+                                    th:text="${q.priority}"></span>
+                            </td>
+                            <td>
+                                <form
+                                    th:action="@{/purchase-staff/view-quotation-of-purchase/{purchaseId}(purchaseId=${q.purchaseId})}"
+                                    th:method="get">
+                                    <button type="submit" class="btn-review">REVIEW ALL</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </th:block>
     <th:block layout:fragment="extra-js">

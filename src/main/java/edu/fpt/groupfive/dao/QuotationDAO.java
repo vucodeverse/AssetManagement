@@ -11,6 +11,9 @@ public interface QuotationDAO {
     Integer insert(Quotation quotation);
     Optional<Quotation> findById(Integer quotationId);
     List<Quotation> findByPurchaseId(Integer purchaseId);
+    
+    Optional<Quotation> findResponseById(Integer quotationId);
+    List<Quotation> findResponsesByPurchaseId(Integer purchaseId);
 
     List<Quotation> getAll();
     BigDecimal totalAmoutForPurchaseId(Integer purchaseId);
