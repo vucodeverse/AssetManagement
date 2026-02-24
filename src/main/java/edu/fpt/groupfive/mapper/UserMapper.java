@@ -8,3 +8,10 @@ import org.mapstruct.Mapper;
 public interface UserMapper {
     Users toUser(UseCreateRequest request);
 }
+
+
+
+
+
+
+

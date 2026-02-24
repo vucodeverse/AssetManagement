@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Slf4j
 public class LoginController {
 
-
     @GetMapping("/login")
     public String loginProcess(@ModelAttribute("loginRequest") UserLoginRequest userLoginReqest, Model model,
     HttpServletRequest request){
