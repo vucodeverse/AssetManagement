@@ -9,6 +9,7 @@
 </head>
 
 <body>
+
 <th:block layout:fragment="content">
     <header class="page-header">
         <h1 class="page-title">QUẢN LÝ DANH MỤC TÀI SẢN</h1>
@@ -39,7 +40,7 @@
                                 <a th:href="@{/manager/categories(keyword=${keyword}, sort='desc')}" class="sort-link">▼</a>
                             </th>
                             <th>MÔ TẢ</th>
-                            <th class="text-right">HÀNH ĐỘNG</th>
+                            <th class="col-action">HÀNH ĐỘNG</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -47,7 +48,7 @@
                             <td th:text="${c.categoryId}"></td>
                             <td th:text="${c.categoryName}"></td>
                             <td th:text="${c.description}"></td>
-                            <td class="text-right action-cell">
+                            <td class="action-cell">
                                 <a th:href="@{'/manager/categories?id=' + ${c.categoryId}}" title="Sửa" class="action-icon">
                                     <i class="fas fa-edit"></i>
                                 </a>

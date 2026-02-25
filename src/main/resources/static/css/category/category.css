@@ -85,15 +85,31 @@ body {
     background: #222;
 }
 
+.sort-link {
+    text-decoration: none;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-left: 4px;
+    transition: 0.2s;
+}
+
+.sort-link:hover {
+    color: #000;
+}
+
+
+
 /* Main flex layout (left + right) */
 .main-content {
-    display: flex;
-    gap: 2rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    align-items: start;
 }
 
 /* Left panel: Table */
 .left-panel {
-    flex: 3;
+
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
@@ -128,9 +144,18 @@ body {
 }
 
 .action-cell {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1.25rem;
+    text-align: right;
+}
+
+.action-cell a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+}
+.data-table th:last-child,
+.data-table td:last-child {
+    width: 130px;
 }
 
 .action-icon {
@@ -149,8 +174,18 @@ body {
 }
 
 /* Right panel: Form sticky */
+.error {
+    color: #e53935;
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+.form-input.error,
+.form-textarea.error {
+    border-color: #e53935;
+}
 .right-panel {
-    flex: 1;
+    max-width: 420px;
 }
 
 .form-panel {
@@ -241,6 +276,7 @@ body {
 /* Pagination */
 .pagination {
     margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -279,7 +315,7 @@ body {
 /* Responsive - khi màn hình nhỏ thì stack dọc */
 @media (max-width: 1024px) {
     .main-content {
-        flex-direction: column;
+        grid-template-columns: 1fr;
     }
 
     .form-panel {
@@ -290,4 +326,5 @@ body {
     .content-wrapper {
         padding: 1rem;
     }
+
 }
