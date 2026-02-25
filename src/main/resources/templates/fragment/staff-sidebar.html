@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <aside class="sidebar" th:fragment="sidebar(activeMenu, activeSub)">
+        <div class="sidebar-logo">
+            <i class="fas fa-cube"></i> <span>PROCUREX</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- DASHBOARD -->
+            <a class="nav-item" th:href="@{/purchase-staff/dashboard}"
+                th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+
+            <!-- QUOTATIONS -->
+            <a class="nav-item" th:href="@{/purchase-staff/quotations}"
+                th:classappend="${activeMenu}=='quotation' ? ' active' : ''">
+                <i class="fas fa-file-invoice"></i> Quotations
+            </a>
+
+            <!-- PURCHASE ORDERS -->
+            <a class="nav-item" th:href="@{/purchase-staff/purchase-orders}"
+                th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" th:text="${userInitials} ?: 'SM'">SM</div>
+            <div class="user-info">
+                <span class="user-name" th:text="${userName} ?: 'Staff Member'">Staff Member</span>
+                <span class="user-role" th:text="${userRole} ?: 'Senior Procurement'">Senior Procurement</span>
+            </div>
+            <i class="fas fa-cog user-settings"></i>
+        </div>
+    </aside>
+
+</body>
+
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/staff-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Purchase Staff Dashboard - PROCUREOS</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/staff/staff-dashboard.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <div class="staff-dashboard-wrapper">
+            <!-- Header section -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>PURCHASE STAFF DASHBOARD</h1>
+                    <p>Manage quotations and track active purchase orders.</p>
+                </div>
+                <div class="top-actions">
+                    <i class="far fa-bell icon-btn" style="padding: 10px; cursor: pointer;"></i>
+                    <i class="fas fa-cog icon-btn" style="padding: 10px; cursor: pointer;"></i>
+                </div>
+            </header>
+
+            <!-- Top Grid: PRs and Quotations -->
+            <div class="top-section-grid">
+                <!-- Left: PRs Awaiting Quotation -->
+                <section class="dash-card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h2>Purchase Requests Awaiting Quotation</h2>
+                            <span class="badge-count"
+                                th:text="${dashboard.awaitingQuoCount != null ? dashboard.awaitingQuoCount + ' PENDING' : '0 PENDING'}">4
+                                PENDING</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="pr-table">
+                            <thead>
+                                <tr>
+                                    <th>REQUEST DETAILS</th>
+                                    <th>DEADLINE</th>
+                                    <th>PRIORITY</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pr : ${dashboard.approvedPRs}">
+                                    <td>
+                                        <div class="pr-info">
+                                            <strong th:text="'#PR-' + ${pr.id}">#PR-2024-001</strong>
+                                            <span
+                                                th:text="${pr.creatorName != null ? 'Requested by ' + pr.creatorName : 'Requested by Unknown'}">Requested
+                                                by Alex Rivera</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="deadline-cell"
+                                            th:text="${#temporals.format(pr.neededByDate, 'MMM dd, yyyy')}">Oct 24, 2024
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge" th:classappend="${pr.priority.toLowerCase()}"
+                                            style="background: #f1f5f9; color: #000; font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: 800;"
+                                            th:text="${pr.priority}">URGENT</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{${linkPrefix} + '/purchases/{id}/quotation-form'(id=${pr.id})}"
+                                            class="btn-create-quote">CREATE QUOTE</a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(dashboard.approvedPRs)}">
+                                    <td colspan="4" style="text-align: center; padding: 40px; color: var(--muted2);">No
+                                        pending purchase requests.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Right: My Quotations -->
+                <section class="dash-card">
+                    <div class="card-header">
+                        <h2>My Quotations</h2>
+                        <a th:href="@{${linkPrefix} + '/quotations'}" class="view-all"
+                            style="font-size: 12px; font-weight: 700; color: var(--muted2); text-decoration: none;">View
+                            All</a>
+                    </div>
+                    <div class="quo-list">
+                        <div class="quo-item" th:each="quo : ${dashboard.recentQuotations}"
+                            th:classappend="${quo.quotationStatus.name().toLowerCase()}">
+                            <div class="quo-details">
+                                <strong th:text="'#QTN-' + ${quo.quotationId}">#QTN-9901</strong>
+                                <span th:text="${quo.supplierName}">Global Logistics</span>
+                            </div>
+                            <div class="status-label" th:text="${quo.quotationStatus}">DRAFT</div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(dashboard.recentQuotations)}"
+                            style="text-align: center; padding: 20px; color: var(--muted2); font-size: 14px;">No
+                            quotations yet.</div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Bottom: PO Monitoring -->
+            <section class="dash-card" style="width: 100%;">
+                <div class="card-header">
+                    <h2>Active Purchase Orders Monitoring</h2>
+                    <div class="nav-arrows">
+                        <!-- Navigation arrows as placeholder per image 2 -->
+                        <i class="fas fa-chevron-left" style="padding: 5px; color: #cbd5e1; cursor: pointer;"></i>
+                        <i class="fas fa-chevron-right" style="padding: 5px; color: #cbd5e1; cursor: pointer;"></i>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="po-full-table">
+                        <thead>
+                            <tr>
+                                <th>PO ID</th>
+                                <th>CREATED AT</th>
+                                <th>SUPPLIER NAME</th>
+                                <th>TOTAL AMOUNT</th>
+                                <th>NOTE</th>
+                                <th>STATUS</th>
+                                <th>APPROVED BY</th>
+                                <th style="text-align: right;">QUICK ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="po : ${dashboard.activeOrders}">
+                                <td>
+                                    <div class="po-ref" th:text="'#PO-' + ${po.orderId}">#PO-24-0012</div>
+                                </td>
+                                <td th:text="${#temporals.format(po.createdAt, 'MMM dd, yyyy')}">Oct 10, 2024</td>
+                                <td th:text="${po.supplierName}">Northern Energy</td>
+                                <td th:text="${#numbers.formatCurrency(po.totalAmount)}">$1,200.00</td>
+                                <td th:text="${po.note}">Standard order</td>
+                                <td>
+                                    <span class="status-badge" th:classappend="${po.status.toLowerCase()}"
+                                        style="background: #000; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800;"
+                                        th:text="${po.status}">SHIPPED</span>
+                                </td>
+                                <td th:text="${po.approvedByName}">John Doe</td>
+                                <td>
+                                    <div class="quick-actions">
+                                        <a th:href="@{${linkPrefix} + '/purchase-orders/{id}'(id=${po.orderId})}"><i
+                                                class="far fa-eye"></i></a>
+                                        <i class="fas fa-print"></i>
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(dashboard.activeOrders)}">
+                                <td colspan="8" style="text-align: center; padding: 40px; color: var(--muted2);">No
+                                    active purchase orders.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </th:block>
+</body>
+
+</html>
