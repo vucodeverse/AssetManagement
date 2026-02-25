@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao;
 
+import edu.fpt.groupfive.dto.request.SupplierSearchCriteria;
 import edu.fpt.groupfive.model.Supplier;
 
 import java.util.List;
@@ -26,8 +27,10 @@ public interface SupplierDAO {
 
     boolean hasActivePurchaseOrders(String supplierCode);
 
-    int countPurchaseOrdersBySupplierCode(String supplierCode);
+    //paginated search
+    List<Supplier> search(SupplierSearchCriteria criteria, int offset, int limit);
 
-    //for pagination
+    int countSearch(SupplierSearchCriteria criteria);
+
 
 }
