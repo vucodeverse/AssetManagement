@@ -84,42 +84,45 @@ CREATE TABLE asset_type (
 );
 
 CREATE TABLE warehouse (
-  warehouse_id       INT IDENTITY(1,1) NOT NULL,
-  warehouse_name     VARCHAR(255) NOT NULL,
+  id       INT IDENTITY(1,1) NOT NULL,
+  name     VARCHAR(255) NOT NULL,
   address            VARCHAR(255) NULL,
   status             VARCHAR(40)  NOT NULL,
-  managed_by_user_id INT NOT NULL,
-  PRIMARY KEY (warehouse_id),
-  CONSTRAINT FK_warehouse_managed_by_user
-    FOREIGN KEY (managed_by_user_id) REFERENCES users(user_id)
+  manager_id INT NULL,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NULL,
+
+  PRIMARY KEY (id),
+  CONSTRAINT FK_warehouse_manager
+    FOREIGN KEY (manager_id) REFERENCES users(user_id)
 );
 
 CREATE TABLE rack (
-  rack_id      INT IDENTITY(1,1) NOT NULL,
+  id      INT IDENTITY(1,1) NOT NULL,
   warehouse_id INT NOT NULL,
-  rack_name    VARCHAR(255) NOT NULL,
+  name    VARCHAR(255) NOT NULL,
   description  VARCHAR(255) NULL,
   status       VARCHAR(40)  NOT NULL,
-  created_date DATETIME NOT NULL DEFAULT GETDATE(),
-  updated_date DATETIME NULL,
-  PRIMARY KEY (rack_id),
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NULL,
+  PRIMARY KEY (id),
   CONSTRAINT FK_rack_warehouse
-    FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id)
+    FOREIGN KEY (warehouse_id) REFERENCES warehouse(id)
 );
 
 CREATE TABLE shelf (
-  shelf_id         INT IDENTITY(1,1) NOT NULL,
-  shelf_name       VARCHAR(255) NOT NULL,
+  id         INT IDENTITY(1,1) NOT NULL,
+  name       VARCHAR(255) NOT NULL,
   current_capacity INT NOT NULL DEFAULT 0,
   max_capacity     INT NOT NULL,
   description      VARCHAR(255) NULL,
   rack_id          INT NOT NULL,
   status           VARCHAR(255) NULL,
-  created_date     DATETIME NOT NULL DEFAULT GETDATE(),
-  updated_date     DATETIME NULL,
-  PRIMARY KEY (shelf_id),
+  created_at     DATETIME NOT NULL,
+  updated_at     DATETIME NULL,
+  PRIMARY KEY (id),
   CONSTRAINT FK_shelf_rack
-    FOREIGN KEY (rack_id) REFERENCES rack(rack_id)
+    FOREIGN KEY (rack_id) REFERENCES rack(id)
 );
 
 -- =============================================

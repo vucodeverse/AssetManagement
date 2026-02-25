@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo kho mới</title>
+</head>
+<body>
+
+    <div>
+        <form th:action="@{add}" method="post" th:object="${warehouse}">
+            <table>
+                <tr>
+                    <td>Tên kho</td>
+                    <td>
+                        <input type="text" th:field="*{name}" required/>
+                    </td>
+                    <td th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>Địa chỉ</td>
+                    <td>
+                        <input type="text" th:field="*{address}" />
+                    </td>
+                    <td>
+                        <p th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Quản lý</td>
+                    <td>
+                        <select name="manager_id" >
+                            <option th:each="m : ${managers}" th:value="${m.id}" th:text="${m.id}"></option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <div>
+                <button type="submit">Lưu</button>
+                <button onclick="history.back()">Quay lai</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

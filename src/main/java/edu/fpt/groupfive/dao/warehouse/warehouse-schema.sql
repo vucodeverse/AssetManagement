@@ -8,7 +8,7 @@ CREATE TABLE warehouse
     created_at DATETIME           NOT NULL,
     updated_at DATETIME           NULL,
 
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
 --                            CONSTRAINT FK_warehouse_manager
 --                                FOREIGN KEY (manager_id) REFERENCES users(user_id)
 );
@@ -42,6 +42,7 @@ CREATE TABLE shelf
     updated_at       DATETIME           NULL,
     PRIMARY KEY (id),
     CONSTRAINT FK_shelf_rack
-        FOREIGN KEY (rack_id) REFERENCES rack (id)
+        FOREIGN KEY (rack_id) REFERENCES rack (id),
+
 --     constraint FK_shelf_asset_type foreign key (asset_type_id) references asset_type (id)
 );
