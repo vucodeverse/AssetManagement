@@ -62,6 +62,7 @@ public class CategoryController {
             model.addAttribute("category", new CategoryCreateRequest());
         }
         model.addAttribute("mode", mode);
+        model.addAttribute("active", "category");
         return "manager/category-page";
     }
 

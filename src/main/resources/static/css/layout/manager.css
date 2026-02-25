@@ -1,29 +1,127 @@
-.manager-container {
+:root {
+    --bg: #f6f7fb;
+    --panel: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --radius: 8px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+    --sidebar-w: 280px;
+    --primary: #000000;
+    --hover: #f3f4f6;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+.dashboard-wrapper {
     display: flex;
     min-height: 100vh;
 }
 
-.manager-sidebar {
-    width: 220px;
-    background: #343a40;
-    color: white;
-    padding-top: 20px;
+.sidebar {
+    width: var(--sidebar-w);
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
 }
 
-.sidebar-link {
-    display: block;
-    padding: 10px 20px;
-    color: #ccc;
+.sidebar-logo {
+    padding: 1.5rem;
+    font-weight: 900;
+    font-size: 1.125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sidebar-nav {
+    padding: 1rem 1rem 2rem;
+}
+
+.nav-item {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     text-decoration: none;
+    border-radius: var(--radius);
+    transition: 0.15s ease;
 }
 
-.sidebar-link:hover {
-    background: #495057;
+.nav-item:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.nav-item.active {
+    background: var(--primary);
     color: white;
 }
 
-.manager-main {
-    flex: 1;
-    padding: 20px;
-    background: #f8f9fa;
+.sidebar-user {
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: auto;
+}
+
+.user-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #111827;
+    color: white;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+}
+
+.user-name {
+    font-size: 0.8125rem;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.user-role {
+    font-size: 0.6875rem;
+    color: var(--muted);
+}
+
+.content-container {
+    margin-left: var(--sidebar-w);
+    width: calc(100% - var(--sidebar-w));
+    min-height: 100vh;
+    padding: 0 1.5rem 2rem;
+    background: var(--bg);
+}
+
+@media (max-width: 1024px) {
+    .content-container {
+        margin-left: 0;
+        width: 100%;
+        padding: 0 1rem;
+    }
 }

@@ -1,74 +1,32 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/manager-layout}">
+
 <head>
-    <meta charset="UTF-8">
     <title>Quản lý loại tài sản</title>
 
-    <style>
-        .container {
-            display: flex;
-            gap: 40px;
-        }
-
-        .left { width: 60%; }
-        .right { width: 40%; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            border-bottom: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .error {
-            color: red;
-            font-size: 13px;
-        }
-
-        .success {
-            color: green;
-            margin-bottom: 10px;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 6px;
-            margin-bottom: 8px;
-        }
-
-        button {
-            padding: 6px 12px;
-            margin-right: 6px;
-            cursor: pointer;
-        }
-
-        a button {
-            margin-right: 0;
-        }
-    </style>
+    <!-- Nếu có CSS riêng -->
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/asset-type.css}">
+    </th:block>
 </head>
+
 <body>
 
-<h2>QUẢN LÝ LOẠI TÀI SẢN</h2>
+<div layout:fragment="content">
 
-<!-- Flash Message -->
-<div th:if="${successMessage}" class="success">
-    <span th:text="${successMessage}"></span>
-</div>
+    <h2>QUẢN LÝ LOẠI TÀI SẢN</h2>
 
-<div th:if="${errorMessage}" class="error">
-    <span th:text="${errorMessage}"></span>
-</div>
+    <!-- Flash Message -->
+    <div th:if="${successMessage}" class="success">
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <div th:if="${errorMessage}" class="error">
+        <span th:text="${errorMessage}"></span>
+    </div>
 
 <div class="container">
 
