@@ -1,10 +1,10 @@
-﻿CREATE DATABASE AssetManager
+﻿--CREATE DATABASE AssetManager
 
 USE AssetManager
 -- =============================================
 -- 1. NHÓM TỔ CHỨC & NGƯỜI DÙNG
 -- =============================================
-
+/*
 UPDATE users
 SET role = 'ROLE_ADMIN'
 WHERE user_id = 10;
@@ -17,10 +17,90 @@ SELECT 1 FROM Departments WHERE department_name = 'Information Technology Depart
 UPDATE Users SET status = 'INACTIVE', updated_date = GETDATE() WHERE user_id = 7;
 
 SELECT 1 FROM Users WHERE email = '0123456789'
+*/
+
+
+INSERT INTO departments (department_name, manager_user_id, status, description)
+VALUES 
+('IT Department', NULL, 'ACTIVE', 'Phòng Công nghệ thông tin'),
+('HR Department', NULL, 'ACTIVE', 'Phòng Nhân sự'),
+('Finance Department', NULL, 'ACTIVE', 'Phòng Tài chính - Kế toán'),
+('Marketing Department', NULL, 'ACTIVE', 'Phòng Marketing'),
+('Operations Department', NULL, 'ACTIVE', 'Phòng Vận hành'),
+('Administration Department', NULL, 'ACTIVE', 'Phòng Hành chính');
+
+INSERT INTO users 
+(username, password_hash, first_name, last_name, phone_number, email, status, role, department_id)
+VALUES 
+
+('manager_it', 
+ '$2a$10$fakeHashForManager123', 
+ 'Nguyen', 'An', 
+ '0911111111', 
+ 'manager.it@example.com', 
+ 'ACTIVE', 'MANAGER', 1),
+
+('staff_it1', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Tran', 'Binh', 
+ '0922222222', 
+ 'staff1.it@example.com', 
+ 'ACTIVE', 'STAFF', 1),
+
+('staff_hr1', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Le', 'Chi', 
+ '0933333333', 
+ 'staff1.hr@example.com', 
+ 'ACTIVE', 'STAFF', 2),
+
+('manager_hr', 
+ '$2a$10$fakeHashForManager123', 
+ 'Pham', 'Dung', 
+ '0944444444', 
+ 'manager.hr@example.com', 
+ 'ACTIVE', 'MANAGER', 2),
+
+('staff_finance', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Hoang', 'Mai', 
+ '0955555555', 
+ 'staff.finance@example.com', 
+ 'ACTIVE', 'STAFF', 3),
+
+('manager_marketing', 
+ '$2a$10$fakeHashForManager123', 
+ 'Nguyen', 'Linh', 
+ '0966666666', 
+ 'manager.marketing@example.com', 
+ 'ACTIVE', 'MANAGER', 4),
+
+('staff_marketing', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Do', 'Thanh', 
+ '0977777777', 
+ 'staff.marketing@example.com', 
+ 'ACTIVE', 'STAFF', 4),
+
+('staff_operations', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Bui', 'Nam', 
+ '0988888888', 
+ 'staff.operations@example.com', 
+ 'ACTIVE', 'STAFF', 5),
+
+('staff_admin', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Vu', 'Hoa', 
+ '0999999999', 
+ 'staff.admin@example.com', 
+ 'ACTIVE', 'STAFF', 6);
+
+
 
 CREATE TABLE departments (
   department_id   INT IDENTITY(1,1) NOT NULL,
-  department_name VARCHAR(150) NOT NULL,
+  department_name NVARCHAR(150) NOT NULL,
   manager_user_id INT NULL,
   status VARCHAR(40) NOT NULL DEFAULT 'ACTIVE',
   created_date DATETIME NOT NULL DEFAULT GETDATE(),
@@ -32,13 +112,15 @@ CREATE TABLE departments (
 
 CREATE TABLE users (
   user_id        INT IDENTITY(1,1) NOT NULL,
-  username       VARCHAR(50)  NOT NULL UNIQUE,
-  password_hash  VARCHAR(255) NOT NULL,
-  full_name      VARCHAR(150) NOT NULL,
-  phone_number   VARCHAR(30)  NULL,
-  email          VARCHAR(100) NULL UNIQUE,
-  status         VARCHAR(40)  NOT NULL,
-  role           VARCHAR(40)  NOT NULL,
+  username       NVARCHAR(50)  NOT NULL UNIQUE,
+  password_hash  NVARCHAR(255) NOT NULL,
+  --full_name      VARCHAR(150) NOT NULL,
+  first_name      NVARCHAR(150) NOT NULL,
+  last_name      NVARCHAR(150) NOT NULL,
+  phone_number   NVARCHAR(30)  NULL,
+  email          NVARCHAR(100) NULL UNIQUE,
+  status         NVARCHAR(40)  NOT NULL,
+  role           NVARCHAR(40)  NOT NULL,
   created_date   DATETIME NOT NULL DEFAULT GETDATE(),
   updated_date   DATETIME NULL,
   department_id  INT NOT NULL,

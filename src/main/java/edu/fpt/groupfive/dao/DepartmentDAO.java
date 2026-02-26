@@ -17,4 +17,13 @@ public interface DepartmentDAO {
     List<Department> findAll();
 
     boolean existsByName(String departmentName);
+
+    List<Department> searchByName(String keyword);
+
+    List<Department> findAllPaged(int page, int size);
+
+    int countDepartments();
+
+    void updateManager(Integer departmentId, Integer userId);
+
 }

@@ -1,19 +1,19 @@
-package edu.fpt.groupfive.dto.response;
+package edu.fpt.groupfive.dto.request;
 
 import edu.fpt.groupfive.common.Role;
 import lombok.*;
 
-import java.time.LocalDateTime;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserResponse {
+public class UserUpdateRequest {
     private Integer userId;
 
     private String username;
+
+    private String password;
 
     private String firstName;
 
@@ -23,12 +23,9 @@ public class UserResponse {
 
     private String phoneNumber;
 
-    private String status;
-
     private Role role;
 
-    private LocalDateTime createdDate;
+    private String status;
 
-    //Foreign key of table Department
     private Integer departmentId;
 }
