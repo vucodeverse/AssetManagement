@@ -65,7 +65,7 @@ public class CategoryController {
             model.addAttribute("category", new CategoryCreateRequest());
         }
         model.addAttribute("mode", mode);
-        model.addAttribute("active", "category");
+        model.addAttribute("activeMenu", "category");
         return "manager/category-page";
     }
 
@@ -88,7 +88,7 @@ public class CategoryController {
             loadCategoryPage(model, null, null, 1);
 
             model.addAttribute("mode", "create");
-            model.addAttribute("active", "category");
+            model.addAttribute("activeMenu", "category");
 
             return "manager/category-page";
         }
@@ -112,7 +112,7 @@ public class CategoryController {
         if (result.hasErrors()) {
             loadCategoryPage(model, null, null, 1);
             model.addAttribute("mode", "update");
-            model.addAttribute("active", "category");
+            model.addAttribute("activeMenu", "category");
             return "manager/category-page";
         }
         return "redirect:/manager/categories";

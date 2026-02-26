@@ -134,6 +134,6 @@ public class AssetTypeController {
         model.addAttribute("typeClasses", AssetTypeClass.values());
         model.addAttribute("depreciationMethods", DepreciationMethod.values());
         model.addAttribute("categories", categoryService.getAll());
-        model.addAttribute("active", "assetType");
+        model.addAttribute("activeMenu", "asset-type");
     }
 }
