@@ -19,5 +19,7 @@ public interface CategoryDAO {
     boolean existsByName(String name);
 
     List<Category> findByName(String keyword);
-    List<Category> searchAndSort(String keyword, String direction);
+    List<Category> searchAndSort(String keyword, String direction, int offset, int pageSize);
+
+    int count(String keyword);
 }

@@ -4,6 +4,7 @@ import edu.fpt.groupfive.dao.CategoryDAO;
 import edu.fpt.groupfive.dto.request.CategoryCreateRequest;
 import edu.fpt.groupfive.dto.request.CategoryUpdateRequest;
 import edu.fpt.groupfive.dto.response.CategoryResponse;
+import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.mapper.CategoryMapper;
 import edu.fpt.groupfive.model.Category;
 import edu.fpt.groupfive.service.CategoryService;
@@ -21,7 +22,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryDAO categoryDAO;
     private final CategoryMapper categoryMapper;
-
+    private static final int PAGE_SIZE = 3;
     @Override
     public List<CategoryResponse> getAll() {
         List<Category> categories = categoryDAO.findAll();
@@ -90,10 +91,23 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponse> searchAndSort(String keyword, String direction) {
-        List<Category> categories = categoryDAO.searchAndSort(keyword, direction);
+    public PageResponse<CategoryResponse> searchAndSort(
+            String keyword,
+            String direction,
+            int page
+    )  {
+        if(page<1){
+            page=1;
+        }
 
-        return categoryMapper.toCategoryResponseList(categories);
+        int offset = (page-1) * PAGE_SIZE;
+        List<Category> categories = categoryDAO.searchAndSort(keyword, direction,offset,PAGE_SIZE);
+
+        int totalElements = categoryDAO.count(keyword);
+        int totalPages=(int) Math.ceil((double) totalElements/PAGE_SIZE);
+
+        List<CategoryResponse> responses = categoryMapper.toCategoryResponseList(categories);
+        return new PageResponse<>(responses, page, PAGE_SIZE, totalElements, totalPages);
     }
 
 

@@ -20,10 +20,11 @@
         <form method="get" th:action="@{/manager/categories}" class="search-bar">
             <div class="search-input-group">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm kiếm mã hoặc tên danh mục..." class="search-input" />
+                <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm kiếm tên danh mục..."
+                       class="search-input"/>
             </div>
             <button type="submit" class="search-btn">TÌM KIẾM</button>
-            <input type="hidden" name="sort" th:value="${sort}" />
+            <input type="hidden" name="sort" th:value="${sort}"/>
         </form>
 
         <div class="main-content">
@@ -36,8 +37,10 @@
                             <th>MÃ DANH MỤC</th>
                             <th>
                                 DANH MỤC
-                                <a th:href="@{/manager/categories(keyword=${keyword}, sort='asc')}" class="sort-link">▲</a>
-                                <a th:href="@{/manager/categories(keyword=${keyword}, sort='desc')}" class="sort-link">▼</a>
+                                <a th:href="@{/manager/categories(keyword=${keyword}, sort='asc')}"
+                                   class="sort-link">▲</a>
+                                <a th:href="@{/manager/categories(keyword=${keyword}, sort='desc')}"
+                                   class="sort-link">▼</a>
                             </th>
                             <th>MÔ TẢ</th>
                             <th class="col-action">HÀNH ĐỘNG</th>
@@ -49,10 +52,12 @@
                             <td th:text="${c.categoryName}"></td>
                             <td th:text="${c.description}"></td>
                             <td class="action-cell">
-                                <a th:href="@{'/manager/categories?id=' + ${c.categoryId}}" title="Sửa" class="action-icon">
+                                <a th:href="@{'/manager/categories?id=' + ${c.categoryId}}" title="Sửa"
+                                   class="action-icon">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a th:href="@{'/manager/categories/delete/' + ${c.categoryId}}" onclick="return confirm('Xác nhận xóa?')" title="Xóa" class="action-icon delete">
+                                <a th:href="@{'/manager/categories/delete/' + ${c.categoryId}}"
+                                   onclick="return confirm('Xác nhận xóa?')" title="Xóa" class="action-icon delete">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </td>
@@ -64,14 +69,46 @@
                     </table>
 
                     <!-- Pagination -->
-                    <div class="pagination">
-                        <span>Hiển thị <span th:text="${categories.size()}"></span> trên <span th:text="${categories.size()}"></span> kết quả</span>
+                    <div class="pagination" th:if="${page.totalPages > 0}">
+                        <span>
+                            Trang <span th:text="${page.currentPage}"></span> /
+                            <span th:text="${page.totalPages}"></span>
+                            - Tổng <span th:text="${page.totalElements}"></span> kết quả
+                        </span>
+
                         <div class="pagination-controls">
-                            <button class="pagination-btn">Trước</button>
-                            <button class="pagination-btn active">1</button>
-                            <button class="pagination-btn">2</button>
-                            <span class="pagination-ellipsis">...</span>
-                            <button class="pagination-btn">Tiếp</button>
+
+                            <!-- Nút Trước -->
+                            <a th:if="${page.currentPage > 1}"
+                               th:href="@{/manager/categories(
+                        page=${page.currentPage - 1},
+                        keyword=${keyword},
+                        sort=${param.sort})}"
+                               class="pagination-btn">
+                                Trước
+                            </a>
+
+                            <!-- Danh sách số trang -->
+                            <a th:each="i : ${#numbers.sequence(1, page.totalPages)}"
+                               th:href="@{/manager/categories(
+                        page=${i},
+                        keyword=${keyword},
+                        sort=${param.sort})}"
+                               th:text="${i}"
+                               th:classappend="${i == page.currentPage} ? 'active'"
+                               class="pagination-btn">
+                            </a>
+
+                            <!-- Nút Tiếp -->
+                            <a th:if="${page.currentPage < page.totalPages}"
+                               th:href="@{/manager/categories(
+                        page=${page.currentPage + 1},
+                        keyword=${keyword},
+                        sort=${param.sort})}"
+                               class="pagination-btn">
+                                Tiếp
+                            </a>
+
                         </div>
                     </div>
                 </div>
@@ -86,21 +123,23 @@
                         <!-- ID readonly khi update -->
                         <div th:if="${mode == 'update'}" class="form-field">
                             <label class="form-label">MÃ DANH MỤC</label>
-                            <input type="text" th:field="*{categoryId}" class="form-input" readonly />
-                            <input type="hidden" th:field="*{categoryId}" />
+                            <input type="text" th:field="*{categoryId}" class="form-input" readonly/>
+                            <input type="hidden" th:field="*{categoryId}"/>
                         </div>
 
                         <!-- Tên -->
                         <div class="form-field">
                             <label class="form-label">TÊN DANH MỤC</label>
-                            <input type="text" th:field="*{categoryName}" class="form-input" placeholder="Nhập tên danh mục..." required />
+                            <input type="text" th:field="*{categoryName}" class="form-input"
+                                   placeholder="Nhập tên danh mục..." required/>
                             <div class="error text-danger" th:errors="*{categoryName}"></div>
                         </div>
 
                         <!-- Mô tả -->
                         <div class="form-field">
                             <label class="form-label">MÔ TẢ</label>
-                            <textarea th:field="*{description}" class="form-textarea" rows="5" placeholder="Nhập mô tả chi tiết..."></textarea>
+                            <textarea th:field="*{description}" class="form-textarea" rows="5"
+                                      placeholder="Nhập mô tả chi tiết..."></textarea>
                         </div>
 
                         <!-- Trạng thái -->
@@ -116,7 +155,9 @@
                         <div class="form-actions">
                             <button th:if="${mode == 'create'}" name="add" class="btn-add">THÊM MỚI</button>
                             <button th:if="${mode == 'update'}" name="save" class="btn-add">CẬP NHẬT</button>
-                            <button type="button" onclick="window.location.href='/manager/categories'" class="btn-cancel">HỦY</button>
+                            <button type="button" onclick="window.location.href='/manager/categories'"
+                                    class="btn-cancel">HỦY
+                            </button>
                         </div>
                     </form>
                 </div>

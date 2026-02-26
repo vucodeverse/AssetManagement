@@ -3,6 +3,7 @@ package edu.fpt.groupfive.controller.manager;
 import edu.fpt.groupfive.dto.request.CategoryCreateRequest;
 import edu.fpt.groupfive.dto.request.CategoryUpdateRequest;
 import edu.fpt.groupfive.dto.response.CategoryResponse;
+import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.service.CategoryService;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
@@ -27,10 +28,13 @@ public class CategoryController {
     @GetMapping
     public String viewPage(
             @RequestParam(value = "id", required = false) Integer id,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "sort", required = false) String sort,
             Model model
     ) {
+
         String direction = null;
         if ("asc".equalsIgnoreCase(sort)) {
             direction = "ASC";
@@ -38,9 +42,8 @@ public class CategoryController {
             direction = "DESC";
         }
         //load view form ben trai
-        List<CategoryResponse> categories=categoryService.searchAndSort(keyword,direction);
 
-        model.addAttribute("categories", categories);
+        loadCategoryPage(model,keyword,direction,page);
         model.addAttribute("keyword", keyword);
         String mode = "create";
 
@@ -82,8 +85,11 @@ public class CategoryController {
         }
 
         if (result.hasErrors()) {
-            model.addAttribute("categories", categoryService.getAll());
+            loadCategoryPage(model, null, null, 1);
+
             model.addAttribute("mode", "create");
+            model.addAttribute("active", "category");
+
             return "manager/category-page";
         }
 
@@ -104,8 +110,9 @@ public class CategoryController {
         }
 
         if (result.hasErrors()) {
-            model.addAttribute("categories", categoryService.getAll());
+            loadCategoryPage(model, null, null, 1);
             model.addAttribute("mode", "update");
+            model.addAttribute("active", "category");
             return "manager/category-page";
         }
         return "redirect:/manager/categories";
@@ -118,6 +125,19 @@ public class CategoryController {
         return "redirect:/manager/categories";
     }
 
+
+    private void loadCategoryPage(Model model,
+                                  String keyword,
+                                  String direction,
+                                  int page) {
+
+        PageResponse<CategoryResponse> result =
+                categoryService.searchAndSort(keyword, direction, page);
+
+        model.addAttribute("categories", result.getContent());
+        model.addAttribute("page", result);
+
+    }
 
 }
 

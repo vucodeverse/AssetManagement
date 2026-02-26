@@ -164,28 +164,40 @@ public class CategoryDAOImpl implements CategoryDAO {
     }
 
     @Override
-    public List<Category> searchAndSort(String keyword, String direction) {
-        StringBuilder sql = new StringBuilder("select * from category where status='ACTIVE'");
+    public List<Category> searchAndSort(String keyword, String direction, int offset, int pageSize) {
 
-        //neu co keyword thi search
+        StringBuilder sql = new StringBuilder("SELECT * FROM category WHERE status='ACTIVE' ");
+
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" and category_name like ?");
+            sql.append(" AND category_name LIKE ? ");
         }
 
-        //neu co sort
-        if (direction != null) {
-            sql.append(" order by category_name ").append(direction);
+        // xử lý sort an toàn
+        if ("DESC".equalsIgnoreCase(direction)) {
+            sql.append(" ORDER BY category_name DESC ");
+        } else {
+            sql.append(" ORDER BY category_name ASC ");
         }
+
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ");
 
         List<Category> categories = new ArrayList<>();
+
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
             if (keyword != null && !keyword.trim().isEmpty()) {
-                ps.setString(1, "%" + keyword.trim() + "%");
+                ps.setString(index++, "%" + keyword.trim() + "%");
             }
 
-            ResultSet rs=ps.executeQuery();
-            while(rs.next()){
+            ps.setInt(index++, offset);
+            ps.setInt(index, pageSize);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
                 Category c = new Category();
                 c.setCategoryId(rs.getInt("category_id"));
                 c.setCategoryName(rs.getString("category_name"));
@@ -193,10 +205,39 @@ public class CategoryDAOImpl implements CategoryDAO {
                 c.setStatus(rs.getString("status"));
                 categories.add(c);
             }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
         return categories;
+    }
+
+    //dem so luong dong dc search
+    @Override
+    public int count(String keyword) {
+        StringBuilder sql = new StringBuilder("select count(*) from category where status='ACTIVE'");
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" and category_name like ?");
+        }
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(1, "%" + keyword.trim() + "%");
+            }
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
     }
 
 
