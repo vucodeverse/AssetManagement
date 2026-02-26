@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/director-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Overview - Procurex</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/director/director-dashboard.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <!-- Main Content -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>DASHBOARD OVERVIEW</h1>
+                <p>Monitor your procurement operations and approval tasks.</p>
+            </div>
+            <div class="top-actions">
+                <select class="fy-select">
+                    <option>FY 2024</option>
+                </select>
+                <i class="far fa-bell icon-btn"></i>
+                <i class="fas fa-cog icon-btn"></i>
+            </div>
+        </header>
+
+        <!-- KPI Cards -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon-row">
+                    <label>PENDING PRs</label>
+                    <i class="fas fa-file-alt kpi-icon"></i>
+                </div>
+                <div class="kpi-value" th:text="${dashboard.pendingPRCount}">12</div>
+                <span class="kpi-trend">Requires Action</span>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon-row">
+                    <label>PENDING QUOTES</label>
+                    <i class="fas fa-file-invoice kpi-icon"></i>
+                </div>
+                <div class="kpi-value" th:text="${dashboard.pendingQuoCount}">08</div>
+                <span class="kpi-trend">Requires Action</span>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon-row">
+                    <label>POs CREATED</label>
+                    <i class="fas fa-shopping-cart kpi-icon"></i>
+                </div>
+                <div class="kpi-value" th:text="${dashboard.totalPOCount}">45</div>
+                <span class="kpi-trend">Lifetime</span>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon-row">
+                    <label>TOTAL VALUE</label>
+                    <i class="fas fa-money-bill-wave kpi-icon"></i>
+                </div>
+                <div class="kpi-value"
+                    th:text="${'$' + #numbers.formatDecimal(dashboard.totalPOValue, 1, 'COMMA', 2, 'POINT')}">
+                    $1,234.56
+                </div>
+                <span class="kpi-trend">Lifetime</span>
+            </div>
+        </section>
+
+        <!-- Content Grid -->
+        <div class="dashboard-grid">
+            <!-- Recent PRs -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h2>RECENT PURCHASE REQUESTS</h2>
+                    <a th:href="@{/director/purchases}" class="view-all">VIEW ALL</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>PR ID</th>
+                                <th>STATUS</th>
+                                <th>CREATOR</th>
+                                <th>NEEDED DATE</th>
+                                <th>PRIORITY</th>
+                                <th>CREATED AT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="clickable-row" th:each="pr : ${dashboard.recentPRs}"
+                                th:onclick="|window.location.href='@{/director/purchases/{id}/purchase-detail(id=${pr.id})}'|">
+                                <td class="item-id" th:text="${'PR-' + pr.id}">PR-2024-045</td>
+                                <td><span class="status-badge" th:classappend="${pr.status.name().toLowerCase()}"
+                                        th:text="${pr.status}">PENDING</span></td>
+                                <td class="user-cell" th:text="${pr.creatorName}">Alex Chen</td>
+                                <td th:text="${#temporals.format(pr.neededByDate, 'dd-MM-yyyy')}">15-11-2023</td>
+                                <td><span class="prio-tag" th:classappend="${pr.priority.toLowerCase()}"
+                                        th:text="${pr.priority}">HIGH</span></td>
+                                <td class="date-cell" th:text="${#temporals.format(pr.createdAt, 'dd-MM-yyyy')}">
+                                    24-10-2023</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(dashboard.recentPRs)}">
+                                <td colspan="6" style="text-align: center; padding: 20px; color: var(--muted2);">No
+                                    recent purchase requests.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Quotations -->
+            <div class="data-card">
+                <div class="card-header">
+                    <h2>RECENT QUOTATIONS</h2>
+                    <a th:href="@{/purchase-staff/quotations}" class="view-all">VIEW ALL</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>QUO ID</th>
+                                <th>SUPPLIER</th>
+                                <th>PR REF</th>
+                                <th>TOTAL AMOUNT</th>
+                                <th>STATUS</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="clickable-row" th:each="quo : ${dashboard.recentQuotations}"
+                                th:onclick="|window.location.href='@{/purchase-staff/quotations/{id}(id=${quo.quotationId})}'|">
+                                <td class="item-id" th:text="${'QUO-' + quo.quotationId}">QUO-123</td>
+                                <td th:text="${quo.supplierName}">Supplier Name</td>
+                                <td th:text="${'PR-' + quo.purchaseId}">PR-045</td>
+                                <td class="item-id"
+                                    th:text="${'$' + #numbers.formatDecimal(quo.totalAmount, 1, 'COMMA', 2, 'POINT')}">
+                                    $4,500.00</td>
+                                <td><span class="status-badge"
+                                        th:classappend="${quo.quotationStatus.name().toLowerCase()}"
+                                        th:text="${quo.quotationStatus}">PENDING</span></td>
+                                <td style="text-align: right;"><i class="fas fa-chevron-right arrow-icon"></i></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(dashboard.recentQuotations)}">
+                                <td colspan="6" style="text-align: center; padding: 20px; color: var(--muted2);">No
+                                    recent quotations.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</body>
+
+</html>

@@ -6,7 +6,10 @@ import edu.fpt.groupfive.dto.request.*;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.service.QuotationService;
 import edu.fpt.groupfive.service.SupplierService;
+import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -14,11 +17,15 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import edu.fpt.groupfive.dto.response.PurchaseDetailResponse;
+import edu.fpt.groupfive.service.PurchaseService;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Slf4j(topic = "CONTROLLER-QUOTATION[]")
 @Controller
-@RequestMapping("/purchase-staff")
+@RequestMapping({ "/director", "/purchase-staff" })
 @RequiredArgsConstructor
 public class QuotationController {
 
@@ -26,142 +33,160 @@ public class QuotationController {
     private final SupplierService supplierService;
 
     // show form add
-    @GetMapping("/purchases/{purchaseId}/quotation-form")
-    public String showQuotationForm(@PathVariable("purchaseId") Integer purchaseId, Model model){
-        log.info("Load form quotation");
-
-        // ktra va load quotation create lên
+    @IsPurchaseStaff
+    @GetMapping("/create/purchase-{id}/quotation")
+    public String showQuotationForm(@PathVariable("id") Integer purchaseId, Model model,
+            HttpServletRequest request) {
         QuotationCreateRequest quotationCreateRequest = new QuotationCreateRequest();
-        try {
-             quotationCreateRequest = quotationService.checkFormQuotation(purchaseId);
-        }catch (InvalidDataException e){
-            model.addAttribute("error", e.getMessage());
-            return "purchase/purchase-home";
-        }
+        quotationCreateRequest.setPurchaseRequestId(purchaseId);
 
-        // mặc định cho sẵn 1 dòng detail
+        List<QuotationCreateDetailRequest> quoDetails = quotationService.mapPurchaseToQuotation(purchaseId);
+
+        quotationCreateRequest.setQuotationCreateDetailRequestList(quoDetails);
+
         model.addAttribute("quotationCreateRequest", quotationCreateRequest);
-        model.addAttribute("suppliers", supplierService.getAllSupplier());
         model.addAttribute("purchaseId", purchaseId);
+        model.addAttribute("suppliers", supplierService.getAllSupplier());
+        model.addAttribute("activeMenu", "purchase");
         return "quotation/quotation-form";
     }
 
-    // thêm 1 dòng mời
-    @PostMapping(value = "/purchases/{purchaseId}/quotation", params = "addDetail")
-    public String addQuotationDetail(@PathVariable("purchaseId") Integer purchaseId,
-                                     @ModelAttribute("quotationCreateRequest") QuotationCreateRequest quotationCreateRequest,
-                                     @RequestParam("addDetail") int index,
-                                     Model model) {
-        if (index >= 0 && index < quotationCreateRequest.getQuotationCreateDetailRequestList().size()) {
-            QuotationCreateDetailRequest quotationCreateDetailRequest = quotationCreateRequest.getQuotationCreateDetailRequestList().get(index);
-            
-            // add item mưới
-            // add các data sẵn
-            QuotationCreateDetailRequest newItem = new QuotationCreateDetailRequest();
-            newItem.setPurchaseRequestDetailId(quotationCreateDetailRequest.getPurchaseRequestDetailId());
-            newItem.setQuantity(quotationCreateDetailRequest.getQuantity());
-            newItem.setAssetTypeName(quotationCreateDetailRequest.getAssetTypeName());
-            newItem.setSpecificationRequirement(quotationCreateDetailRequest.getSpecificationRequirement());
-
-            // thêm 1 dòng sau khi add itme
-            quotationCreateRequest.getQuotationCreateDetailRequestList().add(index + 1, newItem);
-        }
-
+    // edit quotation
+    @GetMapping("/quotations/{id}/edit")
+    public String showEditQuotationForm(@PathVariable("id") Integer id, Model model) {
+        QuotationCreateRequest quotationCreateRequest = quotationService.getQuotationRequestById(id);
 
         model.addAttribute("quotationCreateRequest", quotationCreateRequest);
+        model.addAttribute("purchaseId", quotationCreateRequest.getPurchaseRequestId());
         model.addAttribute("suppliers", supplierService.getAllSupplier());
-        model.addAttribute("purchaseId", purchaseId);
-        return "quotation/quotation-form";
-    }
-
-
-    // xóa 1 dòng quoationdetail
-    @PostMapping(value = "/purchases/{purchaseId}/quotation", params = "removeDetail")
-    public String removeQuotationDetail(@PathVariable("purchaseId") Integer purchaseId,
-                                        @ModelAttribute("quotationCreateRequest") QuotationCreateRequest quotationCreateRequest,
-                                        @RequestParam("removeDetail") int index,
-                                        Model model) {
-        if (index >= 0 && index < quotationCreateRequest.getQuotationCreateDetailRequestList().size()) {
-            quotationCreateRequest.getQuotationCreateDetailRequestList().remove(index);
-        }
-
-        model.addAttribute("quotationCreateRequest", quotationCreateRequest);
-        model.addAttribute("suppliers", supplierService.getAllSupplier());
-        model.addAttribute("purchaseId", purchaseId);
+        model.addAttribute("activeMenu", "quotation");
         return "quotation/quotation-form";
     }
 
     // xử lí form
-    @PostMapping("/purchases/{purchaseId}/quotation")
-    public String createQuotation(@PathVariable("purchaseId") Integer purchaseId,
-            @ModelAttribute("quotationCreateRequest") QuotationCreateRequest quotationCreateRequest, BindingResult bindingResult, Model model){
-        if(bindingResult.hasErrors()){
-            model.addAttribute("suppliers", supplierService.getAllSupplier());
+    @PostMapping("/create/purchase-{id}/quotation")
+    public String createQuotation(@PathVariable("id") Integer purchaseId,
+            @Valid @ModelAttribute("quotationCreateRequest") QuotationCreateRequest quotationCreateRequest,
+            BindingResult bindingResult,
+            @RequestParam(value = "actions", required = false) String action,
+            @RequestParam(value = "addDetail", required = false) Integer addIndex,
+            @RequestParam(value = "removeDetail", required = false) Integer removeIndex,
+            Model model,HttpServletRequest request) {
+
+        // thêm 1 dòng detail mới
+        if (addIndex != null) {
+
+            // lấy ra dòng quotation detail gốc cần thêm mới
+            QuotationCreateDetailRequest original = quotationCreateRequest.getQuotationCreateDetailRequestList()
+                    .get(addIndex);
+
+            // tạo 1 dòng quotation detail tương ứng
+            QuotationCreateDetailRequest duplicate = QuotationCreateDetailRequest.builder()
+                    .purchaseRequestDetailId(original.getPurchaseRequestDetailId())
+                    .assetTypeName(original.getAssetTypeName())
+                    .specificationRequirement(original.getSpecificationRequirement())
+                    .quantity(original.getQuantity())
+                    .warrantyMonths(original.getWarrantyMonths())
+                    .price(original.getPrice())
+                    .taxRate(original.getTaxRate())
+                    .discountRate(original.getDiscountRate())
+                    .build();
+            quotationCreateRequest.getQuotationCreateDetailRequestList().add(addIndex + 1, duplicate);
+
             model.addAttribute("purchaseId", purchaseId);
+            model.addAttribute("suppliers", supplierService.getAllSupplier());
+            model.addAttribute("activeMenu", "purchase");
             return "quotation/quotation-form";
         }
 
-        quotationService.createQuotation(purchaseId,quotationCreateRequest);
+        // xoóa 1 dòng quotation detail
+        if (removeIndex != null) {
+            quotationCreateRequest.getQuotationCreateDetailRequestList().remove(removeIndex.intValue());
+            model.addAttribute("purchaseId", purchaseId);
+            model.addAttribute("suppliers", supplierService.getAllSupplier());
+            model.addAttribute("activeMenu", "purchase");
+            return "quotation/quotation-form";
+        }
 
-        return "redirect:/asset-manager/purchase-form"; 
+        // nếu có lỗi thì đẩy lại
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("purchaseId", purchaseId);
+            model.addAttribute("suppliers", supplierService.getAllSupplier());
+            model.addAttribute("activeMenu", "purchase");
+            return "quotation/quotation-form";
+        }
+
+        quotationService.createQuotation(quotationCreateRequest, purchaseId, action);
+        return "redirect:/purchases/" + purchaseId + "/purchase-detail";
     }
 
-    // show list purchase
+    // reject quotation
+    @PostMapping("/quotations/{id}/reject")
+    public String rejectQuotation(@PathVariable("id") Integer id,
+            @RequestParam(value = "reason", required = false) String reason) {
+        quotationService.rejectQuotation(id, reason);
+        return "redirect:/quotations/" + id;
+    }
+
+    // show list quotation của purhcase cụ thể
     @GetMapping("/view-quotation-of-purchase/{purchaseId}")
     public String viewQuotationList(@PathVariable("purchaseId") Integer purchaseId, Model model) {
         List<QuotationResponse> quotations = quotationService.getQuotationsByPurchase(purchaseId);
 
         model.addAttribute("statuses", QuotationStatus.values());
         model.addAttribute("suppliers", supplierService.getAllSupplier());
+        model.addAttribute("activeMenu", "quotation");
         model.addAttribute("activeSub", "qt");
-        model.addAttribute("activeMenu", "approval");
         model.addAttribute("quotations", quotations);
         model.addAttribute("criteria", new QuotationSearchCriteria());
 
         return "quotation/quotation-of-purchase";
     }
 
-
     // show detail
     @GetMapping("/quotations/{id}")
-    public String getQuotation(@PathVariable("id") Integer id, Model model) {
+    public String getQuotation(@PathVariable("id") Integer id, Model model,
+            jakarta.servlet.http.HttpServletRequest request) {
         QuotationResponse quotation = quotationService.getQuotationById(id);
         model.addAttribute("quotation", quotation);
+        model.addAttribute("activeMenu", "quotation");
+        model.addAttribute("activeSub", "qt");
         return "quotation/quotation-detail";
     }
 
+    //ssearch quotation cho màn quotation-of-purchase
     @GetMapping("/search/quotation-of-purchase/{purchaseId}")
     public String searchQuotationOfPurchase(@PathVariable("purchaseId") Integer purchaseId,
-                                            @ModelAttribute("criteria") QuotationSearchCriteria criteria,
-                                            Model model) {
+            @ModelAttribute("criteria") QuotationSearchCriteria criteria,
+            Model model) {
         criteria.setPurchaseId(purchaseId);
-        
+
         model.addAttribute("purchaseId", purchaseId);
         model.addAttribute("statuses", QuotationStatus.values());
         model.addAttribute("suppliers", supplierService.getAllSupplier());
+        model.addAttribute("activeMenu", "quotation");
         model.addAttribute("activeSub", "qt");
-        model.addAttribute("activeMenu", "approval");
         model.addAttribute("quotations", quotationService.quotationCriteriaForPurchase(criteria));
-        
+
         return "quotation/quotation-of-purchase";
     }
 
-    // search and filter cho quotation
-    @GetMapping("/search")
-    public String searchQuotation(@ModelAttribute("searchForQuotation") SearchForQuotation searchForQuotation, Model model) {
+    // search and filter cho header quotaion
+    @GetMapping("/search/quotation-for-purchase")
+    public String searchQuotation(@ModelAttribute("searchForQuotation") SearchForQuotation searchForQuotation,
+            Model model) {
+        model.addAttribute("activeMenu", "quotation");
         model.addAttribute("activeSub", "qt");
-        model.addAttribute("activeMenu", "approval");
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("quotations", quotationService.searchAndFilterForQuotation(searchForQuotation));
         return "quotation/quotation-list";
     }
 
-
     // show list các quotation theo purchase
-    @GetMapping("/quotations")
-    public String showQuotations(Model model) {
+    @GetMapping("show/quotations")
+    public String showQuotations(Model model, jakarta.servlet.http.HttpServletRequest request) {
+        model.addAttribute("activeMenu", "quotation");
         model.addAttribute("activeSub", "qt");
-        model.addAttribute("activeMenu", "approval");
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("quotations", quotationService.getQuotationAndPurchase());
         return "quotation/quotation-list";

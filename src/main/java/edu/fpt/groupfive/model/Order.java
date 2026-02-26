@@ -12,13 +12,12 @@ import java.util.List;
 @Setter
 public class Order extends AbstractEntity<Integer>{
     private BigDecimal totalAmount;
-    private String purchaseOrderNote;
     private OrderStatus orderStatus;
-    private Integer supplierId;
     private String orderNote;
+    private Integer purchaseRequestId;
+    private Integer supplierId;
     private Integer quotationId;
     private Integer approvedBy;
-    private Integer updateBy;
+    private Integer updatedBy;
     private List<OrderDetail> orderDetails;
-
 }

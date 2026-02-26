@@ -6,14 +6,36 @@
     --text-muted: #666666;
     --border-color: #000000;
     --success-color: #000000;
-    --status-bg: #f2f2f2;
+    --status-bg: #ffffff;
 }
 
 .po-detail-wrapper {
     padding: 40px;
-    background-color: var(--bg-light);
+    background-color: #ffffff;
     min-height: 100vh;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.breadcrumb-nav {
+    font-size: 11px;
+    font-weight: 700;
+    color: #666666;
+    letter-spacing: 0.05em;
+    margin-bottom: 24px;
+}
+
+.breadcrumb-nav a {
+    color: #666666;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumb-nav a:hover {
+    color: #000000;
+}
+
+.breadcrumb-nav .curr {
+    color: #000000;
 }
 
 .content-header {
@@ -21,21 +43,20 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 48px;
-    padding-bottom: 20px;
 }
 
 .content-header h1 {
     font-size: 24px;
     font-weight: 800;
-    color: var(--primary-color);
+    color: #000000;
     letter-spacing: -0.02em;
     margin: 0;
 }
 
 .details-card {
     background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    border-radius: 0px;
+    border: 1px solid #000000;
     padding: 32px;
 }
 
@@ -50,7 +71,7 @@
     display: block;
     font-size: 11px;
     font-weight: 700;
-    color: var(--text-muted);
+    color: #000000;
     letter-spacing: 0.1em;
     margin-bottom: 12px;
     text-transform: uppercase;
@@ -59,7 +80,7 @@
 .val-bold {
     font-size: 20px;
     font-weight: 700;
-    color: var(--primary-color);
+    color: #000000;
     margin: 0;
 }
 
@@ -77,17 +98,10 @@
     border: 1px solid #000000;
 }
 
-.status-badge::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: currentColor;
-}
-
-.status-badge.CREATED,
 .status-badge.APPROVED,
-.status-badge.PENDING {
+.status-badge.ACCEPTED,
+.status-badge.PENDING,
+.status-badge.REJECTED {
     background-color: #ffffff;
     color: #000000;
     border-color: #000000;
@@ -106,14 +120,13 @@
 .section-title {
     font-size: 14px;
     font-weight: 800;
-    color: var(--primary-color);
+    color: #000000;
     margin-bottom: 24px;
-    letter-spacing: 0.02em;
 }
 
 .details-table-wrap {
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border: 1px solid #000000;
+    border-radius: 0px;
     overflow: hidden;
 }
 
@@ -123,33 +136,33 @@
 }
 
 .details-table th {
-    background-color: #fdfdfd;
+    background-color: #ffffff;
     padding: 16px 20px;
     text-align: left;
     font-size: 11px;
     font-weight: 700;
-    color: var(--text-muted);
+    color: #000000;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #000000;
 }
 
 .details-table td {
     padding: 20px;
     font-size: 14px;
-    color: var(--text-main);
-    border-bottom: 1px solid var(--border-color);
+    color: #000000;
+    border-bottom: 1px solid #000000;
 }
 
 .td-id {
-    color: var(--text-muted);
+    color: #666666;
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
 }
 
 .td-bold {
     font-weight: 600;
-    color: var(--primary-color);
+    color: #000000;
 }
 
 .footer-summary {
@@ -168,7 +181,7 @@
     display: block;
     font-size: 11px;
     font-weight: 700;
-    color: var(--text-muted);
+    color: #000000;
     margin-bottom: 12px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -176,7 +189,7 @@
 
 .terms-box p {
     font-size: 12px;
-    color: var(--text-muted);
+    color: #000000;
     line-height: 1.8;
 }
 
@@ -192,13 +205,13 @@
 }
 
 .summary-line span:first-child {
-    color: var(--text-muted);
+    color: #000000;
     font-weight: 500;
 }
 
 .summary-line span:last-child {
     font-weight: 700;
-    color: var(--primary-color);
+    color: #000000;
 }
 
 .discount-val {
@@ -217,28 +230,135 @@
 .grand-total-row span:first-child {
     font-size: 16px;
     font-weight: 800;
-    color: var(--primary-color);
+    color: #000000;
 }
 
 .grand-total {
     font-size: 32px;
     font-weight: 900;
-    color: var(--primary-color);
+    color: #000000;
     letter-spacing: -0.03em;
 }
 
-/* DataTables Pagination Polishing */
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 6px 14px;
-    margin: 0 4px;
-    border-radius: 8px;
+/* Premium Buttons */
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-outline-prem {
+    padding: 10px 24px;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    background: transparent;
+    color: #000000;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
+    cursor: pointer;
     transition: all 0.2s;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: var(--primary-color) !important;
-    color: white !important;
-    border: none !important;
+.btn-outline-prem:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+.btn-solid-prem {
+    padding: 10px 24px;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    background: #000000;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-solid-prem:hover {
+    background: #333333;
+    transform: translateY(-1px);
+}
+
+/* Rejection Reason Style */
+.rejection-reason-box {
+    margin-top: 24px;
+    padding: 24px;
+    background-color: #fffafb;
+    border: 1px solid #ff0000;
+    border-radius: 4px;
+}
+
+.rejection-reason-box label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    color: #ff0000;
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.rejection-reason-box p {
+    font-size: 14px;
+    color: #000000;
+    margin: 0;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 10% auto;
+    padding: 32px;
+    border: 1px solid #000000;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 0;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    margin-bottom: 24px;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.modal-body {
+    margin-bottom: 24px;
+}
+
+.modal-body textarea {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 120px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
 }

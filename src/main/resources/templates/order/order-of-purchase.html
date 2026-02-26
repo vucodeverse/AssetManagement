@@ -1,130 +1,132 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="${layoutName ?: 'layout/director-layout'}">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Purchase Order Details - Procurex</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <title th:text="'PO Detail #' + ${order.orderId} + ' | PROCUREX'">PO Detail | PROCUREX</title>
+  <th:block layout:fragment="extra-css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/order/order-of-purchase.css}">
+  </th:block>
 </head>
+
+
 <body>
-<div class="app-layout">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <i class="fas fa-cube"></i> PROCUREX
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-item">DASHBOARD</div>
-      <div class="nav-item">APPROVAL CENTER</div>
-      <div class="nav-item active">PURCHASE ORDERS</div>
-    </nav>
-    <div class="sidebar-user">
-      <div class="avatar">MT</div>
-      <div class="user-meta">
-        <p class="name">Marcus Thorne</p>
-        <p class="role">Director</p>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <header class="content-header">
-      <div class="header-left">
-        <i class="fas fa-arrow-left back-btn"></i>
-        <h1>PURCHASE ORDER DETAILS</h1>
-      </div>
-      <div class="header-actions">
-        <button class="btn-outline">DOWNLOAD PDF</button>
-        <button class="btn-solid">APPROVE PO</button>
-      </div>
-    </header>
-
-    <div class="details-card">
-      <!-- Header Info -->
-      <div class="header-info">
-        <div class="info-item">
-          <label>PURCHASE ORDER ID</label>
-          <p class="val-bold">PO-2024-00892</p>
-        </div>
-        <div class="info-item">
-          <label>SUPPLIER VENDOR</label>
-          <p class="val-bold">Global Tech Solutions Inc. <i class="fas fa-check-circle verified"></i></p>
-        </div>
-        <div class="info-item">
-          <label>CURRENT STATUS</label>
-          <span class="status-badge">PENDING REVIEW</span>
-        </div>
+  <div layout:fragment="content">
+    <div class="po-detail-wrapper">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        DASHBOARD / <a th:href="@{${linkPrefix} + '/purchase-orders'}">PURCHASE ORDERS</a> /
+        <span class="active" th:text="'PO-' + ${order.orderId}">PO-1</span>
       </div>
 
-      <hr class="divider">
-
-      <!-- Line Items Table -->
-      <section class="items-section">
-        <h2 class="section-title">LINE ITEM DETAILS</h2>
-        <table class="details-table">
-          <thead>
-          <tr>
-            <th>PO DETAIL ID</th>
-            <th>ASSET TYPE NAME</th>
-            <th>QUANTITY</th>
-            <th>PRICE</th>
-            <th>TAX (%)</th>
-            <th>DISCOUNT (%)</th>
-            <th>NOTE</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td>#8821</td>
-            <td>Advanced Workstation Pro V1</td>
-            <td>10</td>
-            <td>$1,850.00</td>
-            <td>8%</td>
-            <td>2.5%</td>
-            <td class="italic-note">Include 3y warranty</td>
-          </tr>
-          <tr>
-            <td>#8822</td>
-            <td>27" Retina Display Monitor</td>
-            <td>5</td>
-            <td>$420.00</td>
-            <td>8%</td>
-            <td>0%</td>
-            <td class="italic-note">Wall mount kits incl.</td>
-          </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <!-- Footer Summary Area -->
-      <div class="footer-summary">
-        <div class="terms-box">
-          <label>GENERAL TERMS</label>
-          <p>Net 30 payment terms apply. Delivery within 14 business days upon approval.</p>
+      <header class="content-header">
+        <div class="header-left">
+          <h1>PURCHASE ORDER DETAILS</h1>
         </div>
-        <div class="total-summary">
-          <div class="summary-line">
-            <span>Subtotal</span>
-            <span>$20,600.00</span>
+        <!-- Removed Action Buttons as requested -->
+      </header>
+
+      <div class="details-card">
+        <!-- Header Info -->
+        <div class="header-info">
+          <div class="info-item">
+            <label>PURCHASE ORDER ID</label>
+            <p class="val-bold" th:text="'PO-' + ${order.orderId}">PO-2024-00892</p>
           </div>
-          <div class="summary-line">
-            <span>Total Discount</span>
-            <span class="discount-val">-$462.50</span>
+          <div class="info-item">
+            <label>SUPPLIER VENDOR</label>
+            <p class="val-bold">
+              <span th:text="${order.supplierName}">Global Tech Solutions Inc.</span>
+            </p>
           </div>
-          <div class="summary-line">
-            <span>Tax Est. (Avg 8%)</span>
-            <span>$0.00</span>
+          <div class="info-item">
+            <label>CURRENT STATUS</label>
+            <div>
+              <span class="status-badge" th:classappend="${order.status}" th:text="${order.status}">PENDING
+                REVIEW</span>
+            </div>
           </div>
-          <div class="grand-total-row">
-            <span>GRAND TOTAL</span>
-            <span class="grand-total">$20,137.14</span>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Line Items Table -->
+        <section class="items-section">
+          <h2 class="section-title">LINE ITEM DETAILS</h2>
+          <div class="details-table-wrap">
+            <table id="lineItemsTable" class="details-table">
+              <thead>
+                <tr>
+                  <th>LINE ID</th>
+                  <th>ASSET TYPE NAME</th>
+                  <th>QUANTITY</th>
+                  <th>PRICE</th>
+                  <th>TAX (%)</th>
+                  <th>DISCOUNT (%)</th>
+                  <th>EXPECTED DELIVERY</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="item : ${order.items}">
+                  <td class="td-id" th:text="'#IT-' + ${item.id}">#IT-001</td>
+                  <td class="td-bold" th:text="${item.assetTypeName}">MacBook Pro 14" M3</td>
+                  <td th:text="${#numbers.formatInteger(item.quantity, 2)}">05</td>
+                  <td th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}">$1,999.00</td>
+                  <td
+                    th:text="${item.taxRate != null ? #numbers.formatDecimal(item.taxRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
+                    8.0%</td>
+                  <td
+                    th:text="${item.discountRate != null ? #numbers.formatDecimal(item.discountRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
+                    2.5%</td>
+                  <td class="italic-note"
+                    th:text="${item.expectedDeliveryDate != null ? #temporals.format(item.expectedDeliveryDate, 'dd-MM-yyyy') : '—'}">
+                    15-01-2024</td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Footer Summary Area -->
+        <div class="footer-summary">
+          <div class="terms-box">
+            <label>GENERAL TERMS</label>
+            <p>NET 30 PAYMENT TERMS APPLY FROM DATE OF DELIVERY. ALL ITEMS SUBJECT TO STANDARD PROCUREMENT QUALITY AUDIT
+              UPON ARRIVAL.</p>
+          </div>
+          <div class="total-summary">
+            <div class="summary-line">
+              <span>Subtotal</span>
+              <span th:text="'$' + ${#numbers.formatDecimal(order.subtotal, 1, 'COMMA', 2, 'POINT')}">$19,270.00</span>
+            </div>
+            <div class="summary-line">
+              <span>Total Discount</span>
+              <span class="discount-val"
+                th:text="'-$' + ${#numbers.formatDecimal(order.totalDiscount, 1, 'COMMA', 2, 'POINT')}">-$624.50</span>
+            </div>
+            <div class="summary-line">
+              <span>Tax Est.</span>
+              <span th:text="'$' + ${#numbers.formatDecimal(order.totalTax, 1, 'COMMA', 2, 'POINT')}">$1,491.64</span>
+            </div>
+            <div class="grand-total-row">
+              <span>GRAND TOTAL</span>
+              <span class="grand-total"
+                th:text="'$' + ${#numbers.formatDecimal(order.grandTotal, 1, 'COMMA', 2, 'POINT')}">$20,137.14</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </main>
-</div>
+  </div>
+
+  <th:block layout:fragment="extra-js">
+    <script th:src="@{/js/order/order-detail.js}"></script>
+  </th:block>
 </body>
+
 </html>

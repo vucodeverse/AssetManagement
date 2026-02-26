@@ -22,5 +22,5 @@ public class OrderDetailCreateRequest {
     private Integer quotationDetailId;
     private String orderDetailNote;
     private BigDecimal discountRate;
-    private LocalDate expectedDeliveryDate;
+    private String assetTypeName;
 }

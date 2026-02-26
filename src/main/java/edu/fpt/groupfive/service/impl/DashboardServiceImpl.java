@@ -31,7 +31,6 @@ public class DashboardServiceImpl implements DashboardService {
     private final SupplierDAO supplierDAO;
 
     private final PurchaseMapper purchaseMapper;
-    private final QuotationMapper quotationMapper;
     private final OrderMapper orderMapper;
 
     @Override
@@ -66,8 +65,7 @@ public class DashboardServiceImpl implements DashboardService {
                             .createdAt(q.getCreatedAt())
                             .supplierName(supplierName)
                             .build();
-                })
-                .collect(Collectors.toList());
+                }).toList();
     }
 
     @Override
@@ -76,11 +74,11 @@ public class DashboardServiceImpl implements DashboardService {
                 .awaitingQuoCount(purchaseDAO.countByStatus(Request.APPROVED))
                 .approvedPRs(purchaseDAO.findApprovedPRs(5).stream()
                         .map(purchaseMapper::toPurchaseResponse)
-                        .collect(Collectors.toList()))
+                        .toList())
                 .recentQuotations(fetchRecentQuotations())
                 .activeOrders(orderDAO.findRecent(3).stream()
                         .map(orderMapper::toPurchaseOrderResponse)
-                        .collect(Collectors.toList()))
+                        .toList())
                 .build();
     }
 }

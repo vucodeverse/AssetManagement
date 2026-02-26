@@ -3,7 +3,6 @@ package edu.fpt.groupfive.dao.impl;
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.dao.QuotationDAO;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
-import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.model.Quotation;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
@@ -24,37 +23,121 @@ public class QuotationDAOImpl implements QuotationDAO {
     public Integer insert(Quotation quotation) {
 
         String sql = "insert into quotation (purchase_request_id, supplier_id, status, total_amount, " +
-                "created_at) VALUES (?,?,?,?,?)";
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
-
-            preparedStatement.setInt(1, quotation.getPurchaseId());
-            preparedStatement.setInt(2, quotation.getSupplierId());
+                "created_at, rejected_reason) VALUES (?,?,?,?,?,?)";
+        Connection connection = null;
+        try {
+            connection = databaseConfig.getConnection();
+            connection.setAutoCommit(false);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setObject(1, quotation.getPurchaseId());
+            preparedStatement.setObject(2, quotation.getSupplierId());
             preparedStatement.setString(3, quotation.getQuotationStatus().toString());
             preparedStatement.setBigDecimal(4, quotation.getTotalAmount());
             preparedStatement.setTimestamp(5, Timestamp.valueOf(quotation.getCreatedAt().atStartOfDay()));
+            preparedStatement.setString(6, quotation.getRejectedReason());
 
             preparedStatement.executeUpdate();
-            ResultSet rs  = preparedStatement.getGeneratedKeys();
-            if(rs.next()) return rs.getInt(1);
+            ResultSet rs = preparedStatement.getGeneratedKeys();
+
+            connection.commit();
+            if (rs.next())
+                return rs.getInt(1);
         } catch (SQLException e) {
+            if(connection != null){
+                try{
+                    connection.rollback();
+                }catch (SQLException ignored){
+
+                }
+            }
+
             throw new RuntimeException(e);
+        }finally {
+
+            // reset auto commit lại về true và đóng cổng.
+            if (connection != null)
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (Exception ignored) {
+                }
         }
         return 0;
     }
 
     @Override
+    public void update(Quotation quotation) {
+        String sql = "UPDATE quotation SET supplier_id = ?, status = ?, total_amount = ?, updated_at = GETDATE() " +
+                "WHERE quotation_id = ?";
+
+        Connection connection = null;
+        try {
+
+            connection = databaseConfig.getConnection();
+            connection.setAutoCommit(false);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setObject(1, quotation.getSupplierId());
+            preparedStatement.setString(2, quotation.getQuotationStatus().toString());
+            preparedStatement.setBigDecimal(3, quotation.getTotalAmount());
+            preparedStatement.setInt(4, quotation.getId());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            if(connection != null){
+                try{
+                    connection.rollback();
+                }catch (SQLException ignored){}
+            }
+            throw new RuntimeException(e);
+        }finally {
+            if (connection != null)
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (Exception ignored) {
+                }
+        }
+    }
+
+    @Override
+    public void updateStatus(Integer quotationId, QuotationStatus status, String rejectedReason) {
+        String sql = "UPDATE quotation SET status = ?, rejected_reason = ?, updated_at = GETDATE() WHERE quotation_id = ?";
+
+        Connection connection = null;
+        try {
+            connection = databaseConfig.getConnection();
+            connection.setAutoCommit(false);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, status.toString());
+            preparedStatement.setString(2, rejectedReason);
+            preparedStatement.setInt(3, quotationId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            if(connection != null){
+                try{
+                    connection.rollback();
+                }catch (SQLException ignored){}
+            }
+            throw new RuntimeException(e);
+        }finally {
+            if (connection != null)
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                }catch (SQLException ignored) {}
+        }
+    }
+
+    // tìm kiếm theo quotation id
+    @Override
     public Optional<Quotation> findById(Integer quotationId) {
 
         String sql = "select * from quotation where quotation_id = ?";
 
-
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, quotationId);
             ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()){
+            if (rs.next()) {
 
                 Quotation quotation = new Quotation();
                 quotation.setId(rs.getInt("quotation_id"));
@@ -62,15 +145,14 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setSupplierId(rs.getInt("supplier_id"));
                 quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                quotation.setCreatedAt(rs.getDate("created_at") != null ?
-                        rs.getDate("created_at").toLocalDate() : null );
-                quotation.setUpdatedAt(rs.getDate("updated_at") != null ?
-                        rs.getDate("updated_at").toLocalDate() : null);
+                quotation
+                        .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                quotation
+                        .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                quotation.setRejectedReason(rs.getString("rejected_reason"));
 
                 return Optional.of(quotation);
             }
-
-
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -79,6 +161,7 @@ public class QuotationDAOImpl implements QuotationDAO {
         return Optional.empty();
     }
 
+    // tìm kiếm theo purchase id
     @Override
     public List<Quotation> findByPurchaseId(Integer purchaseId) {
 
@@ -87,10 +170,10 @@ public class QuotationDAOImpl implements QuotationDAO {
         List<Quotation> quotations = new ArrayList<>();
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, purchaseId);
             ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()){
+            while (rs.next()) {
 
                 Quotation quotation = new Quotation();
                 quotation.setId(rs.getInt("quotation_id"));
@@ -98,10 +181,10 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setSupplierId(rs.getInt("supplier_id"));
                 quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                quotation.setCreatedAt(rs.getDate("created_at") != null ?
-                        rs.getDate("created_at").toLocalDate() : null );
-                quotation.setUpdatedAt(rs.getDate("updated_at") != null ?
-                        rs.getDate("updated_at").toLocalDate() : null);
+                quotation
+                        .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                quotation
+                        .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
                 quotations.add(quotation);
             }
 
@@ -113,6 +196,32 @@ public class QuotationDAOImpl implements QuotationDAO {
 
     @Override
     public Optional<Quotation> findResponseById(Integer quotationId) {
+        String sql = "SELECT q.*, s.supplier_name " +
+                "FROM quotation q " +
+                "JOIN supplier s ON q.supplier_id = s.supplier_id " +
+                "WHERE q.quotation_id = ?";
+
+        try (Connection connection = databaseConfig.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, quotationId);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()) {
+                Quotation quotation = new Quotation();
+                quotation.setId(rs.getInt("quotation_id"));
+                quotation.setPurchaseId(rs.getInt("purchase_request_id"));
+                quotation.setSupplierId(rs.getInt("supplier_id"));
+                quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
+                quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
+                quotation
+                        .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                quotation
+                        .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+
+                return Optional.of(quotation);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return Optional.empty();
     }
 
@@ -126,19 +235,22 @@ public class QuotationDAOImpl implements QuotationDAO {
         return List.of();
     }
 
+
+    // tinsh số lượng quotation theo từng purchase
     @Override
     public Integer countQuotationFromPurchaseId(Integer purchaseId) {
 
-        String sql = "select p.purchase_request_id, count(distinct q.quotation_id) from purchase_request p left join quotation q on p\n" +
+        String sql = "select p.purchase_request_id, count(distinct q.quotation_id) from purchase_request p left join quotation q on p\n"
+                +
                 "    .purchase_request_id = q\n" +
                 "    .purchase_request_id where p\n" +
                 "    .purchase_request_id = ? group by p.purchase_request_id";
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, purchaseId);
             ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()){
+            if (rs.next()) {
                 return rs.getInt(2);
             }
 
@@ -148,19 +260,19 @@ public class QuotationDAOImpl implements QuotationDAO {
         return 0;
     }
 
+    // saerch và filter cho màn quotation of purchase
     @Override
     public List<Quotation> searchAndFilterQuotationOfPurchase(QuotationSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder(
                 "select q.* from quotation q " +
-                "join supplier s on q.supplier_id = s.supplier_id " +
-                "where 1=1 "
-        );
+                        "join supplier s on q.supplier_id = s.supplier_id " +
+                        "where 1=1 ");
 
         List<Object> params = new ArrayList<>();
 
         if (criteria.getPurchaseId() != null) {
             sql.append(" and q.purchase_request_id = ? ");
-                params.add(criteria.getPurchaseId());
+            params.add(criteria.getPurchaseId());
         }
 
         if (criteria.getSupplierName() != null && !criteria.getSupplierName().isBlank()) {
@@ -196,7 +308,7 @@ public class QuotationDAOImpl implements QuotationDAO {
         List<Quotation> quotations = new ArrayList<>();
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
+                PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
 
             for (int i = 0; i < params.size(); i++) {
                 preparedStatement.setObject(i + 1, params.get(i));
@@ -210,8 +322,10 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setSupplierId(rs.getInt("supplier_id"));
                 quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                quotation.setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
-                quotation.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                quotation
+                        .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                quotation
+                        .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
                 quotations.add(quotation);
             }
 
@@ -221,17 +335,64 @@ public class QuotationDAOImpl implements QuotationDAO {
         return quotations;
     }
 
+    // đếm số lượng quotaiton dựa trên status
     @Override
-    public BigDecimal totalAmoutForPurchaseId(Integer purchaseId) {
+    public long countByStatus(QuotationStatus status) {
+        String sql = "select count(*) from quotation where status = ?";
+        try (Connection connection = databaseConfig.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, status.name());
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next())
+                return rs.getLong(1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
+
+
+    // lấy ra những quotaiton đc thêm gần đây
+    @Override
+    public List<Quotation> findRecent(int limit) {
+        String sql = "select q.*, s.supplier_name from quotation q " +
+                "join supplier s on q.supplier_id = s.supplier_id " +
+                "order by q.created_at desc, q.quotation_id desc " +
+                "offset 0 rows fetch next ? rows only";
+        List<Quotation> quotations = new ArrayList<>();
+        try (Connection connection = databaseConfig.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, limit);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                Quotation quotation = new Quotation();
+                quotation.setId(rs.getInt("quotation_id"));
+                quotation.setPurchaseId(rs.getInt("purchase_request_id"));
+                quotation.setSupplierId(rs.getInt("supplier_id"));
+                quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
+                quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
+                quotation
+                        .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                quotation
+                        .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                quotations.add(quotation);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return quotations;
+    }
+
+    @Override
+    public BigDecimal totalAmountForPurchaseId(Integer purchaseId) {
 
         String sql = "select min(q.total_amount) from quotation q where q.purchase_request_id = ?";
 
-
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, purchaseId);
             ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()){
+            if (rs.next()) {
 
                 return rs.getBigDecimal(1);
             }
@@ -239,6 +400,6 @@ public class QuotationDAOImpl implements QuotationDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return  BigDecimal.ZERO;
+        return BigDecimal.ZERO;
     }
 }

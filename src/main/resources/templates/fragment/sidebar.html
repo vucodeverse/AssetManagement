@@ -1,59 +1,57 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <body>
 
-<aside class="sidebar" th:fragment="sidebar(activeMenu, activeSub)">
-    <div class="sidebar-logo">
-        <i class="fas fa-cube"></i> <span>PROCUREX</span>
-    </div>
-
-    <nav class="sidebar-nav">
-        <!-- DASHBOARD -->
-<!--th:classappend = Thymeleaf attribute để thêm class vào class đã có sẵn-->
-        <a class="nav-item"
-           th:href="@{/director/dashboard}"
-           th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
-            <i class="fas fa-th-large"></i> DASHBOARD
-        </a>
-
-        <!-- APPROVAL CENTER -->
-        <div class="nav-group">
-            <div class="nav-item"
-                 th:classappend="${activeMenu}=='approval' ? ' active' : ''">
-                <i class="fas fa-check-circle"></i> APPROVAL CENTER
-            </div>
-
-            <div class="sub-nav" th:if="${activeMenu}=='approval'">
-                <a class="sub-item"
-                   th:href="@{/director/approval/purchase-requests}"
-                   th:classappend="${activeSub}=='pr' ? ' active' : ''">
-                    PURCHASE REQUESTS
-                </a>
-
-                <a class="sub-item"
-                   th:href="@{/director/approval/quotations}"
-                   th:classappend="${activeSub}=='qt' ? ' active' : ''">
-                    QUOTATIONS
-                </a>
-            </div>
+    <aside class="sidebar" th:fragment="sidebar(activeMenu, activeSub)">
+        <div class="sidebar-logo">
+            <i class="fas fa-cube"></i> <span>PROCUREX</span>
         </div>
 
-        <!-- PURCHASE ORDERS -->
-        <a class="nav-item"
-           th:href="@{/director/purchase-orders}"
-           th:classappend="${activeMenu}=='po' ? ' active' : ''">
-            <i class="fas fa-file-invoice-dollar"></i> PURCHASE ORDERS
-        </a>
-    </nav>
+        <nav class="sidebar-nav">
+            <!-- DASHBOARD -->
+            <!--th:classappend = Thymeleaf attribute để thêm class vào class đã có sẵn-->
+            <a class="nav-item" th:href="@{/director/dashboard}"
+                th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
 
-    <div class="sidebar-user">
-        <div class="user-avatar" th:text="${userInitials} ?: 'MT'">MT</div>
-        <div class="user-info">
-            <span class="user-name" th:text="${userName} ?: 'Marcus Thorne'">Marcus Thorne</span>
-            <span class="user-role" th:text="${userRole} ?: 'Director'">Director</span>
+            <!-- APPROVAL CENTER -->
+            <div class="nav-group">
+                <a class="nav-item" th:href="@{/director/purchases}"
+                    th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                    <i class="fas fa-check-circle"></i> Approval Center
+                </a>
+
+                <div class="sub-nav" th:if="${activeMenu}=='approval'">
+                    <a class="sub-item" th:href="@{/director/purchases}"
+                        th:classappend="${activeSub}=='pr' ? ' active' : ''">
+                        Purchase Requests
+                    </a>
+
+                    <a class="sub-item" th:href="@{/purchase-staff/quotations}"
+                        th:classappend="${activeSub}=='qt' ? ' active' : ''">
+                        Quotations
+                    </a>
+                </div>
+            </div>
+
+            <!-- PURCHASE ORDERS -->
+            <a class="nav-item" th:href="@{/director/purchase-orders}"
+                th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" th:text="${userInitials} ?: 'MT'">MT</div>
+            <div class="user-info">
+                <span class="user-name" th:text="${userName} ?: 'Marcus Thorne'">Marcus Thorne</span>
+                <span class="user-role" th:text="${userRole} ?: 'Director'">Director</span>
+            </div>
         </div>
-    </div>
-</aside>
+    </aside>
 
 </body>
+
 </html>

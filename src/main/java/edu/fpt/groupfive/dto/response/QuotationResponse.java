@@ -17,5 +17,13 @@ public class QuotationResponse {
     private BigDecimal totalAmount;
     private LocalDate createdAt;
     private String supplierName;
+    private String rejectedReason;
+
+    // Totals for summary
+    private BigDecimal subtotal;
+    private BigDecimal totalDiscount;
+    private BigDecimal totalTax;
+    private BigDecimal grandTotal;
+
     private List<QuotationDetailResponse> quotationDetails;
 }

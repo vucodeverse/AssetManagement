@@ -30,8 +30,9 @@ public class StaffController {
         model.addAttribute("dashboard", dashboardData);
         model.addAttribute("activeMenu", "dashboard");
 
-        String uri = request.getRequestURI();
-        String prefix = uri.contains("/purchase-staff/") ? "/purchase-staff" : "/director";
+        String uri = request.getRequestURI().toLowerCase();
+        String prefix = (uri.contains("purchase-staff") || uri.contains("purchase staff")
+                || uri.contains("purchase%20staff")) ? "/purchase-staff" : "/director";
         model.addAttribute("linkPrefix", prefix);
         model.addAttribute("layoutName", "layout/staff-layout");
 
@@ -82,16 +83,19 @@ public class StaffController {
             @RequestParam(value = "reasonReject", required = false) String reasonReject,
             jakarta.servlet.http.HttpServletRequest request) {
         purchaseService.actionsWithPurchase(id, actions, reasonReject);
-        String prefix = request.getRequestURI().contains("/purchase-staff/") ? "/purchase-staff" : "/director";
+        String uri = request.getRequestURI().toLowerCase();
+        String prefix = (uri.contains("purchase-staff") || uri.contains("purchase staff")
+                || uri.contains("purchase%20staff")) ? "/purchase-staff" : "/director";
         return "redirect:" + prefix + "/purchases";
     }
 
     private void addLayout(Model model, jakarta.servlet.http.HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        String prefix = uri.contains("/purchase-staff/") ? "/purchase-staff" : "/director";
+        String uri = request.getRequestURI().toLowerCase();
+        String prefix = (uri.contains("purchase-staff") || uri.contains("purchase staff")
+                || uri.contains("purchase%20staff")) ? "/purchase-staff" : "/director";
         model.addAttribute("linkPrefix", prefix);
 
-        if (uri.contains("/purchase-staff/")) {
+        if (uri.contains("purchase-staff") || uri.contains("purchase staff") || uri.contains("purchase%20staff")) {
             model.addAttribute("layoutName", "layout/staff-layout");
         } else {
             org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder

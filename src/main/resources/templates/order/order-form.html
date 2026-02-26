@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{/layout/director-layout}">
+    layout:decorate="${layoutName ?: 'layout/director-layout'}">
 
 <head>
     <meta charset="UTF-8">
@@ -19,8 +19,10 @@
 
             <!-- Breadcrumb -->
             <div class="breadcrumb">
-                DASHBOARD / <a th:href="@{/director/quotations}">QUOTATIONS</a> /
-                <span class="active">CREATE PURCHASE ORDER</span>
+                <a th:href="@{${linkPrefix} + '/dashboard'}">DASHBOARD</a>
+                /
+                <a th:href="@{${linkPrefix} + '/purchase-orders'}">PURCHASE ORDERS</a> /
+                <span class="active">GENERATE PO</span>
             </div>
 
             <!-- Page Header -->
@@ -37,7 +39,7 @@
                 <span th:text="${error}"></span>
             </div>
 
-            <form th:action="@{/director/quotations/{id}/create-po(id=${orderCreateRequest.quotationId})}"
+            <form th:action="@{${linkPrefix} + '/quotations/{id}/create-po'(id=${orderCreateRequest.quotationId})}"
                 th:object="${orderCreateRequest}" method="post">
 
                 <!-- General Information -->
@@ -66,10 +68,10 @@
 
                         <div class="form-item">
                             <label>Total Amount (USD)</label>
-                            <input type="text" th:value="${orderCreateRequest.totalAmout != null ?
-                                       '$' + #numbers.formatDecimal(orderCreateRequest.totalAmout, 1, 'COMMA', 0, 'POINT')
+                            <input type="hidden" id="totalAmountInput" th:field="*{totalAmount}">
+                            <input type="text" id="totalAmountDisplay" th:value="${orderCreateRequest.totalAmount != null ?
+                                       '$' + #numbers.formatDecimal(orderCreateRequest.totalAmount, 1, 'COMMA', 0, 'POINT')
                                        : 'N/A'}" readonly>
-                            <input type="hidden" th:field="*{totalAmout}">
                         </div>
 
                         <div class="form-item full-width">
@@ -88,20 +90,19 @@
                         <table class="po-table">
                             <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th class="th-header" style="width: 15%;">ASSET TYPE</th>
                                     <th>Detail ID</th>
                                     <th>Unit Price</th>
                                     <th>Tax %</th>
                                     <th>Disc %</th>
                                     <th>Quantity</th>
-                                    <th>Expected Delivery</th>
                                     <th>Note</th>
                                     <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="od, iter : *{orderDetailCreateRequests}">
-                                    <td class="td-value" th:text="${iter.index + 1}">1</td>
+                                    <td class="td-value" th:text="${od.assetTypeName}">Asset Type</td>
 
                                     <!-- Detail ID display -->
                                     <td class="td-value" th:text="'QD-' + ${od.quotationDetailId}">QD-001</td>
@@ -119,7 +120,7 @@
                                     <td class="td-value"
                                         th:text="${od.discountRate != null ? od.discountRate + '%' : '-'}">-</td>
 
-                                    <!-- Hidden read-only bindings + Quantity display -->
+                                    <!-- Quantity: editable -->
                                     <td>
                                         <input type="hidden"
                                             th:name="'orderDetailCreateRequests[' + ${iter.index} + '].quotationDetailId'"
@@ -137,18 +138,13 @@
                                             th:name="'orderDetailCreateRequests[' + ${iter.index} + '].assetTypeId'"
                                             th:value="${od.assetTypeId}">
                                         <input type="hidden"
+                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].assetTypeName'"
+                                            th:value="${od.assetTypeName}">
+
+                                        <input class="table-input qty-input" type="number" min="1"
                                             th:name="'orderDetailCreateRequests[' + ${iter.index} + '].quantity'"
-                                            th:value="${od.quantity}">
-
-                                        <!-- Quantity: display only, fixed from DB -->
-                                        <span class="td-value" th:text="${od.quantity}">0</span>
-                                    </td>
-
-                                    <!-- Expected delivery date (editable) -->
-                                    <td>
-                                        <input class="table-input" type="date"
-                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].expectedDeliveryDate'"
-                                            th:value="${od.expectedDeliveryDate}">
+                                            th:value="${od.quantity}"
+                                            th:attr="data-price=${od.price}, data-tax=${od.taxRate}, data-discount=${od.discountRate}">
                                     </td>
 
                                     <!-- Note (editable) -->
@@ -158,16 +154,12 @@
                                             th:value="${od.orderDetailNote}" placeholder="Add note...">
                                     </td>
 
-                                    <!-- Delete row: mini form, no JS needed -->
+                                    <!-- Delete row -->
                                     <td class="td-delete">
-                                        <form
-                                            th:action="@{/director/quotations/{id}/create-po/remove-line(id=${orderCreateRequest.quotationId})}"
-                                            method="post" style="display:inline">
-                                            <input type="hidden" name="deleteIndex" th:value="${iter.index}">
-                                            <button type="submit" class="btn-del-row" title="Remove this line">
-                                                <i class="far fa-trash-alt"></i>
-                                            </button>
-                                        </form>
+                                        <button type="submit" name="removeLine" th:value="${iter.index}"
+                                            class="btn-del-row" title="Remove this line">
+                                            <i class="far fa-trash-alt"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -178,9 +170,9 @@
                     <div class="financial-summary">
                         <div class="total-line">
                             <span>TOTAL AMOUNT</span>
-                            <span class="grand-total" th:text="${orderCreateRequest.totalAmout != null ?
-                                      '$' + #numbers.formatDecimal(orderCreateRequest.totalAmout, 1, 'COMMA', 0, 'POINT')
-                                      : 'N/A'}">
+                            <span id="grandTotalDisplay" th:text="${orderCreateRequest.totalAmount != null ?
+                                              '$' + #numbers.formatDecimal(orderCreateRequest.totalAmount, 1, 'COMMA', 0, 'POINT')
+                                              : '$0'}">
                                 $0
                             </span>
                         </div>
@@ -193,7 +185,7 @@
                         <i class="fas fa-info-circle"></i> Review all fields carefully before submitting.
                     </div>
                     <div class="footer-actions">
-                        <a th:href="@{/director/quotations}" class="btn-outline">
+                        <a th:href="@{${linkPrefix} + '/purchase-orders'}" class="btn-outline">
                             <i class="fas fa-arrow-left"></i> Cancel
                         </a>
                         <button type="submit" class="btn-solid">

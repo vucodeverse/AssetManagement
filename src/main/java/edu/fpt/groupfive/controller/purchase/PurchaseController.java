@@ -23,7 +23,6 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-@Slf4j(topic = "PURCHASE-CONTROLLER")
 @RequestMapping("/asset-manager")
 public class PurchaseController {
 
@@ -32,56 +31,73 @@ public class PurchaseController {
     private final UserService userService;
 
     // giển thị form tạo purchase
-    @GetMapping("/purchase-form")
+    @GetMapping("/create/purchase-form")
     public String showPurchaseForm(Model model){
+
+        // add sẵn 1 dòng detail mỗi khi hiển thị form
         PurchaseCreateRequest purchaseCreateRequest = new PurchaseCreateRequest();
         purchaseCreateRequest.getPurchaseDetailCreateRequests().add(new PurchaseDetailCreateRequest());
+
         model.addAttribute("purchaseCreateRequest", purchaseCreateRequest);
+
         getAssetType(model);
+        ActiveNavbar(model);
         return "purchase/purchase-form";
+    }
+
+    private static void ActiveNavbar(Model model) {
+        model.addAttribute("activeMenu", "approval");
+        model.addAttribute("activeSub", "pr");
     }
 
 
     // purchase detail
-    @GetMapping("/purchase-detail/{purchaseId}")
+    @GetMapping("/show/purchase-detail/{purchaseId}")
     public String showPurchaseDetail(@PathVariable("purchaseId") Integer purchaseId, Model model) {
         model.addAttribute("purchase", purchaseService.findById(purchaseId));
+        ActiveNavbar(model);
         return "purchase/purchase-detail";
     }
 
 
     // them 1 row ở purchase dertail chỗ form nhập
-    @PostMapping(value = "/purchase-form", params = "addDetail")
+    @PostMapping(value = "/create/purchase-form", params = "addDetail")
     public String addPurchaseDetail(@ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, Model model){
+
+        // tạo thêm 1 dòng detail mới
         purchaseCreateRequest.getPurchaseDetailCreateRequests().add(new PurchaseDetailCreateRequest());
         getAssetType(model);
+        ActiveNavbar(model);
         return "purchase/purchase-form";
     }
 
     // xóa đi 1 row
-    @PostMapping(value = "/purchase-form", params = "remove")
+    @PostMapping(value = "/create/purchase-form", params = "remove")
     public String removePurchaseDetail(@ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, @RequestParam("remove") int index, Model model){
+
+        // check điều kiện để xóa đi 1 dòng detail
         if(index >= 0 && purchaseCreateRequest.getPurchaseDetailCreateRequests().size() > 1){
             purchaseCreateRequest.getPurchaseDetailCreateRequests().remove(index);
         }
         getAssetType(model);
+        ActiveNavbar(model);
         return "purchase/purchase-form";
     }
 
     //xử lí form nhập
-    @PostMapping(value = "/purchase-form", params = "actions")
+    @PostMapping(value = "/create/purchase-form", params = "actions")
     public String processingForm(
             @Valid @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest,
             BindingResult result,
             Model model,
-            @RequestParam("actions") String actions,
-            RedirectAttributes ra) {
+            @RequestParam("actions") String actions) {
 
         boolean isDraft = "draft".equals(actions);
 
         // có lỗi thì return
             if (result.hasErrors()) {
                 getAssetType(model);
+                ActiveNavbar(model);
                 return "purchase/purchase-form";
             }
 
@@ -95,8 +111,6 @@ public class PurchaseController {
         } else {
             purchaseId = purchaseService.createPurchaseRequest(purchaseCreateRequest, userId, Request.PENDING);
         }
-
-        ra.addFlashAttribute("message", "Tạo Purchase Request thành công!");
         return "redirect:/asset-manager/purchase-detail/" + purchaseId;
     }
 

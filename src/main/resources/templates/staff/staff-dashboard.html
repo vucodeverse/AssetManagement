@@ -90,14 +90,16 @@
                             All</a>
                     </div>
                     <div class="quo-list">
-                        <div class="quo-item" th:each="quo : ${dashboard.recentQuotations}"
-                            th:classappend="${quo.quotationStatus.name().toLowerCase()}">
+                        <a class="quo-item" th:each="quo : ${dashboard.recentQuotations}"
+                            th:classappend="${quo.quotationStatus.name().toLowerCase()}"
+                            th:href="@{${linkPrefix} + '/quotations/' + ${quo.quotationId}}"
+                            style="text-decoration: none;">
                             <div class="quo-details">
                                 <strong th:text="'#QTN-' + ${quo.quotationId}">#QTN-9901</strong>
                                 <span th:text="${quo.supplierName}">Global Logistics</span>
                             </div>
                             <div class="status-label" th:text="${quo.quotationStatus}">DRAFT</div>
-                        </div>
+                        </a>
                         <div th:if="${#lists.isEmpty(dashboard.recentQuotations)}"
                             style="text-align: center; padding: 20px; color: var(--muted2); font-size: 14px;">No
                             quotations yet.</div>

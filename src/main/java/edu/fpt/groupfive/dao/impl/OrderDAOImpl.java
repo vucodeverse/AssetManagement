@@ -30,19 +30,26 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public Integer insert(Order order) {
         String sql = "insert into purchase_orders " +
-                "(total_amount, note, status, created_at, supplier_id, quotation_id, updated_at) " +
-                "values (?, ?, ?, ?, ?, ?, ?)";
+                "(order_date, total_amount, note, status, created_at, purchase_request_id, supplier_id, quotation_id, approved_by, updated_at, updated_by) "
+                +
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setBigDecimal(1, order.getTotalAmount());
-            ps.setString(2, order.getOrderNote());
-            ps.setString(3, order.getOrderStatus().toString());
-            ps.setDate(4, Date.valueOf(LocalDate.now()));
-            ps.setInt(5, order.getSupplierId());
-            ps.setInt(6, order.getQuotationId());
-            ps.setDate(7, Date.valueOf(LocalDate.now()));
+            ps.setDate(1,
+                    order.getCreatedAt() != null ? Date.valueOf(order.getCreatedAt()) : Date.valueOf(LocalDate.now()));
+            ps.setBigDecimal(2, order.getTotalAmount());
+            ps.setString(3, order.getOrderNote());
+            ps.setString(4, order.getOrderStatus() != null ? order.getOrderStatus().toString()
+                    : OrderStatus.PENDING.toString());
+            ps.setDate(5, Date.valueOf(LocalDate.now()));
+            ps.setObject(6, order.getPurchaseRequestId());
+            ps.setObject(7, order.getSupplierId());
+            ps.setObject(8, order.getQuotationId());
+            ps.setObject(9, order.getApprovedBy());
+            ps.setDate(10, Date.valueOf(LocalDate.now()));
+            ps.setObject(11, order.getUpdatedBy());
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
@@ -71,7 +78,7 @@ public class OrderDAOImpl implements OrderDAO {
 
         Map<Integer, Integer> map = new HashMap<>();
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (int i = 0; i < quotationDetailIds.size(); i++) {
                 ps.setInt(i + 1, quotationDetailIds.get(i));
@@ -88,18 +95,45 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public List<Order> searchAndFilter(OrderSearchCriteria criteria) {
+    public Map<Integer, Integer> getOrderedQtyByPurchaseDetail(List<Integer> purchaseDetailIds) {
+        if (purchaseDetailIds == null || purchaseDetailIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        String placeholders = purchaseDetailIds.stream().map(id -> "?").collect(Collectors.joining(", "));
+        String sql = "select qd.purchase_request_detail_id, sum(pod.quantity) as total_qty " +
+                "from purchase_order_details pod " +
+                "join quotation_detail qd on pod.quotation_detail_id = qd.quotation_detail_id " +
+                "where qd.purchase_request_detail_id in (" + placeholders + ") " +
+                "group by qd.purchase_request_detail_id";
+
+        Map<Integer, Integer> map = new HashMap<>();
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < purchaseDetailIds.size(); i++) {
+                ps.setInt(i + 1, purchaseDetailIds.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                map.put(rs.getInt("purchase_request_detail_id"), rs.getInt("total_qty"));
+            }
+        } catch (SQLException e) {
+            log.error("Failed to get ordered qty by purchase detail: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to get ordered qty by purchase detail", e);
+        }
+        return map;
+    }
+
+    @Override
+    public List<Object[]> searchAndFilter(OrderSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder(
-                "select po.purchase_order_id, po.total_amount, po.note, po.status, " +
-                "po.created_at, po.supplier_id, po.quotation_id, po.approved_by, " +
-                "po.updated_at, po.updated_by, " +
-                "q.purchase_request_id, " +
-                "s.supplier_name " +
-                "from purchase_orders po " +
-                "join quotation q on po.quotation_id = q.quotation_id " +
-                "join supplier s on po.supplier_id = s.supplier_id " +
-                "where 1=1 "
-        );
+                "select po.purchase_order_id, po.order_date, po.total_amount, po.note, po.status, " +
+                        "po.created_at, po.purchase_request_id, po.supplier_id, po.quotation_id, po.approved_by, " +
+                        "po.updated_at, po.updated_by, " +
+                        "s.supplier_name " +
+                        "from purchase_orders po " +
+                        "join supplier s on po.supplier_id = s.supplier_id " +
+                        "where 1=1 ");
 
         List<Object> params = new ArrayList<>();
 
@@ -143,11 +177,11 @@ public class OrderDAOImpl implements OrderDAO {
             params.add("%" + criteria.getKeyword() + "%");
         }
 
-        sql.append("order by q.purchase_request_id, po.created_at");
+        sql.append("order by po.purchase_request_id, po.created_at");
 
-        List<Order> orders = new ArrayList<>();
+        List<Object[]> results = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
@@ -160,28 +194,123 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getDate("order_date").toLocalDate()
+                        : (rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null));
+                order.setPurchaseRequestId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
                 order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
-                order.setUpdateBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
+                order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
 
-                // extra fields read from JOIN — stored transiently via supplierName (carried via orderNote workaround)
-                // passed to service via a side-channel map: key=orderId, value=[purchaseRequestId, supplierName]
-                // We store them separately below
-                int purchaseRequestId = rs.getInt("purchase_request_id");
                 String supplierName = rs.getString("supplier_name");
-
-                // We use purchaseOrderNote field (not in table) to carry supplierName to service
-                order.setPurchaseOrderNote(supplierName + "|" + purchaseRequestId);
-
-                orders.add(order);
+                results.add(new Object[] { order, supplierName });
             }
 
         } catch (SQLException e) {
             log.error("Failed to search purchase orders: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to search purchase orders", e);
+        }
+        return results;
+    }
+
+    @Override
+    public java.util.Optional<Order> findById(Integer orderId) {
+        String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
+                "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
+                "updated_at, updated_by " +
+                "from purchase_orders " +
+                "where purchase_order_id = ?";
+
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Order order = new Order();
+                order.setId(rs.getInt("purchase_order_id"));
+                order.setTotalAmount(rs.getBigDecimal("total_amount"));
+                order.setOrderNote(rs.getString("note"));
+                order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
+                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getDate("order_date").toLocalDate()
+                        : (rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null));
+                order.setPurchaseRequestId(rs.getInt("purchase_request_id"));
+                order.setSupplierId(rs.getInt("supplier_id"));
+                order.setQuotationId(rs.getInt("quotation_id"));
+                order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
+                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
+
+                return java.util.Optional.of(order);
+            }
+        } catch (SQLException e) {
+            log.error("Failed to find purchase order by id {}: {}", orderId, e.getMessage(), e);
+            throw new RuntimeException("Failed to find purchase order", e);
+        }
+        return java.util.Optional.empty();
+    }
+
+    @Override
+    public long countAll() {
+        String sql = "select count(*) from purchase_orders";
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            if (rs.next())
+                return rs.getLong(1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
+
+    @Override
+    public java.math.BigDecimal sumTotalAmount() {
+        String sql = "select coalesce(sum(total_amount), 0) from purchase_orders";
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            if (rs.next())
+                return rs.getBigDecimal(1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return java.math.BigDecimal.ZERO;
+    }
+
+    @Override
+    public List<Order> findRecent(int limit) {
+        String sql = "select top " + limit + " purchase_order_id, order_date, total_amount, note, status, " +
+                "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
+                "updated_at, updated_by " +
+                "from purchase_orders " +
+                "order by created_at desc";
+
+        List<Order> orders = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Order order = new Order();
+                order.setId(rs.getInt("purchase_order_id"));
+                order.setTotalAmount(rs.getBigDecimal("total_amount"));
+                order.setOrderNote(rs.getString("note"));
+                order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
+                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getDate("order_date").toLocalDate()
+                        : (rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null));
+                order.setPurchaseRequestId(rs.getInt("purchase_request_id"));
+                order.setSupplierId(rs.getInt("supplier_id"));
+                order.setQuotationId(rs.getInt("quotation_id"));
+                order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
+                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            log.error("Failed to find recent purchase orders: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to find recent purchase orders", e);
         }
         return orders;
     }

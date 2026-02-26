@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{/layout/director-layout}">
+    layout:decorate="${layoutName ?: 'layout/director-layout'}">
 
 <head>
     <meta charset="UTF-8">
@@ -15,8 +15,12 @@
         <main class="quotation-content-wrapper">
             <!-- Breadcrumb -->
             <div class="breadcrumb">
-                DASHBOARD / APPROVAL CENTER / <a th:href="@{/purchase-staff/purchase-list}">PURCHASE REQUESTS</a> /
-                <span class="active" th:text="'PR-' + ${purchaseId}">PR-000052</span>
+                <a th:href="@{${linkPrefix} + '/dashboard'}">DASHBOARD</a>
+                /
+                <a th:href="@{${linkPrefix} + '/purchases'}">PURCHASE REQUESTS</a> /
+                <a th:href="@{${linkPrefix} + '/purchases/{id}/purchase-detail'(id=${purchaseId})}"
+                    th:text="'PR-' + ${purchaseId}">PR-000052</a> /
+                <span class="active">QUOTATIONS</span>
             </div>
 
             <!-- Page Title Area -->
@@ -26,9 +30,11 @@
                         PR-000052</h1>
                     <p>Review and compare received vendor bids for the requested hardware assets.</p>
                 </div>
-                <button class="btn-solid"><i class="fas fa-plus"></i> Request New Quote</button>
+                <a th:href="@{${linkPrefix} + '/purchases/{id}/quotation'(id=${purchaseId})}" class="btn-solid">
+                    <i class="fas fa-plus"></i> Request New Quote
+                </a>
             </header>
-            <form method="get" th:action="@{/purchase-staff/search/quotation-of-purchase/{id}(id=${purchaseId})}"
+            <form method="get" th:action="@{${linkPrefix} + '/search/quotation-of-purchase/{id}'(id=${purchaseId})}"
                 id="filterForm">
                 <div class="table-actions">
                     <div class="search-wrap">
@@ -105,19 +111,37 @@
                                     </div>
                                 </div>
                             </td>
-                            <td th:text="${#temporals.format(q.createdAt, 'MMM dd, yyyy')}">Oct 12, 2023</td>
+                            <td th:text="${#temporals.format(q.createdAt, 'dd-MM-yyyy')}">12-10-2023</td>
                             <td>
                                 <strong
                                     th:text="'$' + ${#numbers.formatDecimal(q.totalAmount, 1, 'COMMA', 0, 'POINT')}">$11,240</strong>
 
                             </td>
-                            <td><span th:class="'status-tag ' + ${#strings.toLowerCase(q.quotationStatus)}"
-                                    th:text="${q.quotationStatus}">PENDING REVIEW</span></td>
+                            <td>
+                                <span th:class="'status-tag ' + ${#strings.toLowerCase(q.quotationStatus)}"
+                                    th:text="${q.quotationStatus}">PENDING REVIEW</span>
+                                <span
+                                    th:if="${q.quotationStatus == T(edu.fpt.groupfive.common.QuotationStatus).REJECTED and q.rejectedReason != null}"
+                                    class="rejected-reason-mini" th:title="${q.rejectedReason}"
+                                    th:text="${q.rejectedReason}">Reason...</span>
+                            </td>
                             <td class="cell-actions">
-                                <a th:href="@{/purchase-staff/quotations/{id}(id=${q.quotationId})}" title="View"><i
-                                        class="far fa-eye action-icon"></i></a>
-                                <button class="btn-approve-sm">APPROVE & PO</button>
-                                <button class="btn-reject-sm">REJECT</button>
+                                <a th:href="@{${linkPrefix} + '/quotations/{id}'(id=${q.quotationId})}" title="View">
+                                    <i class="far fa-eye action-icon"></i>
+                                </a>
+                                <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
+                                    th:href="@{${linkPrefix} + '/quotations/{id}/edit'(id=${q.quotationId})}"
+                                    title="Edit">
+                                    <i class="far fa-edit action-icon"></i>
+                                </a>
+                                <a class="btn-approve-sm"
+                                    th:href="@{${linkPrefix} + '/quotations/{id}/create-po'(id=${q.quotationId})}"
+                                    th:if="${q.quotationStatus.name() == 'PENDING'}">
+                                    APPROVE &amp; PO
+                                </a>
+                                <button class="btn-reject-sm" type="button"
+                                    th:if="${q.quotationStatus.name() == 'PENDING'}"
+                                    th:onclick="'openRejectModal(' + ${q.quotationId} + ')'">REJECT</button>
                             </td>
                         </tr>
                     </tbody>
@@ -126,10 +150,51 @@
 
             </div>
         </main>
+
+        <!-- Rejection Modal -->
+        <div id="rejectModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>REJECT QUOTATION</h2>
+                </div>
+                <form id="rejectForm" method="post">
+                    <div class="modal-body">
+                        <p style="font-size: 13px; margin-bottom: 16px; color: #666;">Please provide a reason for
+                            rejecting this quotation. This will be visible to the purchase staff.</p>
+                        <textarea name="reason" placeholder="Enter rejection reason here..." required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" onclick="closeRejectModal()">CANCEL</button>
+                        <button type="submit" class="btn-confirm-reject">CONFIRM REJECTION</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </th:block>
 
     <th:block layout:fragment="extra-js">
         <script th:src="@{/js/quotation/quotation-of-purchase.js}"></script>
+        <script th:inline="javascript">
+            const linkPrefix = /*[[${linkPrefix}]]*/ '';
+
+            function openRejectModal(id) {
+                const modal = document.getElementById('rejectModal');
+                const form = document.getElementById('rejectForm');
+                form.action = linkPrefix + '/quotations/' + id + '/reject';
+                modal.style.display = 'block';
+            }
+
+            function closeRejectModal() {
+                document.getElementById('rejectModal').style.display = 'none';
+            }
+
+            window.onclick = function (event) {
+                const modal = document.getElementById('rejectModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        </script>
     </th:block>
 </body>
 

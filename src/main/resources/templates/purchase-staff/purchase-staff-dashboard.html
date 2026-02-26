@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Staff Dashboard - ProcureOS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-layer-group"></i> PROCUREOS
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-link active"><i class="fas fa-chart-line"></i> DASHBOARD</div>
+            <div class="nav-link"><i class="fas fa-file-invoice"></i> QUOTATIONS</div>
+            <div class="nav-link"><i class="fas fa-truck-loading"></i> PURCHASE ORDERS</div>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar">SM</div>
+            <div class="user-meta">
+                <p class="u-name">Staff Member</p>
+                <p class="u-role">Purchasing Agent</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="search-area">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search across PRs, Quotes, POs...">
+            </div>
+            <div class="top-actions">
+                <i class="far fa-bell icon-btn"></i>
+                <button class="btn-primary">NEW REQUEST</button>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-grid">
+            <!-- Left: PR Awaiting -->
+            <section class="grid-card pr-section">
+                <div class="card-header">
+                    <h2>PURCHASE REQUESTS AWAITING QUOTATION</h2>
+                </div>
+                <table class="compact-table">
+                    <thead>
+                    <tr>
+                        <th>REQUEST DETAILS</th>
+                        <th>DEADLINE</th>
+                        <th>PRIORITY</th>
+                        <th>ACTION</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <strong>PR-2024-0812</strong>
+                            <span>High-Performance Workstations (10 Units)</span>
+                        </td>
+                        <td>Jun 15, 2024</td>
+                        <td><span class="prio-tag high">HIGH</span></td>
+                        <td><button class="btn-sm-solid">Create Quote</button></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>PR-2024-0915</strong>
+                            <span>Standard Office Supplies (Bulk)</span>
+                        </td>
+                        <td>Jun 18, 2024</td>
+                        <td><span class="prio-tag med">MED</span></td>
+                        <td><button class="btn-sm-solid">Create Quote</button></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Right: My Quotations -->
+            <section class="grid-card qtn-section">
+                <div class="card-header">
+                    <h2>MY QUOTATIONS</h2>
+                </div>
+                <div class="qtn-list">
+                    <div class="qtn-item">
+                        <div class="qtn-info">
+                            <strong>QTN-001243</strong>
+                            <span>Global Tech Solutions Inc.</span>
+                        </div>
+                        <span class="status-badge draft">DRAFT</span>
+                    </div>
+                    <div class="qtn-item">
+                        <div class="qtn-info">
+                            <strong>QTN-001245</strong>
+                            <span>Apex Systems Ltd.</span>
+                        </div>
+                        <span class="status-badge approved">APPROVED</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom: PO Monitoring -->
+            <section class="grid-card po-section">
+                <div class="card-header">
+                    <h2>ACTIVE PURCHASE ORDERS MONITORING</h2>
+                </div>
+                <table class="compact-table full-table">
+                    <thead>
+                    <tr>
+                        <th>ORDER REF</th>
+                        <th>SUPPLIER</th>
+                        <th>STATUS</th>
+                        <th>QUICK ACTIONS</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><strong>PO-2024-0012</strong></td>
+                        <td>Tech Solutions Inc.</td>
+                        <td><span class="status-badge shipped">SHIPPED</span></td>
+                        <td class="actions">
+                            <i class="far fa-eye"></i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>PO-2024-0015</strong></td>
+                        <td>Office Max Global</td>
+                        <td><span class="status-badge processing">PROCESSING</span></td>
+                        <td class="actions">
+                            <i class="far fa-eye"></i>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- Dashboard Footer -->
+        <footer class="dash-footer">
+            <div class="f-left">ENTERPRISE EDITION V4.5.2</div>
+            <div class="f-right">
+                <a href="#">HELP CENTER</a>
+                <a href="#">SYSTEM STATUS</a>
+                <a href="#">PRIVACY POLICY</a>
+            </div>
+        </footer>
+    </main>
+</div>
+</body>
+</html>

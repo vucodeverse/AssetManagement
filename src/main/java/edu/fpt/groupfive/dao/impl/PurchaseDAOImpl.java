@@ -101,17 +101,21 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         } catch (Exception exception) {
 
             // nếu có lỗi sẽ rollback
-            if (connection != null) try {
-                connection.rollback();
-            } catch (Exception ignored) {}
+            if (connection != null)
+                try {
+                    connection.rollback();
+                } catch (Exception ignored) {
+                }
             throw new RuntimeException(exception);
         } finally {
 
             // reset auto commit lại về true và đóng cổng.
-            if (connection != null) try {
-                connection.setAutoCommit(true);
-                connection.close();
-            } catch (Exception ignored) {}
+            if (connection != null)
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (Exception ignored) {
+                }
         }
     }
 
@@ -124,15 +128,14 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 "where p.purchase_request_id = ?";
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, purchaseId);
             ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()){
+            if (rs.next()) {
                 Purchase purchase = mapRowForList(rs);
-                // load riêng từng purchase detaily
+                // load riêng từng purchase detail
                 purchase.setPurchaseDetails(
-                        purchaseDetailDAO.findByPurchaseRequestId(purchaseId)
-                );
+                        purchaseDetailDAO.findByPurchaseRequestId(purchaseId));
                 return Optional.of(purchase);
             }
 
@@ -149,11 +152,11 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         String sql = "select * from purchase_request where purchase_request_id = ? and status = ?";
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, purchaseId);
             preparedStatement.setString(2, status);
             ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()){
+            if (rs.next()) {
 
                 Purchase purchase = new Purchase();
                 purchase.setId(rs.getInt("purchase_request_id"));
@@ -163,8 +166,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 purchase.setCreatedByUser(rs.getInt("creator_id"));
                 Date neededByDate = rs.getDate("needed_by_date");
                 purchase.setNeededByDate(
-                        neededByDate != null ? neededByDate.toLocalDate() : null
-                );
+                        neededByDate != null ? neededByDate.toLocalDate() : null);
 
                 purchase.setReason(rs.getString("request_reason"));
                 purchase.setPriority(Priority.valueOf(rs.getString("priority").toUpperCase()));
@@ -179,12 +181,10 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
                 Date updatedAt = rs.getDate("updated_at");
                 purchase.setUpdatedAt(
-                        updatedAt != null ? updatedAt.toLocalDate() : null
-                );
+                        updatedAt != null ? updatedAt.toLocalDate() : null);
 
                 purchase.setPurchaseDetails(
-                        purchaseDetailDAO.findByPurchaseRequestId(purchaseId)
-                );
+                        purchaseDetailDAO.findByPurchaseRequestId(purchaseId));
 
                 return Optional.of(purchase);
             }
@@ -204,7 +204,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
         List<Purchase> purchases = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 try {
@@ -241,8 +241,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         String lastName = rs.getString("last_name");
         if (firstName != null || lastName != null) {
             purchase.setCreatorName(
-                    ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim()
-            );
+                    ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim());
         }
 
         Date neededByDate = rs.getDate("needed_by_date");
@@ -279,32 +278,32 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         // khai báo dynamic sql
         StringBuilder sql = new StringBuilder(
                 "select p.*, u.first_name, u.last_name " +
-                "from purchase_request p left join users u on p.creator_id = u.user_id where 1 = 1");
+                        "from purchase_request p left join users u on p.creator_id = u.user_id where 1 = 1");
         List<Purchase> purchases = new ArrayList<>();
 
         List<Object> params = new ArrayList<>();
 
-        if(p.getStatus() != null){
+        if (p.getStatus() != null) {
             sql.append(" and p.status = ? ");
             params.add(p.getStatus().name());
         }
 
-        if(p.getPriority() != null){
+        if (p.getPriority() != null) {
             sql.append(" and p.priority = ? ");
             params.add(p.getPriority().name());
         }
 
-        if(p.getFrom() != null){
+        if (p.getFrom() != null) {
             sql.append(" and p.needed_by_date >= ? ");
             params.add(Date.valueOf(p.getFrom()));
         }
 
-        if(p.getTo() != null){
+        if (p.getTo() != null) {
             sql.append(" and p.needed_by_date < ? ");
             params.add(Date.valueOf(p.getTo()));
         }
 
-        if(p.getKeyword() != null && !p.getKeyword().isBlank()){
+        if (p.getKeyword() != null && !p.getKeyword().isBlank()) {
             sql.append(" and (");
             String keyword = p.getKeyword().trim();
 
@@ -314,7 +313,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 idStr = idStr.substring(3);
             }
 
-            //nếu là số thì search theo id
+            // nếu là số thì search theo id
             if (idStr.matches("\\d+")) {
                 sql.append(" p.purchase_request_id = ? or ");
                 params.add(Integer.parseInt(idStr));
@@ -326,14 +325,14 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             params.add("%" + keyword.toLowerCase() + "%");
         }
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())){
+                PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
 
             int i = 1;
-            for(Object param : params){
+            for (Object param : params) {
                 preparedStatement.setObject(i++, param);
             }
             ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()){
+            while (rs.next()) {
                 try {
                     Purchase mappedPurchase = mapRowForList(rs);
                     purchases.add(mappedPurchase);
@@ -342,7 +341,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 }
             }
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return purchases;
@@ -354,10 +353,10 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         String sql = "update purchase_request set status = ? , reject_reason = ? where purchase_request_id = ?";
 
         try (Connection connection = databaseConfig.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setString(1,request.name());
-            preparedStatement.setInt(3,purchaseId);
+            preparedStatement.setString(1, request.name());
+            preparedStatement.setInt(3, purchaseId);
 
             if (reasonReject == null || reasonReject.isBlank()) {
                 preparedStatement.setNull(2, Types.NVARCHAR);
@@ -366,24 +365,24 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             }
             preparedStatement.executeUpdate();
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    // lấy ra từng số lượng quotation và min totalamount của từng quotation theo từng purchase kèm các thuộc tính cần
+    // lấy ra từng số lượng quotation và min totalamount của từng quotation theo
+    // từng purchase kèm các thuộc tính cần
     // của purchase
     @Override
     public Map<Integer, Object[]> findQuotationSummaryByFilter(SearchForQuotation s) {
         StringBuilder sql = new StringBuilder(
                 "select p.purchase_request_id, p.needed_by_date, p.priority, " +
-                "count(q.quotation_id) as number_of_quotation, " +
-                "min(q.total_amount) as est_price " +
-                "from purchase_request p " +
-                "left join quotation q on p.purchase_request_id = q.purchase_request_id " +
-                "left join users u on p.creator_id = u.user_id " +
-                "where p.status = 'APPROVED' "
-        );
+                        "count(q.quotation_id) as number_of_quotation, " +
+                        "min(q.total_amount) as est_price " +
+                        "from purchase_request p " +
+                        "left join quotation q on p.purchase_request_id = q.purchase_request_id " +
+                        "left join users u on p.creator_id = u.user_id " +
+                        "where p.status = 'APPROVED' ");
 
         List<Object> params = new ArrayList<>();
 
@@ -416,6 +415,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
         sql.append(" group by p.purchase_request_id, p.needed_by_date, p.priority ");
 
+        // nếu có ddkien search theo total
         if (s.getMinAmount() != null || s.getMaxAmount() != null) {
             sql.append(" having 1=1 ");
             if (s.getMinAmount() != null) {
@@ -431,7 +431,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         Map<Integer, Object[]> result = new LinkedHashMap<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
@@ -440,9 +440,9 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int purchaseId = rs.getInt("purchase_request_id");
-                    Date rawDate = rs.getDate("needed_by_date");
-                    result.put(purchaseId, new Object[]{
-                            rawDate != null ? rawDate.toLocalDate() : null,
+                    Date neededByDate = rs.getDate("needed_by_date");
+                    result.put(purchaseId, new Object[] {
+                            neededByDate != null ? neededByDate.toLocalDate() : null,
                             rs.getString("priority"),
                             rs.getInt("number_of_quotation"),
                             rs.getBigDecimal("est_price")
@@ -456,4 +456,59 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         return result;
     }
 
+    @Override
+    public long countByStatus(Request status) {
+        String sql = "select count(*) from purchase_request where status = ?";
+        try (Connection connection = databaseConfig.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, status.name());
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next())
+                return rs.getLong(1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
+
+    @Override
+    public List<Purchase> findRecent(int limit) {
+        String sql = "select p.*, u.first_name, u.last_name " +
+                "from purchase_request p left join users u on p.creator_id = u.user_id " +
+                "order by p.created_at desc, p.purchase_request_id desc " +
+                "offset 0 rows fetch next ? rows only";
+        List<Purchase> purchases = new ArrayList<>();
+        try (Connection connection = databaseConfig.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, limit);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                purchases.add(mapRowForList(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return purchases;
+    }
+
+    @Override
+    public List<Purchase> findApprovedPRs(int limit) {
+        String sql = "select p.*, u.first_name, u.last_name " +
+                "from purchase_request p left join users u on p.creator_id = u.user_id " +
+                "where p.status = 'APPROVED' " +
+                "order by p.approved_by_director_at desc, p.purchase_request_id desc " +
+                "offset 0 rows fetch next ? rows only";
+        List<Purchase> purchases = new ArrayList<>();
+        try (Connection connection = databaseConfig.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, limit);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                purchases.add(mapRowForList(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return purchases;
+    }
 }

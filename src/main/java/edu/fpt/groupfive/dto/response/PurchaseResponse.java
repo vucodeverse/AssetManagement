@@ -19,4 +19,5 @@ public class PurchaseResponse {
     private String priority;
     private LocalDate createdAt;
     private List<PurchaseDetailResponse> purchaseDetails;
+    private Integer quotationCount;
 }

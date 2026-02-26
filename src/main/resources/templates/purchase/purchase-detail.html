@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{/layout/director-layout}">
+    layout:decorate="${layoutName ?: 'layout/director-layout'}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Đơn mua hàng - Procurex</title>
+    <title>Purchase Request Detail</title>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" th:href="@{/css/purchase/purchase-detail.css}">
-    </th:block> <!-- Import icon FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </th:block>
 </head>
 
 <body>
@@ -17,6 +16,12 @@
     <th:block layout:fragment="content">
 
         <main class="main-content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                DASHBOARD / <a th:href="@{${linkPrefix} + '/purchases'}">PURCHASE REQUESTS</a> /
+                <span class="active">DETAIL</span>
+            </div>
+
             <!-- Success Message -->
             <div th:if="${message}" class="alert alert-success"
                 style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
@@ -25,13 +30,10 @@
             <!-- Header -->
             <header class="top-bar">
                 <div class="title-section">
-                    <a th:href="@{/director/purchases}">
-                        <i class="fas fa-arrow-left back-icon"></i>
-                    </a>
                     <h1>PURCHASE REQUEST DETAIL</h1>
                 </div>
                 <div class="header-actions">
-                    <form method="post" th:action="@{/director/purchases/{id}/actions(id=${purchase.id})}">
+                    <form method="post" th:action="@{${linkPrefix} + '/purchases/{id}/actions'(id=${purchase.id})}">
 
                         <div th:if="${purchase.status.name() != 'APPROVED' && purchase.status.name() != 'REJECTED'}">
                             <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
@@ -118,8 +120,28 @@
                         <span>TOTAL AMOUNT</span>
                         <strong id="total">0</strong>
                     </div>
+                    <!-- Quotation Summary Section -->
+                    <div class="quotations-summary-section" th:if="${purchase.status.name() == 'APPROVED'}">
+                        <hr class="separator">
+                        <div class="quotation-header">
+                            <div class="q-title">
+                                <h3>QUOTATIONS</h3>
+                                <span class="q-count" th:text="${purchase.quotationCount + ' RECEIVED'}">0
+                                    RECEIVED</span>
+                            </div>
+                            <div class="q-actions">
+                                <a th:href="@{${linkPrefix} + '/view-quotation-of-purchase/{id}'(id=${purchase.id})}"
+                                    class="btn-view-quotes" th:if="${purchase.quotationCount > 0}">VIEW ALL</a>
+                                <a th:href="@{${linkPrefix} + '/purchases/{id}/quotation'(id=${purchase.id})}"
+                                    class="btn-add-quote" th:if="${linkPrefix == '/purchase-staff'}">
+                                    <i class="fas fa-plus"></i> NEW QUOTATION
+                                </a>
+                            </div>
+                        </div>
+                        <p class="no-quotes-msg" th:if="${purchase.quotationCount == 0}">No quotations received yet for
+                            this request.</p>
+                    </div>
                 </div>
-            </div>
         </main>
         <!-- Reject Modal  -->
         <div th:id="'reject-' + ${purchase.id}" class="modal-overlay">

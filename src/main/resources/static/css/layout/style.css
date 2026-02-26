@@ -87,12 +87,12 @@ body {
 }
 
 .nav-item.active {
-    background: #eef2ff;
-    color: var(--text);
+    background: #111827;
+    color: #fff;
 }
 
 .nav-item.active i {
-    color: var(--text);
+    color: #fff;
 }
 
 .nav-group {

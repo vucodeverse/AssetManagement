@@ -2,6 +2,7 @@ package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
+import edu.fpt.groupfive.dao.QuotationDAO;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
 import edu.fpt.groupfive.dto.response.PurchaseDetailResponse;
@@ -21,43 +22,48 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j(topic = "PURCHASE-SERVICE")
 public class PurchaseServiceImpl implements PurchaseService {
 
     private final PurchaseDAO purchaseDAO;
+    private final QuotationDAO quotationDAO;
     private final PurchaseMapper purchaseMapper;
 
     // tạo 1 purchase request
     @Override
     public Integer createPurchaseRequest(PurchaseCreateRequest purchaseCreateRequest, int userId, Request request) {
-        log.info("Saving purchase request: {}", purchaseCreateRequest);
 
         // map từ dto sang purchase
         Purchase purchase = purchaseMapper.toPurchase(purchaseCreateRequest);
 
-        //set các data có sẵn
+        // set các data có sẵn
         purchase.setStatus(request);
-        purchase.setCreatedByUser(2);
+        purchase.setCreatedByUser(2); //TODO: lấy user khi đang login
         purchase.setCreatedAt(LocalDate.now());
 
         // trả lại id sau khi insert
-        Integer purchaseId = purchaseDAO.insert(purchase);
-
-        log.info("Saved with ID: {}", purchaseId);
-        return purchaseId;
+        return purchaseDAO.insert(purchase);
     }
 
+    // lấy ra purchase theo id
     @Override
     public PurchaseResponse findById(Integer id) {
         return purchaseDAO.findById(id)
-                .map(purchaseMapper::toPurchaseResponse)
+                .map(p -> {
+                    PurchaseResponse resp = purchaseMapper.toPurchaseResponse(p);
+                    resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()));
+                    return resp;
+                })
                 .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại: " + id));
     }
 
     // lấy ra tấy cả purchase
     @Override
     public List<PurchaseResponse> findAllPurchases() {
-        return purchaseDAO.findAll().stream().map(purchaseMapper::toPurchaseResponse).toList();
+        return purchaseDAO.findAll().stream().map(p -> {
+            PurchaseResponse resp = purchaseMapper.toPurchaseResponse(p);
+            resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()));
+            return resp;
+        }).toList();
     }
 
     // thực hiện search và filter
@@ -72,7 +78,11 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         // map sang Purchase response để hiển thị
         return purchaseDAO.getPurchaseByFilter(p).stream()
-                .map(purchaseMapper::toPurchaseResponse)
+                .map(pr -> {
+                    PurchaseResponse resp = purchaseMapper.toPurchaseResponse(pr);
+                    resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(pr.getId()));
+                    return resp;
+                })
                 .toList();
     }
 

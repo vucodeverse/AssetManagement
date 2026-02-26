@@ -13,4 +13,7 @@ public interface QuotationMapper {
 
     @Mapping(target = "quotationDetailNote", source = "quotationNote")
     Quotation toQuotation(QuotationCreateRequest quotationCreateRequest);
+
+    @Mapping(source = "id", target = "quotationId")
+    edu.fpt.groupfive.dto.response.QuotationResponse toQuotationResponse(Quotation quotation);
 }

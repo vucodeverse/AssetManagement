@@ -1,192 +1,193 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/director-layout}">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Purchase Request</title>
-
-    <!-- đổi path cho đúng nơi bạn đặt file css -->
-    <link rel="stylesheet" th:href="@{/css/purchase/purchase-form.css}">
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/purchase/purchase-form.css}">
+    </th:block>
 </head>
 
 <body>
-    <div class="pr-container">
-        <!-- Success Message -->
-        <div th:if="${message}" class="alert alert-success"
-            style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
-            <span th:text="${message}"></span>
+    <th:block layout:fragment="content">
+        <div class="pr-container">
+            <div class="breadcrumb">
+                DASHBOARD / <a th:href="@{/director/purchases}">PURCHASE REQUESTS</a> /
+                <span class="active">NEW REQUEST</span>
+            </div>
+            <!-- Header -->
+            <header class="pr-header">
+                <div class="header-left">
+                    <h1>NEW PURCHASE REQUEST</h1>
+                    <p>Submit a new request for asset procurement.</p>
+                </div>
+
+                <div class="header-right">
+                    <button type="button" class="btn-outline">GUIDELINES</button>
+                </div>
+            </header>
+
+            <!-- FORM -->
+            <form th:action="@{/asset-manager/create/purchase-form}" th:object="${purchaseCreateRequest}" method="post">
+
+                <!-- General Information Section -->
+                <section class="form-section">
+                    <h2 class="section-title">GENERAL INFORMATION</h2>
+
+                    <div class="form-grid">
+                        <!-- reason -->
+                        <div class="form-group">
+                            <label>REQUEST REASON</label>
+                            <input type="text" th:field="*{reason}" placeholder="E.g. Office expansion Q4">
+                            <div class="field-error" th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}"></div>
+                        </div>
+
+                        <!-- neededByDate -->
+                        <div class="form-group">
+                            <label>NEEDED BY DATE</label>
+                            <input type="date" th:field="*{neededByDate}">
+                            <div class="field-error" th:if="${#fields.hasErrors('neededByDate')}"
+                                th:errors="*{neededByDate}"></div>
+                        </div>
+
+                        <!-- priority  -->
+                        <div class="form-group">
+                            <label>PRIORITY</label>
+                            <select th:field="*{priority}">
+                                <option value="">-- Select --</option>
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                                <option value="CRITICAL">Critical</option>
+                            </select>
+                            <div class="field-error" th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}">
+                            </div>
+                        </div>
+
+                        <!-- note -->
+                        <div class="form-group full-width">
+                            <label>ADDITIONAL NOTE</label>
+                            <textarea th:field="*{note}"
+                                placeholder="Provide extra context for the procurement team..."></textarea>
+                            <div class="field-error" th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Details Section -->
+                <section class="form-section">
+                    <h2 class="section-title">PURCHASE REQUEST DETAILS</h2>
+
+                    <div class="table-container">
+                        <table class="pr-table">
+                            <thead>
+                                <tr>
+                                    <th>ASSET TYPE NAME</th>
+                                    <th>QTY</th>
+                                    <th>EST.PRICE(VNĐ)</th>
+                                    <th>SPECIFICATION REQUIREMENT</th>
+                                    <th>ITEM NOTE</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr th:each="d, stat : *{purchaseDetailCreateRequests}">
+
+                                    <!-- assetTypeId -->
+                                    <td>
+                                        <select class="table-input"
+                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].assetTypeId}">
+                                            <option value="">Select Asset Type</option>
+                                            <option th:each="c : ${assetTypes}" th:value="${c.typeId}"
+                                                th:text="${c.typeName}">
+                                            </option>
+                                        </select>
+                                        <div class="field-error"
+                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].assetTypeId')}"
+                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].assetTypeId}">
+                                        </div>
+                                    </td>
+
+                                    <!-- quantity -->
+                                    <td>
+                                        <input type="number" class="table-input"
+                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].quantity}">
+                                        <div class="field-error"
+                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].quantity')}"
+                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].quantity}">
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <input type="number" step="0.01" class="table-input"
+                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].estimatePrice}"
+                                            placeholder="0.00">
+                                        <div class="field-error"
+                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].estimatePrice')}"
+                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].estimatePrice}">
+                                        </div>
+                                    </td>
+
+                                    <!-- specificationRequirement -->
+                                    <td>
+                                        <input type="text" class="table-input"
+                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].specificationRequirement}"
+                                            placeholder="Min 16GB RAM...">
+                                        <div class="field-error"
+                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].specificationRequirement')}"
+                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].specificationRequirement}">
+                                        </div>
+                                    </td>
+
+                                    <!-- note -->
+                                    <td>
+                                        <input type="text" class="table-input"
+                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].note}"
+                                            placeholder="...">
+                                        <div class="field-error"
+                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].note')}"
+                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].note}">
+                                        </div>
+                                    </td>
+
+                                    <!-- remove row -->
+                                    <td>
+                                        <button type="submit" class="btn-remove" name="remove" th:value="${stat.index}"
+                                            title="Remove item">
+                                            &times;
+                                        </button>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- add new item -->
+                        <button type="submit" class="btn-add-row" name="addDetail" value="true">+ ADD NEW ITEM</button>
+                    </div>
+                </section>
+
+                <!-- Footer Actions -->
+                <footer class="pr-footer">
+                    <div class="footer-left">
+                        <p>* Required fields for submission.</p>
+                    </div>
+
+                    <div class="footer-right">
+                        <button type="button" class="btn-text" onclick="history.back()">CANCEL</button>
+
+                        <button type="submit" class="btn-outline" name="actions" value="draft">SAVE AS DRAFT</button>
+
+                        <button type="submit" class="btn-solid" name="actions" value="save">SUBMIT REQUEST</button>
+                    </div>
+                </footer>
+
+            </form>
+
         </div>
-
-        <!-- Header -->
-        <header class="pr-header">
-            <div class="header-left">
-                <h1>NEW PURCHASE REQUEST</h1>
-            </div>
-
-            <div class="header-right">
-                <button type="button" class="btn-outline">GUIDELINES</button>
-            </div>
-        </header>
-
-        <!-- FORM -->
-        <form th:action="@{/asset-manager/purchase-form}" th:object="${purchaseCreateRequest}" method="post">
-
-            <!-- General Information Section -->
-            <section class="form-section">
-                <h2 class="section-title">GENERAL INFORMATION</h2>
-
-                <div class="form-grid">
-                    <!-- reason -->
-                    <div class="form-group">
-                        <label>REQUEST REASON</label>
-                        <input type="text" th:field="*{reason}" placeholder="E.g. Office expansion Q4">
-                        <div class="field-error" th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}"></div>
-                    </div>
-
-                    <!-- neededByDate -->
-                    <div class="form-group">
-                        <label>NEEDED BY DATE</label>
-                        <input type="date" th:field="*{neededByDate}">
-                        <div class="field-error" th:if="${#fields.hasErrors('neededByDate')}"
-                            th:errors="*{neededByDate}"></div>
-                    </div>
-
-                    <!-- priority  -->
-                    <div class="form-group">
-                        <label>PRIORITY</label>
-                        <select th:field="*{priority}">
-                            <option value="">-- Select --</option>
-                            <option value="LOW">Low</option>
-                            <option value="MEDIUM">Medium</option>
-                            <option value="HIGH">High</option>
-                            <option value="CRITICAL">Critical</option>
-                        </select>
-                        <div class="field-error" th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}"></div>
-                    </div>
-
-                    <!-- note -->
-                    <div class="form-group full-width">
-                        <label>ADDITIONAL NOTE</label>
-                        <textarea th:field="*{note}"
-                            placeholder="Provide extra context for the procurement team..."></textarea>
-                        <div class="field-error" th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Details Section -->
-            <section class="form-section">
-                <h2 class="section-title">PURCHASE REQUEST DETAILS</h2>
-
-                <div class="table-container">
-                    <table class="pr-table">
-                        <thead>
-                            <tr>
-                                <th>ASSET TYPE NAME</th>
-                                <th>QTY</th>
-                                <th>EST.PRICE(VNĐ)</th>
-                                <th>SPECIFICATION REQUIREMENT</th>
-                                <th>ITEM NOTE</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <tr th:each="d, stat : *{purchaseDetailCreateRequests}">
-
-                                <!-- assetTypeId -->
-                                <td>
-                                    <select class="table-input"
-                                        th:field="*{purchaseDetailCreateRequests[__${stat.index}__].assetTypeId}">
-                                        <option value="">Select Asset Type</option>
-                                        <option th:each="c : ${assetTypes}" th:value="${c.typeId}"
-                                            th:text="${c.typeName}">
-                                        </option>
-                                    </select>
-                                    <div class="field-error"
-                                        th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].assetTypeId')}"
-                                        th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].assetTypeId}">
-                                    </div>
-                                </td>
-
-                                <!-- quantity -->
-                                <td>
-                                    <input type="number" class="table-input"
-                                        th:field="*{purchaseDetailCreateRequests[__${stat.index}__].quantity}">
-                                    <div class="field-error"
-                                        th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].quantity')}"
-                                        th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].quantity}">
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <input type="number" step="0.01" class="table-input"
-                                        th:field="*{purchaseDetailCreateRequests[__${stat.index}__].estimatePrice}"
-                                        placeholder="0.00">
-                                    <div class="field-error"
-                                        th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].estimatePrice')}"
-                                        th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].estimatePrice}">
-                                    </div>
-                                </td>
-
-                                <!-- specificationRequirement -->
-                                <td>
-                                    <input type="text" class="table-input"
-                                        th:field="*{purchaseDetailCreateRequests[__${stat.index}__].specificationRequirement}"
-                                        placeholder="Min 16GB RAM...">
-                                    <div class="field-error"
-                                        th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].specificationRequirement')}"
-                                        th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].specificationRequirement}">
-                                    </div>
-                                </td>
-
-                                <!-- note -->
-                                <td>
-                                    <input type="text" class="table-input"
-                                        th:field="*{purchaseDetailCreateRequests[__${stat.index}__].note}"
-                                        placeholder="...">
-                                    <div class="field-error"
-                                        th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].note')}"
-                                        th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].note}">
-                                    </div>
-                                </td>
-
-                                <!-- remove row -->
-                                <td>
-                                    <button type="submit" class="btn-remove" name="remove" th:value="${stat.index}"
-                                        title="Remove item">
-                                        &times;
-                                    </button>
-                                </td>
-
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- add new item -->
-                    <button type="submit" class="btn-add-row" name="addDetail" value="true">+ ADD NEW ITEM</button>
-                </div>
-            </section>
-
-            <!-- Footer Actions -->
-            <footer class="pr-footer">
-                <div class="footer-left">
-                    <p>* Required fields for submission.</p>
-                </div>
-
-                <div class="footer-right">
-                    <button type="button" class="btn-text" onclick="history.back()">CANCEL</button>
-
-                    <button type="submit" class="btn-outline" name="actions" value="draft">SAVE AS DRAFT</button>
-
-                    <button type="submit" class="btn-solid" name="actions" value="save">SUBMIT REQUEST</button>
-                </div>
-            </footer>
-
-        </form>
-
-    </div>
+    </th:block>
 </body>
 
 </html>

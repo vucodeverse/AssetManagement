@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -14,7 +14,7 @@ public class OrderCreateRequest {
     private Integer quotationId;
     private Integer supplierId;
     private String orderNote;
-    private BigDecimal totalAmout;
+    private BigDecimal totalAmount;
 
     @Builder.Default
     private List<OrderDetailCreateRequest> orderDetailCreateRequests = new ArrayList<>();
