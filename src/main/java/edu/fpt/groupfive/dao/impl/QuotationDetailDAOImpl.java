@@ -19,6 +19,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    // insert quotation detail
     @Override
     public Integer insert(QuotationDetail quotationDetail) {
         String sql = "insert into quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, " +
@@ -59,11 +60,13 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
         return Optional.empty();
     }
 
+    // tìm kiếm theo purcahse id
     @Override
     public List<QuotationDetail> findByPurchaseId(Integer purchaseId) {
 
         String sql = "select qd.* from quotation q join quotation_detail qd on q.quotation_id = qd.quotation_id where" +
                 " q.purchase_request_id = ?";
+
         List<QuotationDetail> quotationDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -97,13 +100,35 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
 
     @Override
     public void deleteByQuotationId(Integer quotationId) {
-        String sql = "DELETE FROM quotation_detail WHERE quotation_id = ?";
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        String sql = "update quotation_detail set status = 'CANCELLED'  where quotation_id = ?";
+
+        Connection connection = null;
+        try {
+             connection = databaseConfig.getConnection();
+
+             connection.setAutoCommit(false);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1, quotationId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
+            if(connection != null){
+                try{
+                    connection.rollback();
+                }catch (SQLException ignored){
+
+                }
+            }
+
             throw new RuntimeException(e);
+        }finally {
+
+            // reset auto commit lại về true và đóng cổng.
+            if (connection != null)
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (Exception ignored) {
+                }
         }
     }
 

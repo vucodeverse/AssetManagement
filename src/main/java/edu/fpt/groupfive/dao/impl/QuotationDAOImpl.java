@@ -67,8 +67,8 @@ public class QuotationDAOImpl implements QuotationDAO {
 
     @Override
     public void update(Quotation quotation) {
-        String sql = "UPDATE quotation SET supplier_id = ?, status = ?, total_amount = ?, updated_at = GETDATE() " +
-                "WHERE quotation_id = ?";
+        String sql = "update quotation set supplier_id = ?, status = ?, total_amount = ?, updated_at = GETDATE() " +
+                "where quotation_id = ?";
 
         Connection connection = null;
         try {

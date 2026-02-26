@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j(topic = "QUOTATION-SERVICE")
 public class QuotationServiceImpl implements QuotationService {
 
     private final QuotationDAO quotationDAO;
@@ -59,7 +58,7 @@ public class QuotationServiceImpl implements QuotationService {
         // lấy ra list purchase detail của purchase request nhận vào
         List<PurchaseDetail> details = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
 
-        // dùng map để check qd có tồn tại hay ko
+        // dùng map để check pd có tồn tại hay ko
         Map<Integer, PurchaseDetail> purchaseDetailMap = new HashMap<>();
 
         // value id - key detail
@@ -77,10 +76,11 @@ public class QuotationServiceImpl implements QuotationService {
 
         // set các giá trị
         q.setTotalAmount(calculateTotal(quotationCreateRequest));
-        q.setUpdatedAt(LocalDate.now());
+        if(QuotationStatus.DRAFT.equals(quotationStatus)) {
+            q.setUpdatedAt(LocalDate.now());
+        }
 
         Integer quotationId;
-
         // chekc xem quotaiton này đã được tạo hay chưa
         // nếu r lấy luon id đó để update
         // ko thì tọa mưới
