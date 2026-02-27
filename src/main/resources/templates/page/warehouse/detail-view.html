@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết kho hàng</title>
+</head>
+<body>
+
+<h2>Thông tin chi tiết kho hàng</h2>
+<hr>
+
+<table border="1" style="border-collapse: collapse; width: 50%;">
+    <tr>
+        <th>ID</th>
+        <td th:text="${warehouse.id}">1</td>
+    </tr>
+    <tr>
+        <th>Tên kho</th>
+        <td th:text="${warehouse.name}">Tên kho mẫu</td>
+    </tr>
+    <tr>
+        <th>Địa chỉ</th>
+        <td th:text="${warehouse.address}">Địa chỉ mẫu</td>
+    </tr>
+    <tr>
+        <th>Trạng thái</th>
+        <td>
+            <span th:text="${warehouse.active ? 'Đang hoạt động' : 'Ngừng hoạt động'}"></span>
+        </td>
+    </tr>
+    <tr>
+        <th>Quản lý</th>
+        <td th:text="${warehouse.managerName}">Tên quản lý</td>
+    </tr>
+</table>
+
+<br>
+<div>
+    <a th:href="@{/wh/warehouses}">Quay lại danh sách</a>
+    <button onclick="window.print()">In trang này</button>
+</div>
+
+</body>
+</html>

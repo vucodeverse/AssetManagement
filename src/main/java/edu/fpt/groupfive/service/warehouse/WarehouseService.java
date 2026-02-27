@@ -9,4 +9,5 @@ import java.util.List;
 public interface WarehouseService {
     Warehouse createWarehouse(WarehouseReqDto request);
 
+    WarehouseRespDto getWarehouseDetail(Integer id);
 }

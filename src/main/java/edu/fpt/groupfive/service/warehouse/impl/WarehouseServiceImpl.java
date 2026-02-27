@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,9 +29,13 @@ public class WarehouseServiceImpl implements WarehouseService {
         return warehouseDAO.create(newWarehouse);
     }
 
-
-
-
+    @Override
+    public WarehouseRespDto getWarehouseDetail(Integer id) {
+        WarehouseRespDto warehouse = warehouseDAO.getDetail(id).orElseThrow(
+                ()->{throw new RuntimeException(String.format("Không tìm thấy Kho với id %d",id));}
+        );
+        return warehouse;
+    }
 
 
 }

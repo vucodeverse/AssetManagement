@@ -1,5 +1,6 @@
     package edu.fpt.groupfive.dao.warehouse;
 
+    import edu.fpt.groupfive.dto.warehouse.WarehouseRespDto;
     import edu.fpt.groupfive.model.warehouse.Warehouse;
 
     import java.util.List;
@@ -11,4 +12,5 @@
         Warehouse create(Warehouse newWarehouse);
 
 
+        Optional<WarehouseRespDto> getDetail(Integer id);
     }

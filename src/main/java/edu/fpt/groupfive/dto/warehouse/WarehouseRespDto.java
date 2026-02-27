@@ -9,7 +9,6 @@ public record WarehouseRespDto(
         String name,
         String address,
         boolean active,
-        String managerName,
-        LocalDateTime createdAt
+        String managerName
 ) {
 }

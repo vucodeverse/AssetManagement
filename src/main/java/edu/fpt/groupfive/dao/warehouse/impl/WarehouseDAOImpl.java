@@ -1,7 +1,9 @@
 package edu.fpt.groupfive.dao.warehouse.impl;
 
 import edu.fpt.groupfive.dao.warehouse.WarehouseDAO;
+import edu.fpt.groupfive.dto.warehouse.WarehouseRespDto;
 import edu.fpt.groupfive.model.warehouse.Warehouse;
+import edu.fpt.groupfive.model.warehouse.WarehouseStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -56,6 +58,26 @@ public class WarehouseDAOImpl implements WarehouseDAO {
         return newWarehouse;
 
 
+    }
+
+    @Override
+    public Optional<WarehouseRespDto> getDetail(Integer id) {
+        String sql = """
+                SELECT w.id, w.name, w.address, w.status, u.first_name, u.last_name
+                FROM warehouse w
+                JOIN users u ON w.manager_id = u.user_id
+                WHERE w.id = ?
+                """;
+        return Optional.of(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+            WarehouseRespDto dto = new WarehouseRespDto(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("address"),
+                    WarehouseStatus.valueOf(rs.getString("status"))==WarehouseStatus.ACTIVE,
+                    rs.getString("first_name") + " " + rs.getString("last_name")
+            );
+            return dto;
+        }, id));
     }
 
 
