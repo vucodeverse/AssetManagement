@@ -173,7 +173,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 8. Update quotation status to APPROVED
-        quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED, null);
+        quotationDAO.updateStatusReject(quotationId, QuotationStatus.APPROVED, null);
 
         return orderId;
     }

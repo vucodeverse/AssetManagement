@@ -19,5 +19,6 @@ public class QuotationDetail extends AbstractEntity<Integer>{
     private BigDecimal discountRate;
     private Integer purchaseDetailId;
     private String rejectedReason;
+    private String specificationRequirement;
     private QuotationStatus quotationDetailStatus;
 }

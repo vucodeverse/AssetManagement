@@ -18,18 +18,16 @@
 
             <!-- APPROVAL CENTER -->
             <div class="nav-group">
-                <a class="nav-item" th:href="@{/director/purchases}"
-                    th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='approval' ? ' active' : ''">
                     <i class="fas fa-check-circle"></i> Approval Center
                 </a>
 
                 <div class="sub-nav" th:if="${activeMenu}=='approval'">
-                    <a class="sub-item" th:href="@{/director/purchases}"
-                        th:classappend="${activeSub}=='pr' ? ' active' : ''">
+                    <a class="sub-item" th:href="@{/purchases}" th:classappend="${activeSub}=='pr' ? ' active' : ''">
                         Purchase Requests
                     </a>
 
-                    <a class="sub-item" th:href="@{/purchase-staff/quotations}"
+                    <a class="sub-item" th:href="@{/show/quotations-from-purchase}"
                         th:classappend="${activeSub}=='qt' ? ' active' : ''">
                         Quotations
                     </a>
@@ -37,8 +35,7 @@
             </div>
 
             <!-- PURCHASE ORDERS -->
-            <a class="nav-item" th:href="@{/director/purchase-orders}"
-                th:classappend="${activeMenu}=='po' ? ' active' : ''">
+            <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
                 <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
             </a>
         </nav>

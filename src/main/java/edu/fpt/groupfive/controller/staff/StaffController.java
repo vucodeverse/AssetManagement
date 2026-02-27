@@ -15,7 +15,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/purchase-staff")
 @RequiredArgsConstructor
 @Slf4j(topic = "STAFF-CONTROLLER")
 public class StaffController {
@@ -25,28 +24,20 @@ public class StaffController {
     private final DashboardService dashboardService;
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model, jakarta.servlet.http.HttpServletRequest request) {
+    public String dashboard(Model model) {
         StaffDashboardDTO dashboardData = dashboardService.getStaffDashboardData();
         model.addAttribute("dashboard", dashboardData);
         model.addAttribute("activeMenu", "dashboard");
-
-        String uri = request.getRequestURI().toLowerCase();
-        String prefix = (uri.contains("purchase-staff") || uri.contains("purchase staff")
-                || uri.contains("purchase%20staff")) ? "/purchase-staff" : "/director";
-        model.addAttribute("linkPrefix", prefix);
-        model.addAttribute("layoutName", "layout/staff-layout");
-
         return "staff/staff-dashboard";
     }
 
     // hiển thị màn purchase request list
     @GetMapping("/purchases")
-    public String showPurchases(Model model, jakarta.servlet.http.HttpServletRequest request) {
+    public String showPurchases(Model model) {
         model.addAttribute("activeSub", "pr");
         model.addAttribute("activeMenu", "approval");
         model.addAttribute("purchases", purchaseService.findAllPurchases());
         addStaPri(model);
-        addLayout(model, request);
         return "purchase/purchase-list";
     }
 
@@ -58,56 +49,28 @@ public class StaffController {
     // search and filter
     @GetMapping("/purchase/search-filter")
     public String searchAndfilter(@ModelAttribute("searchAndFilter") PurchaseSearchAndFilter purchaseSearchAndFilter,
-            Model model, jakarta.servlet.http.HttpServletRequest request) {
+            Model model) {
         model.addAttribute("activeSub", "pr");
         model.addAttribute("activeMenu", "approval");
         model.addAttribute("purchases", purchaseService.searchAndFilter(purchaseSearchAndFilter));
         addStaPri(model);
-        addLayout(model, request);
         return "purchase/purchase-list";
     }
 
     // lấy ra id cần truy cập vào detail
     @GetMapping("/purchases/{id}/purchase-detail")
-    public String showPurchaseDetail(@PathVariable("id") Integer id, Model model,
-            jakarta.servlet.http.HttpServletRequest request) {
+    public String showPurchaseDetail(@PathVariable("id") Integer id, Model model) {
         model.addAttribute("activeSub", "pr");
         model.addAttribute("activeMenu", "approval");
         model.addAttribute("purchase", purchaseService.findById(id));
-        addLayout(model, request);
         return "purchase/purchase-detail";
     }
 
     @PostMapping("/purchases/{id}/actions")
-    public String actionWithPr(@PathVariable("id") Integer id, Model model, @RequestParam("actions") String actions,
-            @RequestParam(value = "reasonReject", required = false) String reasonReject,
-            jakarta.servlet.http.HttpServletRequest request) {
+    public String actionWithPr(@PathVariable("id") Integer id, @RequestParam("actions") String actions,
+            @RequestParam(value = "reasonReject", required = false) String reasonReject) {
         purchaseService.actionsWithPurchase(id, actions, reasonReject);
-        String uri = request.getRequestURI().toLowerCase();
-        String prefix = (uri.contains("purchase-staff") || uri.contains("purchase staff")
-                || uri.contains("purchase%20staff")) ? "/purchase-staff" : "/director";
-        return "redirect:" + prefix + "/purchases";
-    }
-
-    private void addLayout(Model model, jakarta.servlet.http.HttpServletRequest request) {
-        String uri = request.getRequestURI().toLowerCase();
-        String prefix = (uri.contains("purchase-staff") || uri.contains("purchase staff")
-                || uri.contains("purchase%20staff")) ? "/purchase-staff" : "/director";
-        model.addAttribute("linkPrefix", prefix);
-
-        if (uri.contains("purchase-staff") || uri.contains("purchase staff") || uri.contains("purchase%20staff")) {
-            model.addAttribute("layoutName", "layout/staff-layout");
-        } else {
-            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
-                    .getContext().getAuthentication();
-            if (auth != null && auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_PURCHASE_STAFF") ||
-                            a.getAuthority().equals("PURCHASE_STAFF"))) {
-                model.addAttribute("layoutName", "layout/staff-layout");
-            } else {
-                model.addAttribute("layoutName", "layout/director-layout");
-            }
-        }
+        return "redirect:/purchases";
     }
 
     @ModelAttribute("searchAndFilter")

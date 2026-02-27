@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="${layoutName ?: 'layout/director-layout'}">
+  layout:decorate="~{layout/main-layout}">
 
 <head>
   <title th:text="'PO Detail #' + ${order.orderId} + ' | PROCUREX'">PO Detail | PROCUREX</title>
@@ -19,7 +19,7 @@
     <div class="po-detail-wrapper">
       <!-- Breadcrumb -->
       <div class="breadcrumb">
-        DASHBOARD / <a th:href="@{${linkPrefix} + '/purchase-orders'}">PURCHASE ORDERS</a> /
+        DASHBOARD / <a th:href="@{/purchase-orders}">PURCHASE ORDERS</a> /
         <span class="active" th:text="'PO-' + ${order.orderId}">PO-1</span>
       </div>
 

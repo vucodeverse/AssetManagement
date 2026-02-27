@@ -11,10 +11,14 @@ import java.util.List;
 
 public interface PurchaseService {
     Integer createPurchaseRequest(PurchaseCreateRequest purchaseCreateRequest, int userId, Request draft);
+
     PurchaseResponse findById(Integer id);
+
     List<PurchaseResponse> findAllPurchases();
 
     List<PurchaseResponse> searchAndFilter(PurchaseSearchAndFilter purchaseSearchAndFilter);
 
     void actionsWithPurchase(Integer purchaseId, String action, String reasonReject);
+
+    PurchaseCreateRequest loadDraftForEdit(Integer purchaseId);
 }

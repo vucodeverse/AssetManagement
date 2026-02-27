@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="${layoutName ?: 'layout/director-layout'}">
+    layout:decorate="~{layout/main-layout}" xmlns:sec="http://www.w3.org/1999/xhtml">
 
 <head>
     <meta charset="UTF-8">
@@ -56,7 +56,7 @@
                         <input type="date" th:field="*{to}">
                     </div>
                     <div class="filter-actions">
-                        <a class="btn-reset-filters" th:href="@{show/quotations}">
+                        <a class="btn-reset-filters" th:href="@{/show/quotations-from-purchase}">
                             <i class="fas fa-undo-alt"></i> RESET FILTERS
                         </a>
                     </div>
@@ -70,7 +70,7 @@
                         <tr>
                             <th>PR ID </th>
                             <th>NEEDED BY DATE</th>
-                            <th>QUOTATIONS </th>
+                            <th>Number of Quotations </th>
                             <th>EST. AMOUNT </th>
                             <th>PRIORITY </th>
                             <th>ACTIONS</th>
@@ -80,7 +80,7 @@
                         <tr th:each="q : ${quotations}">
                             <td class="pr-id" th:text="${q.purchaseId}"></td>
                             <td th:text="${#temporals.format(q.needByDate,'dd-MM-yyyy')}"></td>
-                            <td th:text="${q.numberOfQuotation} + ${q.numberOfQuotation == 1 ? ' Quote' : ' Quotes'}">
+                            <td th:text="${q.numberOfQuotation}">
                             </td>
                             <td class="amount"
                                 th:text="${q.estPrice != null ? '$' + #numbers.formatDecimal(q.estPrice, 1, 'COMMA', 0, 'POINT') : 'N/A'}">
@@ -90,8 +90,7 @@
                                     th:text="${q.priority}"></span>
                             </td>
                             <td>
-                                <form
-                                    th:action="@{${linkPrefix} + '/view-quotation-of-purchase/{purchaseId}'(purchaseId=${q.purchaseId})}"
+                                <form th:action="@{/view/view-quotation-of-purchase/{id}(id=${q.purchaseId})}"
                                     th:method="get">
                                     <button type="submit" class="btn-review">REVIEW ALL</button>
                                 </form>

@@ -20,4 +20,5 @@ public class PurchaseResponse {
     private LocalDate createdAt;
     private List<PurchaseDetailResponse> purchaseDetails;
     private Integer quotationCount;
+    private String rejectReason;
 }

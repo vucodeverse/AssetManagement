@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="${layoutName ?: 'layout/director-layout'}">
+    layout:decorate="~{layout/main-layout}">
 
 <head>
     <meta charset="UTF-8">
@@ -18,7 +18,7 @@
         <main class="main-content">
             <!-- Breadcrumb -->
             <div class="breadcrumb">
-                DASHBOARD / <a th:href="@{${linkPrefix} + '/purchases'}">PURCHASE REQUESTS</a> /
+                DASHBOARD / <a th:href="@{/purchases}">PURCHASE REQUESTS</a> /
                 <span class="active">DETAIL</span>
             </div>
 
@@ -33,7 +33,7 @@
                     <h1>PURCHASE REQUEST DETAIL</h1>
                 </div>
                 <div class="header-actions">
-                    <form method="post" th:action="@{${linkPrefix} + '/purchases/{id}/actions'(id=${purchase.id})}">
+                    <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.id})}">
 
                         <div th:if="${purchase.status.name() != 'APPROVED' && purchase.status.name() != 'REJECTED'}">
                             <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
@@ -71,6 +71,16 @@
                     </div>
                 </div>
 
+                <!-- Reject Reason (only visible when status is REJECTED) -->
+                <div th:if="${purchase.status.name() == 'REJECTED' && purchase.rejectReason != null}"
+                    style="margin-top: 12px; padding: 12px 16px; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 6px;">
+                    <label
+                        style="font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #ef4444; text-transform: uppercase;">REJECT
+                        REASON</label>
+                    <div style="margin-top: 4px; font-size: 14px; color: #991b1b; font-weight: 500;"
+                        th:text="${purchase.rejectReason}">Reason...</div>
+                </div>
+
                 <hr class="separator">
 
                 <!-- Table Section -->
@@ -90,17 +100,18 @@
                         <tbody>
 
                             <tr th:each="prd : ${purchase.purchaseDetails}"
-                                th:attr="data-qty=${prd.quantity}, data-price=${prd.estPrice}">
+                                th:attr="data-qty=${prd.quantity}, data-price=${prd.getEstimatePrice}">
 
                                 <td th:text="${prd.assetTypeName}"></td>
 
                                 <td th:text="${prd.quantity}"></td>
 
-                                <td th:text="${#numbers.formatInteger(prd.estPrice, 1, 'POINT')}"></td>
+                                <td th:text="${#numbers.formatInteger(prd.getEstimatePrice, 1, 'POINT')}"></td>
 
-                                <td th:text="${prd.specification}"></td>
+                                <td th:text="${prd.getSpecificationRequirement}"></td>
 
-                                <td class="italic-note" th:text="${prd.note != null ? prd.note : 'None'}">
+                                <td class="italic-note"
+                                    th:text="${prd.getPurchaseDetailNote != null ? prd.getPurchaseDetailNote : 'None'}">
                                 </td>
 
                             </tr>
@@ -130,10 +141,10 @@
                                     RECEIVED</span>
                             </div>
                             <div class="q-actions">
-                                <a th:href="@{${linkPrefix} + '/view-quotation-of-purchase/{id}'(id=${purchase.id})}"
+                                <a th:href="@{/view/view-quotation-of-purchase/{id}(id=${purchase.id})}"
                                     class="btn-view-quotes" th:if="${purchase.quotationCount > 0}">VIEW ALL</a>
-                                <a th:href="@{${linkPrefix} + '/purchases/{id}/quotation'(id=${purchase.id})}"
-                                    class="btn-add-quote" th:if="${linkPrefix == '/purchase-staff'}">
+                                <a th:href="@{/create/purchase-{id}/quotation(id=${purchase.id})}"
+                                    class="btn-add-quote">
                                     <i class="fas fa-plus"></i> NEW QUOTATION
                                 </a>
                             </div>
@@ -153,7 +164,7 @@
                     <a href="#" class="modal-close" aria-label="Close">✕</a>
                 </div>
 
-                <form method="post" th:action="@{/director/purchases/{id}/actions(id=${purchase.id})}">
+                <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.id})}">
 
 
                     <div class="modal-body">

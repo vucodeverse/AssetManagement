@@ -15,7 +15,7 @@ public interface QuotationDAO {
 
     void update(Quotation quotation);
 
-    void updateStatus(Integer quotationId, QuotationStatus status, String rejectedReason);
+    void updateStatusReject(Integer quotationId, QuotationStatus status, String rejectedReason);
 
     List<Quotation> findByPurchaseId(Integer purchaseId);
 

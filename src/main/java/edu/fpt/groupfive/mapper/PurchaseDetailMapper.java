@@ -17,8 +17,6 @@ public interface PurchaseDetailMapper {
 
     List<PurchaseDetail> toPurchaseDetailList(List<PurchaseDetailCreateRequest> purchaseDetailCreateRequests);
 
-    @Mapping(source = "specificationRequirement", target = "specification")
-    @Mapping(source = "estimatePrice", target = "estPrice")
     PurchaseDetailResponse toPurchaseDetailResponse(PurchaseDetail purchaseDetail);
 
     List<PurchaseDetailResponse> toPurchaseDetailResponseList(List<PurchaseDetail> purchaseDetails);

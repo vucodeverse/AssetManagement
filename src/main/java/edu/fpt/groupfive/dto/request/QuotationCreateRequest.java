@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dto.request;
 
+import jakarta.validation.Valid;
 import lombok.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -22,5 +23,6 @@ public class QuotationCreateRequest {
     private Integer supplierId;
 
     @Builder.Default
+    @Valid
     private List<QuotationCreateDetailRequest> quotationCreateDetailRequestList = new ArrayList<>();
 }

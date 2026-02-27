@@ -2,8 +2,10 @@ package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.dao.QuotationDAO;
+import edu.fpt.groupfive.dao.QuotationDetailDAO;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.model.Quotation;
+import edu.fpt.groupfive.model.QuotationDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -18,6 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class QuotationDAOImpl implements QuotationDAO {
     private final DatabaseConfig databaseConfig;
+    private final QuotationDetailDAO quotationDetailDAO;
 
     @Override
     public Integer insert(Quotation quotation) {
@@ -39,20 +42,32 @@ public class QuotationDAOImpl implements QuotationDAO {
             preparedStatement.executeUpdate();
             ResultSet rs = preparedStatement.getGeneratedKeys();
 
+            int quotationId = 0;
+            if (rs.next()) {
+                quotationId = rs.getInt(1);
+            }
+
+            // insert details cùng 1 connection/transaction
+            if (quotationId != 0 && quotation.getQuotationDetails() != null) {
+                for (QuotationDetail qd : quotation.getQuotationDetails()) {
+                    qd.setQuotationId(quotationId);
+                    quotationDetailDAO.insert(qd, connection);
+                }
+            }
+
             connection.commit();
-            if (rs.next())
-                return rs.getInt(1);
+            return quotationId;
         } catch (SQLException e) {
-            if(connection != null){
-                try{
+            if (connection != null) {
+                try {
                     connection.rollback();
-                }catch (SQLException ignored){
+                } catch (SQLException ignored) {
 
                 }
             }
 
             throw new RuntimeException(e);
-        }finally {
+        } finally {
 
             // reset auto commit lại về true và đóng cổng.
             if (connection != null)
@@ -62,7 +77,6 @@ public class QuotationDAOImpl implements QuotationDAO {
                 } catch (Exception ignored) {
                 }
         }
-        return 0;
     }
 
     @Override
@@ -81,14 +95,26 @@ public class QuotationDAOImpl implements QuotationDAO {
             preparedStatement.setBigDecimal(3, quotation.getTotalAmount());
             preparedStatement.setInt(4, quotation.getId());
             preparedStatement.executeUpdate();
+
+            // xóa detail cũ rồi insert lại (cùng 1 connection/transaction)
+            quotationDetailDAO.deleteByQuotationId(quotation.getId(), connection);
+
+            if (quotation.getQuotationDetails() != null) {
+                for (QuotationDetail qd : quotation.getQuotationDetails()) {
+                    quotationDetailDAO.insert(qd, connection);
+                }
+            }
+
+            connection.commit();
         } catch (SQLException e) {
-            if(connection != null){
-                try{
+            if (connection != null) {
+                try {
                     connection.rollback();
-                }catch (SQLException ignored){}
+                } catch (SQLException ignored) {
+                }
             }
             throw new RuntimeException(e);
-        }finally {
+        } finally {
             if (connection != null)
                 try {
                     connection.setAutoCommit(true);
@@ -99,7 +125,7 @@ public class QuotationDAOImpl implements QuotationDAO {
     }
 
     @Override
-    public void updateStatus(Integer quotationId, QuotationStatus status, String rejectedReason) {
+    public void updateStatusReject(Integer quotationId, QuotationStatus status, String rejectedReason) {
         String sql = "UPDATE quotation SET status = ?, rejected_reason = ?, updated_at = GETDATE() WHERE quotation_id = ?";
 
         Connection connection = null;
@@ -112,18 +138,20 @@ public class QuotationDAOImpl implements QuotationDAO {
             preparedStatement.setInt(3, quotationId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            if(connection != null){
-                try{
+            if (connection != null) {
+                try {
                     connection.rollback();
-                }catch (SQLException ignored){}
+                } catch (SQLException ignored) {
+                }
             }
             throw new RuntimeException(e);
-        }finally {
+        } finally {
             if (connection != null)
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                }catch (SQLException ignored) {}
+                } catch (SQLException ignored) {
+                }
         }
     }
 
@@ -234,7 +262,6 @@ public class QuotationDAOImpl implements QuotationDAO {
     public List<Quotation> getAll() {
         return List.of();
     }
-
 
     // tinsh số lượng quotation theo từng purchase
     @Override
@@ -350,7 +377,6 @@ public class QuotationDAOImpl implements QuotationDAO {
         }
         return 0;
     }
-
 
     // lấy ra những quotaiton đc thêm gần đây
     @Override

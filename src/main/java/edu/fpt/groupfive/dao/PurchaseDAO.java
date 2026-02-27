@@ -22,6 +22,8 @@ public interface PurchaseDAO {
 
     void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject);
 
+    void update(Purchase purchase);
+
     Map<Integer, Object[]> findQuotationSummaryByFilter(SearchForQuotation s);
 
     long countByStatus(Request status);

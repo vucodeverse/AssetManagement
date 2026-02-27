@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
-@RequestMapping({ "/director", "/purchase-staff" })
 @RequiredArgsConstructor
 @Slf4j(topic = "ORDER-CONTROLLER")
 public class OrderController {
@@ -52,7 +51,6 @@ public class OrderController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("activeMenu", "po");
-        addLayout(model, request);
         return "order/order-from-purchase";
     }
 
@@ -68,14 +66,12 @@ public class OrderController {
         } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("activeMenu", "po");
-            addLayout(model, request);
             return "order/order-form";
         }
 
         model.addAttribute("orderCreateRequest", orderCreateRequest);
         model.addAttribute("suppliers", supplierService.getAllSupplier());
         model.addAttribute("activeMenu", "po");
-        addLayout(model, request);
         return "order/order-form";
     }
 
@@ -95,7 +91,6 @@ public class OrderController {
         model.addAttribute("orderCreateRequest", orderCreateRequest);
         model.addAttribute("suppliers", supplierService.getAllSupplier());
         model.addAttribute("activeMenu", "po");
-        addLayout(model, request);
         return "order/order-form";
     }
 
@@ -108,7 +103,6 @@ public class OrderController {
 
         model.addAttribute("suppliers", supplierService.getAllSupplier());
         model.addAttribute("activeMenu", "po");
-        addLayout(model, request);
         if (result.hasErrors()) {
             return "order/order-form";
         }
@@ -125,7 +119,6 @@ public class OrderController {
         } catch (edu.fpt.groupfive.util.exception.InvalidDataException e) {
             log.warn("Validation failed for order creation: {}", e.getMessage());
             model.addAttribute("error", e.getMessage());
-            addLayout(model, request);
             return "order/order-form";
         }
     }
@@ -137,31 +130,7 @@ public class OrderController {
         PurchaseOrderDetailResponse detail = orderService.getOrderDetail(id);
         model.addAttribute("order", detail);
         model.addAttribute("activeMenu", "po");
-        addLayout(model, request);
         return "order/order-of-purchase";
-    }
-
-    private void addLayout(Model model, jakarta.servlet.http.HttpServletRequest request) {
-        String uri = request.getRequestURI().toLowerCase();
-        String prefix = (uri.contains("purchase-staff") || uri.contains("purchase staff")
-                || uri.contains("purchase%20staff")) ? "/purchase-staff" : "/director";
-        model.addAttribute("linkPrefix", prefix);
-
-        if (uri.contains("purchase-staff") || uri.contains("purchase staff") || uri.contains("purchase%20staff")) {
-            model.addAttribute("layoutName", "layout/staff-layout");
-            log.info("Layout set to staff-layout based on URI");
-        } else {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null && auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_PURCHASE_STAFF") ||
-                            a.getAuthority().equals("PURCHASE_STAFF"))) {
-                model.addAttribute("layoutName", "layout/staff-layout");
-                log.info("Layout set to staff-layout based on role");
-            } else {
-                model.addAttribute("layoutName", "layout/director-layout");
-                log.info("Layout set to director-layout");
-            }
-        }
     }
 
 }

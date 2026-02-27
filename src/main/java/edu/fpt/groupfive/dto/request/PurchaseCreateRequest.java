@@ -18,19 +18,19 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PurchaseCreateRequest {
+    private Integer purchaseId;
 
-    @NotBlank(message = "Note Không được để trống")
-    private String note;
+    private String purchaseNote;
 
-    @NotNull(message = "Needed By Date Không được để trống")
+    @NotNull(message = "Ngày cần cấp Không được để trống")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Future(message = "Thời gian nhập vào phải lớn hơn thời gian hiện tại")
     private LocalDate neededByDate;
 
-    @NotBlank(message = "Reason Không được để trống")
+    @NotBlank(message = "Lý do Không được để trống")
     private String reason;
 
-    @NotNull(message = "Priority Không được để trống")
+    @NotNull(message = "Độ ưu tiên Không được để trống")
     private Priority priority;
 
     @Valid

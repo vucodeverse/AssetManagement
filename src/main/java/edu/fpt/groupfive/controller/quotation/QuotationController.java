@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping({ "/director", "/purchase-staff" })
 @RequiredArgsConstructor
 public class QuotationController {
 
@@ -35,8 +34,7 @@ public class QuotationController {
     // show form add
     @IsPurchaseStaff
     @GetMapping("/create/purchase-{id}/quotation")
-    public String showQuotationForm(@PathVariable("id") Integer purchaseId, Model model,
-            HttpServletRequest request) {
+    public String showQuotationForm(@PathVariable("id") Integer purchaseId, Model model) {
         QuotationCreateRequest quotationCreateRequest = new QuotationCreateRequest();
         quotationCreateRequest.setPurchaseRequestId(purchaseId);
 
@@ -71,7 +69,7 @@ public class QuotationController {
             @RequestParam(value = "actions", required = false) String action,
             @RequestParam(value = "addDetail", required = false) Integer addIndex,
             @RequestParam(value = "removeDetail", required = false) Integer removeIndex,
-            Model model,HttpServletRequest request) {
+            Model model) {
 
         // thêm 1 dòng detail mới
         if (addIndex != null) {
@@ -129,7 +127,7 @@ public class QuotationController {
     }
 
     // show list quotation của purhcase cụ thể
-    @GetMapping("/view-quotation-of-purchase/{purchaseId}")
+    @GetMapping("/view/view-quotation-of-purchase/{purchaseId}")
     public String viewQuotationList(@PathVariable("purchaseId") Integer purchaseId, Model model) {
         List<QuotationResponse> quotations = quotationService.getQuotationsByPurchase(purchaseId);
 
@@ -144,7 +142,7 @@ public class QuotationController {
     }
 
     // show detail
-    @GetMapping("/quotations/{id}")
+    @GetMapping("view/quotations/{id}/quotation-detail")
     public String getQuotation(@PathVariable("id") Integer id, Model model,
             jakarta.servlet.http.HttpServletRequest request) {
         QuotationResponse quotation = quotationService.getQuotationById(id);
@@ -154,7 +152,7 @@ public class QuotationController {
         return "quotation/quotation-detail";
     }
 
-    //ssearch quotation cho màn quotation-of-purchase
+    // ssearch quotation cho màn quotation-of-purchase
     @GetMapping("/search/quotation-of-purchase/{purchaseId}")
     public String searchQuotationOfPurchase(@PathVariable("purchaseId") Integer purchaseId,
             @ModelAttribute("criteria") QuotationSearchCriteria criteria,
@@ -183,7 +181,7 @@ public class QuotationController {
     }
 
     // show list các quotation theo purchase
-    @GetMapping("show/quotations")
+    @GetMapping("show/quotations-from-purchase")
     public String showQuotations(Model model, jakarta.servlet.http.HttpServletRequest request) {
         model.addAttribute("activeMenu", "quotation");
         model.addAttribute("activeSub", "qt");
@@ -191,7 +189,6 @@ public class QuotationController {
         model.addAttribute("quotations", quotationService.getQuotationAndPurchase());
         return "quotation/quotation-list";
     }
-
 
     // khởi tạo bind objetc
     @ModelAttribute("searchForQuotation")

@@ -1,6 +1,5 @@
 package edu.fpt.groupfive.controller.purchase;
 
-
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseDetailCreateRequest;
@@ -30,13 +29,25 @@ public class PurchaseController {
     private final AssetTypeService assetTypeService;
     private final UserService userService;
 
-    // giển thị form tạo purchase
+    // hiển thị form tạo purchase mới
     @GetMapping("/create/purchase-form")
-    public String showPurchaseForm(Model model){
+    public String showPurchaseForm(Model model) {
 
-        // add sẵn 1 dòng detail mỗi khi hiển thị form
         PurchaseCreateRequest purchaseCreateRequest = new PurchaseCreateRequest();
         purchaseCreateRequest.getPurchaseDetailCreateRequests().add(new PurchaseDetailCreateRequest());
+
+        model.addAttribute("purchaseCreateRequest", purchaseCreateRequest);
+
+        getAssetType(model);
+        ActiveNavbar(model);
+        return "purchase/purchase-form";
+    }
+
+    // hiển thị form sửa purchase draft
+    @GetMapping("/purchases/{id}/edit")
+    public String showEditPurchaseForm(@PathVariable("id") Integer id, Model model) {
+
+        PurchaseCreateRequest purchaseCreateRequest = purchaseService.loadDraftForEdit(id);
 
         model.addAttribute("purchaseCreateRequest", purchaseCreateRequest);
 
@@ -50,7 +61,6 @@ public class PurchaseController {
         model.addAttribute("activeSub", "pr");
     }
 
-
     // purchase detail
     @GetMapping("/show/purchase-detail/{purchaseId}")
     public String showPurchaseDetail(@PathVariable("purchaseId") Integer purchaseId, Model model) {
@@ -59,10 +69,10 @@ public class PurchaseController {
         return "purchase/purchase-detail";
     }
 
-
     // them 1 row ở purchase dertail chỗ form nhập
     @PostMapping(value = "/create/purchase-form", params = "addDetail")
-    public String addPurchaseDetail(@ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, Model model){
+    public String addPurchaseDetail(
+            @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, Model model) {
 
         // tạo thêm 1 dòng detail mới
         purchaseCreateRequest.getPurchaseDetailCreateRequests().add(new PurchaseDetailCreateRequest());
@@ -73,10 +83,12 @@ public class PurchaseController {
 
     // xóa đi 1 row
     @PostMapping(value = "/create/purchase-form", params = "remove")
-    public String removePurchaseDetail(@ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, @RequestParam("remove") int index, Model model){
+    public String removePurchaseDetail(
+            @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest,
+            @RequestParam("remove") int index, Model model) {
 
         // check điều kiện để xóa đi 1 dòng detail
-        if(index >= 0 && purchaseCreateRequest.getPurchaseDetailCreateRequests().size() > 1){
+        if (index >= 0 && purchaseCreateRequest.getPurchaseDetailCreateRequests().size() > 1) {
             purchaseCreateRequest.getPurchaseDetailCreateRequests().remove(index);
         }
         getAssetType(model);
@@ -84,7 +96,7 @@ public class PurchaseController {
         return "purchase/purchase-form";
     }
 
-    //xử lí form nhập
+    // xử lí form nhập
     @PostMapping(value = "/create/purchase-form", params = "actions")
     public String processingForm(
             @Valid @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest,
@@ -95,11 +107,11 @@ public class PurchaseController {
         boolean isDraft = "draft".equals(actions);
 
         // có lỗi thì return
-            if (result.hasErrors()) {
-                getAssetType(model);
-                ActiveNavbar(model);
-                return "purchase/purchase-form";
-            }
+        if (result.hasErrors()) {
+            getAssetType(model);
+            ActiveNavbar(model);
+            return "purchase/purchase-form";
+        }
 
         // lấy ra user đang login
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -119,6 +131,5 @@ public class PurchaseController {
         List<AssetTypeResponse> assetTypes = assetTypeService.getAllAssetType();
         model.addAttribute("assetTypes", assetTypes);
     }
-
 
 }

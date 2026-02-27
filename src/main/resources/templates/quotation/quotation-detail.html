@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="${layoutName ?: 'layout/director-layout'}">
+    layout:decorate="~{layout/main-layout}">
 
 <head>
     <title th:text="'Quotation Detail #' + ${quotation.quotationId} + ' | PROCUREX'">Quotation Detail | PROCUREX</title>
@@ -18,10 +18,10 @@
         <div class="po-detail-wrapper">
             <!-- Breadcrumb refined -->
             <div class="breadcrumb">
-                <a th:href="@{${linkPrefix} + '/dashboard'}">DASHBOARD</a>
+                <a th:href="@{/dashboard}">DASHBOARD</a>
                 /
-                <a th:href="@{${linkPrefix} + '/purchases'}">PURCHASE REQUESTS</a> /
-                <a th:href="@{${linkPrefix} + '/view-quotation-of-purchase/{id}'(id=${quotation.purchaseId})}"
+                <a th:href="@{/purchases}">PURCHASE REQUESTS</a> /
+                <a th:href="@{/view/view-quotation-of-purchase/{id}(id=${quotation.purchaseId})}"
                     th:text="'PR-' + ${quotation.purchaseId}">PR-1</a> /
                 <span class="active" th:text="'QT-' + ${quotation.quotationId}">QT-1</span>
             </div>
@@ -32,19 +32,17 @@
                 </div>
                 <div class="header-actions">
                     <!-- Director Actions -->
-                    <th:block th:if="${linkPrefix == '/director'}">
+                    <th:block>
                         <button type="button" class="btn-outline-prem" onclick="openRejectModal()">REJECT</button>
-                        <a class="btn-solid-prem"
-                            th:href="@{${linkPrefix} + '/quotations/{id}/create-po'(id=${quotation.quotationId})}">
+                        <a class="btn-solid-prem" th:href="@{/quotations/{id}/create-po(id=${quotation.quotationId})}">
                             APPROVE &amp; GENERATE PO
                         </a>
                     </th:block>
 
                     <!-- Purchase Staff Actions -->
-                    <th:block th:if="${linkPrefix == '/purchase-staff'}">
+                    <th:block>
                         <a th:if="${quotation.quotationStatus == T(edu.fpt.groupfive.common.QuotationStatus).DRAFT}"
-                            class="btn-solid-prem"
-                            th:href="@{${linkPrefix} + '/quotations/{id}/edit'(id=${quotation.quotationId})}">
+                            class="btn-solid-prem" th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
                             UPDATE QUOTATION
                         </a>
                     </th:block>
@@ -165,7 +163,7 @@
             <div class="modal-header">
                 <h2>REJECT QUOTATION</h2>
             </div>
-            <form th:action="@{${linkPrefix} + '/quotations/{id}/reject'(id=${quotation.quotationId})}" method="post">
+            <form th:action="@{/quotations/{id}/reject(id=${quotation.quotationId})}" method="post">
                 <div class="modal-body">
                     <p style="font-size: 14px; margin-bottom: 16px; color: #666;">Please provide a reason for rejecting
                         this quotation. This will be visible to the purchase staff.</p>

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="${layoutName ?: 'layout/director-layout'}">
+    layout:decorate="~{layout/main-layout}">
 
 <head>
     <meta charset="UTF-8">
@@ -15,10 +15,10 @@
         <main class="quotation-content-wrapper">
             <!-- Breadcrumb -->
             <div class="breadcrumb">
-                <a th:href="@{${linkPrefix} + '/dashboard'}">DASHBOARD</a>
+                <a th:href="@{/dashboard}">DASHBOARD</a>
                 /
-                <a th:href="@{${linkPrefix} + '/purchases'}">PURCHASE REQUESTS</a> /
-                <a th:href="@{${linkPrefix} + '/purchases/{id}/purchase-detail'(id=${purchaseId})}"
+                <a th:href="@{/purchases}">PURCHASE REQUESTS</a> /
+                <a th:href="@{/purchases/{id}/purchase-detail(id=${purchaseId})}"
                     th:text="'PR-' + ${purchaseId}">PR-000052</a> /
                 <span class="active">QUOTATIONS</span>
             </div>
@@ -30,12 +30,11 @@
                         PR-000052</h1>
                     <p>Review and compare received vendor bids for the requested hardware assets.</p>
                 </div>
-                <a th:href="@{${linkPrefix} + '/purchases/{id}/quotation'(id=${purchaseId})}" class="btn-solid">
+                <a th:href="@{/create/purchase-{id}/quotation(id=${purchaseId})}" class="btn-solid">
                     <i class="fas fa-plus"></i> Request New Quote
                 </a>
             </header>
-            <form method="get" th:action="@{${linkPrefix} + '/search/quotation-of-purchase/{id}'(id=${purchaseId})}"
-                id="filterForm">
+            <form method="get" th:action="@{/search/quotation-of-purchase/{id}(id=${purchaseId})}" id="filterForm">
                 <div class="table-actions">
                     <div class="search-wrap">
                         <i class="fas fa-search"></i>
@@ -126,16 +125,15 @@
                                     th:text="${q.rejectedReason}">Reason...</span>
                             </td>
                             <td class="cell-actions">
-                                <a th:href="@{${linkPrefix} + '/quotations/{id}'(id=${q.quotationId})}" title="View">
+                                <a th:href="@{/view/quotations/{id}/quotation-detail(id=${q.quotationId})}"
+                                    title="View">
                                     <i class="far fa-eye action-icon"></i>
                                 </a>
                                 <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
-                                    th:href="@{${linkPrefix} + '/quotations/{id}/edit'(id=${q.quotationId})}"
-                                    title="Edit">
+                                    th:href="@{/quotations/{id}/edit(id=${q.quotationId})}" title="Edit">
                                     <i class="far fa-edit action-icon"></i>
                                 </a>
-                                <a class="btn-approve-sm"
-                                    th:href="@{${linkPrefix} + '/quotations/{id}/create-po'(id=${q.quotationId})}"
+                                <a class="btn-approve-sm" th:href="@{/quotations/{id}/create-po(id=${q.quotationId})}"
                                     th:if="${q.quotationStatus.name() == 'PENDING'}">
                                     APPROVE &amp; PO
                                 </a>
@@ -175,12 +173,12 @@
     <th:block layout:fragment="extra-js">
         <script th:src="@{/js/quotation/quotation-of-purchase.js}"></script>
         <script th:inline="javascript">
-            const linkPrefix = /*[[${linkPrefix}]]*/ '';
+
 
             function openRejectModal(id) {
                 const modal = document.getElementById('rejectModal');
                 const form = document.getElementById('rejectForm');
-                form.action = linkPrefix + '/quotations/' + id + '/reject';
+                form.action = '/quotations/' + id + '/reject';
                 modal.style.display = 'block';
             }
 

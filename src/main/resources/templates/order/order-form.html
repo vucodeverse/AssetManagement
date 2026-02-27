@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="${layoutName ?: 'layout/director-layout'}">
+    layout:decorate="~{layout/main-layout}">
 
 <head>
     <meta charset="UTF-8">
@@ -19,9 +19,9 @@
 
             <!-- Breadcrumb -->
             <div class="breadcrumb">
-                <a th:href="@{${linkPrefix} + '/dashboard'}">DASHBOARD</a>
+                <a th:href="@{/dashboard}">DASHBOARD</a>
                 /
-                <a th:href="@{${linkPrefix} + '/purchase-orders'}">PURCHASE ORDERS</a> /
+                <a th:href="@{/purchase-orders}">PURCHASE ORDERS</a> /
                 <span class="active">GENERATE PO</span>
             </div>
 
@@ -39,7 +39,7 @@
                 <span th:text="${error}"></span>
             </div>
 
-            <form th:action="@{${linkPrefix} + '/quotations/{id}/create-po'(id=${orderCreateRequest.quotationId})}"
+            <form th:action="@{/quotations/{id}/create-po(id=${orderCreateRequest.quotationId})}"
                 th:object="${orderCreateRequest}" method="post">
 
                 <!-- General Information -->
@@ -185,7 +185,7 @@
                         <i class="fas fa-info-circle"></i> Review all fields carefully before submitting.
                     </div>
                     <div class="footer-actions">
-                        <a th:href="@{${linkPrefix} + '/purchase-orders'}" class="btn-outline">
+                        <a th:href="@{/purchase-orders}" class="btn-outline">
                             <i class="fas fa-arrow-left"></i> Cancel
                         </a>
                         <button type="submit" class="btn-solid">

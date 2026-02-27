@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/staff-layout}">
+    layout:decorate="~{layout/main-layout}">
 
 <head>
     <meta charset="UTF-8">
@@ -68,7 +68,7 @@
                                             th:text="${pr.priority}">URGENT</span>
                                     </td>
                                     <td>
-                                        <a th:href="@{${linkPrefix} + '/purchases/{id}/quotation-form'(id=${pr.id})}"
+                                        <a th:href="@{/purchases/{id}/quotation-form(id=${pr.id})}"
                                             class="btn-create-quote">CREATE QUOTE</a>
                                     </td>
                                 </tr>
@@ -85,15 +85,14 @@
                 <section class="dash-card">
                     <div class="card-header">
                         <h2>My Quotations</h2>
-                        <a th:href="@{${linkPrefix} + '/quotations'}" class="view-all"
+                        <a th:href="@{/quotations}" class="view-all"
                             style="font-size: 12px; font-weight: 700; color: var(--muted2); text-decoration: none;">View
                             All</a>
                     </div>
                     <div class="quo-list">
                         <a class="quo-item" th:each="quo : ${dashboard.recentQuotations}"
                             th:classappend="${quo.quotationStatus.name().toLowerCase()}"
-                            th:href="@{${linkPrefix} + '/quotations/' + ${quo.quotationId}}"
-                            style="text-decoration: none;">
+                            th:href="@{/quotations/{id}(id=${quo.quotationId})}" style="text-decoration: none;">
                             <div class="quo-details">
                                 <strong th:text="'#QTN-' + ${quo.quotationId}">#QTN-9901</strong>
                                 <span th:text="${quo.supplierName}">Global Logistics</span>
@@ -148,7 +147,7 @@
                                 <td th:text="${po.approvedByName}">John Doe</td>
                                 <td>
                                     <div class="quick-actions">
-                                        <a th:href="@{${linkPrefix} + '/purchase-orders/{id}'(id=${po.orderId})}"><i
+                                        <a th:href="@{/purchase-orders/{id}(id=${po.orderId})}"><i
                                                 class="far fa-eye"></i></a>
                                         <i class="fas fa-print"></i>
                                         <i class="fas fa-ellipsis-v"></i>

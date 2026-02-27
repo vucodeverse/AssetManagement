@@ -29,7 +29,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             preparedStatement.setInt(3, purchaseDetail.getPurchaseRequestId());
             preparedStatement.setInt(4, purchaseDetail.getAssetTypeId());
             preparedStatement.setString(5, purchaseDetail.getSpecificationRequirement());
-            preparedStatement.setString(6, purchaseDetail.getNote());
+            preparedStatement.setString(6, purchaseDetail.getPurchaseDetailNote());
             preparedStatement.executeUpdate();
         } catch (Exception exception) {
             throw new RuntimeException(exception);
@@ -50,7 +50,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
                 "where pd.purchase_request_id = ?";
         List<PurchaseDetail> purchaseDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+                PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, purchaseRequestId);
 
@@ -62,11 +62,9 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
                     detail.setId(rs.getInt("purchase_request_detail_id"));
                     detail.setQuantity(rs.getInt("quantity"));
                     detail.setSpecificationRequirement(
-                            rs.getString("spec_requirement")
-                    );
-                    detail.setNote(rs.getString("note"));
+                            rs.getString("spec_requirement"));
+                    detail.setPurchaseDetailNote(rs.getString("note"));
                     detail.setAssetTypeId(rs.getInt("asset_type_id"));
-                    detail.setAssetTypeName(rs.getString("asset_type_name"));
                     detail.setPurchaseRequestId(rs.getInt("purchase_request_id"));
                     detail.setEstimatePrice(rs.getBigDecimal("estimated_price"));
 
@@ -76,10 +74,21 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Error finding PurchaseDetails by purchaseRequestId=" + purchaseRequestId, e
-            );
+                    "Error finding PurchaseDetails by purchaseRequestId=" + purchaseRequestId, e);
         }
 
         return purchaseDetails;
+    }
+
+    // xóa tất cả purchase detail theo purchase request id (dùng cho update draft)
+    @Override
+    public void deleteByPurchaseRequestId(Integer purchaseRequestId, Connection conn) {
+        String sql = "delete from purchase_request_detail where purchase_request_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, purchaseRequestId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting PurchaseDetails by purchaseRequestId=" + purchaseRequestId, e);
+        }
     }
 }

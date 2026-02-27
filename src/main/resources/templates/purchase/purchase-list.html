@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="${layoutName ?: 'layout/director-layout'}">
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
 <!--~{}: link -->
 
 <head>
@@ -17,12 +17,16 @@
     <th:block layout:fragment="content">
 
         <div class="purchase-content-wrapper">
-            <form id="filterForm" method="get" th:action="@{${linkPrefix} + '/purchase/search-filter'}"
-                th:object="${searchAndFilter}">
+            <form id="filterForm" method="get" th:action="@{/purchase/search-filter}" th:object="${searchAndFilter}">
 
                 <header class="top-bar">
                     <h1>PURCHASE REQUEST MANAGEMENT</h1>
                     <div class="top-actions">
+                        <!-- TODO: bật lại sec:authorize="hasRole('ASSET_MANAGER')" khi enable security -->
+                        <a th:href="@{/asset-manager/create/purchase-form}" class="btn-create"
+                            style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#1e293b; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:13px;">
+                            <i class="fas fa-plus"></i> Create Purchase Request
+                        </a>
                         <div class="search-box">
                             <i class="fas fa-search"></i>
                             <input type="text" placeholder="Search by PR ID..." th:field="*{keyword}">
@@ -49,7 +53,7 @@
                         <input type="date" th:field="*{to}">
 
                         <button type="submit">APPLY</button>
-                        <a class="btn-reset" th:href="@{${linkPrefix} + '/purchases'}">RESET</a>
+                        <a class="btn-reset" th:href="@{/purchases}">RESET</a>
                     </div>
                 </section>
             </form>
@@ -71,7 +75,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="p : ${purchases}" class="clickable-row"
-                            th:attr="onclick=|window.location.href='@{__${linkPrefix}__/purchases/{id}/purchase-detail(id=${p.id})}'|">
+                            th:attr="onclick=|window.location.href='@{/purchases/{id}/purchase-detail(id=${p.id})}'|">
 
                             <td class="cell-id" th:text="'PR-' + ${p.id}"></td>
                             <td>
@@ -97,9 +101,10 @@
                             </td>
 
                             <td class="cell-actions" onclick="event.stopPropagation();">
-                                <form th:if="${p.status != null}" method="post"
-                                    th:action="@{${linkPrefix} + '/purchases/{id}/actions'(id=${p.id})}">
 
+                                <!-- TODO: bật lại sec:authorize="hasRole('DIRECTOR')" khi enable security -->
+                                <form th:if="${p.status != null}" method="post"
+                                    th:action="@{/purchases/{id}/actions(id=${p.id})}">
                                     <div
                                         th:if="${p.status.name() != 'APPROVED' && p.status.name() != 'REJECTED' && p.status.name() != 'DRAFT'}">
                                         <button type="submit" name="actions" value="a"
@@ -110,38 +115,46 @@
                                         </a>
                                     </div>
                                 </form>
+
+                                <!-- TODO: bật lại sec:authorize="hasRole('ASSET_MANAGER')" khi enable security -->
+                                <a th:if="${p.status != null && p.status.name() == 'DRAFT'}"
+                                    th:href="@{/asset-manager/purchases/{id}/edit(id=${p.id})}" class="btn-approve"
+                                    onclick="event.stopPropagation();">UPDATE</a>
+
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <!-- Reject Modals -->
-        <div th:each="p : ${purchases}" th:id="'reject-' + ${p.id}" class="modal-overlay">
+        <!-- TODO: bật lại sec:authorize="hasRole('DIRECTOR')" khi enable security -->
+        <th:block>
+            <div th:each="p : ${purchases}" th:id="'reject-' + ${p.id}" class="modal-overlay">
 
-            <div class="modal" role="dialog" aria-modal="true">
-                <div class="modal-header">
-                    <h3 class="modal-title">
-                        Reject Reason - PR-<span th:text="${p.id}"></span>
-                    </h3>
+                <div class="modal" role="dialog" aria-modal="true">
+                    <div class="modal-header">
+                        <h3 class="modal-title">
+                            Reject Reason - PR-<span th:text="${p.id}"></span>
+                        </h3>
 
-                    <!-- Nút X: đóng modal -->
-                    <a href="#" class="modal-close" aria-label="Close">✕</a>
+                        <!-- Nút X: đóng modal -->
+                        <a href="#" class="modal-close" aria-label="Close">✕</a>
+                    </div>
+
+                    <form method="post" th:action="@{/purchases/{id}/actions(id=${p.id})}">
+
+                        <div class="modal-body">
+                            <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-submit" name="actions" value="r">Submit</button>
+                            <a href="#" class="btn-cancel">Cancel</a>
+                        </div>
+                    </form>
                 </div>
-
-                <form method="post" th:action="@{/director/purchases/{id}/actions(id=${p.id})}">
-
-                    <div class="modal-body">
-                        <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
-                    </div>
-
-                    <div class="modal-actions">
-                        <button type="submit" class="btn-submit" name="actions" value="r">Submit</button>
-                        <a href="#" class="btn-cancel">Cancel</a>
-                    </div>
-                </form>
             </div>
-        </div>
+        </th:block>
     </th:block>
 
 

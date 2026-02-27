@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="${layoutName ?: 'director-layout'}">
+  layout:decorate="~{layout/main-layout}">
 
 <head>
   <title>Purchase Orders | PROCUREX</title>
@@ -27,7 +27,7 @@
       </div>
 
       <!-- Filter Card -->
-      <form id="filterForm" th:action="@{${linkPrefix} + '/purchase-orders'}" method="get">
+      <form id="filterForm" th:action="@{/purchase-orders}" method="get">
         <div class="filter-card">
           <!-- Search bar -->
           <div class="search-wrap">
@@ -108,7 +108,7 @@
             </thead>
             <tbody>
               <tr th:each="po : ${group.orders}"
-                th:onclick="|window.location.href='@{__${linkPrefix}__/purchase-orders/{id}(id=${po.orderId})}'|">
+                th:onclick="|window.location.href='@{/purchase-orders/{id}(id=${po.orderId})}'|">
                 <td class="td-id" th:text="'PO-' + ${po.orderId}">PO-001</td>
                 <td th:text="${po.createdAt != null ? #temporals.format(po.createdAt, 'dd-MM-yyyy') : '—'}">01-01-2024
                 </td>
@@ -128,18 +128,18 @@
 
       <!-- Pagination -->
       <div class="pagination-bar" th:if="${totalPages > 1}">
-        <a class="page-btn" th:classappend="${currentPage == 1 ? 'disabled' : ''}" th:href="@{${linkPrefix} + '/purchase-orders'(page=${currentPage - 1}, keyword=${criteria.keyword},
+        <a class="page-btn" th:classappend="${currentPage == 1 ? 'disabled' : ''}" th:href="@{/purchase-orders(page=${currentPage - 1}, keyword=${criteria.keyword},
                        status=${criteria.status}, supplierName=${criteria.supplierName},
                        amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
                        dateTo=${criteria.dateTo})}">‹</a>
 
         <a class="page-btn" th:each="p : ${#numbers.sequence(1, totalPages)}"
-          th:classappend="${p == currentPage ? 'active' : ''}" th:text="${p}" th:href="@{${linkPrefix} + '/purchase-orders'(page=${p}, keyword=${criteria.keyword},
+          th:classappend="${p == currentPage ? 'active' : ''}" th:text="${p}" th:href="@{/purchase-orders(page=${p}, keyword=${criteria.keyword},
                        status=${criteria.status}, supplierName=${criteria.supplierName},
                        amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
                        dateTo=${criteria.dateTo})}">1</a>
 
-        <a class="page-btn" th:classappend="${currentPage == totalPages ? 'disabled' : ''}" th:href="@{${linkPrefix} + '/purchase-orders'(page=${currentPage + 1}, keyword=${criteria.keyword},
+        <a class="page-btn" th:classappend="${currentPage == totalPages ? 'disabled' : ''}" th:href="@{/purchase-orders(page=${currentPage + 1}, keyword=${criteria.keyword},
                        status=${criteria.status}, supplierName=${criteria.supplierName},
                        amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
                        dateTo=${criteria.dateTo})}">›</a>

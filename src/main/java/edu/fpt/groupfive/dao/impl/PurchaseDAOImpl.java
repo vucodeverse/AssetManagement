@@ -13,12 +13,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -50,7 +47,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
             // set placeholder
             preparedStatement.setString(1, purchase.getStatus() != null ? purchase.getStatus().toString() : null);
-            preparedStatement.setString(2, purchase.getNote());
+            preparedStatement.setString(2, purchase.getPurchaseNote());
             preparedStatement.setInt(3, purchase.getCreatedByUser());
 
             if (purchase.getNeededByDate() != null) {
@@ -133,6 +130,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             ResultSet rs = preparedStatement.executeQuery();
             if (rs.next()) {
                 Purchase purchase = mapRowForList(rs);
+
                 // load riêng từng purchase detail
                 purchase.setPurchaseDetails(
                         purchaseDetailDAO.findByPurchaseRequestId(purchaseId));
@@ -161,7 +159,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 Purchase purchase = new Purchase();
                 purchase.setId(rs.getInt("purchase_request_id"));
                 purchase.setStatus(Request.valueOf(rs.getString("status").toUpperCase()));
-                purchase.setNote(rs.getString("note"));
+                purchase.setPurchaseNote(rs.getString("note"));
                 purchase.setRejectReason(rs.getString("reject_reason"));
                 purchase.setCreatedByUser(rs.getInt("creator_id"));
                 Date neededByDate = rs.getDate("needed_by_date");
@@ -233,16 +231,12 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             }
         }
 
-        purchase.setNote(rs.getString("note"));
+        purchase.setPurchaseNote(rs.getString("note"));
         purchase.setRejectReason(rs.getString("reject_reason"));
         purchase.setCreatedByUser(rs.getInt("creator_id"));
 
         String firstName = rs.getString("first_name");
         String lastName = rs.getString("last_name");
-        if (firstName != null || lastName != null) {
-            purchase.setCreatorName(
-                    ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim());
-        }
 
         Date neededByDate = rs.getDate("needed_by_date");
         purchase.setNeededByDate(neededByDate != null ? neededByDate.toLocalDate() : null);
@@ -510,5 +504,70 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             throw new RuntimeException(e);
         }
         return purchases;
+    }
+
+    // update purchase request nếu là draft
+    @Override
+    public void update(Purchase purchase) {
+        String sql = "update purchase_request set status = ?, note = ?, needed_by_date = ?, " +
+                "priority = ?, reject_reason = ?, updated_at = ?, request_reason = ? " +
+                "where purchase_request_id = ?";
+
+        Connection connection = null;
+        try {
+            connection = databaseConfig.getConnection();
+            connection.setAutoCommit(false);
+
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, purchase.getStatus() != null ? purchase.getStatus().toString() : null);
+            ps.setString(2, purchase.getPurchaseNote());
+
+            if (purchase.getNeededByDate() != null) {
+                ps.setDate(3, Date.valueOf(purchase.getNeededByDate()));
+            } else {
+                ps.setNull(3, Types.DATE);
+            }
+
+            if (purchase.getPriority() != null) {
+                ps.setString(4, purchase.getPriority().name());
+            } else {
+                ps.setNull(4, Types.NVARCHAR);
+            }
+
+            ps.setString(5, purchase.getRejectReason());
+            ps.setTimestamp(6, purchase.getUpdatedAt() != null
+                    ? Timestamp.valueOf(purchase.getUpdatedAt().atStartOfDay())
+                    : null);
+            ps.setString(7, purchase.getReason());
+            ps.setInt(8, purchase.getId());
+            ps.executeUpdate();
+
+            // xóa detail cũ rồi insert lại
+            purchaseDetailDAO.deleteByPurchaseRequestId(purchase.getId(), connection);
+
+            if (purchase.getPurchaseDetails() != null) {
+                for (PurchaseDetail d : purchase.getPurchaseDetails()) {
+                    d.setPurchaseRequestId(purchase.getId());
+                    purchaseDetailDAO.insert(d, connection);
+                }
+            }
+
+            connection.commit();
+
+        } catch (Exception e) {
+            if (connection != null)
+                try {
+                    connection.rollback();
+                } catch (Exception ignored) {
+                }
+            throw new RuntimeException(e);
+        } finally {
+            if (connection != null)
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (Exception ignored) {
+                }
+        }
     }
 }

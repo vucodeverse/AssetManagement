@@ -183,7 +183,7 @@ public class UserDAOImpl implements UserDAO {
                 u.setUserId(rs.getInt("user_id"));
                 u.setUsername(rs.getString("username"));
                 u.setPasswordHash(rs.getString("password_hash"));
-                u.setFullName(rs.getString("full_name"));
+                u.setFullName(rs.getString("first_name") +  " " + rs.getString("last_name"));
                 u.setPhoneNumber(rs.getString("phone_number"));
                 u.setEmail(rs.getString("email"));
                 u.setStatus(rs.getString("status"));

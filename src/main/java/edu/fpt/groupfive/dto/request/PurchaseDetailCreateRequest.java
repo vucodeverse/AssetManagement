@@ -14,20 +14,19 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class PurchaseDetailCreateRequest {
 
-    @NotNull(message = "Quantity Không được để trống")
-    @Min(value = 1, message = "Quantity phải lớn hơn 0")
+    @NotNull(message = "Số lượng không được để trống")
+    @Min(value = 1, message = "Số lượng phải lớn hơn 0")
     private Integer quantity;
 
-    @NotBlank(message = "Specification Requirement Không được để trống")
+    @NotBlank(message = "Đặc tả Không được để trống")
     private String specificationRequirement;
 
-    @NotBlank(message = "Note Không được để trống")
-    private String note;
+    private String purchaseDetailNote;
 
     @NotNull(message = "Loại tài sản không được để trống")
     private Integer assetTypeId;
 
-    @NotNull(message = "Estimate Price Không được để trống")
-    @Min(value = 1, message = "Estimate Price phải lớn hơn 0")
+    @NotNull(message = "Giá ước tính Không được để trống")
+    @Min(value = 1, message = "Giá ước tính phải lớn hơn 0")
     private BigDecimal estimatePrice;
 }

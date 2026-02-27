@@ -20,9 +20,7 @@ import edu.fpt.groupfive.service.QuotationService;
 import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -50,7 +48,7 @@ public class QuotationServiceImpl implements QuotationService {
     @Override
     public void createQuotation(QuotationCreateRequest quotationCreateRequest, Integer purchaseId, String action) {
 
-        // ktra quaotion có tồn tại và dc approve chưa
+        // ktra purchase có tồn tại và dc approve chưa
         purchaseDAO.findByIdAndApproved(purchaseId, "APPROVED")
                 .orElseThrow(() -> new InvalidDataException("Purchase request này không tồn tại hoặc chưa được chấp " +
                         "nhận"));
@@ -66,7 +64,7 @@ public class QuotationServiceImpl implements QuotationService {
             purchaseDetailMap.put(d.getId(), d);
         }
 
-        // map quotation create về quotaiton
+        // map quotation create về quotation
         Quotation q = quotationMapper.toQuotation(quotationCreateRequest);
         q.setPurchaseId(purchaseId);
 
@@ -76,56 +74,54 @@ public class QuotationServiceImpl implements QuotationService {
 
         // set các giá trị
         q.setTotalAmount(calculateTotal(quotationCreateRequest));
-        if(QuotationStatus.DRAFT.equals(quotationStatus)) {
+        if (QuotationStatus.DRAFT.equals(quotationStatus)) {
             q.setUpdatedAt(LocalDate.now());
         }
 
-        Integer quotationId;
-        // chekc xem quotaiton này đã được tạo hay chưa
-        // nếu r lấy luon id đó để update
-        // ko thì tọa mưới
+        // build list quotation detail trước
+        List<QuotationDetail> quotationDetails = new ArrayList<>();
+        for (QuotationCreateDetailRequest qd : quotationCreateRequest.getQuotationCreateDetailRequestList()) {
+
+            // ktra purchase detail có tồn tại hay ko
+            PurchaseDetail pd = purchaseDetailMap.get(qd.getPurchaseRequestDetailId());
+            if (pd == null)
+                throw new InvalidDataException("Invalid purchaseDetailId");
+
+            // map sang quotation detail
+            QuotationDetail quotationDetail = quotationDetailMapper.toQuotationDetail(qd);
+            quotationDetail.setPurchaseDetailId(pd.getId());
+            if (pd.getAssetTypeId() != null) {
+                quotationDetail.setAssetTypeId(pd.getAssetTypeId());
+            }
+            if (quotationDetail.getSpecificationRequirement() == null && pd.getSpecificationRequirement() != null) {
+                quotationDetail.setSpecificationRequirement(pd.getSpecificationRequirement());
+            }
+            quotationDetails.add(quotationDetail);
+        }
+
+        // gắn detail list vào quotation → DAO sẽ insert/update tất cả trong 1
+        // transaction
+        q.setQuotationDetails(quotationDetails);
+
+        // check xem quotation này đã được tạo hay chưa
         if (quotationCreateRequest.getQuotationId() != null) {
-            quotationId = quotationCreateRequest.getQuotationId();
-            q.setId(quotationId);
+            q.setId(quotationCreateRequest.getQuotationId());
             q.setQuotationStatus(quotationStatus);
             quotationDAO.update(q);
-            quotationDetailDAO.deleteByQuotationId(quotationId);
         } else {
             q.setQuotationStatus(quotationStatus);
             q.setCreatedAt(LocalDate.now());
-            quotationId = quotationDAO.insert(q);
-        }
-
-        // check xem id có hợp lệ hay ko
-        if (quotationId != 0) {
-
-            // duyệt qua từng quotation detail
-            for (QuotationCreateDetailRequest qd : quotationCreateRequest.getQuotationCreateDetailRequestList()) {
-
-                // ktra purchae detail có tồn tại hay ko
-                PurchaseDetail pd = purchaseDetailMap.get(qd.getPurchaseRequestDetailId());
-                if (pd == null)
-                    throw new InvalidDataException("Invalid purchaseDetailId");
-
-                // map sang quotaiton detial
-                QuotationDetail quotationDetail = quotationDetailMapper.toQuotationDetail(qd);
-                quotationDetail.setQuotationId(quotationId);
-                quotationDetail.setPurchaseDetailId(pd.getId());
-                if (pd.getAssetTypeId() != null) {
-                    quotationDetail.setAssetTypeId(pd.getAssetTypeId());
-                }
-                quotationDetailDAO.insert(quotationDetail);
-            }
+            quotationDAO.insert(q);
         }
     }
-
 
     // tính total
     private BigDecimal calculateTotal(QuotationCreateRequest request) {
         BigDecimal total = BigDecimal.ZERO;
 
         // duyệt từng detail 1
-        for (QuotationCreateDetailRequest quotationCreateDetailRequest : request.getQuotationCreateDetailRequestList()) {
+        for (QuotationCreateDetailRequest quotationCreateDetailRequest : request
+                .getQuotationCreateDetailRequestList()) {
             if (quotationCreateDetailRequest.getPrice() != null && quotationCreateDetailRequest.getQuantity() != null) {
 
                 // parse
@@ -135,7 +131,9 @@ public class QuotationServiceImpl implements QuotationService {
                 // tính total của từng line
                 BigDecimal lineSubtotal = qty.multiply(price);
 
-                BigDecimal discountRate = quotationCreateDetailRequest.getDiscountRate() != null ? quotationCreateDetailRequest.getDiscountRate() : BigDecimal.ZERO;
+                BigDecimal discountRate = quotationCreateDetailRequest.getDiscountRate() != null
+                        ? quotationCreateDetailRequest.getDiscountRate()
+                        : BigDecimal.ZERO;
 
                 // tính discount cho từng line
                 BigDecimal discount = lineSubtotal.multiply(discountRate).divide(BigDecimal.valueOf(100), 2,
@@ -144,8 +142,10 @@ public class QuotationServiceImpl implements QuotationService {
                 // tính ra số tiền phải chịu thuế
                 BigDecimal taxableAmount = lineSubtotal.subtract(discount);
 
-                //lấy ra thuế
-                BigDecimal taxRate = quotationCreateDetailRequest.getTaxRate() != null ? quotationCreateDetailRequest.getTaxRate() : BigDecimal.ZERO;
+                // lấy ra thuế
+                BigDecimal taxRate = quotationCreateDetailRequest.getTaxRate() != null
+                        ? quotationCreateDetailRequest.getTaxRate()
+                        : BigDecimal.ZERO;
 
                 // tnh thuế
                 BigDecimal tax = taxableAmount.multiply(taxRate).divide(BigDecimal.valueOf(100), 2,
@@ -164,15 +164,15 @@ public class QuotationServiceImpl implements QuotationService {
                 .orElseThrow(() -> new InvalidDataException("Quotation not found"));
 
         // map quotation detail sang response
-        List<QuotationDetailResponse> details =
-                quotationDetailDAO.findByQuotationId(q.getId()).stream().map(quotationDetailMapper::toQuotationDetailResponse).toList();
+        List<QuotationDetailResponse> details = quotationDetailDAO.findByQuotationId(q.getId()).stream()
+                .map(quotationDetailMapper::toQuotationDetailResponse).toList();
 
         List<QuotationCreateDetailRequest> quotationCreateDetailRequestList = new ArrayList<>();
 
         // duyệt từng detailxá
         for (QuotationDetailResponse d : details) {
 
-            //add quotaiton detail đã dc tạo vào quotaiton create list
+            // add quotaiton detail đã dc tạo vào quotaiton create list
             quotationCreateDetailRequestList.add(QuotationCreateDetailRequest.builder()
                     .purchaseRequestDetailId(d.getPurchaseDetailId())
                     .assetTypeName(d.getAssetTypeName())
@@ -199,7 +199,7 @@ public class QuotationServiceImpl implements QuotationService {
     // update quotation
     @Override
     public void rejectQuotation(Integer id, String reason) {
-        quotationDAO.updateStatus(id, QuotationStatus.REJECTED, reason);
+        quotationDAO.updateStatusReject(id, QuotationStatus.REJECTED, reason);
     }
 
     @Override
@@ -213,6 +213,11 @@ public class QuotationServiceImpl implements QuotationService {
         // load list detail nếu có
         List<PurchaseDetail> purchaseDetailList = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
 
+        Map<Integer, String> map = new HashMap<>();
+        for (Supplier s : supplierDAO.getAllSupplier()) {
+            map.put(s.getId(), s.getSupplierName());
+        }
+
         // list detail quotation
         List<QuotationCreateDetailRequest> quotationCreateDetailRequestList = new ArrayList<>();
 
@@ -223,7 +228,7 @@ public class QuotationServiceImpl implements QuotationService {
             QuotationCreateDetailRequest item = QuotationCreateDetailRequest.builder()
                     .purchaseRequestDetailId(purchaseDetail.getId())
                     .quantity(purchaseDetail.getQuantity())
-                    .assetTypeName(purchaseDetail.getAssetTypeName())
+                    .assetTypeName(map.getOrDefault(purchaseDetail.getAssetTypeId(), "Không tồn tại nhà cung cấp"))
                     .specificationRequirement(purchaseDetail.getSpecificationRequirement())
                     .build();
 
@@ -323,7 +328,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         if (s.getAmountRange() != null && !s.getAmountRange().isBlank()) {
 
-            // tách  min và max amount
+            // tách min và max amount
             List<BigDecimal> list = rangeAmount.applyRangeAMount(s.getAmountRange());
             if (list.size() == 1) {
                 s.setMinAmount(list.get(0));
@@ -412,19 +417,18 @@ public class QuotationServiceImpl implements QuotationService {
 
         // map sang quoation detai
 
-        List<QuotationCreateDetailRequest> quoDetails = prDetails.stream()
+        return prDetails.stream()
                 .map(pd -> QuotationCreateDetailRequest.builder()
                         .purchaseRequestDetailId(pd.getId())
                         .assetTypeName(pd.getAssetTypeName())
-                        .specificationRequirement(pd.getSpecification())
+                        .specificationRequirement(pd.getSpecificationRequirement())
                         .quantity(pd.getQuantity())
                         .price(BigDecimal.ZERO)
                         .taxRate(BigDecimal.TEN)
                         .discountRate(BigDecimal.ZERO)
-                        .quotationDetailNote(pd.getSpecification())
+                        .quotationDetailNote(pd.getPurchaseDetailNote())
                         .build())
                 .collect(Collectors.<QuotationCreateDetailRequest>toList());
-        return quoDetails;
     }
 
 }

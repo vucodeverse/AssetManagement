@@ -21,12 +21,12 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
 
     // insert quotation detail
     @Override
-    public Integer insert(QuotationDetail quotationDetail) {
+    public Integer insert(QuotationDetail quotationDetail, Connection connection) {
         String sql = "insert into quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, " +
                 "quantity," +
-                "quotation_detail_note, warranty_months, price, tax_rate, discount_rate, rejected_reason) values (?,?,?,?,?,?,?,?,?,?)";
+                "quotation_detail_note, warranty_months, price, tax_rate, discount_rate, rejected_reason, spec_requirement) values (?,?,?,?,?,?,?,?,?,?,?)";
 
-        try (Connection connection = databaseConfig.getConnection();
+        try (
                 PreparedStatement preparedStatement = connection.prepareStatement(sql,
                         Statement.RETURN_GENERATED_KEYS)) {
 
@@ -44,6 +44,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
             preparedStatement.setBigDecimal(9,
                     quotationDetail.getDiscountRate() != null ? quotationDetail.getDiscountRate() : BigDecimal.ZERO);
             preparedStatement.setString(10, quotationDetail.getRejectedReason());
+            preparedStatement.setString(11, quotationDetail.getSpecificationRequirement());
 
             preparedStatement.executeUpdate();
             ResultSet rs = preparedStatement.getGeneratedKeys();
@@ -88,6 +89,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 q.setTaxRate(rs.getBigDecimal("tax_rate"));
                 q.setDiscountRate(rs.getBigDecimal("discount_rate"));
                 q.setRejectedReason(rs.getString("rejected_reason"));
+                q.setSpecificationRequirement(rs.getString("spec_requirement"));
 
                 quotationDetails.add(q);
             }
@@ -104,23 +106,23 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
 
         Connection connection = null;
         try {
-             connection = databaseConfig.getConnection();
+            connection = databaseConfig.getConnection();
 
-             connection.setAutoCommit(false);
+            connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1, quotationId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            if(connection != null){
-                try{
+            if (connection != null) {
+                try {
                     connection.rollback();
-                }catch (SQLException ignored){
+                } catch (SQLException ignored) {
 
                 }
             }
 
             throw new RuntimeException(e);
-        }finally {
+        } finally {
 
             // reset auto commit lại về true và đóng cổng.
             if (connection != null)
@@ -129,6 +131,19 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                     connection.close();
                 } catch (Exception ignored) {
                 }
+        }
+    }
+
+    // xóa quotation detail theo quotation id (dùng connection chia sẻ cho
+    // transaction)
+    @Override
+    public void deleteByQuotationId(Integer quotationId, Connection connection) {
+        String sql = "update quotation_detail set status = 'CANCELLED' where quotation_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, quotationId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -158,6 +173,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 q.setTaxRate(rs.getBigDecimal("tax_rate"));
                 q.setDiscountRate(rs.getBigDecimal("discount_rate"));
                 q.setRejectedReason(rs.getString("rejected_reason"));
+                q.setSpecificationRequirement(rs.getString("spec_requirement"));
 
                 quotationDetails.add(q);
             }
@@ -167,41 +183,4 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
         return quotationDetails;
     }
 
-    @Override
-    public List<edu.fpt.groupfive.dto.response.QuotationDetailResponse> findDetailByQuotationId(
-            Integer quotationId) {
-        String sql = "SELECT qd.*, at.asset_type_name, pd.spec_requirement " +
-                "FROM quotation_detail qd " +
-                "LEFT JOIN asset_type at ON qd.asset_type_id = at.asset_type_id " +
-                "LEFT JOIN purchase_request_detail pd ON qd.purchase_request_detail_id = pd.purchase_request_detail_id "
-                +
-                "WHERE qd.quotation_id = ?";
-
-        List<QuotationDetailResponse> responses = new ArrayList<>();
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setInt(1, quotationId);
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                responses.add(edu.fpt.groupfive.dto.response.QuotationDetailResponse.builder()
-                        .quotationDetailId(rs.getInt("quotation_detail_id"))
-                        .quotationId(rs.getInt("quotation_id"))
-                        .purchaseDetailId(rs.getInt("purchase_request_detail_id"))
-                        .assetTypeName(rs.getString("asset_type_name"))
-                        .quantity(rs.getInt("quantity"))
-                        .warrantyMonths(rs.getInt("warranty_months"))
-                        .price(rs.getBigDecimal("price"))
-                        .taxRate(rs.getBigDecimal("tax_rate"))
-                        .discountRate(rs.getBigDecimal("discount_rate"))
-                        .quotationDetailNote(rs.getString("quotation_detail_note"))
-                        .specificationRequirement(rs.getString("spec_requirement"))
-                        .rejectedReason(rs.getString("rejected_reason"))
-                        .build());
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return responses;
-    }
 }

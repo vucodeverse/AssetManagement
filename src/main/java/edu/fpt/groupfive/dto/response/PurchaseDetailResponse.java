@@ -13,7 +13,7 @@ public class PurchaseDetailResponse {
     private Integer id;
     private String assetTypeName;
     private Integer quantity;
-    private BigDecimal estPrice;
-    private String specification;
-    private String note;
+    private BigDecimal estimatePrice;
+    private String specificationRequirement;
+    private String purchaseDetailNote;
 }

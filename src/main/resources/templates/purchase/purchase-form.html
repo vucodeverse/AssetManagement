@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/director-layout}">
+    layout:decorate="~{layout/main-layout}">
 
 <head>
     <title>New Purchase Request</title>
@@ -30,6 +30,9 @@
 
             <!-- FORM -->
             <form th:action="@{/asset-manager/create/purchase-form}" th:object="${purchaseCreateRequest}" method="post">
+
+                <!-- hidden purchaseId cho update draft -->
+                <input type="hidden" th:field="*{purchaseId}">
 
                 <!-- General Information Section -->
                 <section class="form-section">
@@ -68,9 +71,10 @@
                         <!-- note -->
                         <div class="form-group full-width">
                             <label>ADDITIONAL NOTE</label>
-                            <textarea th:field="*{note}"
+                            <textarea th:field="*{purchaseNote}"
                                 placeholder="Provide extra context for the procurement team..."></textarea>
-                            <div class="field-error" th:if="${#fields.hasErrors('note')}" th:errors="*{note}"></div>
+                            <div class="field-error" th:if="${#fields.hasErrors('purchaseNote')}"
+                                th:errors="*{purchaseNote}"></div>
                         </div>
                     </div>
                 </section>
@@ -144,11 +148,11 @@
                                     <!-- note -->
                                     <td>
                                         <input type="text" class="table-input"
-                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].note}"
+                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].purchaseDetailNote}"
                                             placeholder="...">
                                         <div class="field-error"
-                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].note')}"
-                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].note}">
+                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].purchaseDetailNote')}"
+                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].purchaseDetailNote}">
                                         </div>
                                     </td>
 
