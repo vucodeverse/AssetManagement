@@ -52,5 +52,26 @@ public class WarehouseServiceImpl implements WarehouseService {
         warehouseDAO.activeById(id);
     }
 
+    @Override
+    public Warehouse updateWarehouse(Integer id, WarehouseReqDto request) {
+
+        Warehouse warehouse = warehouseDAO.getById(id).orElseThrow(
+                ()->{throw new RuntimeException(String.format("Không tìm thấy Kho với id %d", id));}
+        );
+
+        warehouse.setName(request.name());
+        warehouse.setAddress(request.address());
+        warehouse.setManagerId(request.managerId());
+
+        Warehouse updated = warehouseDAO.update(warehouse);
+        return warehouse;
+
+    }
+
+    @Override
+    public Warehouse getWarehouse(Integer id) {
+        return warehouseDAO.getById(id).orElseThrow(()->new RuntimeException(String.format("Không tìm thấy Kho với id %d", id)));
+    }
+
 
 }

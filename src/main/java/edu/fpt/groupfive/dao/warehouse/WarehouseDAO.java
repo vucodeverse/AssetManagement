@@ -20,4 +20,8 @@
 
 
         boolean existById(Integer id);
+
+        Optional<Warehouse> getById(Integer id);
+
+        Warehouse update(Warehouse warehouse);
     }

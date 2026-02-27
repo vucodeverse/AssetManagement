@@ -44,7 +44,7 @@
         <tr th:each="wh : ${warehouses}">
             <td th:text="${wh.id}"></td>
             <td>
-                <a class="link" th:href="@{/wh/warehouses/{id}(id=${wh.id})}" th:text="${wh.name}"></a>
+                <a class="link" th:href="@{/wh/warehouses/{id}/detail(id=${wh.id})}" th:text="${wh.name}"></a>
             </td>
             <td th:text="${wh.address}"></td>
             <td>

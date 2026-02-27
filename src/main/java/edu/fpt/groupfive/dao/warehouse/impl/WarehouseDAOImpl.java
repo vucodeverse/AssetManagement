@@ -103,6 +103,52 @@ public class WarehouseDAOImpl implements WarehouseDAO {
         return count != null && count > 0;
     }
 
+    @Override
+    public Optional<Warehouse> getById(Integer id) {
+        String sql = """
+                SELECT id, name, address, status, manager_id
+                FROM warehouse WHERE id = ?
+                """;
+        Warehouse wh = jdbcTemplate.queryForObject(sql,this::toModel,id);
+        return Optional.of(wh);
+    }
+
+    private Warehouse toModel(ResultSet resultSet, int rowNum) throws SQLException {
+        Warehouse wh = new Warehouse();
+        wh.setId(resultSet.getInt("id"));
+        wh.setName(resultSet.getString("name"));
+        wh.setAddress(resultSet.getString("address"));
+        wh.setStatus(WarehouseStatus.valueOf(resultSet.getString("status")));
+        wh.setManagerId(resultSet.getInt("manager_id"));
+        return wh;
+    }
+
+    @Override
+    public Warehouse update(Warehouse warehouse) {
+        String sql = """
+                UPDATE warehouse SET
+                name = ?, address = ?, manager_id = ?, updated_at = ?
+                WHERE id = ?
+                """;
+        LocalDateTime now = LocalDateTime.now();
+        warehouse.setUpdatedAt(now);
+        int rowAffected = jdbcTemplate.update(
+                sql,
+                warehouse.getName(),
+                warehouse.getAddress(),
+                warehouse.getManagerId(),
+                warehouse.getUpdatedAt(),
+                warehouse.getId()
+        );
+
+        if(rowAffected == 0) {
+            throw new RuntimeException("Khong the sua Kho");
+        }
+
+        return warehouse;
+
+    }
+
     private WarehouseRespDto toDto(ResultSet rs, int rowNum) throws SQLException {
         WarehouseRespDto dto = new WarehouseRespDto(
                 rs.getInt("id"),
