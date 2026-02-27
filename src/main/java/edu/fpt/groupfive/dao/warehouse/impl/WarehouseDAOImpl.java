@@ -20,24 +20,6 @@ public class WarehouseDAOImpl implements WarehouseDAO {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Override
-    public Optional<Warehouse> findById(Integer id) {
-        return Optional.empty();
-    }
-
-    @Override
-    public List<Warehouse> findAll() {
-        return List.of();
-    }
-
-    @Override
-    public boolean existsById(Integer id) {
-        return false;
-    }
-
-    @Override
-    public void deleteById(Integer id) {
-    }
 
     @Override
     public Warehouse create(Warehouse newWarehouse) {
@@ -51,6 +33,7 @@ public class WarehouseDAOImpl implements WarehouseDAO {
         LocalDateTime now = LocalDateTime.now();
         newWarehouse.setCreatedAt(now);
         newWarehouse.setUpdatedAt(now);
+        newWarehouse.deactive();
 
         jdbcTemplate.update(
                 conn -> {
@@ -75,33 +58,5 @@ public class WarehouseDAOImpl implements WarehouseDAO {
 
     }
 
-    @Override
-    public Warehouse update(Warehouse warehouse) {
 
-        String sql = """
-                UPDATE warehouse SET  name = ?, address = ?, status = ?, manager_id = ?, updated_at = ?
-                WHERE id = ?
-                """;
-
-        LocalDateTime now = LocalDateTime.now();
-        warehouse.setUpdatedAt(now);
-
-        int rowAffected = jdbcTemplate.update(
-                sql,
-                warehouse.getName(),
-                warehouse.getAddress(),
-                warehouse.getStatus().name(),
-                warehouse.getManagerId(),
-                warehouse.getUpdatedAt(),
-                warehouse.getId()
-        );
-
-        if(rowAffected == 0) {
-            throw new RuntimeException(
-                    String.format("UPDATE FAIL: Warehouse [id=%d] does not exists", warehouse.getId())
-            );
-        }
-        return warehouse;
-
-    }
 }

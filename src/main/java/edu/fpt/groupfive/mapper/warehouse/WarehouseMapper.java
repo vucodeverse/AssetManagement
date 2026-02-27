@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.mapper.warehouse;
 
 import edu.fpt.groupfive.dto.warehouse.WarehouseReqDto;
+import edu.fpt.groupfive.dto.warehouse.WarehouseRespDto;
 import edu.fpt.groupfive.model.warehouse.Warehouse;
 import org.mapstruct.Mapper;
 

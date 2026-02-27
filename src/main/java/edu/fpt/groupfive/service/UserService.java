@@ -7,6 +7,7 @@ import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.model.Users;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     void createUser(UserCreateRequest request);
@@ -27,4 +28,5 @@ public interface UserService {
     boolean existsByEmail(String email);
 
 
+    Map<Integer, String> getAllWarehouseStaffName();
 }

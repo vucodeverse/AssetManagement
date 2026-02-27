@@ -16,16 +16,9 @@ public class Warehouse extends AbstractEntity<Integer> {
     private WarehouseStatus status=WarehouseStatus.INACTIVE;
     private Integer managerId;
 
-    public boolean isArchive() {
-        return status == WarehouseStatus.ARCHIVED;
-    }
 
     public boolean isActive() {
         return status == WarehouseStatus.ACTIVE;
-    }
-
-    public void archive() {
-        status = WarehouseStatus.ARCHIVED;
     }
 
     public void active() {
@@ -36,7 +29,4 @@ public class Warehouse extends AbstractEntity<Integer> {
         status = WarehouseStatus.INACTIVE;
     }
 
-    public void unarchive() {
-        status = WarehouseStatus.INACTIVE;
-    }
 }

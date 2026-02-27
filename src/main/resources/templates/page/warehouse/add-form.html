@@ -30,8 +30,8 @@
                 <tr>
                     <td>Quản lý</td>
                     <td>
-                        <select name="manager_id" >
-                            <option th:each="m : ${managers}" th:value="${m.id}" th:text="${m.id}"></option>
+                        <select name="managerId" th:field="*{managerId}">
+                            <option th:each="m : ${warehouseStaffs}" th:value="${m.key}" th:text="${m.value}"></option>
                         </select>
                     </td>
                 </tr>

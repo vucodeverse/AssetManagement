@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sach kho</title>
+</head>
+<body>
+    <div>
+        <table border="1">
+            <thead>
+
+                <th>STT</th>
+                <th>Tên kho</th>
+                <th>Trạng thái</th>
+                <th>Quản lý</th>
+                <th>Hành động</th>
+
+            </thead>
+
+            <tb>
+                <tr th:each="wh : ${warehouses}">
+                    <td th:text="${wh.id}"></td>
+                    <td th:text="${wh.name}"></td>
+                    <td th:text="${wh.status}"></td>
+                    <td th:text="${wh.managerName}"></td>
+                    <td>
+                        <a href="#">i</a>
+                        <a href="#">d</a>
+                    </td>
+                </tr>
+            </tb>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,7 +1,11 @@
 package edu.fpt.groupfive.controller.warehouse;
 
 import edu.fpt.groupfive.dto.warehouse.WarehouseReqDto;
+import edu.fpt.groupfive.dto.warehouse.WarehouseRespDto;
+import edu.fpt.groupfive.mapper.warehouse.WarehouseMapper;
+import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.model.warehouse.Warehouse;
+import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.service.warehouse.WarehouseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,44 +29,40 @@ import java.util.List;
 public class WarehouseController {
 
     private final WarehouseService warehouseService;
+    private final UserService userService;
+    private final WarehouseMapper warehouseMapper;
 
-    @ModelAttribute("managers")
-    public List<Object> populateManagers() {
-        // TODO: call UserService to get List of Manager Response DTO
-        return new ArrayList<>();
+    private void loadFormData(Model model) {
+
+        Map<Integer, String> warehouseStaffs = userService.getAllWarehouseStaffName();
+        model.addAttribute("warehouseStaffs", warehouseStaffs);
     }
 
     @GetMapping(path = "/add")
-    public String showAddWarehouseForm(
-            Model model
-    ){
+    public String showAddWarehouseForm(Model model) {
+        loadFormData(model);
         model.addAttribute("warehouse", WarehouseReqDto.builder().build());
         return "page/warehouse/add-form";
     }
 
     @PostMapping(path = "/add")
     public String addWarehouse(
-        @Valid
-        @ModelAttribute("warehouse")
-        WarehouseReqDto warehouseDto,
-        BindingResult result,
-        RedirectAttributes ra
-    ){
-        if(result.hasErrors()){
+            @Valid
+            @ModelAttribute("warehouse")
+            WarehouseReqDto request,
+            BindingResult result,
+            Model model
+    ) {
+
+        if (result.hasErrors()) {
+            loadFormData(model);
             return "page/warehouse/add-form";
         }
 
-        warehouseService.createWarehouse(warehouseDto);
-        ra.addFlashAttribute("success", "Tạo kho thành công!");
-        return "redirect:/wh/warehouses";
+        Warehouse newWarehouse = warehouseService.createWarehouse(request);
 
-    }
+        return "redirect:/wh/warehouses/" + newWarehouse.getId();
 
-    @GetMapping
-    public String showWarehousesList(
-            Model model
-    ){
-        model.addAttribute("warehouses", warehouseService.getAllWarehouses().stream().map());
     }
 
 }

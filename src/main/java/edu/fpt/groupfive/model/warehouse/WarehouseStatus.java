@@ -7,7 +7,6 @@ import lombok.Getter;
 @Getter
 public enum WarehouseStatus {
     ACTIVE("Đang hoạt động"),
-    INACTIVE("Dừng hoạt động"),
-    ARCHIVED("Lưu trữ");
+    INACTIVE("Dừng hoạt động");
     private String displayName;
 }

@@ -11,7 +11,6 @@ public record WarehouseReqDto(
         String name,
         @NotBlank
         String address,
-
         int managerId
 
 ) {

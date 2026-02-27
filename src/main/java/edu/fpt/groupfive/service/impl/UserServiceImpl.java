@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -175,6 +177,25 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByEmail(String email) {
         return userDAO.existsByEmail(email);
+    }
+
+
+    //TODO: Need to refactor. implement new DAO to get list of user with role WAREHOUSE_STAFF
+    @Override
+    public Map<Integer, String> getAllWarehouseStaffName() {
+
+        List<Users> warehouseStaffs = userDAO.findAll().stream().filter(u -> u.getRole() == Role.WAREHOUSE_STAFF).toList();
+
+        Map<Integer, String> warehouseStaffNames = new HashMap<>();
+
+        for(Users user : warehouseStaffs) {
+            warehouseStaffNames.put(
+                    user.getUserId(),
+                    user.getUsername()
+            );
+        }
+        return warehouseStaffNames;
+
     }
 
 
