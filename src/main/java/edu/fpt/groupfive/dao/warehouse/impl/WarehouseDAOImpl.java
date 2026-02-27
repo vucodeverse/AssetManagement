@@ -160,5 +160,16 @@ public class WarehouseDAOImpl implements WarehouseDAO {
         return dto;
     }
 
+    @Override
+    public Optional<WarehouseRespDto> getDetailByManagerId(Integer managerId) {
+        String sql = """
+                SELECT w.id, w.name, w.address, w.status, u.first_name, u.last_name
+                FROM warehouse w
+                LEFT JOIN users u ON w.manager_id = u.user_id
+                WHERE w.manager_id = ?
+                """;
+        List<WarehouseRespDto> result = jdbcTemplate.query(sql, this::toDto, managerId);
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+    }
 
 }

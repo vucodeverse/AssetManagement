@@ -73,5 +73,10 @@ public class WarehouseServiceImpl implements WarehouseService {
         return warehouseDAO.getById(id).orElseThrow(()->new RuntimeException(String.format("Không tìm thấy Kho với id %d", id)));
     }
 
+    @Override
+    public Optional<WarehouseRespDto> getWarehouseByManagerId(Integer managerId) {
+        return warehouseDAO.getDetailByManagerId(managerId);
+    }
+
 
 }

@@ -6,6 +6,7 @@ import edu.fpt.groupfive.model.warehouse.Warehouse;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface WarehouseService {
     Warehouse createWarehouse(WarehouseReqDto request);
@@ -19,4 +20,6 @@ public interface WarehouseService {
     Warehouse updateWarehouse(Integer id, @Valid WarehouseReqDto request);
 
     Warehouse getWarehouse(Integer id);
+
+    Optional<WarehouseRespDto> getWarehouseByManagerId(Integer managerId);
 }

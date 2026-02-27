@@ -44,3 +44,7 @@ build/
 /out/
 .smarttomcat/ 
 .smarttomcat/ 
+
+### Local docs ###
+docs/
+db-change-notes.md
