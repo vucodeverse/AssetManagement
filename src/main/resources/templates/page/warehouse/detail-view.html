@@ -1,44 +1,63 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Chi tiết kho hàng</title>
+    <title>Chi Tiết Kho Hàng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fff; color: #000; margin: 0; padding: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #000; padding-bottom: 16px; margin-bottom: 32px; }
+        h1 { font-size: 24px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+        .status { padding: 4px 8px; font-size: 12px; font-weight: 600; border: 1px solid #000; text-transform: uppercase; }
+        .status.active { background-color: #000; color: #fff; }
+        .status.inactive { background-color: #fff; color: #000; }
+
+        .info-group { margin-bottom: 24px; }
+        .label { display: block; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; color: #666; }
+        .value { font-size: 16px; padding: 12px; border: 1px solid #eaeaea; background-color: #fafafa; color: #000; }
+
+        .actions { display: flex; gap: 16px; margin-top: 40px; }
+        .btn { padding: 12px 24px; font-size: 14px; font-weight: 600; text-transform: uppercase; cursor: pointer; border: 1px solid #000; text-decoration: none; text-align: center; }
+        .btn-black { background-color: #000; color: #fff; flex: 1; }
+        .btn-white { background-color: #fff; color: #000; padding: 12px 32px; }
+    </style>
 </head>
 <body>
+<div class="container">
+    <div class="header">
+        <h1 th:text="'Kho #' + ${warehouse.id}">KHO #1</h1>
+        <span th:classappend="${warehouse.active ? 'status active' : 'status inactive'}"
+              th:text="${warehouse.active ? 'Đang Hoạt Động' : 'Tạm Dừng'}">
+            </span>
+    </div>
 
-<h2>Thông tin chi tiết kho hàng</h2>
-<hr>
+    <div class="info-group">
+        <div class="label">Tên Kho Hàng</div>
+        <div class="value" th:text="${warehouse.name}">Tên Kho</div>
+    </div>
 
-<table border="1" style="border-collapse: collapse; width: 50%;">
-    <tr>
-        <th>ID</th>
-        <td th:text="${warehouse.id}">1</td>
-    </tr>
-    <tr>
-        <th>Tên kho</th>
-        <td th:text="${warehouse.name}">Tên kho mẫu</td>
-    </tr>
-    <tr>
-        <th>Địa chỉ</th>
-        <td th:text="${warehouse.address}">Địa chỉ mẫu</td>
-    </tr>
-    <tr>
-        <th>Trạng thái</th>
-        <td>
-            <span th:text="${warehouse.active ? 'Đang hoạt động' : 'Ngừng hoạt động'}"></span>
-        </td>
-    </tr>
-    <tr>
-        <th>Quản lý</th>
-        <td th:text="${warehouse.managerName}">Tên quản lý</td>
-    </tr>
-</table>
+    <div class="info-group">
+        <div class="label">Địa Chỉ</div>
+        <div class="value" th:text="${warehouse.address}">Địa chỉ kho</div>
+    </div>
 
-<br>
-<div>
-    <a th:href="@{/wh/warehouses}">Quay lại danh sách</a>
-    <button onclick="window.print()">In trang này</button>
+    <div class="info-group">
+        <div class="label">Quản Lý Trực Tiếp</div>
+        <div class="value" th:text="${warehouse.managerName}">Tên Quản Lý</div>
+    </div>
+
+    <div class="actions">
+        <a th:href="@{/wh/warehouses}" class="btn btn-white">Quay lại</a>
+        <a th:href="@{/wh/warehouses/{id}/edit(id=${warehouse.id})}" class="btn btn-black">Chỉnh Sửa</a>
+        <form th:action="@{/wh/warehouses/{id}/active(id=${warehouse.id})}" method="post" style="display: inline-block; margin: 0;">
+
+            <button th:if="${warehouse.active==false}" type="submit" class="btn btn-black">
+                Kích Hoạt Kho
+            </button>
+
+        </form>
+    </div>
 </div>
-
 </body>
 </html>

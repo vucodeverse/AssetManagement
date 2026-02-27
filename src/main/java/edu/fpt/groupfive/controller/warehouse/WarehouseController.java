@@ -69,4 +69,18 @@ public class WarehouseController {
         model.addAttribute("warehouse", warehouseDetail);
         return "page/warehouse/detail-view";
     }
+
+    @GetMapping
+    public String showWarehouseList(Model model) {
+        model.addAttribute("warehouses",warehouseService.getAllWarehouse());
+        return "page/warehouse/list-view";
+    }
+
+
+    @PostMapping(path = "/{id}/active")
+    public String activeWarehouse(@PathVariable("id") Integer id) {
+        warehouseService.activeWarehouse(id);
+        return "redirect:/wh/warehouses/" + id;
+    }
+
 }

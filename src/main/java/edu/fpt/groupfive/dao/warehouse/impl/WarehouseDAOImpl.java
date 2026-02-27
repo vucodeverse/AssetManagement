@@ -11,6 +11,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -68,16 +70,48 @@ public class WarehouseDAOImpl implements WarehouseDAO {
                 JOIN users u ON w.manager_id = u.user_id
                 WHERE w.id = ?
                 """;
-        return Optional.of(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
-            WarehouseRespDto dto = new WarehouseRespDto(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("address"),
-                    WarehouseStatus.valueOf(rs.getString("status"))==WarehouseStatus.ACTIVE,
-                    rs.getString("first_name") + " " + rs.getString("last_name")
-            );
-            return dto;
-        }, id));
+        return Optional.of(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> toDto(rs, rowNum), id));
+    }
+
+    @Override
+    public List<WarehouseRespDto> getAllDetail() {
+        String sql = """
+                SELECT w.id, w.name, w.address, w.status, u.first_name, u.last_name
+                FROM warehouse w
+                JOIN users u ON w.manager_id = u.user_id
+                """;
+        return jdbcTemplate.query(sql, this::toDto);
+    }
+
+    @Override
+    public void activeById(Integer id) {
+        String sql = """
+                UPDATE warehouse 
+                SET status = 'ACTIVE' 
+                WHERE id = ?
+                """;
+        jdbcTemplate.update(sql, id);
+    }
+
+    @Override
+    public boolean existById(Integer id) {
+
+        String sql = "SELECT COUNT(1) FROM warehouse WHERE id = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+
+        return count != null && count > 0;
+    }
+
+    private WarehouseRespDto toDto(ResultSet rs, int rowNum) throws SQLException {
+        WarehouseRespDto dto = new WarehouseRespDto(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("address"),
+                WarehouseStatus.valueOf(rs.getString("status")) == WarehouseStatus.ACTIVE,
+                rs.getString("first_name") + " " + rs.getString("last_name")
+        );
+        return dto;
     }
 
 

@@ -10,4 +10,8 @@ public interface WarehouseService {
     Warehouse createWarehouse(WarehouseReqDto request);
 
     WarehouseRespDto getWarehouseDetail(Integer id);
+
+    List<WarehouseRespDto> getAllWarehouse();
+
+    void activeWarehouse(Integer id);
 }

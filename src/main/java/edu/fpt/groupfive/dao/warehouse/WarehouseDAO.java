@@ -13,4 +13,11 @@
 
 
         Optional<WarehouseRespDto> getDetail(Integer id);
+
+        List<WarehouseRespDto> getAllDetail();
+
+        void activeById(Integer id);
+
+
+        boolean existById(Integer id);
     }

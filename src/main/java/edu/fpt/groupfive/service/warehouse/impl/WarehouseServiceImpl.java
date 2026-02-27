@@ -32,9 +32,24 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Override
     public WarehouseRespDto getWarehouseDetail(Integer id) {
         WarehouseRespDto warehouse = warehouseDAO.getDetail(id).orElseThrow(
-                ()->{throw new RuntimeException(String.format("Không tìm thấy Kho với id %d",id));}
+                () -> {
+                    throw new RuntimeException(String.format("Không tìm thấy Kho với id %d", id));
+                }
         );
         return warehouse;
+    }
+
+    @Override
+    public List<WarehouseRespDto> getAllWarehouse() {
+        return warehouseDAO.getAllDetail();
+    }
+
+    @Override
+    public void activeWarehouse(Integer id) {
+        if (warehouseDAO.existById(id) == false) {
+            throw new RuntimeException(String.format("Không tìm thấy Kho với id %d", id));
+        }
+        warehouseDAO.activeById(id);
     }
 
 
