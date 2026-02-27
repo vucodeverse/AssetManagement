@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh Sách Tầng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: #fff; color: #000; padding: 40px; }
+        .container { max-width: 960px; margin: 0 auto; }
+        .breadcrumb { font-size: 12px; color: #888; margin-bottom: 20px; }
+        .breadcrumb a { color: #888; text-decoration: none; }
+        .breadcrumb a:hover { color: #000; }
+        .header-actions { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 16px; margin-bottom: 28px; }
+        h1 { font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .rack-info { font-size: 13px; color: #666; margin-bottom: 24px; display: flex; gap: 24px; }
+        .rack-info span { padding: 6px 0; border-bottom: 1px solid #eee; }
+        .btn { display: inline-block; padding: 10px 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; border: 1px solid #000; text-decoration: none; cursor: pointer; transition: background 0.15s; }
+        .btn-black { background-color: #000; color: #fff; }
+        .btn-black:hover { background-color: #333; }
+        .btn-white { background-color: #fff; color: #000; }
+        .btn-white:hover { background-color: #f0f0f0; }
+        table { width: 100%; border-collapse: collapse; border-top: 2px solid #000; border-bottom: 2px solid #000; }
+        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+        th { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #666; font-size: 11px; }
+        tr:hover td { background-color: #fafafa; }
+        .link { color: #000; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+        .link:hover { color: #555; }
+        .badge { padding: 3px 8px; font-size: 11px; font-weight: 600; border: 1px solid #000; text-transform: uppercase; }
+        .badge.active { background-color: #000; color: #fff; }
+        .badge.inactive { background-color: #fff; color: #000; }
+        /* Capacity bar */
+        .cap-wrap { display: flex; align-items: center; gap: 10px; }
+        .cap-bar { height: 6px; background-color: #e8e8e8; width: 80px; flex-shrink: 0; }
+        .cap-fill { height: 100%; background-color: #000; }
+        .cap-text { font-size: 12px; color: #555; white-space: nowrap; }
+        .empty-state { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+        .action-cell { display: flex; gap: 8px; align-items: center; }
+        .action-btn { background: none; border: none; color: #000; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font-family: inherit; padding: 0; }
+        .action-btn:hover { color: #555; }
+        .sep { color: #ccc; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="breadcrumb">
+        <a href="/wh/warehouses">Kho hàng</a> /
+        <a th:href="@{/wh/warehouses/{id}/detail(id=${whId})}">Kho</a> /
+        <a th:href="@{/wh/warehouses/{id}/racks(id=${whId})}" th:text="${rack.warehouseName}"></a> /
+        <span th:text="${rack.name}"></span> / Tầng
+    </div>
+
+    <div class="header-actions">
+        <div>
+            <h1 th:text="'Tầng — ' + ${rack.name}">Tầng — Kệ A</h1>
+        </div>
+        <div style="display:flex;gap:12px;">
+            <a th:href="@{/wh/warehouses/{id}/racks(id=${whId})}" class="btn btn-white">← Danh Sách Kệ</a>
+            <a th:href="@{/wh/warehouses/{whId}/racks/{rackId}/shelves/add(whId=${whId},rackId=${rack.id})}" class="btn btn-black">+ Thêm Tầng</a>
+        </div>
+    </div>
+
+    <!-- Rack summary -->
+    <div class="rack-info">
+        <span>Kệ: <strong th:text="${rack.name}"></strong></span>
+        <span>Số tầng: <strong th:text="${shelves.size()}"></strong></span>
+        <span th:if="${rack.description != null and !rack.description.isEmpty()}">Ghi chú: <span th:text="${rack.description}"></span></span>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Tên Tầng</th>
+            <th>Sức Chứa</th>
+            <th>Mô Tả</th>
+            <th>Trạng Thái</th>
+            <th>Thao Tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="shelf : ${shelves}">
+            <td th:text="${shelf.id}"></td>
+            <td th:text="${shelf.name}"></td>
+            <td>
+                <div class="cap-wrap">
+                    <div class="cap-bar">
+                        <div class="cap-fill"
+                             th:style="'width:' + (${shelf.maxCapacity > 0 ? (shelf.currentCapacity * 100 / shelf.maxCapacity) : 0}) + '%'"></div>
+                    </div>
+                    <span class="cap-text"
+                          th:text="${shelf.currentCapacity} + ' / ' + ${shelf.maxCapacity}"></span>
+                </div>
+            </td>
+            <td th:text="${shelf.description != null ? shelf.description : '—'}"></td>
+            <td>
+                <span th:classappend="${shelf.active ? 'badge active' : 'badge inactive'}"
+                      th:text="${shelf.active ? 'HĐ' : 'Dừng'}"></span>
+            </td>
+            <td>
+                <div class="action-cell">
+                    <a class="link"
+                       th:href="@{/wh/warehouses/{whId}/racks/{rackId}/shelves/{shelfId}/edit(whId=${whId},rackId=${rack.id},shelfId=${shelf.id})}">Sửa</a>
+                    <span class="sep">|</span>
+                    <form th:action="@{/wh/warehouses/{whId}/racks/{rackId}/shelves/{shelfId}/delete(whId=${whId},rackId=${rack.id},shelfId=${shelf.id})}"
+                          method="post" style="margin:0;" onsubmit="return confirm('Xoá tầng này?')">
+                        <button type="submit" class="action-btn">Xoá</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(shelves)}">
+            <td colspan="6" class="empty-state">Kệ chưa có tầng nào. Nhấn "+ Thêm Tầng" để bắt đầu.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
