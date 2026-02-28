@@ -23,8 +23,15 @@ public class UserController {
 
     //Set up dữ liệu cho phòng ban và vai trò
     private void setupData(Model model) {
-        model.addAttribute("roles", Role.values());
+        model.addAttribute("roles", Role.getRoles());
         model.addAttribute("departments", departmentService.getAllDepartments());
+    }
+
+    // Giữ lại dữ liệu trong form khi lỗi
+    private String returnData(Model model, String mode) {
+        setupData(model);
+        model.addAttribute("mode", mode);
+        return "user-detail";
     }
 
     @GetMapping("/home")
@@ -86,12 +93,20 @@ public class UserController {
         request.setStatus(response.getStatus());
         request.setDepartmentId(response.getDepartmentId());
 
+
         model.addAttribute("user", request);
         setupData(model);
         model.addAttribute("mode", "Edit");
         return "user-detail";
     }
 
+    /**
+     * Hàm điều hướng khi ấn nút add
+     * @param request nhận giá trị từ form
+     * @param bindingResult kiểm tra lỗi
+     * @param model truyền lại data
+     * @return trang chủ
+     */
     @PostMapping("/create")
     public String createUser(
             @Valid @ModelAttribute("user") UserCreateRequest request,
@@ -100,9 +115,7 @@ public class UserController {
 
         // Nếu form nhập có lỗi
         if (bindingResult.hasErrors()) {
-            setupData(model);
-            model.addAttribute("mode", "Add");
-            return "user-detail";
+            return returnData(model, "Add");
         }
 
         // Nếu username bị trùng
@@ -112,37 +125,76 @@ public class UserController {
                     "duplicate.username",
                     "Username đã tồn tại!"
             );
-            setupData(model);
-            model.addAttribute("mode", "Add");
-            return "user-detail";
         }
 
         // Nếu email bị trùng
-        if (userService.existsByEmail(request.getEmail())) {
+        if (userService.existsByEmail(request.getEmail(), null)) {
             bindingResult.rejectValue(
                     "email",
                     "duplicate.email",
                     "Email đã tồn tại!"
             );
-            setupData(model);
-            model.addAttribute("mode", "Add");
-            return "user-detail";
+        }
+
+        // Nếu phòng ban đã có trưởng phòng
+        if (request.getRole() == Role.DEPARTMENT_MANAGER) {
+            if (userService.existsManager(request.getDepartmentId(), null)) {
+                bindingResult.rejectValue(
+                        "role",
+                        "duplicate.manager",
+                        "Phòng ban này đã có trưởng phòng!"
+                );
+            }
+        }
+
+        if (bindingResult.hasErrors()) {
+            return returnData(model, "Add");
         }
 
         userService.createUser(request);
         return "redirect:/admin/home";
     }
 
+    /**
+     * Hàm điều hướng khi ấn nút add
+     * @param request nhận giá trị từ form
+     * @param bindingResult kiểm tra lỗi
+     * @param model truyền lại data
+     * @return trang chủ
+     */
     @PostMapping("/update")
     public String updateUser(
             @Valid @ModelAttribute("user") UserUpdateRequest request,
             BindingResult bindingResult,
             Model model) {
 
+        // Nếu có lỗi trong form
         if (bindingResult.hasErrors()) {
-            setupData(model);
-            model.addAttribute("mode", "Edit");
-            return "user-detail";
+            return returnData(model, "Edit");
+        }
+
+        // Nếu email bị trùng
+        if (userService.existsByEmail(request.getEmail(), request.getUserId())) {
+            bindingResult.rejectValue(
+                    "email",
+                    "duplicate.email",
+                    "Email đã tồn tại!"
+            );
+        }
+
+        // Nếu phòng ban đã có trưởng phòng
+        if (request.getRole() == Role.DEPARTMENT_MANAGER) {
+            if (userService.existsManager(request.getDepartmentId(), request.getUserId())) {
+                bindingResult.rejectValue(
+                        "role",
+                        "duplicate.manager",
+                        "Phòng ban này đã có trưởng phòng!"
+                );
+            }
+        }
+
+        if (bindingResult.hasErrors()) {
+            return returnData(model, "Edit");
         }
 
         userService.updateUser(request);

@@ -189,15 +189,23 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean existsByEmail(String email) {
-        String query = """
+    public boolean existsByEmail(String email, Integer userId) {
+        StringBuilder query = new StringBuilder("""
                   SELECT 1 FROM Users WHERE email = ?
-                """;
+                """);
+
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)
+             PreparedStatement ps = connection.prepareStatement(query.toString())
         ) {
             ps.setString(1, email);
 
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
             return ps.executeQuery().next();
 
         } catch (Exception e) {
@@ -206,11 +214,40 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public boolean existsManagerByDepartment(Integer departmentId, Integer userId) {
+
+        StringBuilder query = new StringBuilder("""
+                  SELECT 1 FROM Users
+                  WHERE department_id = ?
+                    AND role = 'DEPARTMENT_MANAGER'
+                """);
+
+        // Nếu userId khác null, ta loại trừ chính user đó ra & sẽ dùng khi Update
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query.toString())
+        ) {
+            ps.setInt(1, departmentId);
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
+
+            return ps.executeQuery().next();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    @Override
     public List<Users> findAll() {
         String query = """
                 SELECT * FROM users
                 """;
-
         return getUsers(query);
     }
 
@@ -333,6 +370,7 @@ public class UserDAOImpl implements UserDAO {
         StringBuilder query = new StringBuilder("""
                 SELECT * FROM Users WHERE 1 = 1
                 """);
+
         List<Object> param = new ArrayList<>();
 
         if (status != null) {
@@ -378,9 +416,7 @@ public class UserDAOImpl implements UserDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
         return list;
-
     }
 
 
