@@ -6,9 +6,7 @@ import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.dto.request.UserCreateRequest;
 import edu.fpt.groupfive.dto.request.UserUpdateRequest;
-import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.mapper.UserMapper;
-import edu.fpt.groupfive.model.Department;
 import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,21 +24,6 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final DepartmentDAO departmentDAO;
-
-    //Kiểm tra xem phòng có trưởng phòng hay chưa
-    private void existsDepartmentMgr(Integer departmentId, Integer userId) {
-
-        // Lấy department theo id
-        Department department = departmentDAO.findById(departmentId)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
-
-        // Nếu đã có manager khác
-        if (department.getManagerId() != null
-                && !department.getManagerId().equals(userId)) {
-
-            throw new IllegalArgumentException("Department already has a manager");
-        }
-    }
 
 
     // Tạo một user mới
@@ -154,7 +136,6 @@ public class UserServiceImpl implements UserService {
         return (int) Math.ceil((double) total / size);
     }
 
-
     @Override
     public UserResponse getUserById(Integer id) {
         Users user = userDAO.findById(id)
@@ -168,10 +149,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponseList(list);
     }
 
-    @Override
-    public boolean existsByUsername(String username) {
-        return userDAO.existsByUsername(username);
-    }
 
     @Override
     public List<Users> getAllUsers() {
@@ -194,9 +171,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean existsByEmail(String email) {
-        return userDAO.existsByEmail(email);
+    public boolean existsByUsername(String username) {
+        return userDAO.existsByUsername(username);
     }
 
+    @Override
+    public boolean existsByEmail(String email, Integer userId) {
+        return userDAO.existsByEmail(email, userId);
+    }
+
+    @Override
+    public boolean existsManager(Integer departmentId, Integer userId) {
+        return userDAO.existsManagerByDepartment(departmentId, userId);
+    }
 
 }

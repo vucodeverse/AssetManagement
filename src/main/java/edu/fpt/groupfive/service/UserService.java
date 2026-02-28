@@ -30,7 +30,7 @@ public interface UserService {
     UserResponse getUserById(Integer id);
     List<UserResponse> getAllUserByDepartId(Integer departId);
     boolean existsByUsername(String username);
-    boolean existsByEmail(String email);
-
+    boolean existsByEmail(String email, Integer userId);
+    boolean existsManager(Integer departmentId, Integer userId);
 
 }
