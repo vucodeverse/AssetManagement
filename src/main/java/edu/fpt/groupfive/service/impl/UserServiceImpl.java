@@ -3,7 +3,6 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.dao.DepartmentDAO;
 import edu.fpt.groupfive.dao.UserDAO;
-import edu.fpt.groupfive.dto.request.UseCreateRequest;
 import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.dto.request.UserCreateRequest;
 import edu.fpt.groupfive.dto.request.UserUpdateRequest;
@@ -12,7 +11,6 @@ import edu.fpt.groupfive.mapper.UserMapper;
 import edu.fpt.groupfive.model.Department;
 import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.service.UserService;
-import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -176,8 +174,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<Users> getAllUsers() {
+        return List.of();
+    }
+
+    @Override
     public List<UserResponse> getAllUsers2() {
-        return userDAO.findAll().stream().map(userMapper::toUserResponse).toList();
+        return userDAO.findAll().stream().map(userMapper::toResponse).toList();
     }
 
     @Override

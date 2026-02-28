@@ -72,28 +72,17 @@ public class UserDAOImpl implements UserDAO {
             ResultSet rs = preparedStatement.executeQuery();
 
             if (rs.next()) {
-                Users u = new Users();
-                u.setUserId(rs.getInt("user_id"));
-                u.setUsername(rs.getString("username"));
-                u.setPasswordHash(rs.getString("password_hash"));
-                u.setFullName(rs.getString("fullname"));
-                u.setPhoneNumber(rs.getString("phone"));
-                u.setEmail(rs.getString("email"));
-                u.setStatus(rs.getString("status"));
-                u.setRole(rs.getString("role"));
-
-                Timestamp created = rs.getTimestamp("created_at");
-                Timestamp updated = rs.getTimestamp("updated_at");
-
-                if (created != null) u.setCreatedDate(created.toLocalDateTime());
-                if (updated != null) u.setUpdatedDate(updated.toLocalDateTime());
-
-                return Optional.of(u);
+                return Optional.of(mapRowToUser(rs));
             }
             return Optional.empty();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String findFullNameById(Integer purchaseId) {
+        return "";
     }
 
     @Override
@@ -226,6 +215,11 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public Integer findUserIdByUsername(String username) {
+        return 0;
+    }
+
+    @Override
     public Optional<Users> findById(Integer id) {
         String query = """
                 SELECT * FROM Users WHERE user_id = ?
@@ -265,15 +259,6 @@ public class UserDAOImpl implements UserDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                Users u = new Users();
-                u.setUserId(rs.getInt("user_id"));
-                u.setUsername(rs.getString("username"));
-                u.setPasswordHash(rs.getString("password_hash"));
-                u.setFullName(rs.getString("first_name") +  " " + rs.getString("last_name"));
-                u.setPhoneNumber(rs.getString("phone_number"));
-                u.setEmail(rs.getString("email"));
-                u.setStatus(rs.getString("status"));
-                u.setRole(rs.getString("role"));
                 list.add(mapRowToUser(rs));
             }
 
