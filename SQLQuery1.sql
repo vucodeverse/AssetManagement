@@ -1,10 +1,10 @@
-﻿CREATE DATABASE AssetManager
+﻿--CREATE DATABASE AssetManager
 
 
 -- =============================================
 -- 1. NHÓM TỔ CHỨC & NGƯỜI DÙNG
 -- =============================================
-
+/*
 UPDATE users
 SET role = 'ROLE_ADMIN'
 WHERE user_id = 10;
@@ -17,10 +17,90 @@ SELECT 1 FROM Departments WHERE department_name = 'Information Technology Depart
 UPDATE Users SET status = 'INACTIVE', updated_date = GETDATE() WHERE user_id = 7;
 
 SELECT 1 FROM Users WHERE email = '0123456789'
+*/
+
+/*
+INSERT INTO departments (department_name, manager_user_id, status, description)
+VALUES 
+('IT Department', NULL, 'ACTIVE', 'Phòng Công nghệ thông tin'),
+('HR Department', NULL, 'ACTIVE', 'Phòng Nhân sự'),
+('Finance Department', NULL, 'ACTIVE', 'Phòng Tài chính - Kế toán'),
+('Marketing Department', NULL, 'ACTIVE', 'Phòng Marketing'),
+('Operations Department', NULL, 'ACTIVE', 'Phòng Vận hành'),
+('Administration Department', NULL, 'ACTIVE', 'Phòng Hành chính');
+
+INSERT INTO users 
+(username, password_hash, first_name, last_name, phone_number, email, status, role, department_id)
+VALUES 
+
+('manager_it', 
+ '$2a$10$fakeHashForManager123', 
+ 'Nguyen', 'An', 
+ '0911111111', 
+ 'manager.it@example.com', 
+ 'ACTIVE', 'MANAGER', 1),
+
+('staff_it1', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Tran', 'Binh', 
+ '0922222222', 
+ 'staff1.it@example.com', 
+ 'ACTIVE', 'STAFF', 1),
+
+('staff_hr1', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Le', 'Chi', 
+ '0933333333', 
+ 'staff1.hr@example.com', 
+ 'ACTIVE', 'STAFF', 2),
+
+('manager_hr', 
+ '$2a$10$fakeHashForManager123', 
+ 'Pham', 'Dung', 
+ '0944444444', 
+ 'manager.hr@example.com', 
+ 'ACTIVE', 'MANAGER', 2),
+
+('staff_finance', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Hoang', 'Mai', 
+ '0955555555', 
+ 'staff.finance@example.com', 
+ 'ACTIVE', 'STAFF', 3),
+
+('manager_marketing', 
+ '$2a$10$fakeHashForManager123', 
+ 'Nguyen', 'Linh', 
+ '0966666666', 
+ 'manager.marketing@example.com', 
+ 'ACTIVE', 'MANAGER', 4),
+
+('staff_marketing', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Do', 'Thanh', 
+ '0977777777', 
+ 'staff.marketing@example.com', 
+ 'ACTIVE', 'STAFF', 4),
+
+('staff_operations', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Bui', 'Nam', 
+ '0988888888', 
+ 'staff.operations@example.com', 
+ 'ACTIVE', 'STAFF', 5),
+
+('staff_admin', 
+ '$2a$10$fakeHashForStaff123', 
+ 'Vu', 'Hoa', 
+ '0999999999', 
+ 'staff.admin@example.com', 
+ 'ACTIVE', 'STAFF', 6);
+*/
+
 
 CREATE TABLE departments (
   department_id   INT IDENTITY(1,1) NOT NULL,
-  department_name VARCHAR(150) NOT NULL,
+  department_name NVARCHAR(150) NOT NULL,
   manager_user_id INT NULL,
   status VARCHAR(40) NOT NULL DEFAULT 'ACTIVE',
   created_date DATETIME NOT NULL DEFAULT GETDATE(),
@@ -32,13 +112,15 @@ CREATE TABLE departments (
 
 CREATE TABLE users (
   user_id        INT IDENTITY(1,1) NOT NULL,
-  username       VARCHAR(50)  NOT NULL UNIQUE,
-  password_hash  VARCHAR(255) NOT NULL,
-  full_name      VARCHAR(150) NOT NULL,
-  phone_number   VARCHAR(30)  NULL,
-  email          VARCHAR(100) NULL UNIQUE,
-  status         VARCHAR(40)  NOT NULL,
-  role           VARCHAR(40)  NOT NULL,
+  username       NVARCHAR(50)  NOT NULL UNIQUE,
+  password_hash  NVARCHAR(255) NOT NULL,
+  --full_name      VARCHAR(150) NOT NULL,
+  first_name      NVARCHAR(150) NOT NULL,
+  last_name      NVARCHAR(150) NOT NULL,
+  phone_number   NVARCHAR(30)  NULL,
+  email          NVARCHAR(100) NULL UNIQUE,
+  status         NVARCHAR(40)  NOT NULL,
+  role           NVARCHAR(40)  NOT NULL,
   created_date   DATETIME NOT NULL DEFAULT GETDATE(),
   updated_date   DATETIME NULL,
   department_id  INT NOT NULL,
@@ -252,7 +334,7 @@ CREATE TABLE asset (
 );
 
 -- =============================================
--- 5. LOG
+-- 5. LOG		
 -- =============================================
 
 CREATE TABLE asset_log (
@@ -267,4 +349,88 @@ CREATE TABLE asset_log (
   note                  VARCHAR(255) NULL,
   PRIMARY KEY (asset_log_id),
   CONSTRAINT FK_LOG_AST FOREIGN KEY (asset_id) REFERENCES asset(asset_id)
+);
+
+-- =============================================
+-- 6. NGHIỆP VỤ CẤP PHÁT (REFACTORED)
+-- =============================================
+
+-- 1. Trưởng phòng tạo yêu cầu (Chỉ chọn LOẠI tài sản)
+CREATE TABLE allocation_request (
+    request_id              INT IDENTITY(1,1) NOT NULL,
+    requester_id            INT NOT NULL,          -- Trưởng phòng (DM)
+    requested_department_id INT NOT NULL,          -- Phòng ban cần tài sản
+    request_date            DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+    needed_by_date          DATE NULL,
+    priority                NVARCHAR(20) NOT NULL, -- HIGH, MEDIUM, LOW
+    reason                  NVARCHAR(500) NOT NULL,
+    status                  NVARCHAR(40) NOT NULL, -- PENDING_AM, APPROVED, REJECTED, COMPLETED
+    
+    am_approved_by          INT NULL,              -- Asset Manager duyệt
+    am_approved_at          DATETIME2(0) NULL,
+    reason_reject           NVARCHAR(255) NULL,
+    
+    created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+    updated_at              DATETIME2(0) NULL,
+
+    PRIMARY KEY (request_id),
+    CONSTRAINT FK_alloc_req_requester FOREIGN KEY (requester_id) REFERENCES users(user_id),
+    CONSTRAINT FK_alloc_req_dept FOREIGN KEY (requested_department_id) REFERENCES departments(department_id),
+    CONSTRAINT FK_alloc_req_am FOREIGN KEY (am_approved_by) REFERENCES users(user_id)
+);
+
+-- 2. Chi tiết yêu cầu (DM chọn Loại máy + Số lượng)
+CREATE TABLE allocation_request_detail (
+    request_detail_id    INT IDENTITY(1,1) NOT NULL,
+    request_id           INT NOT NULL,
+    asset_type_id        INT NOT NULL,    -- Ví dụ: Laptop Dell
+    quantity_requested   INT NOT NULL,    -- Ví dụ: 5 cái
+    note                 NVARCHAR(255) NULL,
+    PRIMARY KEY (request_detail_id),
+    CONSTRAINT FK_req_details_parent FOREIGN KEY (request_id) REFERENCES allocation_request(request_id),
+    CONSTRAINT FK_req_details_type FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id)
+);
+
+-- 3. Lệnh cấp phát (AM thực hiện sau khi duyệt)
+CREATE TABLE allocation (
+  allocation_id              INT IDENTITY(1,1) NOT NULL,
+  allocation_request_id      INT NOT NULL,          -- Link tới yêu cầu của DM
+  allocated_by_user_id       INT NOT NULL,          -- Asset Manager thực hiện
+  allocated_to_department_id INT NOT NULL,          -- Phòng ban nhận máy
+  
+  allocation_date            DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(), -- Ngày giờ xuất kho
+  status                     VARCHAR(40) NOT NULL,  -- PENDING, SUCCESSFUL
+  note                       NVARCHAR(255) NULL,    -- Ghi chú (NVARCHAR để viết tiếng Việt)
+  
+  created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+  updated_date               DATETIME2(0) NULL,
+  PRIMARY KEY (allocation_id),
+  CONSTRAINT FK_alloc_request FOREIGN KEY (allocation_request_id) REFERENCES allocation_request(request_id),
+  CONSTRAINT FK_alloc_user    FOREIGN KEY (allocated_by_user_id) REFERENCES users(user_id),
+  CONSTRAINT FK_alloc_dept    FOREIGN KEY (allocated_to_department_id) REFERENCES departments(department_id)
+);
+/*
+CREATE TABLE allocation (
+    allocation_id   INT IDENTITY(1,1) NOT NULL,
+    request_id      INT NOT NULL,          
+    allocation_date DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+    allocated_by    INT NOT NULL,          -- Asset Manager
+    status          NVARCHAR(40) NOT NULL, -- PENDING_HANDOVER, SUCCESSFUL
+    note            NVARCHAR(255) NULL,
+    PRIMARY KEY (allocation_id),
+    CONSTRAINT FK_allocation_request FOREIGN KEY (request_id) REFERENCES allocation_request(request_id),
+    CONSTRAINT FK_allocation_admin FOREIGN KEY (allocated_by) REFERENCES users(user_id)
+);
+*/
+-- 4. Chi tiết cấp phát (Nơi gán Asset_ID/Serial cụ thể cho từng nhân viên)
+CREATE TABLE allocation_detail (
+    allocation_detail_id INT IDENTITY(1,1) NOT NULL,
+    allocation_id        INT NOT NULL,
+    asset_id             INT NOT NULL,    -- Serial máy cụ thể
+    assigned_to_user_id  INT NULL,        -- Nhân viên cụ thể nhận máy
+    issued_condition     NVARCHAR(255) NULL,
+    PRIMARY KEY (allocation_detail_id),
+    CONSTRAINT FK_detail_alloc_parent FOREIGN KEY (allocation_id) REFERENCES allocation(allocation_id),
+    CONSTRAINT FK_detail_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
+    CONSTRAINT FK_detail_user FOREIGN KEY (assigned_to_user_id) REFERENCES users(user_id)
 );

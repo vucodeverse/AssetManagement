@@ -18,13 +18,14 @@ public class CustomerUserDetailsServiceImpl implements CustomerUserDetailsServic
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        Users users = userDAO.findUserByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User không tồn tại: " + username));
-
-        return User
-                .withUsername(users.getUsername())
-                .password(users.getPasswordHash())
-                .roles(users.getRole())
-                .build();
+//        Users users = userDAO.findUserByUsername(username)
+//                .orElseThrow(() -> new UsernameNotFoundException("User không tồn tại: " + username));
+//
+//        return User
+//                .withUsername(users.getUsername())
+//                .password(users.getPasswordHash())
+//                .roles(users.getRole())
+//                .build();
+        return null;
     }
 }

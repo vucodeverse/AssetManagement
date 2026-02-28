@@ -9,4 +9,5 @@ import lombok.*;
 public class DepartmentCreateRequest {
     private String departmentName;
     private Integer managerId;
+    private String description;
 }
