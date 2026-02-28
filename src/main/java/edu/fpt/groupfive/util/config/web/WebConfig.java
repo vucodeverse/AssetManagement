@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.util.config.web;
 
 import lombok.RequiredArgsConstructor;
+import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -55,6 +56,7 @@ public class WebConfig implements WebMvcConfigurer {
         engine.setTemplateResolver(templateResolver());
         engine.addDialect(new LayoutDialect());
         engine.addDialect(new SpringSecurityDialect());
+        engine.addDialect(new LayoutDialect());
         return engine;
     }
 
@@ -75,4 +77,5 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/");
     }
 
+    }
 }

@@ -9,4 +9,16 @@ public interface AssetTypeDAO {
     String findById(Integer id);
     List<AssetType> findAll();
 
+    AssetType findById(Integer id);
+
+    void insert(AssetType assetType);
+
+    void update(AssetType assetType);
+
+    void delete(Integer id);
+
+    boolean existAssetUsingType(Integer typeId);
+
+    boolean existByTypeName(String typeName);
+
 }
