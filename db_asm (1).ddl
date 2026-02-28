@@ -215,15 +215,15 @@ CREATE TABLE allocation_request (
   status VARCHAR(255) NOT NULL,
   request_reason VARCHAR(255) NOT NULL,
   reject_reason VARCHAR(255) NULL,
-  approved_by_user_id INT NOT NULL,
+  approved_by_user_id INT NULL,
   requested_department_id INT NOT NULL,
   needed_by_date DATE NULL,
-  department_manager_approved_by_user_id INT NOT NULL,
+  department_manager_approved_by_user_id INT NULL,
   department_manager_approved_date DATE NULL,
-  asset_manager_approved_by_user_id INT NOT NULL,
+  asset_manager_approved_by_user_id INT NULL,
   asset_manager_approved_date DATE NULL,
   created_date DATE NULL,
-  updated_date DATE NOT NULL,
+  updated_date DATE NULL,
   PRIMARY KEY (allocation_request_id)
 );
 

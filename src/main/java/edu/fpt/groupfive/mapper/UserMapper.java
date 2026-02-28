@@ -1,12 +1,10 @@
 package edu.fpt.groupfive.mapper;
 
-import edu.fpt.groupfive.dto.request.UserCreateRequest;
-import edu.fpt.groupfive.dto.request.UserUpdateRequest;
+import edu.fpt.groupfive.dto.request.*;
 import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.model.Users;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
+
 
 import java.util.List;
 

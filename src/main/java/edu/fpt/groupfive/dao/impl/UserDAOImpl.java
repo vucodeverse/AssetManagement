@@ -4,7 +4,7 @@ import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.model.Users;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -42,6 +42,25 @@ public class UserDAOImpl implements UserDAO {
         if (updated != null) user.setUpdatedDate(updated.toLocalDateTime());
 
         return user;
+    }
+
+    @NonNull
+    private List<Users> getUsers(String query) {
+        List<Users> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapRowToUser(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
     }
 
     @Override
@@ -88,15 +107,9 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 UPDATE Users
                 SET
-                    password_hash = ?,
-                    first_name = ?,
-                    last_name = ?,
-                    phone_number = ?,
-                    email = ?,
-                    status = ?,
-                    role = ?,
-                    updated_date = ?,
-                    department_id = ?
+                    password_hash = ?, first_name = ?, last_name = ?,
+                    phone_number = ?, email = ?, status = ?,
+                    role = ?, updated_date = ?, department_id = ?
                 WHERE user_id = ?
                 """;
         try (Connection connection = databaseConfig.getConnection();
@@ -180,21 +193,7 @@ public class UserDAOImpl implements UserDAO {
                 SELECT * FROM users
                 """;
 
-        List<Users> list = new ArrayList<>();
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return list;
+        return getUsers(query);
     }
 
     @Override
@@ -223,7 +222,9 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public List<Users> findByDepartmentId(Integer departmentId) {
         String query = """
-                SELECT * FROM users WHERE department_id = ? AND status = 'ACTIVE'
+                SELECT * FROM users
+                         WHERE department_id = ?
+                           AND status = 'ACTIVE'
                 """;
 
         List<Users> list = new ArrayList<>();
@@ -252,21 +253,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 SELECT * FROM users ORDER BY first_name DESC
                 """;
-        List<Users> list = new ArrayList<>();
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return list;
+        return getUsers(query);
     }
 
     @Override
@@ -274,21 +261,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 SELECT * FROM users ORDER BY first_name ASC
                 """;
-        List<Users> list = new ArrayList<>();
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return list;
+        return getUsers(query);
     }
 
     @Override
@@ -296,21 +269,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 SELECT * FROM users ORDER BY created_date ASC
                 """;
-        List<Users> list = new ArrayList<>();
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return list;
+        return getUsers(query);
     }
 
     @Override
@@ -318,21 +277,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 SELECT * FROM users ORDER BY created_date DESC
                 """;
-        List<Users> list = new ArrayList<>();
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return list;
+        return getUsers(query);
     }
 
     @Override
