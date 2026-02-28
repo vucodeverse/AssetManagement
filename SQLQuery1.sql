@@ -824,3 +824,4 @@ CREATE TABLE asset_log (
                            CONSTRAINT FK_LOG_ALLOCATION
                                FOREIGN KEY (related_allocation_id) REFERENCES allocation(allocation_id)
 );
+
