@@ -142,9 +142,8 @@ public class QuotationController {
     }
 
     // show detail
-    @GetMapping("view/quotations/{id}/quotation-detail")
-    public String getQuotation(@PathVariable("id") Integer id, Model model,
-            jakarta.servlet.http.HttpServletRequest request) {
+    @GetMapping("/view/quotations/{id}/quotation-detail")
+    public String getQuotation(@PathVariable("id") Integer id, Model model) {
         QuotationResponse quotation = quotationService.getQuotationById(id);
         model.addAttribute("quotation", quotation);
         model.addAttribute("activeMenu", "quotation");

@@ -41,7 +41,7 @@
 
                     <!-- Purchase Staff Actions -->
                     <th:block>
-                        <a th:if="${quotation.quotationStatus == T(edu.fpt.groupfive.common.QuotationStatus).DRAFT}"
+                        <a th:if="${quotation.quotationStatus == 'DRAFT'}"
                             class="btn-solid-prem" th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
                             UPDATE QUOTATION
                         </a>

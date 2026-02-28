@@ -17,6 +17,7 @@ import edu.fpt.groupfive.model.*;
 
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.QuotationService;
+import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class QuotationServiceImpl implements QuotationService {
     private final SupplierDAO supplierDAO;
     private final RangeAmount rangeAmount;
     private final PurchaseService purchaseService;
+    private final OrderCalculationUtil orderCalculationUtil;
 
     @Override
     public void createQuotation(QuotationCreateRequest quotationCreateRequest, Integer purchaseId, String action) {
@@ -73,7 +75,7 @@ public class QuotationServiceImpl implements QuotationService {
                 : QuotationStatus.PENDING;
 
         // set các giá trị
-        q.setTotalAmount(calculateTotal(quotationCreateRequest));
+        q.setTotalAmount(orderCalculationUtil.calculateTotal(quotationCreateRequest));
         if (QuotationStatus.DRAFT.equals(quotationStatus)) {
             q.setUpdatedAt(LocalDate.now());
         }
@@ -113,48 +115,6 @@ public class QuotationServiceImpl implements QuotationService {
             q.setCreatedAt(LocalDate.now());
             quotationDAO.insert(q);
         }
-    }
-
-    // tính total
-    private BigDecimal calculateTotal(QuotationCreateRequest request) {
-        BigDecimal total = BigDecimal.ZERO;
-
-        // duyệt từng detail 1
-        for (QuotationCreateDetailRequest quotationCreateDetailRequest : request
-                .getQuotationCreateDetailRequestList()) {
-            if (quotationCreateDetailRequest.getPrice() != null && quotationCreateDetailRequest.getQuantity() != null) {
-
-                // parse
-                BigDecimal qty = BigDecimal.valueOf(quotationCreateDetailRequest.getQuantity());
-                BigDecimal price = quotationCreateDetailRequest.getPrice();
-
-                // tính total của từng line
-                BigDecimal lineSubtotal = qty.multiply(price);
-
-                BigDecimal discountRate = quotationCreateDetailRequest.getDiscountRate() != null
-                        ? quotationCreateDetailRequest.getDiscountRate()
-                        : BigDecimal.ZERO;
-
-                // tính discount cho từng line
-                BigDecimal discount = lineSubtotal.multiply(discountRate).divide(BigDecimal.valueOf(100), 2,
-                        RoundingMode.HALF_UP);
-
-                // tính ra số tiền phải chịu thuế
-                BigDecimal taxableAmount = lineSubtotal.subtract(discount);
-
-                // lấy ra thuế
-                BigDecimal taxRate = quotationCreateDetailRequest.getTaxRate() != null
-                        ? quotationCreateDetailRequest.getTaxRate()
-                        : BigDecimal.ZERO;
-
-                // tnh thuế
-                BigDecimal tax = taxableAmount.multiply(taxRate).divide(BigDecimal.valueOf(100), 2,
-                        java.math.RoundingMode.HALF_UP);
-
-                total = total.add(taxableAmount.add(tax));
-            }
-        }
-        return total;
     }
 
     // lấy ra quotation đã save draft để sửa
@@ -278,9 +238,12 @@ public class QuotationServiceImpl implements QuotationService {
         Quotation q = quotationDAO.findResponseById(quotationId)
                 .orElseThrow(() -> new InvalidDataException("Quotation not found"));
 
-        // lấy ra list detail response
-        List<QuotationDetailResponse> quotationDetailResponses = quotationDetailDAO
-                .findByQuotationId(quotationId).stream().map(quotationDetailMapper::toQuotationDetailResponse).toList();
+        // lấy ra list quotation detail từ DB
+        List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(quotationId);
+
+        // map sang response cho template
+        List<QuotationDetailResponse> quotationDetailResponses = details.stream()
+                .map(quotationDetailMapper::toQuotationDetailResponse).toList();
 
         // lấy ra tên supplier name lọc theo id có trong quotation
         String supplierName = supplierDAO.getAllSupplier().stream()
@@ -294,7 +257,32 @@ public class QuotationServiceImpl implements QuotationService {
         BigDecimal totalDiscount = BigDecimal.ZERO;
         BigDecimal totalTax = BigDecimal.ZERO;
 
-        // duyệt từng quotation detail response
+        // dùng details đã lấy ở trên (không dùng q.getQuotationDetails() vì nó null)
+        for (QuotationDetail qd : details) {
+            BigDecimal discountRate = qd.getDiscountRate() != null ? qd.getDiscountRate() : BigDecimal.ZERO;
+            BigDecimal taxRate = qd.getTaxRate() != null ? qd.getTaxRate() : BigDecimal.ZERO;
+            BigDecimal price = qd.getPrice();
+
+            BigDecimal qty = BigDecimal.valueOf(qd.getQuantity());
+
+            // tính total cho từng line
+            BigDecimal lineTotal = qty.multiply(price);
+
+            // tính discount cho từng line
+            BigDecimal lineDiscount = lineTotal.multiply(discountRate).divide(BigDecimal.valueOf(100), 2,
+                    RoundingMode.HALF_UP);
+
+            // tính số tiền thuế
+            BigDecimal taxableAmout = lineTotal.subtract(lineDiscount);
+
+            // tính thuế
+            BigDecimal tax = taxableAmout.multiply(taxRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+            subtotal = subtotal.add(lineTotal);
+            totalDiscount = totalDiscount.add(lineDiscount);
+            totalTax = totalTax.add(tax);
+        }
+
         BigDecimal grandTotal = subtotal.subtract(totalDiscount).add(totalTax);
 
         return QuotationResponse.builder()

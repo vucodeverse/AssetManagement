@@ -88,7 +88,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 q.setPrice(rs.getBigDecimal("price"));
                 q.setTaxRate(rs.getBigDecimal("tax_rate"));
                 q.setDiscountRate(rs.getBigDecimal("discount_rate"));
-                q.setRejectedReason(rs.getString("rejected_reason"));
+                q.setRejectedReason(rs.getString("reject_reason"));
                 q.setSpecificationRequirement(rs.getString("spec_requirement"));
 
                 quotationDetails.add(q);
@@ -172,7 +172,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 q.setPrice(rs.getBigDecimal("price"));
                 q.setTaxRate(rs.getBigDecimal("tax_rate"));
                 q.setDiscountRate(rs.getBigDecimal("discount_rate"));
-                q.setRejectedReason(rs.getString("rejected_reason"));
+                q.setRejectedReason(rs.getString("reject_reason"));
                 q.setSpecificationRequirement(rs.getString("spec_requirement"));
 
                 quotationDetails.add(q);

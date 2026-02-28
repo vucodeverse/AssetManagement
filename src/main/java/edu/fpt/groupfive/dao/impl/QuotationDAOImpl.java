@@ -177,7 +177,7 @@ public class QuotationDAOImpl implements QuotationDAO {
                         .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
                 quotation
                         .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
-                quotation.setRejectedReason(rs.getString("rejected_reason"));
+                quotation.setRejectedReason(rs.getString("reject_reason"));
 
                 return Optional.of(quotation);
             }

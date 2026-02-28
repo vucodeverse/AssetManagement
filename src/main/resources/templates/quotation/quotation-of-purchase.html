@@ -80,7 +80,12 @@
                                 </option>
                             </select>
                         </div>
-                        <button class="btn-more"><i class="fas fa-sliders-h"></i> More Filters</button>
+                        <button class="btn-more">
+                            <i class="fas fa-sliders-h"></i>
+                            <a th:href="@{/view/view-quotation-of-purchase/{purchaseId}(purchaseId=${purchaseId})}">
+                            RESET
+                            </a>
+                        </button>
                     </div>
                 </div>
             </form>
@@ -99,7 +104,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="q : ${quotations}">
+                        <tr th:each="q : ${quotations}"
+                        th:attr="onclick=|window.location.href='@{/view/quotations/{id}/quotation-detail(id=${q.quotationId})}'|"
+                        >
                             <td th:text="'QT-' + ${q.quotationId}">QT-100293</td>
                             <td>
                                 <div class="supplier-cell">

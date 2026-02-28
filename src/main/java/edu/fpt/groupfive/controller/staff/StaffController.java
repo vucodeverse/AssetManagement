@@ -16,11 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
-@Slf4j(topic = "STAFF-CONTROLLER")
 public class StaffController {
     private final PurchaseService purchaseService;
-    private final AssetTypeService assetTypeService;
-    private final UserService userService;
     private final DashboardService dashboardService;
 
     @GetMapping("/dashboard")

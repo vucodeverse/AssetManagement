@@ -46,9 +46,6 @@ public class OrderServiceImpl implements OrderService {
 
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
 
-        // Chúng ta cần map Asset Type Name để hiển thị lên form, nhưng cần Asset Type
-        // ID để lưu PO sau này.
-        // Lấy map Asset Type Name từ AssetTypeDAO
         Map<Integer, String> assetTypeNames = assetTypeDAO.findAll().stream()
                 .collect(Collectors.toMap(AssetType::getTypeId, AssetType::getTypeName));
 
@@ -72,7 +69,6 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    // ── Tạo Purchase Order ─────────────────────────────────────────────────
 
     @Override
     @Transactional(rollbackFor = Exception.class)
