@@ -52,7 +52,7 @@ VALUES
 
 
 ===========================================================================================================
-
+*/
 SET NOCOUNT ON;
 
 ------------------------------------------------------------
@@ -334,17 +334,31 @@ SELECT TOP 50 * FROM quotation_detail ORDER BY quotation_detail_id DESC;
 SELECT TOP 50 * FROM purchase_orders ORDER BY purchase_order_id DESC;
 SELECT TOP 50 * FROM purchase_order_details ORDER BY purchase_order_detail_id DESC;
 
-*/
+
+
+-- =============================================
+-- AssetManager - FULL SCRIPT (ALL VARCHAR -> NVARCHAR)
+-- SQL Server
+-- =============================================
+
+--CREATE DATABASE AssetManager;
+--GO
+--USE AssetManager;
+--GO
+
+-- =============================================
+-- 1. NHÓM TỔ CHỨC & NGƯỜI DÙNG
+-- =============================================
 
 -- 1.1 Departments (tạo trước, CHƯA gắn FK manager_user_id để tránh cycle)
 CREATE TABLE departments (
                              department_id   INT IDENTITY(1,1) NOT NULL,
                              department_name NVARCHAR(150) NOT NULL,
                              manager_user_id INT NULL,
-                             status          VARCHAR(40) NOT NULL DEFAULT 'ACTIVE',
+                             status          NVARCHAR(40) NOT NULL DEFAULT N'ACTIVE',
                              created_date    DATETIME NOT NULL DEFAULT GETDATE(),
                              updated_date    DATETIME NULL,
-                             description     VARCHAR(1000) NULL,
+                             description     NVARCHAR(1000) NULL,
                              PRIMARY KEY (department_id)
 );
 
@@ -383,23 +397,23 @@ CREATE UNIQUE INDEX UQ_departments_manager_user
 
 CREATE TABLE category (
                           category_id   INT IDENTITY(1,1) NOT NULL,
-                          category_name VARCHAR(255) NOT NULL,
-                          description   VARCHAR(255) NULL,
-                          status        VARCHAR(40)  NOT NULL,
+                          category_name NVARCHAR(255) NOT NULL,
+                          description   NVARCHAR(255) NULL,
+                          status        NVARCHAR(40)  NOT NULL,
                           PRIMARY KEY (category_id)
 );
 
 CREATE TABLE asset_type (
                             asset_type_id               INT IDENTITY(1,1) NOT NULL,
                             type_name                   NVARCHAR(255) NOT NULL,
-                            description                 VARCHAR(255) NULL,
-                            type_class                  VARCHAR(255) NOT NULL,
-                            status                      VARCHAR(40)  NOT NULL,
-                            default_depreciation_method VARCHAR(30)  NULL,
+                            description                 NVARCHAR(255) NULL,
+                            type_class                  NVARCHAR(255) NOT NULL,
+                            status                      NVARCHAR(40)  NOT NULL,
+                            default_depreciation_method NVARCHAR(30)  NULL,
                             default_useful_life_months  INT NULL,
-                            specification               VARCHAR(255) NULL,
+                            specification               NVARCHAR(255) NULL,
                             category_id                 INT NOT NULL,
-                            model                       VARCHAR(255) NULL,
+                            model                       NVARCHAR(255) NULL,
                             PRIMARY KEY (asset_type_id),
                             CONSTRAINT FK_asset_type_category
                                 FOREIGN KEY (category_id) REFERENCES category(category_id)
@@ -407,9 +421,9 @@ CREATE TABLE asset_type (
 
 CREATE TABLE warehouse (
                            warehouse_id       INT IDENTITY(1,1) NOT NULL,
-                           warehouse_name     VARCHAR(255) NOT NULL,
-                           address            VARCHAR(255) NULL,
-                           status             VARCHAR(40)  NOT NULL,
+                           warehouse_name     NVARCHAR(255) NOT NULL,
+                           address            NVARCHAR(255) NULL,
+                           status             NVARCHAR(40)  NOT NULL,
                            managed_by_user_id INT NOT NULL,
                            PRIMARY KEY (warehouse_id),
                            CONSTRAINT FK_warehouse_managed_by_user
@@ -419,9 +433,9 @@ CREATE TABLE warehouse (
 CREATE TABLE rack (
                       rack_id      INT IDENTITY(1,1) NOT NULL,
                       warehouse_id INT NOT NULL,
-                      rack_name    VARCHAR(255) NOT NULL,
-                      description  VARCHAR(255) NULL,
-                      status       VARCHAR(40)  NOT NULL,
+                      rack_name    NVARCHAR(255) NOT NULL,
+                      description  NVARCHAR(255) NULL,
+                      status       NVARCHAR(40)  NOT NULL,
                       created_date DATETIME NOT NULL DEFAULT GETDATE(),
                       updated_date DATETIME NULL,
                       PRIMARY KEY (rack_id),
@@ -431,12 +445,12 @@ CREATE TABLE rack (
 
 CREATE TABLE shelf (
                        shelf_id         INT IDENTITY(1,1) NOT NULL,
-                       shelf_name       VARCHAR(255) NOT NULL,
+                       shelf_name       NVARCHAR(255) NOT NULL,
                        current_capacity INT NOT NULL DEFAULT 0,
                        max_capacity     INT NOT NULL,
-                       description      VARCHAR(255) NULL,
+                       description      NVARCHAR(255) NULL,
                        rack_id          INT NOT NULL,
-                       status           VARCHAR(255) NULL,
+                       status           NVARCHAR(255) NULL,
                        created_date     DATETIME NOT NULL DEFAULT GETDATE(),
                        updated_date     DATETIME NULL,
                        PRIMARY KEY (shelf_id),
@@ -451,13 +465,13 @@ CREATE TABLE shelf (
 
 CREATE TABLE supplier (
                           supplier_id   INT IDENTITY(1,1) NOT NULL,
-                          supplier_name VARCHAR(255) NOT NULL,
+                          supplier_name NVARCHAR(255) NOT NULL,
                           phone_number  NVARCHAR(255) NOT NULL,
-                          email         VARCHAR(255) NOT NULL,
-                          address       VARCHAR(255) NOT NULL,
-                          supplier_code VARCHAR(255) NULL,
-                          tax_code      VARCHAR(255) NULL UNIQUE,
-                          status        VARCHAR(255) NOT NULL,
+                          email         NVARCHAR(255) NOT NULL,
+                          address       NVARCHAR(255) NOT NULL,
+                          supplier_code NVARCHAR(255) NULL,
+                          tax_code      NVARCHAR(255) NULL UNIQUE,
+                          status        NVARCHAR(255) NOT NULL,
                           created_date  DATETIME NOT NULL DEFAULT GETDATE(),
                           updated_date  DATETIME NULL,
                           PRIMARY KEY (supplier_id)
@@ -639,7 +653,7 @@ CREATE TABLE goods_receipt (
                                receipt_date         DATE NOT NULL,
                                received_by_user_id  INT NOT NULL,
                                inspected_by_user_id INT NOT NULL,
-                               status               VARCHAR(40) NOT NULL,
+                               status               NVARCHAR(40) NOT NULL,
                                created_date         DATETIME NOT NULL DEFAULT GETDATE(),
                                updated_date         DATETIME NULL,
                                PRIMARY KEY (goods_receipt_id),
@@ -659,10 +673,10 @@ CREATE TABLE goods_receipt (
 
 CREATE TABLE asset (
                        asset_id            INT IDENTITY(1,1) NOT NULL,
-                       serial_number       VARCHAR(100) NULL UNIQUE,
+                       serial_number       NVARCHAR(100) NULL UNIQUE,
                        asset_type_id       INT NOT NULL,
                        goods_receipt_id    INT NOT NULL,
-                       current_status      VARCHAR(40) NOT NULL,
+                       current_status      NVARCHAR(40) NOT NULL,
                        original_cost       NUMERIC(19, 2) NULL,
                        shelf_id            INT NOT NULL,
                        warehouse_id        INT NULL,
@@ -745,7 +759,7 @@ CREATE TABLE allocation (
                             allocated_to_department_id INT NOT NULL,
 
                             allocation_date            DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                            status                     VARCHAR(40) NOT NULL,
+                            status                     NVARCHAR(40) NOT NULL,
                             note                       NVARCHAR(255) NULL,
 
                             created_at                 DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
@@ -789,13 +803,13 @@ CREATE TABLE allocation_detail (
 CREATE TABLE asset_log (
                            asset_log_id          INT IDENTITY(1,1) NOT NULL,
                            asset_id              INT NOT NULL,
-                           action_type           VARCHAR(155) NOT NULL,
+                           action_type           NVARCHAR(155) NOT NULL,
                            from_department_id    INT NULL,
                            to_department_id      INT NULL,
                            action_date           DATETIME NOT NULL DEFAULT GETDATE(),
-                           old_status            VARCHAR(40) NULL,
+                           old_status            NVARCHAR(40) NULL,
                            related_allocation_id INT NULL,
-                           note                  VARCHAR(255) NULL,
+                           note                  NVARCHAR(255) NULL,
                            PRIMARY KEY (asset_log_id),
 
                            CONSTRAINT FK_LOG_AST
