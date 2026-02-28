@@ -36,6 +36,7 @@ public class AssetTypeServiceImpl implements AssetTypeService {
                 .typeId(assetType.getTypeId())
                 .typeName(assetType.getTypeName()).build()
         ).collect(Collectors.toList());
+    }
     public AssetTypeResponse getById(Integer id) {
         AssetType assetType = assetTypeDAO.findById(id);
         if (assetType == null) {
@@ -49,6 +50,7 @@ public class AssetTypeServiceImpl implements AssetTypeService {
 
 
         return Optional.empty();
+    }
     @Transactional
     public void create(AssetTypeCreateRequest request) {
         String name=request.getTypeName().trim();
@@ -63,7 +65,8 @@ public class AssetTypeServiceImpl implements AssetTypeService {
 
     @Override
     public String findNameById(Integer assetTypeId) {
-        return assetTypeDAO.findById(assetTypeId);
+        return assetTypeDAO.findById(assetTypeId).getTypeName();
+    }
     @Transactional
     public void update(AssetTypeUpdateRequest request) {
         AssetType existing = assetTypeDAO.findById(request.getTypeId());

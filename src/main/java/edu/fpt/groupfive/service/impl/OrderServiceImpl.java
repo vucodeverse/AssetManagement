@@ -216,7 +216,7 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal totalTax = BigDecimal.ZERO;
 
         for (OrderDetail detail : detailModels) {
-            String assetTypeName = assetTypeDAO.findById(detail.getAssetTypeId());
+            String assetTypeName = assetTypeDAO.findById(detail.getAssetTypeId()).getTypeName();
 
             // Mapping via MapStruct
             OrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
