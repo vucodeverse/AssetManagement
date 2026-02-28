@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/manager-layout}">
+
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/asset/asset-form.css}">
+    </th:block>
+</head>
+
+<body>
+
+<th:block layout:fragment="content">
+
+    <header class="page-header">
+        <h1 class="page-title" th:text="${isEdit} ? 'CẬP NHẬT TÀI SẢN' : 'TẠO TÀI SẢN'"></h1>
+    </header>
+
+    <div class="content-wrapper">
+
+        <div th:if="${error}" class="error-box">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div class="main-content" style="grid-template-columns: 1fr;"> <!-- chỉ 1 cột vì form dài -->
+
+            <div class="right-panel" style="max-width: none;">
+                <div class="form-panel">
+
+                    <form th:action="${isEdit} ? @{/manager/assets/edit/{id}(id=${asset.assetId})} : @{/manager/assets/create}"
+                          th:object="${asset}" method="post">
+
+                        <input type="hidden" th:if="${isEdit}" th:field="*{assetId}" />
+
+                        <!-- SERIAL -->
+                        <div class="form-field">
+                            <label class="form-label">SỐ SERIAL</label>
+                            <input type="text" th:field="*{serialNumber}" class="form-input" required placeholder="VD: SN12345678"/>
+                            <div class="error text-danger" th:errors="*{serialNumber}"></div>
+                        </div>
+
+                        <!-- LOẠI TÀI SẢN -->
+                        <div class="form-field">
+                            <label class="form-label">LOẠI TÀI SẢN</label>
+                            <select th:field="*{assetTypeId}" class="form-input" required>
+                                <option value="">-- Chọn loại tài sản --</option>
+                                <option th:each="type : ${assetTypes}"
+                                        th:value="${type.typeId}"
+                                        th:text="${type.typeName}"></option>
+                            </select>
+                        </div>
+
+                        <!-- NGÀY MUA -->
+                        <div class="form-field">
+                            <label class="form-label">NGÀY MUA</label>
+                            <input type="date" th:field="*{acquisitionDate}" class="form-input"/>
+                        </div>
+
+                        <!-- NGUYÊN GIÁ -->
+                        <div class="form-field">
+                            <label class="form-label">NGUYÊN GIÁ (₫)</label>
+                            <input type="number" step="1000" th:field="*{originalCost}" class="form-input" min="0"/>
+                            <div class="error text-danger" th:errors="*{originalCost}"></div>
+                        </div>
+
+                        <!-- BẢO HÀNH BẮT ĐẦU -->
+                        <div class="form-field">
+                            <label class="form-label">NGÀY BẢO HÀNH BẮT ĐẦU</label>
+                            <input type="date" th:field="*{warrantyStartDate}" class="form-input"/>
+                        </div>
+
+                        <!-- BẢO HÀNH KẾT THÚC -->
+                        <div class="form-field">
+                            <label class="form-label">NGÀY BẢO HÀNH KẾT THÚC</label>
+                            <input type="date" th:field="*{warrantyEndDate}" class="form-input"/>
+                        </div>
+
+                        <!-- TRẠNG THÁI (chỉ hiện khi edit) -->
+                        <div class="form-field" th:if="${isEdit}">
+                            <label class="form-label">TRẠNG THÁI HIỆN TẠI</label>
+                            <select th:field="*{currentStatus}" class="form-input">
+                                <option value="GOOD">Tốt</option>
+                                <option value="NEEDS_REPAIR">Cần sửa chữa</option>
+                                <option value="BROKEN">Hỏng</option>
+                                <option value="DISPOSED">Đã thanh lý</option>
+                            </select>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-add"
+                                    th:text="${isEdit} ? 'CẬP NHẬT' : 'THÊM MỚI'"></button>
+                            <button type="button" onclick="window.location.href='/manager/assets'"
+                                    class="btn-cancel">HỦY</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</th:block>
+</body>
+</html>

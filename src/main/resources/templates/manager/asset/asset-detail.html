@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/manager-layout}">
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/manager/manager-crud-split.css}">
+    </th:block>
+</head>
+
+<body>
+
+<th:block layout:fragment="content">
+
+    <header class="page-header">
+        <h1 class="page-title">CHI TIẾT TÀI SẢN</h1>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="detail-panel" style="background:white; border:1px solid #e5e7eb; border-radius:8px; padding:2rem; max-width:900px; margin:0 auto;">
+
+            <div th:if="${error}" class="error-box" style="margin-bottom:1.5rem;">
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label class="detail-label">MÃ TÀI SẢN</label>
+                    <div class="detail-value" th:text="${asset.assetId}"></div>
+                </div>
+                <div class="detail-item">
+                    <label class="detail-label">SỐ SERIAL</label>
+                    <div class="detail-value" th:text="${asset.serialNumber}"></div>
+                </div>
+                <div class="detail-item">
+                    <label class="detail-label">LOẠI TÀI SẢN</label>
+                    <div class="detail-value" th:text="${asset.assetTypeName}"></div>
+                </div>
+                <div class="detail-item">
+                    <label class="detail-label">TRẠNG THÁI</label>
+                    <div class="detail-value" th:text="${asset.currentStatus}"></div>
+                </div>
+                <div class="detail-item">
+                    <label class="detail-label">NGUYÊN GIÁ</label>
+                    <div class="detail-value" th:text="${#numbers.formatDecimal(asset.originalCost, 0, 2, 'COMMA')} + ' ₫'"></div>
+                </div>
+                <div class="detail-item">
+                    <label class="detail-label">NGÀY MUA</label>
+                    <div class="detail-value" th:text="${asset.acquisitionDate}"></div>
+                </div>
+                <div class="detail-item">
+                    <label class="detail-label">BẢO HÀNH BẮT ĐẦU</label>
+                    <div class="detail-value" th:text="${asset.warrantyStartDate}"></div>
+                </div>
+                <div class="detail-item">
+                    <label class="detail-label">BẢO HÀNH KẾT THÚC</label>
+                    <div class="detail-value" th:text="${asset.warrantyEndDate}"></div>
+                </div>
+            </div>
+
+            <div class="form-actions" style="margin-top:2rem;">
+                <a th:href="@{'/manager/assets/edit/' + ${asset.assetId}}" class="btn-add">SỬA THÔNG TIN</a>
+                <a th:href="@{/manager/assets}" class="btn-cancel">QUAY LẠI DANH SÁCH</a>
+            </div>
+
+        </div>
+    </div>
+
+</th:block>
+</body>
+</html>
