@@ -13,10 +13,11 @@
     <th:block layout:fragment="content">
         <div class="pr-container">
             <div class="breadcrumb">
-                DASHBOARD / <a th:href="@{/director/purchases}">PURCHASE REQUESTS</a> /
+                <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a> /
+                <a th:href="@{/purchase-staff/purchases}">PURCHASES</a> /
                 <span class="active">NEW REQUEST</span>
             </div>
-            <!-- Header -->
+            <!-- Tiêu đề -->
             <header class="pr-header">
                 <div class="header-left">
                     <h1>NEW PURCHASE REQUEST</h1>
@@ -28,13 +29,13 @@
                 </div>
             </header>
 
-            <!-- FORM -->
-            <form th:action="@{/asset-manager/create/purchase-form}" th:object="${purchaseCreateRequest}" method="post">
+            <!-- BIỂU MẪU -->
+            <form th:action="@{/purchase-staff/purchases/create}" th:object="${purchaseCreateRequest}" method="post">
 
                 <!-- hidden purchaseId cho update draft -->
                 <input type="hidden" th:field="*{purchaseId}">
 
-                <!-- General Information Section -->
+                <!-- Phần thông tin chung -->
                 <section class="form-section">
                     <h2 class="section-title">GENERAL INFORMATION</h2>
 
@@ -79,7 +80,7 @@
                     </div>
                 </section>
 
-                <!-- Details Section -->
+                <!-- Phần chi tiết các mặt hàng -->
                 <section class="form-section">
                     <h2 class="section-title">PURCHASE REQUEST DETAILS</h2>
 
@@ -156,7 +157,7 @@
                                         </div>
                                     </td>
 
-                                    <!-- remove row -->
+                                    <!-- Xóa dòng -->
                                     <td>
                                         <button type="submit" class="btn-remove" name="remove" th:value="${stat.index}"
                                             title="Remove item">
@@ -168,12 +169,12 @@
                             </tbody>
                         </table>
 
-                        <!-- add new item -->
+                        <!-- Thêm mặt hàng mới -->
                         <button type="submit" class="btn-add-row" name="addDetail" value="true">+ ADD NEW ITEM</button>
                     </div>
                 </section>
 
-                <!-- Footer Actions -->
+                <!-- Các nút điều hướng cuối -->
                 <footer class="pr-footer">
                     <div class="footer-left">
                         <p>* Required fields for submission.</p>

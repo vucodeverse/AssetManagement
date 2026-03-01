@@ -17,13 +17,14 @@
     <th:block layout:fragment="content">
 
         <div class="purchase-content-wrapper">
-            <form id="filterForm" method="get" th:action="@{/purchase/search-filter}" th:object="${searchAndFilter}">
+            <form id="filterForm" method="get" th:action="@{/purchase-staff/purchases/search}"
+                th:object="${searchAndFilter}">
 
                 <header class="top-bar">
                     <h1>PURCHASE REQUEST MANAGEMENT</h1>
                     <div class="top-actions">
                         <!-- TODO: bật lại sec:authorize="hasRole('ASSET_MANAGER')" khi enable security -->
-                        <a th:href="@{/asset-manager/create/purchase-form}" class="btn-create"
+                        <a th:href="@{/purchase-staff/purchases/create}" class="btn-create"
                             style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#1e293b; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:13px;">
                             <i class="fas fa-plus"></i> Create Purchase Request
                         </a>
@@ -53,13 +54,13 @@
                         <input type="date" th:field="*{to}">
 
                         <button type="submit">APPLY</button>
-                        <a class="btn-reset" th:href="@{/purchases}">RESET</a>
+                        <a class="btn-reset" th:href="@{/purchase-staff/purchases}">RESET</a>
                     </div>
                 </section>
             </form>
 
 
-            <!-- Data Table Section -->
+            <!-- Phần bảng dữ liệu -->
             <div class="table-container">
                 <table class="data-table" id="purchaseTO">
                     <thead>
@@ -75,9 +76,9 @@
                     </thead>
                     <tbody>
                         <tr th:each="p : ${purchases}" class="clickable-row"
-                            th:attr="onclick=|window.location.href='@{/purchases/{id}/purchase-detail(id=${p.id})}'|">
+                            th:attr="onclick=|window.location.href='@{/purchase-staff/purchases/{id}(id=${p.purchaseId})}'|">
 
-                            <td class="cell-id" th:text="'PR-' + ${p.id}"></td>
+                            <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
                             <td>
                                 <span th:if="${p.status != null}" class="badge"
                                     th:classappend="'badge-' + ${p.status.name()}" th:text="${p.status}"></span>
@@ -104,12 +105,12 @@
 
                                 <!-- TODO: bật lại sec:authorize="hasRole('DIRECTOR')" khi enable security -->
                                 <form th:if="${p.status != null}" method="post"
-                                    th:action="@{/purchases/{id}/actions(id=${p.id})}">
+                                    th:action="@{/purchase-staff/purchases/{id}/actions(id=${p.purchaseId})}">
                                     <div
                                         th:if="${p.status.name() != 'APPROVED' && p.status.name() != 'REJECTED' && p.status.name() != 'DRAFT'}">
                                         <button type="submit" name="actions" value="a"
                                             class="btn-approve">APPROVE</button>
-                                        <a class="btn-reject" th:href="'#reject-' + ${p.id}"
+                                        <a class="btn-reject" th:href="'#reject-' + ${p.purchaseId}"
                                             onclick="event.stopPropagation();">
                                             REJECT
                                         </a>
@@ -118,8 +119,8 @@
 
                                 <!-- TODO: bật lại sec:authorize="hasRole('ASSET_MANAGER')" khi enable security -->
                                 <a th:if="${p.status != null && p.status.name() == 'DRAFT'}"
-                                    th:href="@{/asset-manager/purchases/{id}/edit(id=${p.id})}" class="btn-approve"
-                                    onclick="event.stopPropagation();">UPDATE</a>
+                                    th:href="@{/purchase-staff/purchases/{id}/edit(id=${p.purchaseId})}"
+                                    class="btn-approve" onclick="event.stopPropagation();">UPDATE</a>
 
                             </td>
                         </tr>
@@ -129,19 +130,19 @@
         </div>
         <!-- TODO: bật lại sec:authorize="hasRole('DIRECTOR')" khi enable security -->
         <th:block>
-            <div th:each="p : ${purchases}" th:id="'reject-' + ${p.id}" class="modal-overlay">
+            <div th:each="p : ${purchases}" th:id="'reject-' + ${p.purchaseId}" class="modal-overlay">
 
                 <div class="modal" role="dialog" aria-modal="true">
                     <div class="modal-header">
                         <h3 class="modal-title">
-                            Reject Reason - PR-<span th:text="${p.id}"></span>
+                            Reject Reason - PR-<span th:text="${p.purchaseId}"></span>
                         </h3>
 
                         <!-- Nút X: đóng modal -->
                         <a href="#" class="modal-close" aria-label="Close">✕</a>
                     </div>
 
-                    <form method="post" th:action="@{/purchases/{id}/actions(id=${p.id})}">
+                    <form method="post" th:action="@{/purchase-staff/purchases/{id}/actions(id=${p.purchaseId})}">
 
                         <div class="modal-body">
                             <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>

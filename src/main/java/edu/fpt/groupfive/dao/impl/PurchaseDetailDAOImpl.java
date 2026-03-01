@@ -44,7 +44,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
     // tìm purchase detail theo purchse request
     @Override
     public List<PurchaseDetail> findByPurchaseRequestId(Integer purchaseRequestId) {
-        String sql = "select pd.*, at.asset_type_name " +
+        String sql = "select pd.*, at.type_name " +
                 "from purchase_request_detail pd " +
                 "left join asset_type at on pd.asset_type_id = at.asset_type_id " +
                 "where pd.purchase_request_id = ?";

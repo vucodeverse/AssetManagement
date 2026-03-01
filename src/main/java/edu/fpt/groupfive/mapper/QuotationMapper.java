@@ -6,14 +6,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-
-@Mapper(componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface QuotationMapper {
 
     @Mapping(target = "quotationDetailNote", source = "quotationNote")
     Quotation toQuotation(QuotationCreateRequest quotationCreateRequest);
 
     @Mapping(source = "id", target = "quotationId")
+    @Mapping(target = "totalAmount", source = "totalAmount")
     edu.fpt.groupfive.dto.response.QuotationResponse toQuotationResponse(Quotation quotation);
 }

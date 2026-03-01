@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/purchase-staff")
 public class StaffController {
     private final PurchaseService purchaseService;
     private final DashboardService dashboardService;
@@ -26,32 +27,6 @@ public class StaffController {
         model.addAttribute("dashboard", dashboardData);
         model.addAttribute("activeMenu", "dashboard");
         return "staff/staff-dashboard";
-    }
-
-    // hiển thị màn purchase request list
-    @GetMapping("/purchases")
-    public String showPurchases(Model model) {
-        model.addAttribute("activeSub", "pr");
-        model.addAttribute("activeMenu", "approval");
-        model.addAttribute("purchases", purchaseService.findAllPurchases());
-        addStaPri(model);
-        return "purchase/purchase-list";
-    }
-
-    private static void addStaPri(Model model) {
-        model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", Request.values());
-    }
-
-    // search and filter
-    @GetMapping("/purchase/search-filter")
-    public String searchAndfilter(@ModelAttribute("searchAndFilter") PurchaseSearchAndFilter purchaseSearchAndFilter,
-            Model model) {
-        model.addAttribute("activeSub", "pr");
-        model.addAttribute("activeMenu", "approval");
-        model.addAttribute("purchases", purchaseService.searchAndFilter(purchaseSearchAndFilter));
-        addStaPri(model);
-        return "purchase/purchase-list";
     }
 
     // lấy ra id cần truy cập vào detail
@@ -67,7 +42,7 @@ public class StaffController {
     public String actionWithPr(@PathVariable("id") Integer id, @RequestParam("actions") String actions,
             @RequestParam(value = "reasonReject", required = false) String reasonReject) {
         purchaseService.actionsWithPurchase(id, actions, reasonReject);
-        return "redirect:/purchases";
+        return "redirect:/purchase-staff/purchases";
     }
 
     @ModelAttribute("searchAndFilter")

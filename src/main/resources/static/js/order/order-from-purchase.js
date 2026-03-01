@@ -14,7 +14,7 @@ $(document).ready(function () {
         }
     });
 
-    // Clear all filters
+    // Xóa tất cả các bộ lọc
     $('#btnClearFilter').on('click', function () {
         window.location.href = '/director/purchase-orders';
     });

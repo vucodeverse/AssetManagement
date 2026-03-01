@@ -22,6 +22,7 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 @Slf4j(topic = "ORDER-CONTROLLER")
+@RequestMapping("/purchase-staff/purchase-orders")
 public class OrderController {
 
     private static final int PAGE_SIZE = 4;
@@ -30,10 +31,10 @@ public class OrderController {
     private final SupplierService supplierService;
     private final OrderCalculationUtil orderCalculationUtil;
 
-    @GetMapping("/purchase-orders")
+    @GetMapping("")
     public String listPurchaseOrders(@ModelAttribute OrderSearchCriteria criteria,
             @RequestParam(value = "page", defaultValue = "1") int page,
-            Model model, jakarta.servlet.http.HttpServletRequest request) {
+            Model model) {
         log.info("List purchase orders, page={}", page);
         List<PurchaseOrderGroupResponse> all = orderService.getOrdersGroupedByPR(criteria);
 
@@ -54,7 +55,7 @@ public class OrderController {
         return "order/order-from-purchase";
     }
 
-    @GetMapping("/quotations/{quotationId}/create-po")
+    @GetMapping("/create-from-quotation/{quotationId}")
     public String createPurchseOrder(@PathVariable("quotationId") Integer quotationId, Model model,
             jakarta.servlet.http.HttpServletRequest request) {
         log.info("Load form purchase order");
@@ -75,7 +76,7 @@ public class OrderController {
         return "order/order-form";
     }
 
-    @PostMapping(value = "/quotations/{quotationId}/create-po", params = "removeLine")
+    @PostMapping(value = "/create-from-quotation/{quotationId}", params = "removeLine")
     public String removeOrderLine(@PathVariable("quotationId") Integer quotationId,
             @ModelAttribute("orderCreateRequest") OrderCreateRequest orderCreateRequest,
             @RequestParam("removeLine") int removeLine,
@@ -94,7 +95,7 @@ public class OrderController {
         return "order/order-form";
     }
 
-    @PostMapping(value = "/quotations/{quotationId}/create-po", params = "!removeLine")
+    @PostMapping(value = "/create-from-quotation/{quotationId}", params = "!removeLine")
     public String createOrder(@PathVariable("quotationId") Integer quotationId,
             @ModelAttribute("orderCreateRequest") OrderCreateRequest orderCreateRequest,
             BindingResult result,
@@ -107,15 +108,13 @@ public class OrderController {
             return "order/order-form";
         }
 
-        // Recalculate to prevent tinkering with hidden field
+        // Tính toán lại tổng tiền để tránh việc can thiệp vào các trường ẩn (hidden
+        // fields) trên UI
         orderCalculationUtil.recalculateTotal(orderCreateRequest);
 
         try {
             Integer orderId = orderService.createOrder(quotationId, orderCreateRequest);
-            String uri = request.getRequestURI().toLowerCase();
-            String prefix = (uri.contains("purchase-staff") || uri.contains("purchase staff")
-                    || uri.contains("purchase%20staff")) ? "/purchase-staff" : "/director";
-            return "redirect:" + prefix + "/purchase-orders/" + orderId;
+            return "redirect:/purchase-staff/purchase-orders/" + orderId;
         } catch (edu.fpt.groupfive.util.exception.InvalidDataException e) {
             log.warn("Validation failed for order creation: {}", e.getMessage());
             model.addAttribute("error", e.getMessage());
@@ -123,7 +122,7 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/purchase-orders/{id}")
+    @GetMapping("/{id}")
     public String getOrderDetail(@PathVariable("id") Integer id, Model model,
             jakarta.servlet.http.HttpServletRequest request) {
         log.info("Get purchase order detail: {}", id);

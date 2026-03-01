@@ -24,7 +24,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
     public Integer insert(QuotationDetail quotationDetail, Connection connection) {
         String sql = "insert into quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, " +
                 "quantity," +
-                "quotation_detail_note, warranty_months, price, tax_rate, discount_rate, rejected_reason, spec_requirement) values (?,?,?,?,?,?,?,?,?,?,?)";
+                "quotation_detail_note, warranty_months, price, tax_rate, discount_rate, reject_reason, spec_requirement) values (?,?,?,?,?,?,?,?,?,?,?)";
 
         try (
                 PreparedStatement preparedStatement = connection.prepareStatement(sql,

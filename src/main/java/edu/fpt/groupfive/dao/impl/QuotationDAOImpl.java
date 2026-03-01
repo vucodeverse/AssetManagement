@@ -26,7 +26,7 @@ public class QuotationDAOImpl implements QuotationDAO {
     public Integer insert(Quotation quotation) {
 
         String sql = "insert into quotation (purchase_request_id, supplier_id, status, total_amount, " +
-                "created_at, rejected_reason) VALUES (?,?,?,?,?,?)";
+                "created_at, reject_reason) VALUES (?,?,?,?,?,?)";
         Connection connection = null;
         try {
             connection = databaseConfig.getConnection();
@@ -126,7 +126,7 @@ public class QuotationDAOImpl implements QuotationDAO {
 
     @Override
     public void updateStatusReject(Integer quotationId, QuotationStatus status, String rejectedReason) {
-        String sql = "UPDATE quotation SET status = ?, rejected_reason = ?, updated_at = GETDATE() WHERE quotation_id = ?";
+        String sql = "UPDATE quotation SET status = ?, reject_reason = ?, updated_at = GETDATE() WHERE quotation_id = ?";
 
         Connection connection = null;
         try {

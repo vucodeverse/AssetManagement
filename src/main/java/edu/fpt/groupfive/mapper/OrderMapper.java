@@ -15,10 +15,12 @@ public interface OrderMapper {
 
     @Mapping(target = "orderId", source = "id")
     @Mapping(target = "purchaseId", source = "purchaseRequestId")
+    @Mapping(target = "totalAmount", source = "totalAmount")
     @Mapping(target = "status", expression = "java(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)")
     PurchaseOrderResponse toPurchaseOrderResponse(Order order);
 
     @Mapping(target = "orderId", source = "id")
+    @Mapping(target = "grandTotal", source = "totalAmount")
     @Mapping(target = "status", expression = "java(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)")
     PurchaseOrderDetailResponse toPurchaseOrderDetailResponse(Order order);
 }

@@ -7,7 +7,7 @@ $(document).ready(function () {
             const tax = parseFloat($(this).attr('data-tax')) || 0;
             const disc = parseFloat($(this).attr('data-discount')) || 0;
 
-            // subtotal = qty * price * (1 + tax% - disc%)
+            // Tổng phụ = số lượng * đơn giá * (1 + %thuế - %chiết khấu)
             grandTotal += qty * price * (1 + (tax / 100) - (disc / 100));
         });
 

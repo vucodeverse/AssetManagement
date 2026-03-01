@@ -9,19 +9,27 @@
         </div>
 
         <nav class="sidebar-nav">
-            <!-- DASHBOARD -->
-            <a class="nav-item" th:href="@{/dashboard}" th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
+            <!-- BẢNG ĐIỀU KHIỀN -->
+            <a class="nav-item" th:href="@{/purchase-staff/dashboard}"
+                th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
                 <i class="fas fa-th-large"></i> Dashboard
             </a>
 
-            <!-- QUOTATIONS -->
-            <a class="nav-item" th:href="@{/show/quotations-from-purchase}"
+            <!-- YÊU CẦU MUA SẮM -->
+            <a class="nav-item" th:href="@{/purchase-staff/purchases}"
+                th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                <i class="fas fa-shopping-cart"></i> Purchases
+            </a>
+
+            <!-- BÁO GIÁ -->
+            <a class="nav-item" th:href="@{/purchase-staff/quotations}"
                 th:classappend="${activeMenu}=='quotation' ? ' active' : ''">
                 <i class="fas fa-file-invoice"></i> Quotations
             </a>
 
-            <!-- PURCHASE ORDERS -->
-            <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
+            <!-- ĐƠN HÀNG MUA SẮM -->
+            <a class="nav-item" th:href="@{/purchase-staff/purchase-orders}"
+                th:classappend="${activeMenu}=='po' ? ' active' : ''">
                 <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
             </a>
         </nav>

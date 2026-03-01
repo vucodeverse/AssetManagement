@@ -671,6 +671,35 @@ CREATE TABLE goods_receipt (
                                    FOREIGN KEY (inspected_by_user_id) REFERENCES users(user_id)
 );
 
+CREATE TABLE goods_receipt_detail (
+                                      goods_receipt_detail_id  INT IDENTITY(1,1) NOT NULL,
+                                      goods_receipt_id         INT NOT NULL,
+                                      purchase_order_detail_id INT NOT NULL,
+                                      asset_type_id            INT NOT NULL,
+
+                                      received_quantity        INT NOT NULL,
+                                      accepted_quantity        INT NOT NULL,
+                                      rejected_quantity        INT NOT NULL,
+
+                                      condition_on_arrival     NVARCHAR(40) NOT NULL,
+                                      unit_price               NUMERIC(19, 2) NOT NULL,
+                                      note                     NVARCHAR(255) NULL,
+
+                                      PRIMARY KEY (goods_receipt_detail_id),
+
+                                      CONSTRAINT FK_GRD_GR
+                                          FOREIGN KEY (goods_receipt_id)
+                                              REFERENCES goods_receipt(goods_receipt_id),
+
+                                      CONSTRAINT FK_GRD_PO_DETAIL
+                                          FOREIGN KEY (purchase_order_detail_id)
+                                              REFERENCES purchase_order_details(purchase_order_detail_id),
+
+                                      CONSTRAINT FK_GRD_ASSET_TYPE
+                                          FOREIGN KEY (asset_type_id)
+                                              REFERENCES asset_type(asset_type_id)
+);
+
 CREATE TABLE asset (
                        asset_id            INT IDENTITY(1,1) NOT NULL,
                        serial_number       NVARCHAR(100) NULL UNIQUE,

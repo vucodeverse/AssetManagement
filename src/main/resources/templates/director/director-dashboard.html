@@ -88,8 +88,8 @@
                         </thead>
                         <tbody>
                             <tr class="clickable-row" th:each="pr : ${dashboard.recentPRs}"
-                                th:onclick="|window.location.href='@{/director/purchases/{id}/purchase-detail(id=${pr.id})}'|">
-                                <td class="item-id" th:text="${'PR-' + pr.id}">PR-2024-045</td>
+                                th:onclick="|window.location.href='@{/director/purchases/{id}(id=${pr.purchaseId})}'|">
+                                <td class="item-id" th:text="${'PR-' + pr.purchaseId}">PR-2024-045</td>
                                 <td><span class="status-badge" th:classappend="${pr.status.name().toLowerCase()}"
                                         th:text="${pr.status}">PENDING</span></td>
                                 <td class="user-cell" th:text="${pr.creatorName}">Alex Chen</td>
@@ -112,7 +112,7 @@
             <div class="data-card">
                 <div class="card-header">
                     <h2>RECENT QUOTATIONS</h2>
-                    <a th:href="@{/purchase-staff/quotations}" class="view-all">VIEW ALL</a>
+                    <a th:href="@{/director/quotations}" class="view-all">VIEW ALL</a>
                 </div>
                 <div class="table-responsive">
                     <table class="dashboard-table">
@@ -128,7 +128,7 @@
                         </thead>
                         <tbody>
                             <tr class="clickable-row" th:each="quo : ${dashboard.recentQuotations}"
-                                th:onclick="|window.location.href='@{/purchase-staff/quotations/{id}(id=${quo.quotationId})}'|">
+                                th:onclick="|window.location.href='@{/director/quotations/{id}(id=${quo.quotationId})}'|">
                                 <td class="item-id" th:text="${'QUO-' + quo.quotationId}">QUO-123</td>
                                 <td th:text="${quo.supplierName}">Supplier Name</td>
                                 <td th:text="${'PR-' + quo.purchaseId}">PR-045</td>

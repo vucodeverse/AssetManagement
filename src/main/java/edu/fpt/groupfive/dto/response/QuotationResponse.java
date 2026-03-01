@@ -19,7 +19,6 @@ public class QuotationResponse {
     private String supplierName;
     private String rejectedReason;
 
-    // Totals for summary
     private BigDecimal subtotal;
     private BigDecimal totalDiscount;
     private BigDecimal totalTax;

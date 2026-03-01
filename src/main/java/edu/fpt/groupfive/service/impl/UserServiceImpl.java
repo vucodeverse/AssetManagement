@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +26,6 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final DepartmentDAO departmentDAO;
-
 
     // Tạo một user mới
     @Override
@@ -48,7 +49,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
     // Update thông tin của user
     @Override
     public void updateUser(UserUpdateRequest request) {
@@ -70,12 +70,10 @@ public class UserServiceImpl implements UserService {
         // Lưu thời gian cập nhật
         existing.setUpdatedDate(LocalDateTime.now());
 
-
         // Nếu trước là manager trong một phòng mà giờ không còn
         if (oldRole == Role.DEPARTMENT_MANAGER && existing.getRole() != Role.DEPARTMENT_MANAGER) {
             departmentDAO.updateManager(oldDepartmentId, null);
         }
-
 
         // Nếu trước không phải manager mà giờ là manager của phòng
         if (oldRole != Role.DEPARTMENT_MANAGER && existing.getRole() == Role.DEPARTMENT_MANAGER) {
@@ -101,7 +99,6 @@ public class UserServiceImpl implements UserService {
 
     }
 
-
     // Remove một user (Update status)
     @Override
     public void removeUser(Integer id) {
@@ -110,7 +107,6 @@ public class UserServiceImpl implements UserService {
 
         userDAO.delete(id);
     }
-
 
     // Tìm kiếm user theo keyword
     @Override
@@ -149,7 +145,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponseList(list);
     }
 
-
     @Override
     public List<Users> getAllUsers() {
         return List.of();
@@ -183,6 +178,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsManager(Integer departmentId, Integer userId) {
         return userDAO.existsManagerByDepartment(departmentId, userId);
+    }
+
+    @Override
+    public Map<Integer, String> getUserIdToUsernameMap() {
+        return userDAO.findAll().stream()
+                .collect(Collectors.toMap(Users::getUserId, Users::getUsername, (existing, replacement) -> existing));
     }
 
 }

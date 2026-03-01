@@ -13,7 +13,9 @@ import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.mapper.OrderDetailMapper;
 import edu.fpt.groupfive.mapper.OrderMapper;
 import edu.fpt.groupfive.model.*;
+import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.OrderService;
+import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +38,9 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDAO orderDAO;
     private final OrderDetailDAO orderDetailDAO;
     private final SupplierDAO supplierDAO;
-    private final AssetTypeDAO assetTypeDAO;
+    private final AssetTypeService assetTypeService;
     private final PurchaseDetailDAO purchaseDetailDAO;
+    private final OrderCalculationUtil orderCalculationUtil;
 
     @Override
     public OrderCreateRequest checkFormCreateOrder(Integer quotationId) {
@@ -46,8 +49,7 @@ public class OrderServiceImpl implements OrderService {
 
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
 
-        Map<Integer, String> assetTypeNames = assetTypeDAO.findAll().stream()
-                .collect(Collectors.toMap(AssetType::getTypeId, AssetType::getTypeName));
+        Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
 
         List<OrderDetailCreateRequest> orderDetailCreateRequests = quotationDetails.stream()
                 .map(qd -> OrderDetailCreateRequest.builder()
@@ -68,7 +70,6 @@ public class OrderServiceImpl implements OrderService {
                 .orderDetailCreateRequests(orderDetailCreateRequests)
                 .build();
     }
-
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -128,6 +129,9 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus(OrderStatus.PENDING);
         order.setOrderNote(req.getOrderNote());
         order.setSupplierId(quotation.getSupplierId());
+
+        // Tính toán lại tổng tiền trong tầng service để đảm bảo an toàn dữ liệu
+        orderCalculationUtil.recalculateTotal(req);
         order.setTotalAmount(req.getTotalAmount());
 
         Integer orderId = orderDAO.insert(order);
@@ -156,10 +160,12 @@ public class OrderServiceImpl implements OrderService {
                         line.getQuantity(), remainingInPr, alreadyOrdered, prDetail.getQuantity()));
             }
 
-            // Dùng mapper để map các field chung (quantity, note, quotationDetailId)
+            // Sử dụng mapper để ánh xạ các trường chung (số lượng, ghi chú,
+            // quotationDetailId)
             OrderDetail orderDetail = orderDetailMapper.toOrderDetail(line);
 
-            // Override các field lấy từ DB (không tin form) để tránh tampering
+            // Ghi đè các trường lấy từ database (không tin form dữ liệu gửi lên) để tránh
+            // rò rỉ hoặc can thiệp dữ liệu
             orderDetail.setPrice(qd.getPrice());
             orderDetail.setTaxRate(qd.getTaxRate());
             orderDetail.setDiscountRate(qd.getDiscountRate());
@@ -205,54 +211,29 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new InvalidDataException("Purchase Order không tồn tại: " + orderId));
 
         String supplierName = supplierDAO.findById(order.getSupplierId())
-                .map(s -> s.getSupplierName())
+                .map(Supplier::getSupplierName)
                 .orElse("N/A");
 
         List<OrderDetail> detailModels = orderDetailDAO.findByOrderId(orderId);
+        Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
 
-        List<OrderDetailResponse> items = new ArrayList<>();
-        BigDecimal subtotal = BigDecimal.ZERO;
-        BigDecimal totalDiscount = BigDecimal.ZERO;
-        BigDecimal totalTax = BigDecimal.ZERO;
+        List<OrderDetailResponse> items = detailModels.stream()
+                .map(detail -> {
+                    OrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
+                    itemDto.setAssetTypeName(assetTypeNames.getOrDefault(detail.getAssetTypeId(), "N/A"));
+                    return itemDto;
+                })
+                .toList();
 
-        for (OrderDetail detail : detailModels) {
-            String assetTypeName = assetTypeDAO.findById(detail.getAssetTypeId()).getTypeName();
+        // Use centralized calculation utility
+        BigDecimal[] breakdown = orderCalculationUtil.calculateBreakdownForOrder(detailModels);
 
-            // Mapping via MapStruct
-            OrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
-            // Enrichment
-            itemDto.setAssetTypeName(assetTypeName);
-            items.add(itemDto);
-
-            // Calculation logic
-            BigDecimal lineQty = BigDecimal.valueOf(detail.getQuantity());
-            BigDecimal linePrice = detail.getPrice();
-            BigDecimal lineSubtotal = lineQty.multiply(linePrice);
-
-            BigDecimal discountRate = detail.getDiscountRate() != null ? detail.getDiscountRate() : BigDecimal.ZERO;
-            BigDecimal lineDiscount = lineSubtotal.multiply(discountRate).divide(BigDecimal.valueOf(100), 2,
-                    java.math.RoundingMode.HALF_UP);
-
-            BigDecimal taxableAmount = lineSubtotal.subtract(lineDiscount);
-            BigDecimal taxRate = detail.getTaxRate() != null ? detail.getTaxRate() : BigDecimal.ZERO;
-            BigDecimal lineTax = taxableAmount.multiply(taxRate).divide(BigDecimal.valueOf(100), 2,
-                    java.math.RoundingMode.HALF_UP);
-
-            subtotal = subtotal.add(lineSubtotal);
-            totalDiscount = totalDiscount.add(lineDiscount);
-            totalTax = totalTax.add(lineTax);
-        }
-
-        BigDecimal grandTotal = subtotal.subtract(totalDiscount).add(totalTax);
-
-        // Mapping via MapStruct
         PurchaseOrderDetailResponse response = orderMapper.toPurchaseOrderDetailResponse(order);
-        // Enrichment
         response.setSupplierName(supplierName);
-        response.setSubtotal(subtotal);
-        response.setTotalDiscount(totalDiscount);
-        response.setTotalTax(totalTax);
-        response.setGrandTotal(grandTotal);
+        response.setSubtotal(breakdown[0]);
+        response.setTotalDiscount(breakdown[1]);
+        response.setTotalTax(breakdown[2]);
+        response.setGrandTotal(breakdown[3]);
         response.setItems(items);
 
         return response;

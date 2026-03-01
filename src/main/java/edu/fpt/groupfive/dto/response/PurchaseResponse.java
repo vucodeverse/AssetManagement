@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PurchaseResponse {
-    private Integer id;
+    private Integer purchaseId;
     private Request status;
     private String creatorName;
     private LocalDate neededByDate;

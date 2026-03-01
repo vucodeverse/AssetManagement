@@ -17,7 +17,7 @@
 <body>
   <div layout:fragment="content">
     <div class="po-detail-wrapper">
-      <!-- Breadcrumb -->
+      <!-- Thanh điều hướng (Breadcrumb) -->
       <div class="breadcrumb">
         DASHBOARD / <a th:href="@{/purchase-orders}">PURCHASE ORDERS</a> /
         <span class="active" th:text="'PO-' + ${order.orderId}">PO-1</span>
@@ -27,11 +27,11 @@
         <div class="header-left">
           <h1>PURCHASE ORDER DETAILS</h1>
         </div>
-        <!-- Removed Action Buttons as requested -->
+        <!-- Đã loại bỏ các nút hành động theo yêu cầu -->
       </header>
 
       <div class="details-card">
-        <!-- Header Info -->
+        <!-- Thông tin tiêu đề -->
         <div class="header-info">
           <div class="info-item">
             <label>PURCHASE ORDER ID</label>
@@ -54,7 +54,7 @@
 
         <hr class="divider">
 
-        <!-- Line Items Table -->
+        <!-- Bảng danh sách mặt hàng -->
         <section class="items-section">
           <h2 class="section-title">LINE ITEM DETAILS</h2>
           <div class="details-table-wrap">
@@ -92,7 +92,7 @@
           </div>
         </section>
 
-        <!-- Footer Summary Area -->
+        <!-- Khu vực tổng kết cuối trang -->
         <div class="footer-summary">
           <div class="terms-box">
             <label>GENERAL TERMS</label>

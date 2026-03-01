@@ -15,7 +15,7 @@
     <th:block layout:fragment="content">
         <div class="quotation-content-wrapper">
 
-            <form id="filterForm" method="get" th:action="@{/search/quotation-for-purchase}"
+            <form id="filterForm" method="get" th:action="@{/purchase-staff/quotations/search}"
                 th:object="${searchForQuotation}">
                 <header class="top-bar">
                     <h1>QUOTATIONS</h1>
@@ -29,7 +29,7 @@
                     </div>
                 </header>
 
-                <!-- Filters Section -->
+                <!-- Phần bộ lọc -->
                 <section class="filters-bar">
                     <div class="filter-group">
                         <label>PRIORITY:</label>
@@ -56,14 +56,14 @@
                         <input type="date" th:field="*{to}">
                     </div>
                     <div class="filter-actions">
-                        <a class="btn-reset-filters" th:href="@{/show/quotations-from-purchase}">
+                        <a class="btn-reset-filters" th:href="@{/purchase-staff/quotations}">
                             <i class="fas fa-undo-alt"></i> RESET FILTERS
                         </a>
                     </div>
                 </section>
             </form>
 
-            <!-- Data Table Section -->
+            <!-- Phần bảng dữ liệu -->
             <div class="table-container">
                 <table class="data-table" id="quotation-table">
                     <thead>
@@ -90,7 +90,7 @@
                                     th:text="${q.priority}"></span>
                             </td>
                             <td>
-                                <form th:action="@{/view/view-quotation-of-purchase/{id}(id=${q.purchaseId})}"
+                                <form th:action="@{/purchase-staff/quotations/of-purchase/{id}(id=${q.purchaseId})}"
                                     th:method="get">
                                     <button type="submit" class="btn-review">REVIEW ALL</button>
                                 </form>

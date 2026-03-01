@@ -1,8 +1,10 @@
 package edu.fpt.groupfive.controller.purchase;
 
+import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseDetailCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
 import edu.fpt.groupfive.dto.response.AssetTypeResponse;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
@@ -22,15 +24,40 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/asset-manager")
+@RequestMapping("/purchase-staff/purchases")
 public class PurchaseController {
 
     private final PurchaseService purchaseService;
     private final AssetTypeService assetTypeService;
     private final UserService userService;
 
+    @ModelAttribute("searchAndFilter")
+    public PurchaseSearchAndFilter initSearchAndFilter() {
+        return new PurchaseSearchAndFilter();
+    }
+
+    // Hiển thị danh sách yêu cầu mua sắm cho Staff
+    @GetMapping("")
+    public String showPurchases(Model model) {
+        model.addAttribute("activeMenu", "approval");
+        model.addAttribute("activeSub", "pr");
+        model.addAttribute("purchases", purchaseService.findAllPurchases());
+        addFilterAttributes(model);
+        return "purchase/purchase-list";
+    }
+
+    // Tìm kiếm và lọc yêu cầu mua sắm
+    @GetMapping("/search")
+    public String searchPurchases(@ModelAttribute("searchAndFilter") PurchaseSearchAndFilter criteria, Model model) {
+        model.addAttribute("activeMenu", "approval");
+        model.addAttribute("activeSub", "pr");
+        model.addAttribute("purchases", purchaseService.searchAndFilter(criteria));
+        addFilterAttributes(model);
+        return "purchase/purchase-list";
+    }
+
     // hiển thị form tạo purchase mới
-    @GetMapping("/create/purchase-form")
+    @GetMapping("/create")
     public String showPurchaseForm(Model model) {
 
         PurchaseCreateRequest purchaseCreateRequest = new PurchaseCreateRequest();
@@ -44,7 +71,7 @@ public class PurchaseController {
     }
 
     // hiển thị form sửa purchase draft
-    @GetMapping("/purchases/{id}/edit")
+    @GetMapping("/{id}/edit")
     public String showEditPurchaseForm(@PathVariable("id") Integer id, Model model) {
 
         PurchaseCreateRequest purchaseCreateRequest = purchaseService.loadDraftForEdit(id);
@@ -61,8 +88,8 @@ public class PurchaseController {
         model.addAttribute("activeSub", "pr");
     }
 
-    // purchase detail
-    @GetMapping("/show/purchase-detail/{purchaseId}")
+    // Chi tiết yêu cầu mua sắm
+    @GetMapping("/{purchaseId}")
     public String showPurchaseDetail(@PathVariable("purchaseId") Integer purchaseId, Model model) {
         model.addAttribute("purchase", purchaseService.findById(purchaseId));
         ActiveNavbar(model);
@@ -70,7 +97,7 @@ public class PurchaseController {
     }
 
     // them 1 row ở purchase dertail chỗ form nhập
-    @PostMapping(value = "/create/purchase-form", params = "addDetail")
+    @PostMapping(value = "/create", params = "addDetail")
     public String addPurchaseDetail(
             @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest, Model model) {
 
@@ -82,7 +109,7 @@ public class PurchaseController {
     }
 
     // xóa đi 1 row
-    @PostMapping(value = "/create/purchase-form", params = "remove")
+    @PostMapping(value = "/create", params = "remove")
     public String removePurchaseDetail(
             @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest,
             @RequestParam("remove") int index, Model model) {
@@ -97,7 +124,7 @@ public class PurchaseController {
     }
 
     // xử lí form nhập
-    @PostMapping(value = "/create/purchase-form", params = "actions")
+    @PostMapping(value = "/create", params = "actions")
     public String processingForm(
             @Valid @ModelAttribute("purchaseCreateRequest") PurchaseCreateRequest purchaseCreateRequest,
             BindingResult result,
@@ -113,9 +140,11 @@ public class PurchaseController {
             return "purchase/purchase-form";
         }
 
-        // lấy ra user đang login
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        int userId = userService.getUserIdByUsername(authentication.getName());
+        // TODO: Chưa bật bảo mật, tạm thời để userId = 2
+        // Authentication authentication =
+        // SecurityContextHolder.getContext().getAuthentication();
+        // int userId = userService.getUserIdByUsername(authentication.getName());
+        int userId = 2;
 
         Integer purchaseId;
         if (isDraft) {
@@ -123,13 +152,18 @@ public class PurchaseController {
         } else {
             purchaseId = purchaseService.createPurchaseRequest(purchaseCreateRequest, userId, Request.PENDING);
         }
-        return "redirect:/asset-manager/purchase-detail/" + purchaseId;
+        return "redirect:/purchase-staff/purchases/" + purchaseId;
     }
 
     // gắn assetType
     private void getAssetType(Model model) {
         List<AssetTypeResponse> assetTypes = assetTypeService.getAllAssetType();
         model.addAttribute("assetTypes", assetTypes);
+    }
+
+    private void addFilterAttributes(Model model) {
+        model.addAttribute("priorities", Priority.values());
+        model.addAttribute("status", Request.values());
     }
 
 }

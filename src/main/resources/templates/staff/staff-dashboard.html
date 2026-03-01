@@ -51,7 +51,7 @@
                                 <tr th:each="pr : ${dashboard.approvedPRs}">
                                     <td>
                                         <div class="pr-info">
-                                            <strong th:text="'#PR-' + ${pr.id}">#PR-2024-001</strong>
+                                            <strong th:text="'#PR-' + ${pr.getPurchaseId}">#PR-2024-001</strong>
                                             <span
                                                 th:text="${pr.creatorName != null ? 'Requested by ' + pr.creatorName : 'Requested by Unknown'}">Requested
                                                 by Alex Rivera</span>
@@ -68,7 +68,7 @@
                                             th:text="${pr.priority}">URGENT</span>
                                     </td>
                                     <td>
-                                        <a th:href="@{/purchases/{id}/quotation-form(id=${pr.id})}"
+                                        <a th:href="@{/purchases/{id}/quotation-form(id=${pr.getPurchaseId})}"
                                             class="btn-create-quote">CREATE QUOTE</a>
                                     </td>
                                 </tr>

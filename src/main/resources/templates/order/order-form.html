@@ -17,15 +17,15 @@
     <th:block layout:fragment="content">
         <main class="po-content-wrapper">
 
-            <!-- Breadcrumb -->
+            <!-- Thanh điều hướng (Breadcrumb) -->
             <div class="breadcrumb">
-                <a th:href="@{/dashboard}">DASHBOARD</a>
+                <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a>
                 /
-                <a th:href="@{/purchase-orders}">PURCHASE ORDERS</a> /
+                <a th:href="@{/purchase-staff/purchase-orders}">PURCHASE ORDERS</a> /
                 <span class="active">GENERATE PO</span>
             </div>
 
-            <!-- Page Header -->
+            <!-- Tiêu đề trang -->
             <header class="page-header">
                 <div class="header-text">
                     <h1>CREATE PURCHASE ORDER</h1>
@@ -33,16 +33,17 @@
                 </div>
             </header>
 
-            <!-- Error Banner -->
+            <!-- Biểu ngữ lỗi -->
             <div class="alert-error" th:if="${error}">
                 <i class="fas fa-exclamation-circle"></i>
                 <span th:text="${error}"></span>
             </div>
 
-            <form th:action="@{/quotations/{id}/create-po(id=${orderCreateRequest.quotationId})}"
+            <form
+                th:action="@{/purchase-staff/purchase-orders/create-from-quotation/{id}(id=${orderCreateRequest.quotationId})}"
                 th:object="${orderCreateRequest}" method="post">
 
-                <!-- General Information -->
+                <!-- Thông tin chung -->
                 <div class="po-card">
                     <h2 class="section-label">General Information</h2>
                     <div class="form-grid">
@@ -83,7 +84,7 @@
                     </div>
                 </div>
 
-                <!-- Order Details -->
+                <!-- Chi tiết đơn hàng -->
                 <div class="po-card">
                     <h2 class="section-label">Order Details</h2>
                     <div class="table-container">
@@ -104,7 +105,7 @@
                                 <tr th:each="od, iter : *{orderDetailCreateRequests}">
                                     <td class="td-value" th:text="${od.assetTypeName}">Asset Type</td>
 
-                                    <!-- Detail ID display -->
+                                    <!-- Hiển thị ID chi tiết -->
                                     <td class="td-value" th:text="'QD-' + ${od.quotationDetailId}">QD-001</td>
 
                                     <!-- Unit price display -->
@@ -120,7 +121,7 @@
                                     <td class="td-value"
                                         th:text="${od.discountRate != null ? od.discountRate + '%' : '-'}">-</td>
 
-                                    <!-- Quantity: editable -->
+                                    <!-- Số lượng: có thể chỉnh sửa -->
                                     <td>
                                         <input type="hidden"
                                             th:name="'orderDetailCreateRequests[' + ${iter.index} + '].quotationDetailId'"
@@ -147,14 +148,14 @@
                                             th:attr="data-price=${od.price}, data-tax=${od.taxRate}, data-discount=${od.discountRate}">
                                     </td>
 
-                                    <!-- Note (editable) -->
+                                    <!-- Ghi chú (có thể chỉnh sửa) -->
                                     <td>
                                         <input class="table-input" type="text"
                                             th:name="'orderDetailCreateRequests[' + ${iter.index} + '].orderDetailNote'"
                                             th:value="${od.orderDetailNote}" placeholder="Add note...">
                                     </td>
 
-                                    <!-- Delete row -->
+                                    <!-- Xóa dòng -->
                                     <td class="td-delete">
                                         <button type="submit" name="removeLine" th:value="${iter.index}"
                                             class="btn-del-row" title="Remove this line">
@@ -166,7 +167,7 @@
                         </table>
                     </div>
 
-                    <!-- Financial Summary -->
+                    <!-- Tóm tắt tài chính -->
                     <div class="financial-summary">
                         <div class="total-line">
                             <span>TOTAL AMOUNT</span>
@@ -179,13 +180,13 @@
                     </div>
                 </div>
 
-                <!-- Footer Actions -->
+                <!-- Các nút điều hướng cuối -->
                 <div class="po-footer">
                     <div class="footer-info">
                         <i class="fas fa-info-circle"></i> Review all fields carefully before submitting.
                     </div>
                     <div class="footer-actions">
-                        <a th:href="@{/purchase-orders}" class="btn-outline">
+                        <a th:href="@{/purchase-staff/purchase-orders}" class="btn-outline">
                             <i class="fas fa-arrow-left"></i> Cancel
                         </a>
                         <button type="submit" class="btn-solid">

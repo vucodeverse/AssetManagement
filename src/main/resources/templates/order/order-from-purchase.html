@@ -13,12 +13,12 @@
   <div layout:fragment="content">
     <div class="po-list-wrapper">
 
-      <!-- Breadcrumb -->
+      <!-- Thanh điều hướng (Breadcrumb) -->
       <div class="breadcrumb">
-        DASHBOARD / <span class="active">PURCHASE ORDERS</span>
+        <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a> / <span class="active">PURCHASE ORDERS</span>
       </div>
 
-      <!-- Page Header -->
+      <!-- Tiêu đề trang -->
       <div class="page-header">
         <div>
           <h1>Purchase Orders</h1>
@@ -26,19 +26,19 @@
         </div>
       </div>
 
-      <!-- Filter Card -->
-      <form id="filterForm" th:action="@{/purchase-orders}" method="get">
+      <!-- Thẻ bộ lọc -->
+      <form id="filterForm" th:action="@{/purchase-staff/purchase-orders}" method="get">
         <div class="filter-card">
-          <!-- Search bar -->
+          <!-- Thanh tìm kiếm -->
           <div class="search-wrap">
             <i class="fas fa-search"></i>
             <input type="text" id="keyword" name="keyword" th:value="${criteria.keyword}"
               placeholder="Search by PO ID or Supplier name...">
           </div>
 
-          <!-- Filters -->
+          <!-- Các bộ lọc -->
           <div class="filter-bar">
-            <!-- Status -->
+            <!-- Trạng thái -->
             <select id="statusFilter" name="status" class="filter-select">
               <option value="">All Statuses</option>
               <option value="PENDING" th:selected="${criteria.status == 'PENDING'}">Pending</option>
@@ -80,7 +80,7 @@
         </div>
       </form>
 
-      <!-- PR Groups -->
+      <!-- Nhóm các yêu cầu mua sắm (PR Groups) -->
       <div id="poGroupList">
         <div th:if="${groups.isEmpty()}" style="text-align:center; padding:60px; color:#9ca3af; font-size:14px;">
           No purchase orders found.
@@ -108,7 +108,7 @@
             </thead>
             <tbody>
               <tr th:each="po : ${group.orders}"
-                th:onclick="|window.location.href='@{/purchase-orders/{id}(id=${po.orderId})}'|">
+                th:onclick="|window.location.href='@{/purchase-staff/purchase-orders/{id}(id=${po.orderId})}'|">
                 <td class="td-id" th:text="'PO-' + ${po.orderId}">PO-001</td>
                 <td th:text="${po.createdAt != null ? #temporals.format(po.createdAt, 'dd-MM-yyyy') : '—'}">01-01-2024
                 </td>
@@ -126,7 +126,7 @@
         </article>
       </div>
 
-      <!-- Pagination -->
+      <!-- Phân trang -->
       <div class="pagination-bar" th:if="${totalPages > 1}">
         <a class="page-btn" th:classappend="${currentPage == 1 ? 'disabled' : ''}" th:href="@{/purchase-orders(page=${currentPage - 1}, keyword=${criteria.keyword},
                        status=${criteria.status}, supplierName=${criteria.supplierName},
@@ -139,7 +139,7 @@
                        amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
                        dateTo=${criteria.dateTo})}">1</a>
 
-        <a class="page-btn" th:classappend="${currentPage == totalPages ? 'disabled' : ''}" th:href="@{/purchase-orders(page=${currentPage + 1}, keyword=${criteria.keyword},
+        <a class="page-btn" th:classappend="${currentPage == totalPages ? 'disabled' : ''}" th:href="@{/purchase-staff/purchase-orders(page=${currentPage + 1}, keyword=${criteria.keyword},
                        status=${criteria.status}, supplierName=${criteria.supplierName},
                        amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
                        dateTo=${criteria.dateTo})}">›</a>

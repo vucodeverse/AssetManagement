@@ -16,29 +16,30 @@
     <th:block layout:fragment="content">
 
         <main class="main-content">
-            <!-- Breadcrumb -->
+            <!-- Thanh điều hướng (Breadcrumb) -->
             <div class="breadcrumb">
-                DASHBOARD / <a th:href="@{/purchases}">PURCHASE REQUESTS</a> /
+                DASHBOARD / <a th:href="@{/purchase-staff/purchases}">PURCHASE REQUESTS</a> /
                 <span class="active">DETAIL</span>
             </div>
 
-            <!-- Success Message -->
+            <!-- Thông báo thành công -->
             <div th:if="${message}" class="alert alert-success"
                 style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
                 <span th:text="${message}"></span>
             </div>
-            <!-- Header -->
+            <!-- Tiêu đề -->
             <header class="top-bar">
                 <div class="title-section">
                     <h1>PURCHASE REQUEST DETAIL</h1>
                 </div>
                 <div class="header-actions">
-                    <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.id})}">
+                    <form method="post"
+                        th:action="@{/purchase-staff/purchases/{id}/actions(id=${purchase.purchaseId})}">
 
                         <div th:if="${purchase.status.name() != 'APPROVED' && purchase.status.name() != 'REJECTED'}">
                             <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
                             <!-- đổi reject thành button để mở popup -->
-                            <a class="btn-reject" th:href="'#reject-' + ${purchase.id}"
+                            <a class="btn-reject" th:href="'#reject-' + ${purchase.purchaseId}"
                                 onclick="event.stopPropagation();">
                                 REJECT
                             </a>
@@ -47,13 +48,13 @@
                 </div>
             </header>
 
-            <!-- PR Detail Content -->
+            <!-- Nội dung chi tiết yêu cầu mua sắm -->
             <div class="content-card">
-                <!-- Info Grid -->
+                <!-- Lưới thông tin -->
                 <div class="info-grid">
                     <div class="info-block">
                         <label>REQUEST ID</label>
-                        <div class="val" th:text="'PR-' + ${purchase.id}">PR-0842</div>
+                        <div class="val" th:text="'PR-' + ${purchase.purchaseId}">PR-0842</div>
                     </div>
                     <div class="info-block">
                         <label>STATUS</label>
@@ -71,7 +72,7 @@
                     </div>
                 </div>
 
-                <!-- Reject Reason (only visible when status is REJECTED) -->
+                <!-- Lý do từ chối (chỉ hiển thị khi trạng thái là REJECTED) -->
                 <div th:if="${purchase.status.name() == 'REJECTED' && purchase.rejectReason != null}"
                     style="margin-top: 12px; padding: 12px 16px; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 6px;">
                     <label
@@ -83,7 +84,7 @@
 
                 <hr class="separator">
 
-                <!-- Table Section -->
+                <!-- Phần bảng danh sách mặt hàng -->
                 <div class="table-section">
                     <h3>REQUESTED ITEMS</h3>
                     <table class="item-table">
@@ -121,7 +122,7 @@
 
                 </div>
 
-                <!-- Financial Summary -->
+                <!-- Tóm tắt tài chính -->
                 <div class="summary-area">
                     <div class="summary-line">
                         <span>SUBTOTAL ESTIMATED</span>
@@ -131,7 +132,7 @@
                         <span>TOTAL AMOUNT</span>
                         <strong id="total">0</strong>
                     </div>
-                    <!-- Quotation Summary Section -->
+                    <!-- Phần tóm tắt báo giá liên quan -->
                     <div class="quotations-summary-section" th:if="${purchase.status.name() == 'APPROVED'}">
                         <hr class="separator">
                         <div class="quotation-header">
@@ -141,11 +142,13 @@
                                     RECEIVED</span>
                             </div>
                             <div class="q-actions">
-                                <a th:href="@{/view/view-quotation-of-purchase/{id}(id=${purchase.id})}"
-                                    class="btn-view-quotes" th:if="${purchase.quotationCount > 0}">VIEW ALL</a>
-                                <a th:href="@{/create/purchase-{id}/quotation(id=${purchase.id})}"
-                                    class="btn-add-quote">
-                                    <i class="fas fa-plus"></i> NEW QUOTATION
+                                <a th:href="@{/purchase-staff/quotations/of-purchase/{id}(id=${purchase.purchaseId})}"
+                                    class="btn-outline">
+                                    <i class="fas fa-file-invoice"></i> View All Quotations
+                                </a>
+                                <a th:href="@{/purchase-staff/quotations/create/{id}(id=${purchase.purchaseId})}"
+                                    class="btn-solid" th:if="${purchase.status.name() == 'PENDING'}">
+                                    <i class="fas fa-plus"></i> Add New Quotation
                                 </a>
                             </div>
                         </div>
@@ -154,19 +157,17 @@
                     </div>
                 </div>
         </main>
-        <!-- Reject Modal  -->
-        <div th:id="'reject-' + ${purchase.id}" class="modal-overlay">
+        <!-- Modal từ chối -->
+        <div th:id="'reject-' + ${purchase.purchaseId}" class="modal-overlay">
             <div class="modal" role="dialog" aria-modal="true">
                 <div class="modal-header">
                     <h3 class="modal-title">
-                        Reject Reason - PR-<span th:text="${purchase.id}"></span>
+                        Reject Reason - PR-<span th:text="${purchase.purchaseId}"></span>
                     </h3>
                     <a href="#" class="modal-close" aria-label="Close">✕</a>
                 </div>
 
-                <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.id})}">
-
-
+                <form th:action="@{/purchase-staff/purchases/{id}/actions(id=${purchase.purchaseId})}" method="post">
                     <div class="modal-body">
                         <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
                     </div>

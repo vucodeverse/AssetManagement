@@ -9,33 +9,54 @@
         </div>
 
         <nav class="sidebar-nav">
-            <!-- DASHBOARD -->
+            <!-- BẢNG ĐIỀU KHIỀN -->
             <!--th:classappend = Thymeleaf attribute để thêm class vào class đã có sẵn-->
             <a class="nav-item" th:href="@{/director/dashboard}"
                 th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
                 <i class="fas fa-th-large"></i> Dashboard
             </a>
 
-            <!-- APPROVAL CENTER -->
+            <!-- YÊU CẦU MUA SẮM -->
+            <a class="nav-item" th:href="@{/director/purchases}"
+                th:classappend="${activeMenu}=='purchase' ? ' active' : ''">
+                <i class="fas fa-shopping-cart"></i> Purchases
+            </a>
+
+            <!-- YÊU CẦU MUA SẮM -->
+            <a class="nav-item" th:href="@{/purchase-staff/purchases}"
+                th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                <i class="fas fa-shopping-cart"></i> Purchases
+            </a>
+
+            <!-- BÁO GIÁ -->
+            <a class="nav-item" th:href="@{/purchase-staff/quotations}"
+                th:classappend="${activeMenu}=='quotation' ? ' active' : ''">
+                <i class="fas fa-file-invoice"></i> Quotations
+            </a>
+
+            <!-- TRUNG TÂM PHÊ DUYỆT -->
             <div class="nav-group">
-                <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                <a class="nav-item" th:href="@{/director/purchases}"
+                    th:classappend="${activeMenu}=='approval' ? ' active' : ''">
                     <i class="fas fa-check-circle"></i> Approval Center
                 </a>
 
                 <div class="sub-nav" th:if="${activeMenu}=='approval'">
-                    <a class="sub-item" th:href="@{/purchases}" th:classappend="${activeSub}=='pr' ? ' active' : ''">
+                    <a class="sub-item" th:href="@{/director/purchases}"
+                        th:classappend="${activeSub}=='pr' ? ' active' : ''">
                         Purchase Requests
                     </a>
 
-                    <a class="sub-item" th:href="@{/show/quotations-from-purchase}"
+                    <a class="sub-item" th:href="@{/director/quotations}"
                         th:classappend="${activeSub}=='qt' ? ' active' : ''">
                         Quotations
                     </a>
                 </div>
             </div>
 
-            <!-- PURCHASE ORDERS -->
-            <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
+            <!-- ĐƠN HÀNG MUA SẮM -->
+            <a class="nav-item" th:href="@{/purchase-staff/purchase-orders}"
+                th:classappend="${activeMenu}=='po' ? ' active' : ''">
                 <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
             </a>
         </nav>

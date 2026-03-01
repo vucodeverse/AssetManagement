@@ -10,19 +10,14 @@ import edu.fpt.groupfive.dto.response.PurchaseDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseResponse;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.model.Purchase;
-import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -69,17 +64,8 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     public PurchaseResponse findById(Integer id) {
 
-        // map user id qua username
-        Map<Integer, String> userMap = new HashMap<>();
-        for (Users u : userService.getAllUsers()) {
-            userMap.put(u.getUserId(), u.getUsername());
-        }
-
-        // map asset type id qua asset type name
-        Map<Integer, String> assetTypeMap = new HashMap<>();
-        for (var at : assetTypeService.getAllAssetType()) {
-            assetTypeMap.put(at.getTypeId(), at.getTypeName());
-        }
+        Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
+        Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
 
         return purchaseDAO.findById(id)
                 .map(p -> {
@@ -96,17 +82,13 @@ public class PurchaseServiceImpl implements PurchaseService {
                                     .build())
                             .toList();
 
-                    return PurchaseResponse.builder()
-                            .id(p.getId())
-                            .status(p.getStatus())
-                            .createdAt(p.getCreatedAt())
-                            .priority(p.getPriority().name())
-                            .neededByDate(p.getNeededByDate())
-                            .creatorName(userMap.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"))
-                            .purchaseDetails(details)
-                            .quotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()))
-                            .rejectReason(p.getRejectReason())
-                            .build();
+                    // Sử dụng mapper và thiết lập thêm thông tin chi tiết (details) và số lượng báo
+                    // giá (quotationCount)
+                    PurchaseResponse resp = purchaseMapper.toPurchaseResponse(p);
+                    resp.setCreatorName(userMap.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"));
+                    resp.setPurchaseDetails(details);
+                    resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()));
+                    return resp;
                 })
                 .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại: " + id));
     }
@@ -114,23 +96,13 @@ public class PurchaseServiceImpl implements PurchaseService {
     // lấy ra tấy cả purchase
     @Override
     public List<PurchaseResponse> findAllPurchases() {
-        Map<Integer, String> map = new HashMap<>();
-
-        for (Users u : userService.getAllUsers()) {
-            map.put(u.getUserId(), u.getUsername());
-        }
+        Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
 
         return purchaseDAO.findAll().stream().map(p -> {
-            return PurchaseResponse.builder()
-                    .id(p.getId())
-                    .status(p.getStatus())
-                    .createdAt(p.getCreatedAt())
-                    .priority(p.getPriority().name())
-                    .neededByDate(p.getNeededByDate())
-                    .creatorName(map.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"))
-                    .quotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()))
-                    .build();
-
+            PurchaseResponse resp = purchaseMapper.toPurchaseResponse(p);
+            resp.setCreatorName(userMap.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"));
+            resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()));
+            return resp;
         }).toList();
     }
 
@@ -144,10 +116,13 @@ public class PurchaseServiceImpl implements PurchaseService {
             throw new InvalidDataException("From phải trước To");
         }
 
-        // map sang Purchase response để hiển thị
+        Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
+
+        // Chuyển đổi sang PurchaseResponse để hiển thị trên giao diện
         return purchaseDAO.getPurchaseByFilter(p).stream()
                 .map(pr -> {
                     PurchaseResponse resp = purchaseMapper.toPurchaseResponse(pr);
+                    resp.setCreatorName(userMap.getOrDefault(pr.getCreatedByUser(), "Không tồn tại người dùng"));
                     resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(pr.getId()));
                     return resp;
                 })
@@ -159,10 +134,9 @@ public class PurchaseServiceImpl implements PurchaseService {
     public void actionsWithPurchase(Integer purchaseId, String action, String reasonReject) {
 
         // check purchase có tồn tại hay ko
-        purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException("Purchase request " +
-                "không tộn tại"));
+        purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException("Purchase request không tộn tại"));
 
-        // xử lí các trường hợp nhận về actions
+        // Xử lý các hành động (actions) nhận được từ controller
         if ("a".equals(action)) {
             purchaseDAO.updatePurchaseStatus(Request.APPROVED, purchaseId, null);
         } else if ("r".equals(action)) {
@@ -185,7 +159,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         request.setReason(purchase.getReason());
         request.setPriority(purchase.getPriority());
 
-        // map purchase details
+        // Chuyển đổi danh sách chi tiết yêu cầu mua sắm (purchase details)
         if (purchase.getPurchaseDetails() != null) {
             List<PurchaseDetailCreateRequest> details = purchase.getPurchaseDetails().stream()
                     .map(pd -> PurchaseDetailCreateRequest.builder()

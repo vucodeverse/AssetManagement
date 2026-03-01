@@ -16,14 +16,14 @@
 <body>
     <div layout:fragment="content">
         <div class="po-detail-wrapper">
-            <!-- Breadcrumb refined -->
+            <!-- Thanh điều hướng (Breadcrumb) -->
             <div class="breadcrumb">
-                <a th:href="@{/dashboard}">DASHBOARD</a>
+                <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a> /
+                <a th:href="@{/purchase-staff/purchases}">PURCHASES</a> /
+                <a
+                    th:href="@{/purchase-staff/quotations/of-purchase/{id}(id=${quotation.purchaseId})}">QUOTATIONS</a>
                 /
-                <a th:href="@{/purchases}">PURCHASE REQUESTS</a> /
-                <a th:href="@{/view/view-quotation-of-purchase/{id}(id=${quotation.purchaseId})}"
-                    th:text="'PR-' + ${quotation.purchaseId}">PR-1</a> /
-                <span class="active" th:text="'QT-' + ${quotation.quotationId}">QT-1</span>
+                <span class="active">DETAIL</span>
             </div>
 
             <header class="content-header">
@@ -31,18 +31,15 @@
                     <h1>QUOTATION DETAILS</h1>
                 </div>
                 <div class="header-actions">
-                    <!-- Director Actions -->
+                    <!-- Các hành động của Director -->
                     <th:block>
                         <button type="button" class="btn-outline-prem" onclick="openRejectModal()">REJECT</button>
-                        <a class="btn-solid-prem" th:href="@{/quotations/{id}/create-po(id=${quotation.quotationId})}">
-                            APPROVE &amp; GENERATE PO
+                        <a th:href="@{/purchase-staff/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
+                            class="btn-approve">
+                            APPROVE & GENERATE PO
                         </a>
-                    </th:block>
-
-                    <!-- Purchase Staff Actions -->
-                    <th:block>
-                        <a th:if="${quotation.quotationStatus == 'DRAFT'}"
-                            class="btn-solid-prem" th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
+                        <a th:if="${quotation.quotationStatus == 'DRAFT'}" class="btn-solid-prem"
+                            th:href="@{/purchase-staff/quotations/{id}/edit(id=${quotation.quotationId})}">
                             UPDATE QUOTATION
                         </a>
                     </th:block>
@@ -50,7 +47,7 @@
             </header>
 
             <div class="details-card">
-                <!-- Header Info -->
+                <!-- Thông tin tiêu đề -->
                 <div class="header-info">
                     <div class="info-item">
                         <label>QUOTATION ID</label>
@@ -77,7 +74,7 @@
                     </div>
                 </div>
 
-                <!-- Rejection Reason refined -->
+                <!-- Lý do từ chối -->
                 <div th:if="${quotation.quotationStatus == T(edu.fpt.groupfive.common.QuotationStatus).REJECTED and quotation.rejectedReason != null}"
                     class="rejection-reason-box">
                     <label>REJECTION REASON</label>
@@ -86,7 +83,7 @@
 
                 <hr class="divider">
 
-                <!-- Line Items Table -->
+                <!-- Bảng danh sách mặt hàng -->
                 <section class="items-section">
                     <h2 class="section-title">QUOTATION LINE ITEMS</h2>
                     <div class="details-table-wrap">
@@ -122,10 +119,10 @@
                     </div>
                 </section>
 
-                <!-- Footer Summary Area -->
+                <!-- Khu vực tổng kết cuối trang -->
                 <div class="footer-summary">
                     <div class="terms-box">
-                        <!-- Placeholder for Quotation Notes or Terms -->
+                        <!-- Vị trí dành cho Ghi chú hoặc Điều khoản báo giá -->
                         <label>QUOTATION NOTES</label>
                         <p>This quotation is valid for 30 days. Specifications provided match the purchase request
                             requirements. Warranty covers manufacturing defects only.</p>
@@ -157,13 +154,13 @@
         </div>
     </div>
 
-    <!-- Rejection Modal -->
+    <!-- Modal từ chối -->
     <div id="rejectModal" class="modal" layout:fragment="extra-content">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>REJECT QUOTATION</h2>
             </div>
-            <form th:action="@{/quotations/{id}/reject(id=${quotation.quotationId})}" method="post">
+            <form th:action="@{/purchase-staff/quotations/{id}/reject(id=${quotation.quotationId})}" method="post">
                 <div class="modal-body">
                     <p style="font-size: 14px; margin-bottom: 16px; color: #666;">Please provide a reason for rejecting
                         this quotation. This will be visible to the purchase staff.</p>
