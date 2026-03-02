@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao;
 
+import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.model.Asset;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface AssetDAO {
     List<Asset> findAll();
 
     boolean existsBySerial(String serialNumber);
+
+    Optional<AssetDetailResponse> findDetailById(Integer id);
 }
