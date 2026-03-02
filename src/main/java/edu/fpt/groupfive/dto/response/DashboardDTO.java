@@ -14,6 +14,6 @@ public class DashboardDTO {
     private long totalPOCount;
     private BigDecimal totalPOValue;
     
-    private List<PurchaseResponse> recentPRs;
+    private List<PurchaseRequestResponse> recentPRs;
     private List<QuotationResponse> recentQuotations;
 }

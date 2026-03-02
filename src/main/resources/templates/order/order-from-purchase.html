@@ -80,69 +80,37 @@
         </div>
       </form>
 
-      <!-- Nhóm các yêu cầu mua sắm (PR Groups) -->
-      <div id="poGroupList">
-        <div th:if="${groups.isEmpty()}" style="text-align:center; padding:60px; color:#9ca3af; font-size:14px;">
-          No purchase orders found.
-        </div>
-
-        <article class="pr-group" th:each="group : ${groups}">
-          <div class="pr-group-header">
-            <span class="pr-badge">PR ID</span>
-            <span class="pr-id-label" th:text="'#' + ${group.purchaseRequestId}">PR-001</span>
-            <span class="pr-note" th:if="${group.purchaseRequestNote != null}"
-              th:text="'— ' + ${group.purchaseRequestNote}"></span>
-          </div>
-
-          <table class="po-data-table">
-            <thead>
-              <tr>
-                <th>PO ID</th>
-                <th>Created At</th>
-                <th>Supplier Name</th>
-                <th>Total Amount</th>
-                <th>Note</th>
-                <th>Status</th>
-                <th>Approved By</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="po : ${group.orders}"
-                th:onclick="|window.location.href='@{/purchase-staff/purchase-orders/{id}(id=${po.orderId})}'|">
-                <td class="td-id" th:text="'PO-' + ${po.orderId}">PO-001</td>
-                <td th:text="${po.createdAt != null ? #temporals.format(po.createdAt, 'dd-MM-yyyy') : '—'}">01-01-2024
-                </td>
-                <td th:text="${po.supplierName}">Supplier</td>
-                <td class="td-amount" th:text="${#numbers.formatDecimal(po.totalAmount, 1, 'COMMA', 2, 'POINT')}">$0.00
-                </td>
-                <td class="td-note" th:text="${po.note}">Note</td>
-                <td>
-                  <span class="status-tag" th:classappend="${po.status}" th:text="${po.status}">STATUS</span>
-                </td>
-                <td th:text="${po.approvedByName != null ? po.approvedByName : '—'}">—</td>
-              </tr>
-            </tbody>
-          </table>
-        </article>
-      </div>
-
-      <!-- Phân trang -->
-      <div class="pagination-bar" th:if="${totalPages > 1}">
-        <a class="page-btn" th:classappend="${currentPage == 1 ? 'disabled' : ''}" th:href="@{/purchase-orders(page=${currentPage - 1}, keyword=${criteria.keyword},
-                       status=${criteria.status}, supplierName=${criteria.supplierName},
-                       amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
-                       dateTo=${criteria.dateTo})}">‹</a>
-
-        <a class="page-btn" th:each="p : ${#numbers.sequence(1, totalPages)}"
-          th:classappend="${p == currentPage ? 'active' : ''}" th:text="${p}" th:href="@{/purchase-orders(page=${p}, keyword=${criteria.keyword},
-                       status=${criteria.status}, supplierName=${criteria.supplierName},
-                       amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
-                       dateTo=${criteria.dateTo})}">1</a>
-
-        <a class="page-btn" th:classappend="${currentPage == totalPages ? 'disabled' : ''}" th:href="@{/purchase-staff/purchase-orders(page=${currentPage + 1}, keyword=${criteria.keyword},
-                       status=${criteria.status}, supplierName=${criteria.supplierName},
-                       amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
-                       dateTo=${criteria.dateTo})}">›</a>
+      <div class="table-container"
+        style="margin-top: 20px; border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <table class="data-table" id="purchaseOrdersTable" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>PO ID</th>
+              <th>CREATED AT</th>
+              <th>SUPPLIER NAME</th>
+              <th>TOTAL AMOUNT</th>
+              <th>NOTE</th>
+              <th>STATUS</th>
+              <th>PR ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="po : ${orders}" class="clickable-row"
+              th:onclick="|window.location.href='@{/purchase-staff/purchase-orders/{id}(id=${po.orderId})}'|">
+              <td class="td-id" th:text="'PO-' + ${po.orderId}">PO-001</td>
+              <td th:text="${po.createdAt != null ? #temporals.format(po.createdAt, 'dd-MM-yyyy') : '—'}">01-01-2024
+              </td>
+              <td th:text="${po.supplierName}">Supplier</td>
+              <td class="td-amount" th:text="${#numbers.formatDecimal(po.totalAmount, 1, 'COMMA', 2, 'POINT')}">$0.00
+              </td>
+              <td class="td-note" th:text="${po.note}">Note</td>
+              <td>
+                <span class="status-tag" th:classappend="${po.status}" th:text="${po.status}">STATUS</span>
+              </td>
+              <td th:text="'PR-' + ${po.purchaseId}">PR-001</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
     </div>

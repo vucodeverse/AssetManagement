@@ -1,8 +1,8 @@
 package edu.fpt.groupfive.dao;
 
 import edu.fpt.groupfive.common.Request;
-import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
-import edu.fpt.groupfive.dto.request.SearchForQuotation;
+import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
+import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.model.Purchase;
 
 import java.util.List;
@@ -14,17 +14,17 @@ public interface PurchaseDAO {
 
     Optional<Purchase> findById(Integer purchaseId);
 
-    Optional<Purchase> findByIdAndApproved(Integer purchaseId, String status);
+    Optional<Purchase> findByIdAndStatus(Integer purchaseId, String status);
 
     List<Purchase> findAll();
 
-    List<Purchase> getPurchaseByFilter(PurchaseSearchAndFilter purchaseSearchAndFilter);
+    List<Purchase> getPurchaseByFilter(PurchaseRequestSearchCriteria purchaseRequestSearchCriteria);
 
     void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject);
 
     void update(Purchase purchase);
 
-    Map<Integer, Object[]> findQuotationSummaryByFilter(SearchForQuotation s);
+    Map<Integer, Object[]> findQuotationSummaryByFilter(QuotationSearchCriteria s);
 
     long countByStatus(Request status);
 

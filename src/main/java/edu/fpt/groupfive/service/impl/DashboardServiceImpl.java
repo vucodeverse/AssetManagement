@@ -6,12 +6,11 @@ import edu.fpt.groupfive.dao.OrderDAO;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.QuotationDAO;
 import edu.fpt.groupfive.dto.response.DashboardDTO;
-import edu.fpt.groupfive.dto.response.PurchaseResponse;
+import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.dto.response.StaffDashboardDTO;
 import edu.fpt.groupfive.mapper.OrderMapper;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
-import edu.fpt.groupfive.mapper.QuotationMapper;
 import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.dao.SupplierDAO;
 import edu.fpt.groupfive.model.Supplier;
@@ -45,7 +44,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .build();
     }
 
-    private List<PurchaseResponse> fetchRecentPRs() {
+    private List<PurchaseRequestResponse> fetchRecentPRs() {
         return purchaseDAO.findRecent(5).stream()
                 .map(purchaseMapper::toPurchaseResponse)
                 .collect(Collectors.toList());

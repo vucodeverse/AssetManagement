@@ -8,35 +8,35 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class OrderDetailDAOImpl implements OrderDetailDAO
-{
+public class OrderDetailDAOImpl implements OrderDetailDAO {
 
     private final DatabaseConfig databaseConfig;
 
-
     @Override
-    public Integer insetOrderDetail(OrderDetail orderDetail, Integer orderId) {
-        String sql ="insert into purchase_order_details " +
-                "(quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, discount, note, quotation_detail_id, expected_delivery_date) " +
+    public Integer insert(OrderDetail orderDetail, Integer orderId, Connection connection) {
+        String sql = "insert into purchase_order_details " +
+                "(quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, discount, note, quotation_detail_id, expected_delivery_date) "
+                +
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = databaseConfig.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql,  Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, orderDetail.getQuantity());
             ps.setBigDecimal(2, orderDetail.getPrice());
             ps.setBigDecimal(3, orderDetail.getTaxRate());
-            ps.setObject(4, orderId);
+            ps.setInt(4, orderId);
 
             ps.setObject(5, orderDetail.getAssetTypeId());
             ps.setBigDecimal(6, orderDetail.getDiscountRate());
             ps.setString(7, orderDetail.getOrderDetailNote());
             ps.setObject(8, orderDetail.getQuotationDetailId());
-            ps.setDate(9, orderDetail.getExpectedDeliveryDate() != null ? Date.valueOf(orderDetail.getExpectedDeliveryDate()) : null);
-
+            ps.setDate(9,
+                    orderDetail.getExpectedDeliveryDate() != null ? Date.valueOf(orderDetail.getExpectedDeliveryDate())
+                            : null);
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
@@ -44,7 +44,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO
                 return rs.getInt(1);
             }
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException("Failed to insert order detail", e);
         }
 
@@ -52,15 +52,15 @@ public class OrderDetailDAOImpl implements OrderDetailDAO
     }
 
     @Override
-    public java.util.List<OrderDetail> findByOrderId(Integer orderId) {
+    public List<OrderDetail> findByOrderId(Integer orderId) {
         String sql = "select purchase_order_detail_id, quantity, unit_price, tax_rate, " +
                 "discount, note, asset_type_id, quotation_detail_id, expected_delivery_date " +
                 "from purchase_order_details " +
                 "where purchase_order_id = ?";
 
-        java.util.List<OrderDetail> results = new java.util.ArrayList<>();
+        List<OrderDetail> results = new java.util.ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
@@ -74,7 +74,9 @@ public class OrderDetailDAOImpl implements OrderDetailDAO
                 detail.setOrderDetailNote(rs.getString("note"));
                 detail.setAssetTypeId(rs.getInt("asset_type_id"));
                 detail.setQuotationDetailId(rs.getInt("quotation_detail_id"));
-                detail.setExpectedDeliveryDate(rs.getDate("expected_delivery_date") != null ? rs.getDate("expected_delivery_date").toLocalDate() : null);
+                detail.setExpectedDeliveryDate(rs.getDate("expected_delivery_date") != null
+                        ? rs.getDate("expected_delivery_date").toLocalDate()
+                        : null);
 
                 results.add(detail);
             }

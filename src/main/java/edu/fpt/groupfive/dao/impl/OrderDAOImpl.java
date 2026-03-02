@@ -2,7 +2,8 @@ package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.common.OrderStatus;
 import edu.fpt.groupfive.dao.OrderDAO;
-import edu.fpt.groupfive.dto.request.OrderSearchCriteria;
+import edu.fpt.groupfive.dao.OrderDetailDAO;
+import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.model.Order;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class OrderDAOImpl implements OrderDAO {
 
     private final DatabaseConfig databaseConfig;
+    private final OrderDetailDAO orderDetailDAO;
 
     @Override
     public Integer insert(Order order) {
@@ -34,34 +36,63 @@ public class OrderDAOImpl implements OrderDAO {
                 +
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        Connection connection = null;
+        try {
+            connection = databaseConfig.getConnection();
+            connection.setAutoCommit(false);
 
-            ps.setDate(1,
-                    order.getCreatedAt() != null ? Date.valueOf(order.getCreatedAt()) : Date.valueOf(LocalDate.now()));
-            ps.setBigDecimal(2, order.getTotalAmount());
-            ps.setString(3, order.getOrderNote());
-            ps.setString(4, order.getOrderStatus() != null ? order.getOrderStatus().toString()
-                    : OrderStatus.PENDING.toString());
-            ps.setDate(5, Date.valueOf(LocalDate.now()));
-            ps.setObject(6, order.getPurchaseRequestId());
-            ps.setObject(7, order.getSupplierId());
-            ps.setObject(8, order.getQuotationId());
-            ps.setObject(9, order.getApprovedBy());
-            ps.setDate(10, Date.valueOf(LocalDate.now()));
-            ps.setObject(11, order.getUpdatedBy());
+            try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getInt(1);
+                ps.setDate(1, order.getCreatedAt() != null ? Date.valueOf(order.getCreatedAt())
+                        : Date.valueOf(LocalDate.now()));
+                ps.setBigDecimal(2, order.getTotalAmount());
+                ps.setString(3, order.getOrderNote());
+                ps.setString(4, order.getOrderStatus() != null ? order.getOrderStatus().toString()
+                        : OrderStatus.PENDING.toString());
+                ps.setDate(5, Date.valueOf(LocalDate.now()));
+                ps.setObject(6, order.getPurchaseRequestId());
+                ps.setObject(7, order.getSupplierId());
+                ps.setObject(8, order.getQuotationId());
+                ps.setObject(9, order.getApprovedBy());
+                ps.setDate(10, Date.valueOf(LocalDate.now()));
+                ps.setObject(11, order.getUpdatedBy());
+
+                ps.executeUpdate();
+
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (!rs.next()) {
+                        throw new RuntimeException("Failed to get generated purchase_order_id");
+                    }
+                    int orderId = rs.getInt(1);
+
+                    if (order.getOrderDetails() != null) {
+                        for (var detail : order.getOrderDetails()) {
+                            orderDetailDAO.insert(detail, orderId, connection);
+                        }
+                    }
+
+                    connection.commit();
+                    return orderId;
+                }
             }
 
         } catch (SQLException e) {
-            log.error("Failed to insert purchase order: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to insert purchase order", e);
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (Exception ignored) {
+                }
+            }
+            throw new RuntimeException(e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (Exception ignored) {
+                }
+            }
         }
-        return null;
     }
 
     @Override
@@ -94,6 +125,7 @@ public class OrderDAOImpl implements OrderDAO {
         return map;
     }
 
+    // lấy ra số lượng đã order ứng với từng purchas id
     @Override
     public Map<Integer, Integer> getOrderedQtyByPurchaseDetail(List<Integer> purchaseDetailIds) {
         if (purchaseDetailIds == null || purchaseDetailIds.isEmpty()) {
@@ -118,14 +150,13 @@ public class OrderDAOImpl implements OrderDAO {
                 map.put(rs.getInt("purchase_request_detail_id"), rs.getInt("total_qty"));
             }
         } catch (SQLException e) {
-            log.error("Failed to get ordered qty by purchase detail: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to get ordered qty by purchase detail", e);
         }
         return map;
     }
 
     @Override
-    public List<Object[]> searchAndFilter(OrderSearchCriteria criteria) {
+    public List<Object[]> searchAndFilter(PurchaseOrderSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder(
                 "select po.purchase_order_id, po.order_date, po.total_amount, po.note, po.status, " +
                         "po.created_at, po.purchase_request_id, po.supplier_id, po.quotation_id, po.approved_by, " +
@@ -170,7 +201,8 @@ public class OrderDAOImpl implements OrderDAO {
         if (criteria.getKeyword() != null && !criteria.getKeyword().isBlank()) {
             sql.append("and ( ");
             if (criteria.getKeyword().matches("\\d+")) {
-                sql.append("po.purchase_order_id = ? or ");
+                sql.append("po.purchase_order_id = ? or po.purchase_request_id = ? or ");
+                params.add(Integer.parseInt(criteria.getKeyword()));
                 params.add(Integer.parseInt(criteria.getKeyword()));
             }
             sql.append("s.supplier_name like ? ) ");

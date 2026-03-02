@@ -10,12 +10,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderCreateRequest {
+public class PurchaseOrderCreateRequest {
     private Integer quotationId;
     private Integer supplierId;
     private String orderNote;
     private BigDecimal totalAmount;
 
     @Builder.Default
-    private List<OrderDetailCreateRequest> orderDetailCreateRequests = new ArrayList<>();
+    private List<PurchaseOrderDetailCreateRequest> purchaseOrderDetailCreateRequests = new ArrayList<>();
 }

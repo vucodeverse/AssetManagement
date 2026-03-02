@@ -3,12 +3,11 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.*;
-import edu.fpt.groupfive.dto.request.QuotationCreateDetailRequest;
+import edu.fpt.groupfive.dto.request.QuotationDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
-import edu.fpt.groupfive.dto.request.SearchForQuotation;
 import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
-import edu.fpt.groupfive.dto.response.QuotationForPurchaseResponse;
+import edu.fpt.groupfive.dto.response.QuotationSummaryResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.mapper.QuotationDetailMapper;
 import edu.fpt.groupfive.mapper.QuotationMapper;
@@ -43,9 +42,8 @@ public class QuotationServiceImpl implements QuotationService {
     private final RangeAmount rangeAmount;
     private final AssetTypeService assetTypeService;
     private final OrderCalculationUtil orderCalculationUtil;
+    private final AssetTypeDAO assetTypeDAO;
 
-    // ===== Hàm hỗ trợ: dùng chung cho getQuotationsByPurchase +
-    // quotationCriteriaForPurchase =====
     private QuotationResponse toQuotationResponse(Quotation q, Map<Integer, String> supplierMap) {
         return QuotationResponse.builder()
                 .quotationId(q.getId())
@@ -58,22 +56,22 @@ public class QuotationServiceImpl implements QuotationService {
                 .build();
     }
 
+    // tạo quotation
     @Override
     public void createQuotation(QuotationCreateRequest quotationCreateRequest, Integer purchaseId, String action) {
 
         // ktra purchase có tồn tại và dc approve chưa
-        purchaseDAO.findByIdAndApproved(purchaseId, "APPROVED")
+        purchaseDAO.findByIdAndStatus(purchaseId, "APPROVED")
                 .orElseThrow(() -> new InvalidDataException("Purchase request này không tồn tại hoặc chưa được chấp " +
                         "nhận"));
 
         // lấy ra list purchase detail của purchase request nhận vào
         List<PurchaseDetail> details = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
 
-        // Sử dụng Map để kiểm tra sự tồn tại của chi tiết yêu cầu mua sắm (purchase
-        // detail)
+        // Sử dụng Map để kiểm tra sự tồn tại của chi tiết yêu cầu mua sắm
         Map<Integer, PurchaseDetail> purchaseDetailMap = new HashMap<>();
 
-        // Khóa là ID, giá trị là chi tiết (detail)
+        // key là ID,value là detail
         for (PurchaseDetail d : details) {
             purchaseDetailMap.put(d.getId(), d);
         }
@@ -88,13 +86,26 @@ public class QuotationServiceImpl implements QuotationService {
 
         // set các giá trị
         q.setTotalAmount(orderCalculationUtil.calculateTotal(quotationCreateRequest));
+
+        // nếu là draft thì update thời gian sửa
         if (QuotationStatus.DRAFT.equals(quotationStatus)) {
             q.setUpdatedAt(LocalDate.now());
         }
 
+        // map ngược lại
+        Map<String, Integer> map = new HashMap<>();
+
+        for (Map.Entry<Integer, String> e : assetTypeService.getAssetTypeIdToNameMap().entrySet()) {
+            map.put(e.getValue(), e.getKey());
+        }
+
         // Khởi tạo danh sách chi tiết báo giá trước
         List<QuotationDetail> quotationDetails = new ArrayList<>();
-        for (QuotationCreateDetailRequest qd : quotationCreateRequest.getQuotationCreateDetailRequestList()) {
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        // mapừng quotation detail
+        for (QuotationDetailCreateRequest qd : quotationCreateRequest.getQuotationDetailCreateRequests()) {
 
             // ktra purchase detail có tồn tại hay ko
             PurchaseDetail pd = purchaseDetailMap.get(qd.getPurchaseRequestDetailId());
@@ -103,18 +114,10 @@ public class QuotationServiceImpl implements QuotationService {
 
             // map sang quotation detail
             QuotationDetail quotationDetail = quotationDetailMapper.toQuotationDetail(qd);
-            quotationDetail.setPurchaseDetailId(pd.getId());
-            if (pd.getAssetTypeId() != null) {
-                quotationDetail.setAssetTypeId(pd.getAssetTypeId());
-            }
-            if (quotationDetail.getSpecificationRequirement() == null && pd.getSpecificationRequirement() != null) {
-                quotationDetail.setSpecificationRequirement(pd.getSpecificationRequirement());
-            }
+            quotationDetail.setAssetTypeId(map.get(qd.getAssetTypeName()));
             quotationDetails.add(quotationDetail);
         }
 
-        // Gán danh sách chi tiết vào báo giá. DAO sẽ thực hiện thêm/sửa tất cả trong
-        // một giao dịch (transaction)
         q.setQuotationDetails(quotationDetails);
 
         // check xem quotation này đã được tạo hay chưa
@@ -135,36 +138,34 @@ public class QuotationServiceImpl implements QuotationService {
         Quotation q = quotationDAO.findById(id)
                 .orElseThrow(() -> new InvalidDataException("Quotation not found"));
 
-        // map quotation detail sang response
-        List<QuotationDetailResponse> details = quotationDetailDAO.findByQuotationId(q.getId()).stream()
-                .map(quotationDetailMapper::toQuotationDetailResponse).toList();
+        List<QuotationDetail> detailsList = quotationDetailDAO.findByQuotationId(q.getId());
+        Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
 
-        List<QuotationCreateDetailRequest> quotationCreateDetailRequestList = new ArrayList<>();
+        List<QuotationDetailCreateRequest> quotationDetailCreateRequests = new ArrayList<>();
 
-        // Duyệt qua từng chi tiết báo giá
-        for (QuotationDetailResponse d : details) {
+        for (QuotationDetail qd : detailsList) {
+            String assetTypeName = assetTypeMap.getOrDefault(qd.getAssetTypeId(), "Loại tài sản này không tồn tại");
 
-            // add quotaiton detail đã dc tạo vào quotaiton create list
-            quotationCreateDetailRequestList.add(QuotationCreateDetailRequest.builder()
-                    .purchaseRequestDetailId(d.getPurchaseDetailId())
-                    .assetTypeName(d.getAssetTypeName())
-                    .specificationRequirement(d.getSpecificationRequirement())
-                    .quantity(d.getQuantity())
-                    .quotationDetailNote(d.getQuotationDetailNote())
-                    .warrantyMonths(d.getWarrantyMonths())
-                    .price(d.getPrice())
-                    .taxRate(d.getTaxRate())
-                    .discountRate(d.getDiscountRate())
+            quotationDetailCreateRequests.add(QuotationDetailCreateRequest.builder()
+                    .purchaseRequestDetailId(qd.getPurchaseDetailId())
+                    .assetTypeName(assetTypeName)
+                    .specificationRequirement(qd.getSpecificationRequirement())
+                    .quantity(qd.getQuantity())
+                    .quotationDetailNote(qd.getQuotationDetailNote())
+                    .warrantyMonths(qd.getWarrantyMonths())
+                    .price(qd.getPrice())
+                    .taxRate(qd.getTaxRate())
+                    .discountRate(qd.getDiscountRate())
                     .build());
         }
 
         // trả về qutotaion
         return QuotationCreateRequest.builder()
                 .quotationId(q.getId())
-                .purchaseRequestId(q.getPurchaseId())
+                .purchaseId(q.getPurchaseId())
                 .supplierId(q.getSupplierId())
-                .quotationNote(q.getQuotationDetailNote())
-                .quotationCreateDetailRequestList(quotationCreateDetailRequestList)
+                .quotationNote(q.getQuotationNote())
+                .quotationDetailCreateRequests(quotationDetailCreateRequests)
                 .build();
     }
 
@@ -178,7 +179,7 @@ public class QuotationServiceImpl implements QuotationService {
     public QuotationCreateRequest checkFormQuotation(Integer purchaseId) {
 
         // load purchase request với status Approve
-        Purchase purchase = purchaseDAO.findByIdAndApproved(purchaseId, Request.APPROVED.name())
+        Purchase purchase = purchaseDAO.findByIdAndStatus(purchaseId, Request.APPROVED.name())
                 .orElseThrow(() -> new InvalidDataException("Purchase " +
                         "request này chưa được chấp nhận."));
 
@@ -186,41 +187,44 @@ public class QuotationServiceImpl implements QuotationService {
         List<PurchaseDetail> purchaseDetailList = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
 
         // list detail quotation
-        List<QuotationCreateDetailRequest> quotationCreateDetailRequestList = new ArrayList<>();
+        List<QuotationDetailCreateRequest> quotationDetailCreateRequests = new ArrayList<>();
 
         // chuyển từ purchase detail vào quotation create
         for (PurchaseDetail purchaseDetail : purchaseDetailList) {
 
             // dùng assetTypeService.findNameById() từ team thay vì tự map
-            String assetTypeName = purchaseDetail.getAssetTypeId() != null
-                    ? assetTypeService.findNameById(purchaseDetail.getAssetTypeId())
+            String assetTypeName = purchaseDetail.getTypeId() != null
+                    ? assetTypeService.findNameById(purchaseDetail.getTypeId())
                     : "Không tồn tại loại tài sản";
 
-            QuotationCreateDetailRequest item = QuotationCreateDetailRequest.builder()
+            QuotationDetailCreateRequest item = QuotationDetailCreateRequest.builder()
                     .purchaseRequestDetailId(purchaseDetail.getId())
                     .quantity(purchaseDetail.getQuantity())
                     .assetTypeName(assetTypeName)
                     .specificationRequirement(purchaseDetail.getSpecificationRequirement())
                     .build();
 
-            quotationCreateDetailRequestList.add(item);
+            quotationDetailCreateRequests.add(item);
         }
 
         // trả về quotation request
         return QuotationCreateRequest.builder()
-                .purchaseRequestId(purchaseId)
-                .quotationCreateDetailRequestList(quotationCreateDetailRequestList)
+                .purchaseId(purchaseId)
+                .quotationDetailCreateRequests(quotationDetailCreateRequests)
                 .build();
 
     }
 
+    // hiển thị các báo giá của 1 purhase
     @Override
     public List<QuotationResponse> getQuotationsByPurchase(Integer purchaseId) {
         purchaseDAO.findById(purchaseId)
                 .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại"));
 
+        // lấy ra supplier
         Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
 
+        // map về response
         return quotationDAO.findByPurchaseId(purchaseId).stream()
                 .map(q -> toQuotationResponse(q, supplierMap))
                 .toList();
@@ -235,23 +239,32 @@ public class QuotationServiceImpl implements QuotationService {
                 .orElseThrow(() -> new InvalidDataException("Quotation not found"));
 
         // lấy ra list quotation detail từ DB
-        List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(quotationId);
+        List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(q.getId());
 
-        // map sang response cho template
+        Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
+        // map sang response cho cho detail
         List<QuotationDetailResponse> quotationDetailResponses = details.stream()
-                .map(quotationDetailMapper::toQuotationDetailResponse).toList();
+                .map(qd -> QuotationDetailResponse.builder()
+                        .quotationId(q.getId())
+                        .assetTypeName(assetTypeMap.getOrDefault(qd.getAssetTypeId(), "Loại tài sản này không tồn tại"))
+                        .specificationRequirement(qd.getSpecificationRequirement())
+                        .quantity(qd.getQuantity())
+                        .quotationDetailNote(qd.getQuotationDetailNote())
+                        .warrantyMonths(qd.getWarrantyMonths())
+                        .price(qd.getPrice())
+                        .discountRate(qd.getDiscountRate())
+                        .build())
+                .toList();
 
-        // lấy tên supplier từ helper
+        // lấy tên supplier
         Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
         String supplierName = supplierMap.getOrDefault(q.getSupplierId(), "Supplier ko tồn tại");
 
-        // Sử dụng OrderCalculationUtil.calculateBreakdown() để tính toán thay vì viết
-        // logic tính toán trực tiếp
-        BigDecimal[] breakdown = orderCalculationUtil.calculateBreakdown(details);
-        BigDecimal subtotal = breakdown[0];
-        BigDecimal totalDiscount = breakdown[1];
-        BigDecimal totalTax = breakdown[2];
-        BigDecimal grandTotal = breakdown[3];
+        BigDecimal[] calculated = orderCalculationUtil.calculateBreakdown(details);
+        BigDecimal subtotal = calculated[0];
+        BigDecimal totalDiscount = calculated[1];
+        BigDecimal totalTax = calculated[2];
+        BigDecimal grandTotal = calculated[3];
 
         return QuotationResponse.builder()
                 .quotationId(q.getId())
@@ -269,9 +282,9 @@ public class QuotationServiceImpl implements QuotationService {
                 .build();
     }
 
-    // search và filter cho màn quotation-list
+    // thực hiện search và filter cho màn quotation list
     @Override
-    public List<QuotationForPurchaseResponse> searchAndFilterForQuotation(SearchForQuotation s) {
+    public List<QuotationSummaryResponse> searchAndFilterForQuotation(QuotationSearchCriteria s) {
 
         // ktra from và to có khớp ko
         if (s.getFrom() != null && s.getTo() != null && s.getFrom().isAfter(s.getTo())) {
@@ -295,15 +308,15 @@ public class QuotationServiceImpl implements QuotationService {
         }
 
         // Khóa: ID yêu cầu mua sắm - Giá trị: mảng các đối tượng chứa thông tin tóm tắt
-        // báo giá
+        // của quotaiton
         Map<Integer, Object[]> summaryMap = purchaseDAO.findQuotationSummaryByFilter(s);
 
-        List<QuotationForPurchaseResponse> out = new ArrayList<>();
+        List<QuotationSummaryResponse> out = new ArrayList<>();
         for (Map.Entry<Integer, Object[]> entry : summaryMap.entrySet()) {
             Object[] data = entry.getValue();
 
             // trả về list QuotationForPurchase
-            out.add(QuotationForPurchaseResponse.builder()
+            out.add(QuotationSummaryResponse.builder()
                     .purchaseId(entry.getKey())
                     .needByDate((LocalDate) data[0])
                     .priority((String) data[1])
@@ -314,10 +327,10 @@ public class QuotationServiceImpl implements QuotationService {
         return out;
     }
 
-    //
+    // mặc định của màn quotation list
     @Override
-    public List<QuotationForPurchaseResponse> getQuotationAndPurchase() {
-        return searchAndFilterForQuotation(new SearchForQuotation());
+    public List<QuotationSummaryResponse> getQuotationAndPurchase() {
+        return searchAndFilterForQuotation(new QuotationSearchCriteria());
     }
 
     // method search cho màn qop
@@ -340,10 +353,10 @@ public class QuotationServiceImpl implements QuotationService {
             }
         }
 
-        // lấy ra listh quotation sau khí search
+        // lấy ra list quotation sau khí search
         List<Quotation> quotations = quotationDAO.searchAndFilterQuotationOfPurchase(criteria);
 
-        // lấy toàn bọ supplier từ helper
+        // lấy toàn bọ supplier
         Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
 
         // map về quotation response dùng helper
@@ -352,21 +365,25 @@ public class QuotationServiceImpl implements QuotationService {
                 .toList();
     }
 
-    // Chuyển đổi từ chi tiết yêu cầu mua sắm sang chi tiết báo giá - dùng trực tiếp
-    // purchaseDetailDAO (bỏ PurchaseService)
+    // chuyển từ purchase detail sang quotation detail để tọa form nhập
     @Override
-    public List<QuotationCreateDetailRequest> mapPurchaseToQuotation(Integer purchaseId) {
+    public List<QuotationDetailCreateRequest> mapPurchaseToQuotation(Integer purchaseId) {
 
-        // lấy trực tiếp từ DAO thay vì vòng vèo qua PurchaseService
+        // check xem purrchase đã đc approve chưa
+        purchaseDAO.findByIdAndStatus(purchaseId, Request.APPROVED.name()).orElseThrow(() -> new InvalidDataException(
+                "Yêu cầu mua sắm chưa đc cấp nhận"));
+
+        // lấy ra list purchase detail
         List<PurchaseDetail> prDetails = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
+
+        // lấy ra asset type kèm tên
+        Map<Integer, String> map = assetTypeService.getAssetTypeIdToNameMap();
 
         return prDetails.stream()
                 .map(pd -> {
-                    String assetTypeName = pd.getAssetTypeId() != null
-                            ? assetTypeService.findNameById(pd.getAssetTypeId())
-                            : "Không tồn tại loại tài sản";
+                    String assetTypeName = map.getOrDefault(pd.getTypeId(), "Không tồn tại loại tài sản này");
 
-                    return QuotationCreateDetailRequest.builder()
+                    return QuotationDetailCreateRequest.builder()
                             .purchaseRequestDetailId(pd.getId())
                             .assetTypeName(assetTypeName)
                             .specificationRequirement(pd.getSpecificationRequirement())

@@ -4,8 +4,8 @@ import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
-import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
-import edu.fpt.groupfive.dto.request.SearchForQuotation;
+import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
+import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.model.PurchaseDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
@@ -25,6 +25,53 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     private final DatabaseConfig databaseConfig;
     private final PurchaseDetailDAO purchaseDetailDAO;
 
+    // map các thuộc tính
+    private Purchase mapRowForList(ResultSet rs) throws SQLException {
+        Purchase purchase = new Purchase();
+        purchase.setId(rs.getInt("purchase_request_id"));
+
+        String status = rs.getString("status");
+        if (status != null && !status.isBlank()) {
+            try {
+                purchase.setStatus(Request.valueOf(status.trim().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid status value: {}", status);
+            }
+        }
+
+        purchase.setPurchaseNote(rs.getString("note"));
+        purchase.setRejectReason(rs.getString("reject_reason"));
+        purchase.setCreatedByUser(rs.getInt("creator_id"));
+
+        String firstName = rs.getString("first_name");
+        String lastName = rs.getString("last_name");
+
+        Date neededByDate = rs.getDate("needed_by_date");
+        purchase.setNeededByDate(neededByDate != null ? neededByDate.toLocalDate() : null);
+        purchase.setReason(rs.getString("request_reason"));
+
+        String priority = rs.getString("priority");
+        if (priority != null && !priority.isBlank()) {
+            try {
+                purchase.setPriority(Priority.valueOf(priority.trim().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid priority value: {}", priority);
+            }
+        }
+
+        Date createdAt = rs.getDate("created_at");
+        purchase.setCreatedAt(createdAt != null ? createdAt.toLocalDate() : null);
+
+        purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
+        Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
+        if (approvedAt != null) {
+            purchase.setApprovedAt(approvedAt.toLocalDateTime());
+        }
+        purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
+        Date updatedAt = rs.getDate("updated_at");
+        purchase.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDate() : null);
+        return purchase;
+    }
     // insert purchase request
     @Override
     public int insert(Purchase purchase) {
@@ -146,7 +193,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
     // lấy ra các purchase đã dc approve
     @Override
-    public Optional<Purchase> findByIdAndApproved(Integer purchaseId, String status) {
+    public Optional<Purchase> findByIdAndStatus(Integer purchaseId, String status) {
         String sql = "select * from purchase_request where purchase_request_id = ? and status = ?";
 
         try (Connection connection = databaseConfig.getConnection();
@@ -217,57 +264,10 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         return purchases;
     }
 
-    // map các thuộc tính
-    private Purchase mapRowForList(ResultSet rs) throws SQLException {
-        Purchase purchase = new Purchase();
-        purchase.setId(rs.getInt("purchase_request_id"));
-
-        String status = rs.getString("status");
-        if (status != null && !status.isBlank()) {
-            try {
-                purchase.setStatus(Request.valueOf(status.trim().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid status value: {}", status);
-            }
-        }
-
-        purchase.setPurchaseNote(rs.getString("note"));
-        purchase.setRejectReason(rs.getString("reject_reason"));
-        purchase.setCreatedByUser(rs.getInt("creator_id"));
-
-        String firstName = rs.getString("first_name");
-        String lastName = rs.getString("last_name");
-
-        Date neededByDate = rs.getDate("needed_by_date");
-        purchase.setNeededByDate(neededByDate != null ? neededByDate.toLocalDate() : null);
-        purchase.setReason(rs.getString("request_reason"));
-
-        String priority = rs.getString("priority");
-        if (priority != null && !priority.isBlank()) {
-            try {
-                purchase.setPriority(Priority.valueOf(priority.trim().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid priority value: {}", priority);
-            }
-        }
-
-        Date createdAt = rs.getDate("created_at");
-        purchase.setCreatedAt(createdAt != null ? createdAt.toLocalDate() : null);
-
-        purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
-        Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
-        if (approvedAt != null) {
-            purchase.setApprovedAt(approvedAt.toLocalDateTime());
-        }
-        purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
-        Date updatedAt = rs.getDate("updated_at");
-        purchase.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDate() : null);
-        return purchase;
-    }
 
     // lấy purchase theo các thuộc tính trong filter
     @Override
-    public List<Purchase> getPurchaseByFilter(PurchaseSearchAndFilter p) {
+    public List<Purchase> getPurchaseByFilter(PurchaseRequestSearchCriteria p) {
 
         // khai báo dynamic sql
         StringBuilder sql = new StringBuilder(
@@ -368,7 +368,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     // từng purchase kèm các thuộc tính cần
     // của purchase
     @Override
-    public Map<Integer, Object[]> findQuotationSummaryByFilter(SearchForQuotation s) {
+    public Map<Integer, Object[]> findQuotationSummaryByFilter(QuotationSearchCriteria s) {
         StringBuilder sql = new StringBuilder(
                 "select p.purchase_request_id, p.needed_by_date, p.priority, " +
                         "count(q.quotation_id) as number_of_quotation, " +
@@ -436,7 +436,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                     int purchaseId = rs.getInt("purchase_request_id");
                     Date neededByDate = rs.getDate("needed_by_date");
                     result.put(purchaseId, new Object[] {
-                            neededByDate != null ? neededByDate.toLocalDate() : null,
+                            neededByDate.toLocalDate(),
                             rs.getString("priority"),
                             rs.getInt("number_of_quotation"),
                             rs.getBigDecimal("est_price")

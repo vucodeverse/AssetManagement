@@ -1,9 +1,9 @@
 package edu.fpt.groupfive.controller.order;
 
-import edu.fpt.groupfive.dto.request.OrderCreateRequest;
-import edu.fpt.groupfive.dto.request.OrderSearchCriteria;
-import edu.fpt.groupfive.dto.response.PurchaseOrderGroupResponse;
-import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
+import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
+import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
+import edu.fpt.groupfive.dto.response.PurchaseOrderFullResponse;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
@@ -21,7 +21,6 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-@Slf4j(topic = "ORDER-CONTROLLER")
 @RequestMapping("/purchase-staff/purchase-orders")
 public class OrderController {
 
@@ -31,37 +30,24 @@ public class OrderController {
     private final SupplierService supplierService;
     private final OrderCalculationUtil orderCalculationUtil;
 
+    // list purchase order
     @GetMapping("")
-    public String listPurchaseOrders(@ModelAttribute OrderSearchCriteria criteria,
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            Model model) {
-        log.info("List purchase orders, page={}", page);
-        List<PurchaseOrderGroupResponse> all = orderService.getOrdersGroupedByPR(criteria);
+    public String listPurchaseOrders(@ModelAttribute PurchaseOrderSearchCriteria criteria, Model model) {
+        List<PurchaseOrderResponse> purchaseOrders = orderService.getPurchaseOrdersFlat(criteria);
 
-        int totalGroups = all.size();
-        int totalPages = Math.max(1, (int) Math.ceil((double) totalGroups / PAGE_SIZE));
-        page = Math.max(1, Math.min(page, totalPages));
-
-        int fromIdx = (page - 1) * PAGE_SIZE;
-        int toIdx = Math.min(fromIdx + PAGE_SIZE, totalGroups);
-        List<PurchaseOrderGroupResponse> pageGroups = all.subList(fromIdx, toIdx);
-
-        model.addAttribute("groups", pageGroups);
+        model.addAttribute("orders", purchaseOrders);
         model.addAttribute("criteria", criteria);
         model.addAttribute("suppliers", supplierService.getAllSupplier());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", totalPages);
         model.addAttribute("activeMenu", "po");
         return "order/order-from-purchase";
     }
 
+    // tạo purchase order từ quotaiton
     @GetMapping("/create-from-quotation/{quotationId}")
-    public String createPurchseOrder(@PathVariable("quotationId") Integer quotationId, Model model,
-            jakarta.servlet.http.HttpServletRequest request) {
-        log.info("Load form purchase order");
+    public String createPurchseOrder(@PathVariable("quotationId") Integer quotationId, Model model) {
 
         // load order create lên form
-        OrderCreateRequest orderCreateRequest = new OrderCreateRequest();
+        PurchaseOrderCreateRequest orderCreateRequest;
         try {
             orderCreateRequest = orderService.checkFormCreateOrder(quotationId);
         } catch (InvalidDataException e) {
@@ -76,14 +62,14 @@ public class OrderController {
         return "order/order-form";
     }
 
+    // xóa 1 dòng
     @PostMapping(value = "/create-from-quotation/{quotationId}", params = "removeLine")
     public String removeOrderLine(@PathVariable("quotationId") Integer quotationId,
-            @ModelAttribute("orderCreateRequest") OrderCreateRequest orderCreateRequest,
+            @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest orderCreateRequest,
             @RequestParam("removeLine") int removeLine,
             Model model, jakarta.servlet.http.HttpServletRequest request) {
-        log.info("Removing line {} from PO form", removeLine);
 
-        var lines = orderCreateRequest.getOrderDetailCreateRequests();
+        var lines = orderCreateRequest.getPurchaseOrderDetailCreateRequests();
         if (lines != null && removeLine >= 0 && removeLine < lines.size() && lines.size() > 1) {
             lines.remove(removeLine);
             orderCalculationUtil.recalculateTotal(orderCreateRequest);
@@ -95,12 +81,12 @@ public class OrderController {
         return "order/order-form";
     }
 
+    // create po
     @PostMapping(value = "/create-from-quotation/{quotationId}", params = "!removeLine")
     public String createOrder(@PathVariable("quotationId") Integer quotationId,
-            @ModelAttribute("orderCreateRequest") OrderCreateRequest orderCreateRequest,
+            @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest orderCreateRequest,
             BindingResult result,
             Model model, jakarta.servlet.http.HttpServletRequest request) {
-        log.info("Creating order for quotation {}", quotationId);
 
         model.addAttribute("suppliers", supplierService.getAllSupplier());
         model.addAttribute("activeMenu", "po");
@@ -108,25 +94,22 @@ public class OrderController {
             return "order/order-form";
         }
 
-        // Tính toán lại tổng tiền để tránh việc can thiệp vào các trường ẩn (hidden
-        // fields) trên UI
         orderCalculationUtil.recalculateTotal(orderCreateRequest);
 
         try {
             Integer orderId = orderService.createOrder(quotationId, orderCreateRequest);
             return "redirect:/purchase-staff/purchase-orders/" + orderId;
         } catch (edu.fpt.groupfive.util.exception.InvalidDataException e) {
-            log.warn("Validation failed for order creation: {}", e.getMessage());
             model.addAttribute("error", e.getMessage());
             return "order/order-form";
         }
     }
 
+    // hiển thị po detail
     @GetMapping("/{id}")
     public String getOrderDetail(@PathVariable("id") Integer id, Model model,
             jakarta.servlet.http.HttpServletRequest request) {
-        log.info("Get purchase order detail: {}", id);
-        PurchaseOrderDetailResponse detail = orderService.getOrderDetail(id);
+        PurchaseOrderFullResponse detail = orderService.getOrderDetail(id);
         model.addAttribute("order", detail);
         model.addAttribute("activeMenu", "po");
         return "order/order-of-purchase";

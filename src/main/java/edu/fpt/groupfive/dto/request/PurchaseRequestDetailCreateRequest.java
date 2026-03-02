@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PurchaseDetailCreateRequest {
+public class PurchaseRequestDetailCreateRequest {
 
     @NotNull(message = "Số lượng không được để trống")
     @Min(value = 1, message = "Số lượng phải lớn hơn 0")
@@ -24,7 +24,7 @@ public class PurchaseDetailCreateRequest {
     private String purchaseDetailNote;
 
     @NotNull(message = "Loại tài sản không được để trống")
-    private Integer assetTypeId;
+    private Integer typeId;
 
     @NotNull(message = "Giá ước tính Không được để trống")
     @Min(value = 1, message = "Giá ước tính phải lớn hơn 0")

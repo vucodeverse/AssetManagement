@@ -116,7 +116,7 @@
             <div class="grand-total-row">
               <span>GRAND TOTAL</span>
               <span class="grand-total"
-                th:text="'$' + ${#numbers.formatDecimal(order.grandTotal, 1, 'COMMA', 2, 'POINT')}">$20,137.14</span>
+                th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">$20,137.14</span>
             </div>
           </div>
         </div>

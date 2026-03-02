@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderDetailCreateRequest {
+public class PurchaseOrderDetailCreateRequest {
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal taxRate;

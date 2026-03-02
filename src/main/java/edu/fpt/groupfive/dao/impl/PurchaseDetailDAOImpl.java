@@ -27,7 +27,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             preparedStatement.setBigDecimal(1, purchaseDetail.getEstimatePrice());
             preparedStatement.setInt(2, purchaseDetail.getQuantity());
             preparedStatement.setInt(3, purchaseDetail.getPurchaseRequestId());
-            preparedStatement.setInt(4, purchaseDetail.getAssetTypeId());
+            preparedStatement.setInt(4, purchaseDetail.getTypeId());
             preparedStatement.setString(5, purchaseDetail.getSpecificationRequirement());
             preparedStatement.setString(6, purchaseDetail.getPurchaseDetailNote());
             preparedStatement.executeUpdate();
@@ -64,7 +64,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
                     detail.setSpecificationRequirement(
                             rs.getString("spec_requirement"));
                     detail.setPurchaseDetailNote(rs.getString("note"));
-                    detail.setAssetTypeId(rs.getInt("asset_type_id"));
+                    detail.setTypeId(rs.getInt("asset_type_id"));
                     detail.setPurchaseRequestId(rs.getInt("purchase_request_id"));
                     detail.setEstimatePrice(rs.getBigDecimal("estimated_price"));
 

@@ -7,22 +7,14 @@ import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.service.QuotationService;
 import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
-import edu.fpt.groupfive.util.exception.InvalidDataException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import edu.fpt.groupfive.dto.response.PurchaseDetailResponse;
-import edu.fpt.groupfive.service.PurchaseService;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -32,16 +24,16 @@ public class QuotationController {
     private final QuotationService quotationService;
     private final SupplierService supplierService;
 
-    // Hiển thị form thêm báo giá
+    // Hiển thị form tạo
     @IsPurchaseStaff
-    @GetMapping("/create/{id}")
-    public String showQuotationForm(@PathVariable("id") Integer purchaseId, Model model) {
+    @GetMapping("/create/{purchaseId}")
+    public String showQuotationForm(@PathVariable("purchaseId") Integer purchaseId, Model model) {
         QuotationCreateRequest quotationCreateRequest = new QuotationCreateRequest();
-        quotationCreateRequest.setPurchaseRequestId(purchaseId);
+        quotationCreateRequest.setPurchaseId(purchaseId);
 
-        List<QuotationCreateDetailRequest> quoDetails = quotationService.mapPurchaseToQuotation(purchaseId);
+        List<QuotationDetailCreateRequest> quoDetails = quotationService.mapPurchaseToQuotation(purchaseId);
 
-        quotationCreateRequest.setQuotationCreateDetailRequestList(quoDetails);
+        quotationCreateRequest.setQuotationDetailCreateRequests(quoDetails);
 
         model.addAttribute("quotationCreateRequest", quotationCreateRequest);
         model.addAttribute("purchaseId", purchaseId);
@@ -50,13 +42,13 @@ public class QuotationController {
         return "quotation/quotation-form";
     }
 
-    // Chỉnh sửa báo giá
-    @GetMapping("/{id}/edit")
-    public String showEditQuotationForm(@PathVariable("id") Integer id, Model model) {
+    // Chỉnh sửa báo giá khi draft
+    @GetMapping("/{quotationId}/edit")
+    public String showEditQuotationForm(@PathVariable("quotationId") Integer id, Model model) {
         QuotationCreateRequest quotationCreateRequest = quotationService.getQuotationRequestById(id);
 
         model.addAttribute("quotationCreateRequest", quotationCreateRequest);
-        model.addAttribute("purchaseId", quotationCreateRequest.getPurchaseRequestId());
+        model.addAttribute("purchaseId", quotationCreateRequest.getPurchaseId());
         model.addAttribute("suppliers", supplierService.getAllSupplier());
         model.addAttribute("activeMenu", "quotation");
         return "quotation/quotation-form";
@@ -76,11 +68,11 @@ public class QuotationController {
         if (addIndex != null) {
 
             // lấy ra dòng quotation detail gốc cần thêm mới
-            QuotationCreateDetailRequest original = quotationCreateRequest.getQuotationCreateDetailRequestList()
+            QuotationDetailCreateRequest original = quotationCreateRequest.getQuotationDetailCreateRequests()
                     .get(addIndex);
 
             // tạo 1 dòng quotation detail tương ứng
-            QuotationCreateDetailRequest duplicate = QuotationCreateDetailRequest.builder()
+            QuotationDetailCreateRequest duplicate = QuotationDetailCreateRequest.builder()
                     .purchaseRequestDetailId(original.getPurchaseRequestDetailId())
                     .assetTypeName(original.getAssetTypeName())
                     .specificationRequirement(original.getSpecificationRequirement())
@@ -90,7 +82,7 @@ public class QuotationController {
                     .taxRate(original.getTaxRate())
                     .discountRate(original.getDiscountRate())
                     .build();
-            quotationCreateRequest.getQuotationCreateDetailRequestList().add(addIndex + 1, duplicate);
+            quotationCreateRequest.getQuotationDetailCreateRequests().add(addIndex + 1, duplicate);
 
             model.addAttribute("purchaseId", purchaseId);
             model.addAttribute("suppliers", supplierService.getAllSupplier());
@@ -100,7 +92,7 @@ public class QuotationController {
 
         // xoóa 1 dòng quotation detail
         if (removeIndex != null) {
-            quotationCreateRequest.getQuotationCreateDetailRequestList().remove(removeIndex.intValue());
+            quotationCreateRequest.getQuotationDetailCreateRequests().remove(removeIndex.intValue());
             model.addAttribute("purchaseId", purchaseId);
             model.addAttribute("suppliers", supplierService.getAllSupplier());
             model.addAttribute("activeMenu", "purchase");
@@ -109,6 +101,9 @@ public class QuotationController {
 
         // nếu có lỗi thì đẩy lại
         if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().forEach(error -> {
+                System.out.println("Validation error: " + error.getDefaultMessage());
+            });
             model.addAttribute("purchaseId", purchaseId);
             model.addAttribute("suppliers", supplierService.getAllSupplier());
             model.addAttribute("activeMenu", "purchase");
@@ -152,11 +147,16 @@ public class QuotationController {
         return "quotation/quotation-detail";
     }
 
-    // Tìm kiếm báo giá cho màn hình danh sách báo giá của yêu cầu mua sắm
+    // Tìm kiếm báo giá cho màn hình danh quotation of purcahse
     @GetMapping("/of-purchase/{purchaseId}/search")
     public String searchQuotationOfPurchase(@PathVariable("purchaseId") Integer purchaseId,
-            @ModelAttribute("criteria") QuotationSearchCriteria criteria,
+            @Valid @ModelAttribute("criteria") QuotationSearchCriteria criteria,
+            BindingResult result,
             Model model) {
+
+        if(result.hasErrors()) {
+            return "quotation/quotation-of-purchase";
+        }
         criteria.setPurchaseId(purchaseId);
 
         model.addAttribute("purchaseId", purchaseId);
@@ -171,19 +171,27 @@ public class QuotationController {
 
     // Tìm kiếm và lọc cho danh sách báo giá chung
     @GetMapping("/search")
-    public String searchQuotation(@ModelAttribute("searchForQuotation") SearchForQuotation searchForQuotation,
+    public String searchQuotation(
+            @Valid @ModelAttribute("searchForQuotation") QuotationSearchCriteria quotationSearchCriteria,
+            BindingResult bindingResult,
             Model model) {
         model.addAttribute("activeMenu", "quotation");
         model.addAttribute("activeSub", "qt");
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("status", QuotationStatus.values());
-        model.addAttribute("quotations", quotationService.searchAndFilterForQuotation(searchForQuotation));
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("quotations", quotationService.getQuotationAndPurchase());
+            return "quotation/quotation-list";
+        }
+
+        model.addAttribute("quotations", quotationService.searchAndFilterForQuotation(quotationSearchCriteria));
         return "quotation/quotation-list";
     }
 
     // show list các quotation theo purchase
     @GetMapping("")
-    public String showQuotations(Model model, jakarta.servlet.http.HttpServletRequest request) {
+    public String showQuotations(Model model) {
         model.addAttribute("activeMenu", "quotation");
         model.addAttribute("activeSub", "qt");
         model.addAttribute("priorities", Priority.values());
@@ -194,7 +202,7 @@ public class QuotationController {
 
     // Khởi tạo đối tượng tìm kiếm khi bắt đầu bind dữ liệu
     @ModelAttribute("searchForQuotation")
-    public SearchForQuotation initSearchForQuotation() {
-        return new SearchForQuotation();
+    public QuotationSearchCriteria initSearchForQuotation() {
+        return new QuotationSearchCriteria();
     }
 }

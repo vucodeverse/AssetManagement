@@ -17,9 +17,10 @@
      <div layout:fragment="content">
           <div class="quotation-form-wrapper">
 
-               <form th:action="@{/create/purchase-{id}/quotation(id=${purchaseId})}"
+               <form th:action="@{/purchase-staff/quotations/create/{id}(id=${purchaseId})}"
                     th:object="${quotationCreateRequest}" method="post" id="quotationForm">
                     <input type="hidden" th:field="*{quotationId}">
+                    <input type="hidden" th:field="*{purchaseId}">
 
                     <header class="form-header">
                          <h1
@@ -29,6 +30,14 @@
                               <span class="status-badge-draft">DRAFTING</span>
                          </div>
                     </header>
+
+                    <div th:if="${#fields.hasAnyErrors()}"
+                         style="background-color: #fee2e2; color: #991b1b; padding: 12px; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ef4444;">
+                         <strong>Please correct the following errors:</strong>
+                         <ul style="margin: 8px 0 0 20px;">
+                              <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                         </ul>
+                    </div>
 
                     <div class="form-section-card">
                          <div class="grid-fields">
@@ -62,7 +71,7 @@
                          <div class="items-header">
                               <h2>LINE ITEM DETAILS</h2>
                               <span class="items-count"
-                                   th:text="'Total Items: ' + ${#lists.size(quotationCreateRequest.quotationCreateDetailRequestList)}">Total
+                                   th:text="'Total Items: ' + ${#lists.size(quotationCreateRequest.quotationDetailCreateRequests)}">Total
                                    Items: 0</span>
                          </div>
 
@@ -81,50 +90,58 @@
                                    </tr>
                               </thead>
                               <tbody>
-                                   <tr th:each="item, stat : *{quotationCreateDetailRequestList}">
+                                   <tr th:each="item, stat : *{quotationDetailCreateRequests}">
                                         <td class="td-item-id">
                                              <span th:text="${item.specificationRequirement}">Spec</span>
+
                                              <input type="hidden"
-                                                  th:field="*{quotationCreateDetailRequestList[__${stat.index}__].purchaseRequestDetailId}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].purchaseRequestDetailId}">
                                              <input type="hidden"
-                                                  th:field="*{quotationCreateDetailRequestList[__${stat.index}__].specificationRequirement}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].specificationRequirement}">
                                         </td>
+
                                         <td class="td-item-name">
                                              <div th:text="${item.assetTypeName}">Type</div>
                                              <small style="color: #888; font-weight: 400;"
                                                   th:text="${item.specificationRequirement}"></small>
+
                                              <input type="hidden"
-                                                  th:field="*{quotationCreateDetailRequestList[__${stat.index}__].assetTypeName}">
-                                             <input type="hidden"
-                                                  th:field="*{quotationCreateDetailRequestList[__${stat.index}__].specificationRequirement}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].assetTypeName}">
                                         </td>
+
                                         <td class="td-item-qty">
                                              <input type="number" class="input-table qty-input"
-                                                  th:field="*{quotationCreateDetailRequestList[__${stat.index}__].quantity}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].quantity}">
                                         </td>
+
                                         <td>
                                              <input type="text" class="input-table" placeholder="Detail notes..."
-                                                  th:field="*{quotationCreateDetailRequestList[__${stat.index}__].quotationDetailNote}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].quotationDetailNote}">
                                         </td>
+
                                         <td>
                                              <input type="number" class="input-table"
-                                                  th:field="*{quotationCreateDetailRequestList[__${stat.index}__].warrantyMonths}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].warrantyMonths}">
                                         </td>
+
                                         <td>
                                              <div style="display: flex; align-items: center;">
                                                   <span style="margin-right: 8px; color: #999;">$</span>
                                                   <input type="number" step="1" class="input-table price-input"
-                                                       th:field="*{quotationCreateDetailRequestList[__${stat.index}__].price}">
+                                                       th:field="*{quotationDetailCreateRequests[__${stat.index}__].price}">
                                              </div>
                                         </td>
+
                                         <td>
                                              <input type="number" step="0.1" class="input-table tax-input"
-                                                  th:field="*{quotationCreateDetailRequestList[__${stat.index}__].taxRate}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].taxRate}">
                                         </td>
+
                                         <td>
                                              <input type="number" step="0.1" class="input-table disc-input"
-                                                  th:field="*{quotationCreateDetailRequestList[__${stat.index}__].discountRate}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].discountRate}">
                                         </td>
+
                                         <td>
                                              <div style="display: flex; gap: 8px;">
                                                   <button type="submit" name="addDetail" th:value="${stat.index}"
@@ -176,38 +193,7 @@
      </div>
 
      <th:block layout:fragment="extra-js">
-          <script>
-               $(document).ready(function () {
-                    function calculateTotals() {
-                         let subtotal = 0;
-                         let totalTax = 0;
-
-                         $('.items-table tbody tr').each(function () {
-                              const qty = parseFloat($(this).find('.qty-input').val()) || 0;
-                              const price = parseFloat($(this).find('.price-input').val()) || 0;
-                              const taxRate = parseFloat($(this).find('.tax-input').val()) || 0;
-                              const discRate = parseFloat($(this).find('.disc-input').val()) || 0;
-
-                              const lineSubtotal = qty * price;
-                              const discount = lineSubtotal * (discRate / 100);
-                              const taxableAmount = lineSubtotal - discount;
-                              const tax = taxableAmount * (taxRate / 100);
-
-                              subtotal += lineSubtotal;
-                              totalTax += tax;
-                         });
-
-                         const grandTotal = subtotal + totalTax;
-
-                         $('#subtotalDisplay').text('$ ' + subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-                         $('#taxDisplay').text('$ ' + totalTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-                         $('#grandTotalDisplay').text('$ ' + grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-                    }
-
-                    $('input').on('input', calculateTotals);
-                    calculateTotals();
-               });
-          </script>
+          <script th:src="@{/js/quotation/quotation-form.js}"></script>
           <style>
                .btn-icon {
                     width: 28px;

@@ -3,11 +3,11 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.QuotationDAO;
-import edu.fpt.groupfive.dto.request.PurchaseCreateRequest;
-import edu.fpt.groupfive.dto.request.PurchaseDetailCreateRequest;
-import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
-import edu.fpt.groupfive.dto.response.PurchaseDetailResponse;
-import edu.fpt.groupfive.dto.response.PurchaseResponse;
+import edu.fpt.groupfive.dto.request.PurchaseRequestCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseRequestDetailCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
+import edu.fpt.groupfive.dto.response.PurchaseRequestDetailResponse;
+import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.service.AssetTypeService;
@@ -33,7 +33,8 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // tạo 1 purchase request
     @Override
-    public Integer createPurchaseRequest(PurchaseCreateRequest purchaseCreateRequest, int userId, Request request) {
+    public Integer createPurchaseRequest(PurchaseRequestCreateRequest purchaseCreateRequest, int userId,
+            Request request) {
 
         // map từ dto sang purchase
         Purchase purchase = purchaseMapper.toPurchase(purchaseCreateRequest);
@@ -62,7 +63,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // lấy ra purchase theo id
     @Override
-    public PurchaseResponse findById(Integer id) {
+    public PurchaseRequestResponse findById(Integer id) {
 
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
         Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
@@ -70,10 +71,10 @@ public class PurchaseServiceImpl implements PurchaseService {
         return purchaseDAO.findById(id)
                 .map(p -> {
                     // map purchase details
-                    List<PurchaseDetailResponse> details = p.getPurchaseDetails().stream()
-                            .map(pd -> PurchaseDetailResponse.builder()
+                    List<PurchaseRequestDetailResponse> details = p.getPurchaseDetails().stream()
+                            .map(pd -> PurchaseRequestDetailResponse.builder()
                                     .id(pd.getId())
-                                    .assetTypeName(assetTypeMap.getOrDefault(pd.getAssetTypeId(),
+                                    .assetTypeName(assetTypeMap.getOrDefault(pd.getTypeId(),
                                             "Không tồn tại loại tài sản"))
                                     .quantity(pd.getQuantity())
                                     .estimatePrice(pd.getEstimatePrice())
@@ -82,9 +83,8 @@ public class PurchaseServiceImpl implements PurchaseService {
                                     .build())
                             .toList();
 
-                    // Sử dụng mapper và thiết lập thêm thông tin chi tiết (details) và số lượng báo
-                    // giá (quotationCount)
-                    PurchaseResponse resp = purchaseMapper.toPurchaseResponse(p);
+                    // map snag purchase response
+                    PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(p);
                     resp.setCreatorName(userMap.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"));
                     resp.setPurchaseDetails(details);
                     resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()));
@@ -95,11 +95,13 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // lấy ra tấy cả purchase
     @Override
-    public List<PurchaseResponse> findAllPurchases() {
+    public List<PurchaseRequestResponse> findAllPurchases() {
+
+        // lấy ra tất user
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
 
         return purchaseDAO.findAll().stream().map(p -> {
-            PurchaseResponse resp = purchaseMapper.toPurchaseResponse(p);
+            PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(p);
             resp.setCreatorName(userMap.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"));
             resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()));
             return resp;
@@ -108,7 +110,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // thực hiện search và filter
     @Override
-    public List<PurchaseResponse> searchAndFilter(PurchaseSearchAndFilter p) {
+    public List<PurchaseRequestResponse> searchAndFilter(PurchaseRequestSearchCriteria p) {
 
         // validate ngày tháng nhập vào có hợp lí ko
         if (p.getFrom() != null && p.getTo() != null
@@ -116,12 +118,13 @@ public class PurchaseServiceImpl implements PurchaseService {
             throw new InvalidDataException("From phải trước To");
         }
 
+        // lấy ra user
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
 
-        // Chuyển đổi sang PurchaseResponse để hiển thị trên giao diện
+        // Chuyển đổi sang PurchaseRequestResponse để hiển thị trên giao diện
         return purchaseDAO.getPurchaseByFilter(p).stream()
                 .map(pr -> {
-                    PurchaseResponse resp = purchaseMapper.toPurchaseResponse(pr);
+                    PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(pr);
                     resp.setCreatorName(userMap.getOrDefault(pr.getCreatedByUser(), "Không tồn tại người dùng"));
                     resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(pr.getId()));
                     return resp;
@@ -148,31 +151,30 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // lấy ra purchase đã save draft để sửa
     @Override
-    public PurchaseCreateRequest loadDraftForEdit(Integer purchaseId) {
+    public PurchaseRequestCreateRequest loadDraftForEdit(Integer purchaseId) {
         Purchase purchase = purchaseDAO.findById(purchaseId)
                 .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại: " + purchaseId));
 
-        PurchaseCreateRequest request = new PurchaseCreateRequest();
-        request.setPurchaseId(purchase.getId());
-        request.setPurchaseNote(purchase.getPurchaseNote());
-        request.setNeededByDate(purchase.getNeededByDate());
-        request.setReason(purchase.getReason());
-        request.setPriority(purchase.getPriority());
-
-        // Chuyển đổi danh sách chi tiết yêu cầu mua sắm (purchase details)
-        if (purchase.getPurchaseDetails() != null) {
-            List<PurchaseDetailCreateRequest> details = purchase.getPurchaseDetails().stream()
-                    .map(pd -> PurchaseDetailCreateRequest.builder()
-                            .assetTypeId(pd.getAssetTypeId())
-                            .quantity(pd.getQuantity())
-                            .estimatePrice(pd.getEstimatePrice())
-                            .specificationRequirement(pd.getSpecificationRequirement())
-                            .purchaseDetailNote(pd.getPurchaseDetailNote())
-                            .build())
-                    .toList();
-            request.setPurchaseDetailCreateRequests(new java.util.ArrayList<>(details));
+        if (Request.DRAFT != purchase.getStatus()) {
+            throw new InvalidDataException("Yêu cầu mua sắm này không thể update");
         }
 
-        return request;
+        return PurchaseRequestCreateRequest.builder()
+                .purchaseId(purchase.getId())
+                .purchaseNote(purchase.getPurchaseNote())
+                .neededByDate(purchase.getNeededByDate())
+                .reason(purchase.getReason())
+                .priority(purchase.getPriority())
+                .purchaseRequestDetailCreateRequests(purchase.getPurchaseDetails().stream()
+                        .map(pd -> PurchaseRequestDetailCreateRequest.builder()
+                                .typeId(pd.getTypeId())
+                                .quantity(pd.getQuantity())
+                                .estimatePrice(pd.getEstimatePrice())
+                                .specificationRequirement(pd.getSpecificationRequirement())
+                                .purchaseDetailNote(pd.getPurchaseDetailNote())
+                                .build())
+                        .toList())
+                .build();
+
     }
 }

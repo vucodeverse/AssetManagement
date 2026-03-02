@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +36,7 @@ public class AssetTypeServiceImpl implements AssetTypeService {
     public List<AssetTypeResponse> getAllAssetType() {
         return assetTypeDAO.findAll().stream().map(assetType -> AssetTypeResponse.builder()
                 .typeId(assetType.getTypeId())
-                .typeName(assetType.getTypeName()).build()).collect(Collectors.toList());
+                .typeName(assetType.getTypeName()).build()).toList();
     }
 
     public AssetTypeResponse getById(Integer id) {
@@ -106,8 +107,12 @@ public class AssetTypeServiceImpl implements AssetTypeService {
 
     @Override
     public Map<Integer, String> getAssetTypeIdToNameMap() {
-        return assetTypeDAO.findAll().stream()
-                .collect(Collectors.toMap(AssetType::getTypeId, AssetType::getTypeName,
-                        (existing, replacement) -> existing));
+        Map<Integer, String> map = new HashMap<>();
+
+        for(AssetType assetType : assetTypeDAO.findAll()) {
+            map.put(assetType.getTypeId(), assetType.getTypeName());
+        }
+
+        return map;
     }
 }

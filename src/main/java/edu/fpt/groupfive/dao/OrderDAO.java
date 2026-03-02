@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao;
 
-import edu.fpt.groupfive.dto.request.OrderSearchCriteria;
+import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.model.Order;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public interface OrderDAO {
 
     Map<Integer, Integer> getOrderedQtyByPurchaseDetail(List<Integer> purchaseDetailIds);
 
-    List<Object[]> searchAndFilter(OrderSearchCriteria criteria);
+    List<Object[]> searchAndFilter(PurchaseOrderSearchCriteria criteria);
 
     Optional<Order> findById(Integer orderId);
 

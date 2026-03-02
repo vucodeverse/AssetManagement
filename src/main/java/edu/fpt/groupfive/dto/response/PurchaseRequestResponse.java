@@ -11,14 +11,14 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PurchaseResponse {
+public class PurchaseRequestResponse {
     private Integer purchaseId;
     private Request status;
     private String creatorName;
     private LocalDate neededByDate;
     private String priority;
     private LocalDate createdAt;
-    private List<PurchaseDetailResponse> purchaseDetails;
+    private List<PurchaseRequestDetailResponse> purchaseDetails;
     private Integer quotationCount;
     private String rejectReason;
 }

@@ -60,10 +60,8 @@
                             <label>PRIORITY</label>
                             <select th:field="*{priority}">
                                 <option value="">-- Select --</option>
-                                <option value="LOW">Low</option>
-                                <option value="MEDIUM">Medium</option>
-                                <option value="HIGH">High</option>
-                                <option value="CRITICAL">Critical</option>
+                                <option th:each="p: ${T(edu.fpt.groupfive.common.Priority).values()}" th:value="${p}"
+                                    th:text="${p}"></option>
                             </select>
                             <div class="field-error" th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}">
                             </div>
@@ -98,62 +96,64 @@
                             </thead>
 
                             <tbody>
-                                <tr th:each="d, stat : *{purchaseDetailCreateRequests}">
-
-                                    <!-- assetTypeId -->
+                                <tr th:each="d, stat : *{purchaseRequestDetailCreateRequests}">
+                                    <!-- Asset Type -->
                                     <td>
-                                        <select class="table-input"
-                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].assetTypeId}">
-                                            <option value="">Select Asset Type</option>
-                                            <option th:each="c : ${assetTypes}" th:value="${c.typeId}"
-                                                th:text="${c.typeName}">
+                                        <select class="input-prem"
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].typeId}">
+                                            <option value="">Select asset type...</option>
+                                            <option th:each="a : ${assetTypes}" th:value="${a.typeId}"
+                                                th:text="${a.typeName}">
                                             </option>
                                         </select>
+
                                         <div class="field-error"
-                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].assetTypeId')}"
-                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].assetTypeId}">
+                                            th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].typeId')}"
+                                            th:errors="*{purchaseRequestDetailCreateRequests[__${stat.index}__].typeId}">
                                         </div>
                                     </td>
 
-                                    <!-- quantity -->
+                                    <!-- Quantity -->
                                     <td>
-                                        <input type="number" class="table-input"
-                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].quantity}">
+                                        <input type="number" min="1" class="input-prem"
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].quantity}" />
+
                                         <div class="field-error"
-                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].quantity')}"
-                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].quantity}">
+                                            th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].quantity')}"
+                                            th:errors="*{purchaseRequestDetailCreateRequests[__${stat.index}__].quantity}">
                                         </div>
                                     </td>
 
+                                    <!-- Estimate Price -->
                                     <td>
-                                        <input type="number" step="0.01" class="table-input"
-                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].estimatePrice}"
-                                            placeholder="0.00">
+                                        <input type="number" step="0.01" min="0" class="input-prem"
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].estimatePrice}" />
+
                                         <div class="field-error"
-                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].estimatePrice')}"
-                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].estimatePrice}">
+                                            th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].estimatePrice')}"
+                                            th:errors="*{purchaseRequestDetailCreateRequests[__${stat.index}__].estimatePrice}">
                                         </div>
                                     </td>
 
-                                    <!-- specificationRequirement -->
+                                    <!-- Specification Requirement -->
                                     <td>
-                                        <input type="text" class="table-input"
-                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].specificationRequirement}"
-                                            placeholder="Min 16GB RAM...">
+                                        <input type="text" class="input-prem"
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].specificationRequirement}" />
+
                                         <div class="field-error"
-                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].specificationRequirement')}"
-                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].specificationRequirement}">
+                                            th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].specificationRequirement')}"
+                                            th:errors="*{purchaseRequestDetailCreateRequests[__${stat.index}__].specificationRequirement}">
                                         </div>
                                     </td>
 
-                                    <!-- note -->
+                                    <!-- Purchase Detail Note -->
                                     <td>
-                                        <input type="text" class="table-input"
-                                            th:field="*{purchaseDetailCreateRequests[__${stat.index}__].purchaseDetailNote}"
-                                            placeholder="...">
+                                        <input type="text" class="input-prem"
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].purchaseDetailNote}" />
+
                                         <div class="field-error"
-                                            th:if="${#fields.hasErrors('purchaseDetailCreateRequests[' + stat.index + '].purchaseDetailNote')}"
-                                            th:errors="*{purchaseDetailCreateRequests[__${stat.index}__].purchaseDetailNote}">
+                                            th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].purchaseDetailNote')}"
+                                            th:errors="*{purchaseRequestDetailCreateRequests[__${stat.index}__].purchaseDetailNote}">
                                         </div>
                                     </td>
 

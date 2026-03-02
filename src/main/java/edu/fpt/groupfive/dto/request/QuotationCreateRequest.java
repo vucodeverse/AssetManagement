@@ -13,10 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuotationCreateRequest {
-    private Integer quotationId; //TODO: ????
+    private Integer quotationId; // TODO: ????
 
     @NotNull(message = "Purchase id không được để trống")
-    private Integer purchaseRequestId;
+    private Integer purchaseId;
     private String quotationNote;
 
     @NotNull(message = "Vui lòng chọn nhà cung cấp")
@@ -24,5 +24,5 @@ public class QuotationCreateRequest {
 
     @Builder.Default
     @Valid
-    private List<QuotationCreateDetailRequest> quotationCreateDetailRequestList = new ArrayList<>();
+    private List<QuotationDetailCreateRequest> quotationDetailCreateRequests = new ArrayList<>();
 }

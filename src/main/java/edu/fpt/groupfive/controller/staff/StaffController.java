@@ -1,15 +1,10 @@
 package edu.fpt.groupfive.controller.staff;
 
-import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.Request;
-import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
+import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
 import edu.fpt.groupfive.dto.response.StaffDashboardDTO;
-import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.service.PurchaseService;
-import edu.fpt.groupfive.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +16,7 @@ public class StaffController {
     private final PurchaseService purchaseService;
     private final DashboardService dashboardService;
 
+    // hiển thị db của purcahse staff
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         StaffDashboardDTO dashboardData = dashboardService.getStaffDashboardData();
@@ -38,15 +34,17 @@ public class StaffController {
         return "purchase/purchase-detail";
     }
 
+    // duyệt purchase request
     @PostMapping("/purchases/{id}/actions")
-    public String actionWithPr(@PathVariable("id") Integer id, @RequestParam("actions") String actions,
+    public String actionWithPr(@PathVariable("id") Integer id,
+                               @RequestParam("actions") String actions,
             @RequestParam(value = "reasonReject", required = false) String reasonReject) {
         purchaseService.actionsWithPurchase(id, actions, reasonReject);
         return "redirect:/purchase-staff/purchases";
     }
 
     @ModelAttribute("searchAndFilter")
-    public PurchaseSearchAndFilter initSearchAndFilter() {
-        return new PurchaseSearchAndFilter();
+    public PurchaseRequestSearchCriteria initSearchAndFilter() {
+        return new PurchaseRequestSearchCriteria();
     }
 }

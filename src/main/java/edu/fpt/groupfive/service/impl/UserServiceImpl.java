@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -182,8 +183,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<Integer, String> getUserIdToUsernameMap() {
-        return userDAO.findAll().stream()
-                .collect(Collectors.toMap(Users::getUserId, Users::getUsername, (existing, replacement) -> existing));
+
+        Map<Integer, String> userMap = new HashMap<>();
+
+        for (Users user : userDAO.findAll()) {
+            userMap.put(user.getUserId(), user.getFirstName() + ' ' + user.getLastName());
+        }
+
+        return userMap;
     }
 
 }

@@ -1,6 +1,5 @@
 package edu.fpt.groupfive.dto.request;
 
-
 import edu.fpt.groupfive.common.Priority;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
@@ -15,9 +14,10 @@ import java.util.List;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PurchaseCreateRequest {
+public class PurchaseRequestCreateRequest {
     private Integer purchaseId;
 
     private String purchaseNote;
@@ -34,5 +34,5 @@ public class PurchaseCreateRequest {
     private Priority priority;
 
     @Valid
-    private List<PurchaseDetailCreateRequest> purchaseDetailCreateRequests = new ArrayList<>();
+    private List<PurchaseRequestDetailCreateRequest> purchaseRequestDetailCreateRequests = new ArrayList<>();
 }

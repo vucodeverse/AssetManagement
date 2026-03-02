@@ -66,7 +66,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
     public List<QuotationDetail> findByPurchaseId(Integer purchaseId) {
 
         String sql = "select qd.* from quotation q join quotation_detail qd on q.quotation_id = qd.quotation_id where" +
-                " q.purchase_request_id = ?";
+                " q.purchase_request_id = ? and qd.status <> 'CANCELLED' ";
 
         List<QuotationDetail> quotationDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
@@ -138,7 +138,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
     // transaction)
     @Override
     public void deleteByQuotationId(Integer quotationId, Connection connection) {
-        String sql = "update quotation_detail set status = 'CANCELLED' where quotation_id = ?";
+        String sql = "delete from quotation_detail where quotation_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, quotationId);
             ps.executeUpdate();
@@ -150,7 +150,8 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
     @Override
     public List<QuotationDetail> findByQuotationId(Integer quotationId) {
 
-        String sql = "select * from quotation_detail where  quotation_id = ?";
+        String sql = "select * from quotation_detail join dbo.quotation on quotation_detail.quotation_id = quotation" +
+                ".quotation_id where quotation_detail.quotation_id = ? and quotation.status != 'CANCELLED' ";
 
         List<QuotationDetail> quotationDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();

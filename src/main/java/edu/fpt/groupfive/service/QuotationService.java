@@ -1,10 +1,9 @@
 package edu.fpt.groupfive.service;
 
-import edu.fpt.groupfive.dto.request.QuotationCreateDetailRequest;
+import edu.fpt.groupfive.dto.request.QuotationDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
-import edu.fpt.groupfive.dto.request.SearchForQuotation;
-import edu.fpt.groupfive.dto.response.QuotationForPurchaseResponse;
+import edu.fpt.groupfive.dto.response.QuotationSummaryResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 
 import java.util.List;
@@ -22,11 +21,11 @@ public interface QuotationService {
 
     void rejectQuotation(Integer quotationId, String reason);
 
-    List<QuotationForPurchaseResponse> searchAndFilterForQuotation(SearchForQuotation searchForQuotation);
+    List<QuotationSummaryResponse> searchAndFilterForQuotation(QuotationSearchCriteria quotationSearchCriteria);
 
-    List<QuotationForPurchaseResponse> getQuotationAndPurchase();
+    List<QuotationSummaryResponse> getQuotationAndPurchase();
 
     List<QuotationResponse> quotationCriteriaForPurchase(QuotationSearchCriteria quotationSearchCriteria);
 
-    List<QuotationCreateDetailRequest> mapPurchaseToQuotation(Integer purchaseId);
+    List<QuotationDetailCreateRequest> mapPurchaseToQuotation(Integer purchaseId);
 }

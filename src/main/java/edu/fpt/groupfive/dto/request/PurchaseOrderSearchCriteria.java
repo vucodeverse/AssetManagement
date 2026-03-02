@@ -7,10 +7,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-
 @Getter
 @Setter
-public class OrderSearchCriteria {
+public class PurchaseOrderSearchCriteria {
     private String keyword;
     private String status;
     private String supplierName;

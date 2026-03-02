@@ -16,6 +16,25 @@ $(document).ready(function () {
 
     // Xóa tất cả các bộ lọc
     $('#btnClearFilter').on('click', function () {
-        window.location.href = '/director/purchase-orders';
+        window.location.href = '/purchase-staff/purchase-orders';
     });
+
+    // Initialize DataTable for PO List
+    if ($('#purchaseOrdersTable').length) {
+        $('#purchaseOrdersTable').DataTable({
+            pageLength: 6,
+            lengthChange: false,
+            ordering: true,
+            info: true,
+            searching: false,
+            order: [[1, "desc"]], // Sort by CREATED AT (index 1) descending by default
+            columnDefs: [
+                { orderable: false, targets: 4 } // Disable sorting on NOTE column
+            ],
+            language: {
+                paginate: { previous: "<", next: ">" },
+                info: "SHOWING _START_ TO _END_ OF _TOTAL_ PURCHASE ORDERS"
+            }
+        });
+    }
 });

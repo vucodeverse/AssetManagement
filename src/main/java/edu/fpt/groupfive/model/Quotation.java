@@ -13,7 +13,7 @@ import java.util.List;
 public class Quotation extends AbstractEntity<Integer>{
 
     private QuotationStatus quotationStatus;
-    private String quotationDetailNote;
+    private String quotationNote;
     private Integer supplierId;
     private Integer purchaseId;
     private BigDecimal totalAmount;

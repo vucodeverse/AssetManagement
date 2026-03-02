@@ -14,17 +14,8 @@
 </head>
 
 <body>
-    <div layout:fragment="content">
+    <th:block layout:fragment="content">
         <div class="po-detail-wrapper">
-            <!-- Thanh điều hướng (Breadcrumb) -->
-            <div class="breadcrumb">
-                <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a> /
-                <a th:href="@{/purchase-staff/purchases}">PURCHASES</a> /
-                <a
-                    th:href="@{/purchase-staff/quotations/of-purchase/{id}(id=${quotation.purchaseId})}">QUOTATIONS</a>
-                /
-                <span class="active">DETAIL</span>
-            </div>
 
             <header class="content-header">
                 <div class="header-left">
@@ -33,12 +24,16 @@
                 <div class="header-actions">
                     <!-- Các hành động của Director -->
                     <th:block>
-                        <button type="button" class="btn-outline-prem" onclick="openRejectModal()">REJECT</button>
+                        <button type="button" class="btn-outline-prem"
+                            th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
+                            onclick="openRejectModal()">REJECT</button>
                         <a th:href="@{/purchase-staff/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
+                            th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
                             class="btn-approve">
                             APPROVE & GENERATE PO
                         </a>
-                        <a th:if="${quotation.quotationStatus == 'DRAFT'}" class="btn-solid-prem"
+                        <a th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT'}"
+                            class="btn-solid-prem"
                             th:href="@{/purchase-staff/quotations/{id}/edit(id=${quotation.quotationId})}">
                             UPDATE QUOTATION
                         </a>
@@ -75,10 +70,15 @@
                 </div>
 
                 <!-- Lý do từ chối -->
-                <div th:if="${quotation.quotationStatus == T(edu.fpt.groupfive.common.QuotationStatus).REJECTED and quotation.rejectedReason != null}"
-                    class="rejection-reason-box">
-                    <label>REJECTION REASON</label>
-                    <p th:text="${quotation.rejectedReason}">Reason will appear here...</p>
+                <div th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'REJECTED' and quotation.rejectedReason != null}"
+                    class="rejection-reason-box"
+                    style="margin-top: 20px; padding: 16px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
+                    <label
+                        style="color: #b91c1c; font-weight: 700; font-size: 13px; display: block; margin-bottom: 8px;">REJECTION
+                        REASON</label>
+                    <p th:text="${quotation.rejectedReason}"
+                        style="color: #7f1d1d; margin: 0; font-size: 14px; line-height: 1.5;">Reason will appear here...
+                    </p>
                 </div>
 
                 <hr class="divider">
@@ -152,29 +152,30 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Modal từ chối -->
-    <div id="rejectModal" class="modal" layout:fragment="extra-content">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>REJECT QUOTATION</h2>
+        <!-- Modal từ chối -->
+        <div id="rejectModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>REJECT QUOTATION</h2>
+                </div>
+                <form th:action="@{/purchase-staff/quotations/{id}/reject(id=${quotation.quotationId})}" method="post">
+                    <div class="modal-body">
+                        <p style="font-size: 14px; margin-bottom: 16px; color: #666;">Please provide a reason for
+                            rejecting
+                            this quotation. This will be visible to the purchase staff.</p>
+                        <textarea name="reason" placeholder="Enter rejection reason here..." required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline-prem" onclick="closeRejectModal()">CANCEL</button>
+                        <button type="submit" class="btn-solid-prem"
+                            style="background: #ff0000; border-color: #ff0000;">CONFIRM
+                            REJECTION</button>
+                    </div>
+                </form>
             </div>
-            <form th:action="@{/purchase-staff/quotations/{id}/reject(id=${quotation.quotationId})}" method="post">
-                <div class="modal-body">
-                    <p style="font-size: 14px; margin-bottom: 16px; color: #666;">Please provide a reason for rejecting
-                        this quotation. This will be visible to the purchase staff.</p>
-                    <textarea name="reason" placeholder="Enter rejection reason here..." required></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-outline-prem" onclick="closeRejectModal()">CANCEL</button>
-                    <button type="submit" class="btn-solid-prem"
-                        style="background: #ff0000; border-color: #ff0000;">CONFIRM
-                        REJECTION</button>
-                </div>
-            </form>
         </div>
-    </div>
+    </th:block>
+
 
     <th:block layout:fragment="extra-js">
         <script th:src="@{/js/quotation/quotation-detail.js}"></script>

@@ -3,8 +3,8 @@ package edu.fpt.groupfive.controller.director;
 import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.common.Request;
-import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
-import edu.fpt.groupfive.dto.request.SearchForQuotation;
+import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
+import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.QuotationService;
@@ -24,15 +24,16 @@ public class DirectorController {
     private final QuotationService quotationService;
 
     @ModelAttribute("searchAndFilter")
-    public PurchaseSearchAndFilter initSearchAndFilter() {
-        return new PurchaseSearchAndFilter();
+    public PurchaseRequestSearchCriteria initSearchAndFilter() {
+        return new PurchaseRequestSearchCriteria();
     }
 
     @ModelAttribute("searchForQuotation")
-    public SearchForQuotation initSearchForQuotation() {
-        return new SearchForQuotation();
+    public QuotationSearchCriteria initSearchForQuotation() {
+        return new QuotationSearchCriteria();
     }
 
+    // hiển thị dashboard
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
         model.addAttribute("activeMenu", "dashboard");
@@ -40,6 +41,7 @@ public class DirectorController {
         return "director/director-dashboard";
     }
 
+    // hiển thị list purchase để duyệt
     @GetMapping("/purchases")
     public String showPurchases(Model model) {
         model.addAttribute("activeMenu", "purchase");

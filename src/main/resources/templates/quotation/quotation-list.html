@@ -49,11 +49,17 @@
                             <option value="20000+">20,000+</option>
                         </select>
                     </div>
-                    <div class="filter-group dates">
+                    <div class="filter-group dates" style="position: relative;">
                         <label>DATES:</label>
                         <input type="date" th:field="*{from}">
                         <span class="to-text">to</span>
                         <input type="date" th:field="*{to}">
+                        <div th:if="${#fields.hasErrors('from')}" th:errors="*{from}"
+                            style="position: absolute; bottom: -18px; left: 60px; color: red; font-size: 11px; white-space: nowrap;">
+                        </div>
+                        <div th:if="${#fields.hasErrors('to')}" th:errors="*{to}"
+                            style="position: absolute; bottom: -18px; right: 0; color: red; font-size: 11px; white-space: nowrap;">
+                        </div>
                     </div>
                     <div class="filter-actions">
                         <a class="btn-reset-filters" th:href="@{/purchase-staff/quotations}">

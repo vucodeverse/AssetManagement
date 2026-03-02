@@ -79,6 +79,7 @@ public class QuotationDAOImpl implements QuotationDAO {
         }
     }
 
+    // update khi save draft
     @Override
     public void update(Quotation quotation) {
         String sql = "update quotation set supplier_id = ?, status = ?, total_amount = ?, updated_at = GETDATE() " +
@@ -96,11 +97,12 @@ public class QuotationDAOImpl implements QuotationDAO {
             preparedStatement.setInt(4, quotation.getId());
             preparedStatement.executeUpdate();
 
-            // xóa detail cũ rồi insert lại (cùng 1 connection/transaction)
+            // xóa detail cũ rồi insert lại
             quotationDetailDAO.deleteByQuotationId(quotation.getId(), connection);
 
             if (quotation.getQuotationDetails() != null) {
                 for (QuotationDetail qd : quotation.getQuotationDetails()) {
+                    qd.setQuotationId(quotation.getId());
                     quotationDetailDAO.insert(qd, connection);
                 }
             }
@@ -124,9 +126,11 @@ public class QuotationDAOImpl implements QuotationDAO {
         }
     }
 
+    // update khi reject
     @Override
     public void updateStatusReject(Integer quotationId, QuotationStatus status, String rejectedReason) {
-        String sql = "UPDATE quotation SET status = ?, reject_reason = ?, updated_at = GETDATE() WHERE quotation_id = ?";
+        String sql = "update quotation set status = ?, reject_reason = ?, updated_at = GETDATE() WHERE quotation_id =" +
+                " ?";
 
         Connection connection = null;
         try {
@@ -159,7 +163,7 @@ public class QuotationDAOImpl implements QuotationDAO {
     @Override
     public Optional<Quotation> findById(Integer quotationId) {
 
-        String sql = "select * from quotation where quotation_id = ?";
+        String sql = "select * from quotation where quotation_id = ? and status <> 'CANCLLED'";
 
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -222,6 +226,7 @@ public class QuotationDAOImpl implements QuotationDAO {
         return quotations;
     }
 
+    // tìm theo quotationId
     @Override
     public Optional<Quotation> findResponseById(Integer quotationId) {
         String sql = "SELECT q.*, s.supplier_name " +
@@ -244,6 +249,7 @@ public class QuotationDAOImpl implements QuotationDAO {
                         .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
                 quotation
                         .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                quotation.setRejectedReason(rs.getString("reject_reason"));
 
                 return Optional.of(quotation);
             }

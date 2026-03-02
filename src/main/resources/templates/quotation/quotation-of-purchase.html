@@ -13,15 +13,6 @@
 <body>
     <th:block layout:fragment="content">
         <main class="quotation-content-wrapper">
-            <!-- Thanh điều hướng (Breadcrumb) -->
-            <div class="breadcrumb">
-                <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a> /
-                <a th:href="@{/purchase-staff/purchases}">PURCHASES</a> /
-                <a th:href="@{/purchase-staff/purchases/{id}/purchase-detail(id=${purchaseId})}"
-                    th:text="'PR-' + ${purchaseId}">PR-000052</a> /
-                <span class="active">QUOTATIONS</span>
-            </div>
-
             <!-- Khu vực tiêu đề trang -->
             <header class="page-header">
                 <div class="header-text">
@@ -106,10 +97,9 @@
                     </thead>
                     <tbody>
                         <tr th:each="q : ${quotations}"
-                            th:attr="onclick=|window.location.href='@{/view/quotations/{id}/quotation-detail(id=${q.quotationId})}'|">
-                            <td class="td-id">
-                                <a th:href="@{/purchase-staff/quotations/{id}(id=${q.quotationId})}"
-                                    th:text="'QT-' + ${q.quotationId}">QT-001</a>
+                            th:attr="onclick=|window.location.href='@{/purchase-staff/quotations/{id}(id=${q.quotationId})}'|">
+                            <td class="td-id" th:text="'QT-' + ${q.quotationId}">
+                                QT-001
                             </td>
                             <td>
                                 <div class="supplier-cell">
@@ -134,22 +124,28 @@
                                     class="rejected-reason-mini" th:title="${q.rejectedReason}"
                                     th:text="${q.rejectedReason}">Reason...</span>
                             </td>
-                            <td class="cell-actions">
-                                <a th:href="@{/view/quotations/{id}/quotation-detail(id=${q.quotationId})}"
-                                    title="View">
-                                    <i class="far fa-eye action-icon"></i>
-                                </a>
+                            <td class="cell-actions" onclick="event.stopPropagation()">
+
                                 <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
-                                    th:href="@{/quotations/{id}/edit(id=${q.quotationId})}" title="Edit">
+                                   th:href="@{/purchase-staff/quotations/{quotationId}/edit(quotationId=${q.quotationId})}"
+                                   title="Edit">
                                     <i class="far fa-edit action-icon"></i>
                                 </a>
-                                <a class="btn-approve-sm" th:href="@{/quotations/{id}/create-po(id=${q.quotationId})}"
-                                    th:if="${q.quotationStatus.name() == 'PENDING'}">
+
+                                <a class="btn-approve-sm"
+                                   th:href="@{/purchase-staff/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}"
+                                   th:if="${q.quotationStatus.name() == 'PENDING'}">
                                     APPROVE &amp; PO
                                 </a>
-                                <button class="btn-reject-sm" type="button"
-                                    th:if="${q.quotationStatus.name() == 'PENDING'}"
-                                    th:onclick="'openRejectModal(' + ${q.quotationId} + ')'">REJECT</button>
+
+                                <button class="btn-reject-sm"
+                                        type="button"
+                                        th:if="${q.quotationStatus.name() == 'PENDING'}"
+                                        th:attr="data-action=@{/purchase-staff/quotations/{id}/reject(id=${q.quotationId})}"
+                                        onclick="openRejectModal(event, this)">
+                                    REJECT
+                                </button>
+
                             </td>
                         </tr>
                     </tbody>
@@ -159,21 +155,35 @@
             </div>
         </main>
 
-        <!-- Modal từ chối -->
+        <!-- Modal Reject -->
         <div id="rejectModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>REJECT QUOTATION</h2>
                 </div>
+
                 <form id="rejectForm" method="post">
                     <div class="modal-body">
-                        <p style="font-size: 13px; margin-bottom: 16px; color: #666;">Please provide a reason for
-                            rejecting this quotation. This will be visible to the purchase staff.</p>
-                        <textarea name="reason" placeholder="Enter rejection reason here..." required></textarea>
+                        <p style="font-size: 14px; margin-bottom: 16px; color: #666;">
+                            Please provide a reason for rejecting this quotation.
+                        </p>
+                        <textarea name="reason"
+                                  placeholder="Enter rejection reason here..."
+                                  required></textarea>
                     </div>
+
                     <div class="modal-footer">
-                        <button type="button" class="btn-cancel" onclick="closeRejectModal()">CANCEL</button>
-                        <button type="submit" class="btn-confirm-reject">CONFIRM REJECTION</button>
+                        <button type="button"
+                                class="btn-outline-prem"
+                                onclick="closeRejectModal()">
+                            CANCEL
+                        </button>
+
+                        <button type="submit"
+                                class="btn-solid-prem"
+                                style="background:#ff0000; border-color:#ff0000;">
+                            CONFIRM REJECTION
+                        </button>
                     </div>
                 </form>
             </div>
@@ -182,13 +192,19 @@
 
     <th:block layout:fragment="extra-js">
         <script th:src="@{/js/quotation/quotation-of-purchase.js}"></script>
-        <script th:inline="javascript">
+        <script>
+            function openRejectModal(e, btn) {
+                e.stopPropagation();
 
-
-            function openRejectModal(id) {
                 const modal = document.getElementById('rejectModal');
                 const form = document.getElementById('rejectForm');
-                form.action = '/quotations/' + id + '/reject';
+
+                // Set đúng URL reject theo quotationId
+                form.action = btn.dataset.action;
+
+                // Reset textarea mỗi lần mở
+                form.querySelector('textarea[name="reason"]').value = '';
+
                 modal.style.display = 'block';
             }
 
@@ -198,7 +214,7 @@
 
             window.onclick = function (event) {
                 const modal = document.getElementById('rejectModal');
-                if (event.target == modal) {
+                if (event.target === modal) {
                     modal.style.display = 'none';
                 }
             }

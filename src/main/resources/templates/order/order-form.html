@@ -102,7 +102,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="od, iter : *{orderDetailCreateRequests}">
+                                <tr th:each="od, iter : *{purchaseOrderDetailCreateRequests}">
                                     <td class="td-value" th:text="${od.assetTypeName}">Asset Type</td>
 
                                     <!-- Hiển thị ID chi tiết -->
@@ -124,26 +124,26 @@
                                     <!-- Số lượng: có thể chỉnh sửa -->
                                     <td>
                                         <input type="hidden"
-                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].quotationDetailId'"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].quotationDetailId'"
                                             th:value="${od.quotationDetailId}">
                                         <input type="hidden"
-                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].price'"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].price'"
                                             th:value="${od.price}">
                                         <input type="hidden"
-                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].taxRate'"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].taxRate'"
                                             th:value="${od.taxRate}">
                                         <input type="hidden"
-                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].discountRate'"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].discountRate'"
                                             th:value="${od.discountRate}">
                                         <input type="hidden"
-                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].assetTypeId'"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].assetTypeId'"
                                             th:value="${od.assetTypeId}">
                                         <input type="hidden"
-                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].assetTypeName'"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].assetTypeName'"
                                             th:value="${od.assetTypeName}">
 
                                         <input class="table-input qty-input" type="number" min="1"
-                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].quantity'"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].quantity'"
                                             th:value="${od.quantity}"
                                             th:attr="data-price=${od.price}, data-tax=${od.taxRate}, data-discount=${od.discountRate}">
                                     </td>
@@ -151,7 +151,7 @@
                                     <!-- Ghi chú (có thể chỉnh sửa) -->
                                     <td>
                                         <input class="table-input" type="text"
-                                            th:name="'orderDetailCreateRequests[' + ${iter.index} + '].orderDetailNote'"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].orderDetailNote'"
                                             th:value="${od.orderDetailNote}" placeholder="Add note...">
                                     </td>
 

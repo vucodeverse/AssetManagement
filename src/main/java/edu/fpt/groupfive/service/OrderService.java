@@ -1,17 +1,19 @@
 package edu.fpt.groupfive.service;
 
-import edu.fpt.groupfive.dto.request.OrderCreateRequest;
-import edu.fpt.groupfive.dto.request.OrderSearchCriteria;
-import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
+import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
+import edu.fpt.groupfive.dto.response.PurchaseOrderFullResponse;
 import edu.fpt.groupfive.dto.response.PurchaseOrderGroupResponse;
+import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 
 import java.util.List;
 
 public interface OrderService {
-    OrderCreateRequest checkFormCreateOrder(Integer quotationId);
-    Integer createOrder(Integer quotationId, OrderCreateRequest orderCreateRequest);
-    List<PurchaseOrderGroupResponse> getOrdersGroupedByPR(OrderSearchCriteria criteria);
-    PurchaseOrderDetailResponse getOrderDetail(Integer orderId);
+    PurchaseOrderCreateRequest checkFormCreateOrder(Integer quotationId);
+
+    Integer createOrder(Integer quotationId, PurchaseOrderCreateRequest orderCreateRequest);
+
+    List<PurchaseOrderResponse> getPurchaseOrdersFlat(PurchaseOrderSearchCriteria criteria);
+
+    PurchaseOrderFullResponse getOrderDetail(Integer orderId);
 }
-
-

@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class QuotationForPurchaseResponse {
+public class QuotationSummaryResponse {
 
     private Integer purchaseId;
     private LocalDate needByDate;
