@@ -38,6 +38,9 @@ build/
 ### Mac OS ###
 .DS_Store
 /.idea/
+/.target/
+/.smarttomcat/
+/.cursor/
 
 
 /out/
