@@ -233,12 +233,13 @@ CREATE TABLE goods_receipt (
 
 CREATE TABLE asset (
   asset_id            INT IDENTITY(1,1) NOT NULL,
+  asset_name          VARCHAR(100) NOT NULL,
   serial_number       VARCHAR(100) NULL UNIQUE,
   asset_type_id       INT NOT NULL,
-  goods_receipt_id    INT NOT NULL,
+  goods_receipt_id    INT NULL,
   current_status      VARCHAR(40) NOT NULL,
   original_cost       NUMERIC(19, 2) NULL,
-  shelf_id            INT NOT NULL,
+  shelf_id            INT NULL,
   warehouse_id        INT NULL,
   department_id       INT NULL,
   acquisition_date    DATE NULL,
