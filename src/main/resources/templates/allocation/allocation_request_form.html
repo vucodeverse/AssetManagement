@@ -14,11 +14,9 @@
     <!-- header -->
     <header class="pr-header">
         <div>
-            <h1
-                    th:text="${requestDto.requestId != null
-            ? (canEdit ? 'Sửa yêu cầu cấp phát' : 'Chi tiết yêu cầu cấp phát')
-            : 'Tạo yêu cầu cấp phát'}"
-            >
+            <h1 th:text="${requestDto.requestId != null
+                ? (canEdit ? 'Sửa yêu cầu cấp phát' : 'Chi tiết yêu cầu cấp phát')
+                : 'Tạo yêu cầu cấp phát'}">
             </h1>
         </div>
     </header>
@@ -200,8 +198,7 @@
                             <button
                                     type="button"
                                     class="btn-remove"
-                                    onclick="removeRow(this)">
-                                ×
+                                    onclick="removeRow(this)"> ×
                             </button>
                         </td>
                     </tr>
