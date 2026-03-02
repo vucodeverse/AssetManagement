@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/main-layout}">
+
+<head>
+  <title>Purchase Orders | PROCUREX</title>
+  <th:block layout:fragment="extra-css">
+    <link rel="stylesheet" th:href="@{/css/order/order-from-purchase.css}">
+  </th:block>
+</head>
+
+<body>
+  <div layout:fragment="content">
+    <div class="po-list-wrapper">
+
+      <!-- Thanh điều hướng (Breadcrumb) -->
+      <div class="breadcrumb">
+        <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a> / <span class="active">PURCHASE ORDERS</span>
+      </div>
+
+      <!-- Tiêu đề trang -->
+      <div class="page-header">
+        <div>
+          <h1>Purchase Orders</h1>
+          <p>Grouped by Purchase Request</p>
+        </div>
+      </div>
+
+      <!-- Thẻ bộ lọc -->
+      <form id="filterForm" th:action="@{/purchase-staff/purchase-orders}" method="get">
+        <div class="filter-card">
+          <!-- Thanh tìm kiếm -->
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="keyword" name="keyword" th:value="${criteria.keyword}"
+              placeholder="Search by PO ID or Supplier name...">
+          </div>
+
+          <!-- Các bộ lọc -->
+          <div class="filter-bar">
+            <!-- Trạng thái -->
+            <select id="statusFilter" name="status" class="filter-select">
+              <option value="">All Statuses</option>
+              <option value="PENDING" th:selected="${criteria.status == 'PENDING'}">Pending</option>
+              <option value="ACTIVE" th:selected="${criteria.status == 'ACTIVE'}">Active</option>
+              <option value="SHIPPED" th:selected="${criteria.status == 'SHIPPED'}">Shipped</option>
+              <option value="PROCESSING" th:selected="${criteria.status == 'PROCESSING'}">Processing</option>
+              <option value="APPROVED" th:selected="${criteria.status == 'APPROVED'}">Approved</option>
+              <option value="CANCELLED" th:selected="${criteria.status == 'CANCELLED'}">Cancelled</option>
+            </select>
+
+            <!-- Date From -->
+            <input type="date" id="dateFrom" name="dateFrom" class="filter-select" th:value="${criteria.dateFrom}"
+              placeholder="From date">
+
+            <!-- Date To -->
+            <input type="date" id="dateTo" name="dateTo" class="filter-select" th:value="${criteria.dateTo}"
+              placeholder="To date">
+
+            <!-- Supplier -->
+            <select id="supplierFilter" name="supplierName" class="filter-select">
+              <option value="">All Suppliers</option>
+              <option th:each="s : ${suppliers}" th:value="${s.supplierName}" th:text="${s.supplierName}"
+                th:selected="${criteria.supplierName == s.supplierName}">
+              </option>
+            </select>
+
+            <!-- Amount Range -->
+            <select id="amountRange" name="amountRange" class="filter-select">
+              <option value="">Any Amount</option>
+              <option value="0-5000" th:selected="${criteria.amountRange == '0-5000'}">$0 – $5,000</option>
+              <option value="5000-20000" th:selected="${criteria.amountRange == '5000-20000'}">$5,000 – $20,000</option>
+              <option value="20000+" th:selected="${criteria.amountRange == '20000+'}">$20,000+</option>
+            </select>
+
+            <button type="button" id="btnClearFilter" class="btn-clear-filter">
+              <i class="fas fa-times"></i> Clear Filters
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Nhóm các yêu cầu mua sắm (PR Groups) -->
+      <div id="poGroupList">
+        <div th:if="${groups.isEmpty()}" style="text-align:center; padding:60px; color:#9ca3af; font-size:14px;">
+          No purchase orders found.
+        </div>
+
+        <article class="pr-group" th:each="group : ${groups}">
+          <div class="pr-group-header">
+            <span class="pr-badge">PR ID</span>
+            <span class="pr-id-label" th:text="'#' + ${group.purchaseRequestId}">PR-001</span>
+            <span class="pr-note" th:if="${group.purchaseRequestNote != null}"
+              th:text="'— ' + ${group.purchaseRequestNote}"></span>
+          </div>
+
+          <table class="po-data-table">
+            <thead>
+              <tr>
+                <th>PO ID</th>
+                <th>Created At</th>
+                <th>Supplier Name</th>
+                <th>Total Amount</th>
+                <th>Note</th>
+                <th>Status</th>
+                <th>Approved By</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="po : ${group.orders}"
+                th:onclick="|window.location.href='@{/purchase-staff/purchase-orders/{id}(id=${po.orderId})}'|">
+                <td class="td-id" th:text="'PO-' + ${po.orderId}">PO-001</td>
+                <td th:text="${po.createdAt != null ? #temporals.format(po.createdAt, 'dd-MM-yyyy') : '—'}">01-01-2024
+                </td>
+                <td th:text="${po.supplierName}">Supplier</td>
+                <td class="td-amount" th:text="${#numbers.formatDecimal(po.totalAmount, 1, 'COMMA', 2, 'POINT')}">$0.00
+                </td>
+                <td class="td-note" th:text="${po.note}">Note</td>
+                <td>
+                  <span class="status-tag" th:classappend="${po.status}" th:text="${po.status}">STATUS</span>
+                </td>
+                <td th:text="${po.approvedByName != null ? po.approvedByName : '—'}">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </div>
+
+      <!-- Phân trang -->
+      <div class="pagination-bar" th:if="${totalPages > 1}">
+        <a class="page-btn" th:classappend="${currentPage == 1 ? 'disabled' : ''}" th:href="@{/purchase-orders(page=${currentPage - 1}, keyword=${criteria.keyword},
+                       status=${criteria.status}, supplierName=${criteria.supplierName},
+                       amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
+                       dateTo=${criteria.dateTo})}">‹</a>
+
+        <a class="page-btn" th:each="p : ${#numbers.sequence(1, totalPages)}"
+          th:classappend="${p == currentPage ? 'active' : ''}" th:text="${p}" th:href="@{/purchase-orders(page=${p}, keyword=${criteria.keyword},
+                       status=${criteria.status}, supplierName=${criteria.supplierName},
+                       amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
+                       dateTo=${criteria.dateTo})}">1</a>
+
+        <a class="page-btn" th:classappend="${currentPage == totalPages ? 'disabled' : ''}" th:href="@{/purchase-staff/purchase-orders(page=${currentPage + 1}, keyword=${criteria.keyword},
+                       status=${criteria.status}, supplierName=${criteria.supplierName},
+                       amountRange=${criteria.amountRange}, dateFrom=${criteria.dateFrom},
+                       dateTo=${criteria.dateTo})}">›</a>
+      </div>
+
+    </div>
+  </div>
+
+  <th:block layout:fragment="extra-js">
+    <script th:src="@{/js/order/order-from-purchase.js}"></script>
+  </th:block>
+</body>
+
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/main-layout}">
+
+<head>
+  <title th:text="'PO Detail #' + ${order.orderId} + ' | PROCUREX'">PO Detail | PROCUREX</title>
+  <th:block layout:fragment="extra-css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/order/order-of-purchase.css}">
+  </th:block>
+</head>
+
+
+<body>
+  <div layout:fragment="content">
+    <div class="po-detail-wrapper">
+      <!-- Thanh điều hướng (Breadcrumb) -->
+      <div class="breadcrumb">
+        DASHBOARD / <a th:href="@{/purchase-orders}">PURCHASE ORDERS</a> /
+        <span class="active" th:text="'PO-' + ${order.orderId}">PO-1</span>
+      </div>
+
+      <header class="content-header">
+        <div class="header-left">
+          <h1>PURCHASE ORDER DETAILS</h1>
+        </div>
+        <!-- Đã loại bỏ các nút hành động theo yêu cầu -->
+      </header>
+
+      <div class="details-card">
+        <!-- Thông tin tiêu đề -->
+        <div class="header-info">
+          <div class="info-item">
+            <label>PURCHASE ORDER ID</label>
+            <p class="val-bold" th:text="'PO-' + ${order.orderId}">PO-2024-00892</p>
+          </div>
+          <div class="info-item">
+            <label>SUPPLIER VENDOR</label>
+            <p class="val-bold">
+              <span th:text="${order.supplierName}">Global Tech Solutions Inc.</span>
+            </p>
+          </div>
+          <div class="info-item">
+            <label>CURRENT STATUS</label>
+            <div>
+              <span class="status-badge" th:classappend="${order.status}" th:text="${order.status}">PENDING
+                REVIEW</span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Bảng danh sách mặt hàng -->
+        <section class="items-section">
+          <h2 class="section-title">LINE ITEM DETAILS</h2>
+          <div class="details-table-wrap">
+            <table id="lineItemsTable" class="details-table">
+              <thead>
+                <tr>
+                  <th>LINE ID</th>
+                  <th>ASSET TYPE NAME</th>
+                  <th>QUANTITY</th>
+                  <th>PRICE</th>
+                  <th>TAX (%)</th>
+                  <th>DISCOUNT (%)</th>
+                  <th>EXPECTED DELIVERY</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="item : ${order.items}">
+                  <td class="td-id" th:text="'#IT-' + ${item.id}">#IT-001</td>
+                  <td class="td-bold" th:text="${item.assetTypeName}">MacBook Pro 14" M3</td>
+                  <td th:text="${#numbers.formatInteger(item.quantity, 2)}">05</td>
+                  <td th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}">$1,999.00</td>
+                  <td
+                    th:text="${item.taxRate != null ? #numbers.formatDecimal(item.taxRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
+                    8.0%</td>
+                  <td
+                    th:text="${item.discountRate != null ? #numbers.formatDecimal(item.discountRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
+                    2.5%</td>
+                  <td class="italic-note"
+                    th:text="${item.expectedDeliveryDate != null ? #temporals.format(item.expectedDeliveryDate, 'dd-MM-yyyy') : '—'}">
+                    15-01-2024</td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Khu vực tổng kết cuối trang -->
+        <div class="footer-summary">
+          <div class="terms-box">
+            <label>GENERAL TERMS</label>
+            <p>NET 30 PAYMENT TERMS APPLY FROM DATE OF DELIVERY. ALL ITEMS SUBJECT TO STANDARD PROCUREMENT QUALITY AUDIT
+              UPON ARRIVAL.</p>
+          </div>
+          <div class="total-summary">
+            <div class="summary-line">
+              <span>Subtotal</span>
+              <span th:text="'$' + ${#numbers.formatDecimal(order.subtotal, 1, 'COMMA', 2, 'POINT')}">$19,270.00</span>
+            </div>
+            <div class="summary-line">
+              <span>Total Discount</span>
+              <span class="discount-val"
+                th:text="'-$' + ${#numbers.formatDecimal(order.totalDiscount, 1, 'COMMA', 2, 'POINT')}">-$624.50</span>
+            </div>
+            <div class="summary-line">
+              <span>Tax Est.</span>
+              <span th:text="'$' + ${#numbers.formatDecimal(order.totalTax, 1, 'COMMA', 2, 'POINT')}">$1,491.64</span>
+            </div>
+            <div class="grand-total-row">
+              <span>GRAND TOTAL</span>
+              <span class="grand-total"
+                th:text="'$' + ${#numbers.formatDecimal(order.grandTotal, 1, 'COMMA', 2, 'POINT')}">$20,137.14</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <th:block layout:fragment="extra-js">
+    <script th:src="@{/js/order/order-detail.js}"></script>
+  </th:block>
+</body>
+
+</html>

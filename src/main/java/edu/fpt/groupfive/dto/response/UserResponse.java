@@ -1,11 +1,12 @@
 package edu.fpt.groupfive.dto.response;
 
+import edu.fpt.groupfive.common.Role;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Getter
 @Setter
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,18 +15,19 @@ public class UserResponse {
 
     private String username;
 
-    private String fullName;
+    private String firstName;
 
-    private String phoneNumber;
+    private String lastName;
 
     private String email;
 
+    private String phoneNumber;
+
     private String status;
 
-    private String role;
+    private Role role;
 
     private LocalDateTime createdDate;
 
-    //Foreign key of table Department
     private Integer departmentId;
 }

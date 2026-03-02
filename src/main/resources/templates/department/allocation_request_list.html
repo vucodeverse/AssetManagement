@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Allocation Request Management</title>
+
+    <!-- reuse CSS -->
+    <link rel="stylesheet" th:href="@{/css/allocation/allocation-request-list.css}">
+
+    <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+</head>
+
+<body>
+<div class="purchase-content-wrapper">
+
+    <!-- FILTER FORM -->
+    <form method="get"
+          th:action="@{/department/allocation-request/list}">
+
+        <header class="top-bar">
+
+            <h1>Danh sách yêu cầu cấp phát</h1>
+
+            <div class="top-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text"
+                           placeholder="Search by Request ID...">
+                </div>
+            </div>
+
+            <a th:href="@{/department/allocation-request/create}"
+               class="btn-add">
+                <i class="fas fa-plus"></i>
+                Tạo yêu cầu
+            </a>
+
+        </header>
+
+
+        <!-- FILTER BAR -->
+        <section class="filters-bar">
+
+            <div class="filter-group">
+
+                <select>
+                    <option value="">Trạng thái: Tất cả</option>
+
+                    <option value="PENDING_AM">PENDING_AM</option>
+                    <option value="APPROVED">APPROVED</option>
+                    <option value="REJECTED">REJECTED</option>
+                    <option value="COMPLETED">COMPLETED</option>
+
+                </select>
+
+
+                <select>
+                    <option value="">Ưu tiên: Tất cả</option>
+
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
+
+                </select>
+
+                <input type="date">
+                <input type="date">
+
+                <button type="submit">
+                    APPLY
+                </button>
+
+                <a class="btn-reset"
+                   th:href="@{/department/allocation-request/list}">
+                    RESET
+                </a>
+
+            </div>
+
+        </section>
+
+    </form>
+
+
+    <!-- TABLE -->
+    <div class="table-container">
+
+        <table class="data-table">
+
+            <thead>
+            <tr>
+                <th>ID yêu cầu</th>
+                <th>Trạng thái</th>
+                <th>Người tạo</th>
+                <th>Ngày cần nhận</th>
+                <th>Độ ưu tiên</th>
+                <th>Ngày khởi tạo</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <tr th:each="x : ${requests}"
+                class="clickable-row"
+                th:attr="onclick=|window.location.href='/director/allocation-requests/${x.requestId}'|">
+
+                <!-- ID -->
+                <td class="cell-id"
+                    th:text="'AR-' + ${x.requestId}">
+                </td>
+
+
+                <!-- STATUS -->
+                <td>
+                        <span class="badge"
+                              th:classappend="'badge-' + ${x.status}"
+                              th:text="${x.status}">
+                        </span>
+                </td>
+
+
+                <!-- REQUESTER -->
+                <td th:text="${x.requesterId}">
+                </td>
+
+
+                <!-- NEEDED DATE -->
+                <td>
+                        <span th:if="${x.neededByDate != null}"
+                              th:text="${#temporals.format(x.neededByDate,'dd-MM-yyyy')}">
+                        </span>
+
+                    <span th:if="${x.neededByDate == null}">
+                            —
+                        </span>
+                </td>
+
+
+                <!-- PRIORITY -->
+                <td>
+                        <span class="pill"
+                              th:classappend="'pill-' + ${x.priority}"
+                              th:text="${x.priority}">
+                        </span>
+                </td>
+
+
+                <!-- CREATED AT -->
+                <td>
+                        <span th:text="${#temporals.format(x.createdAt,'dd-MM-yyyy')}">
+                        </span>
+                </td>
+
+
+                <!-- ACTIONS -->
+                <td class="cell-actions"
+                    onclick="event.stopPropagation();">
+                    <a th:href="@{/department/allocation-request(id=${x.requestId})}"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="far fa-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+</body>
+</html>

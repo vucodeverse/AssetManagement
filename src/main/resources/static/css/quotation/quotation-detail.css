@@ -1,0 +1,364 @@
+:root {
+    --primary-color: #000000;
+    --accent-color: #333333;
+    --bg-light: #ffffff;
+    --text-main: #000000;
+    --text-muted: #666666;
+    --border-color: #000000;
+    --success-color: #000000;
+    --status-bg: #ffffff;
+}
+
+.po-detail-wrapper {
+    padding: 40px;
+    background-color: #ffffff;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.breadcrumb-nav {
+    font-size: 11px;
+    font-weight: 700;
+    color: #666666;
+    letter-spacing: 0.05em;
+    margin-bottom: 24px;
+}
+
+.breadcrumb-nav a {
+    color: #666666;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumb-nav a:hover {
+    color: #000000;
+}
+
+.breadcrumb-nav .curr {
+    color: #000000;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 48px;
+}
+
+.content-header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #000000;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.details-card {
+    background: #ffffff;
+    border-radius: 0px;
+    border: 1px solid #000000;
+    padding: 32px;
+}
+
+.header-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 48px;
+    margin-bottom: 40px;
+}
+
+.info-item label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #000000;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.val-bold {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000000;
+    margin: 0;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #000000;
+    background-color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 1px solid #000000;
+}
+
+.status-badge.APPROVED,
+.status-badge.ACCEPTED,
+.status-badge.PENDING,
+.status-badge.REJECTED {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #000000;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #000000;
+    margin: 40px 0;
+}
+
+.items-section {
+    margin-bottom: 48px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #000000;
+    margin-bottom: 24px;
+}
+
+.details-table-wrap {
+    border: 1px solid #000000;
+    border-radius: 0px;
+    overflow: hidden;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.details-table th {
+    background-color: #ffffff;
+    padding: 16px 20px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #000000;
+}
+
+.details-table td {
+    padding: 20px;
+    font-size: 14px;
+    color: #000000;
+    border-bottom: 1px solid #000000;
+}
+
+.td-id {
+    color: #666666;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+}
+
+.td-bold {
+    font-weight: 600;
+    color: #000000;
+}
+
+.footer-summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 60px;
+    padding-top: 32px;
+}
+
+.terms-box {
+    flex: 1;
+    max-width: 480px;
+}
+
+.terms-box label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.terms-box p {
+    font-size: 12px;
+    color: #000000;
+    line-height: 1.8;
+}
+
+.total-summary {
+    width: 340px;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    font-size: 15px;
+}
+
+.summary-line span:first-child {
+    color: #000000;
+    font-weight: 500;
+}
+
+.summary-line span:last-child {
+    font-weight: 700;
+    color: #000000;
+}
+
+.discount-val {
+    color: #000000 !important;
+}
+
+.grand-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #000000;
+}
+
+.grand-total-row span:first-child {
+    font-size: 16px;
+    font-weight: 800;
+    color: #000000;
+}
+
+.grand-total {
+    font-size: 32px;
+    font-weight: 900;
+    color: #000000;
+    letter-spacing: -0.03em;
+}
+
+/* Premium Buttons */
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-outline-prem {
+    padding: 10px 24px;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    background: transparent;
+    color: #000000;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-outline-prem:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+.btn-solid-prem {
+    padding: 10px 24px;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    background: #000000;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-solid-prem:hover {
+    background: #333333;
+    transform: translateY(-1px);
+}
+
+/* Rejection Reason Style */
+.rejection-reason-box {
+    margin-top: 24px;
+    padding: 24px;
+    background-color: #fffafb;
+    border: 1px solid #ff0000;
+    border-radius: 4px;
+}
+
+.rejection-reason-box label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    color: #ff0000;
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.rejection-reason-box p {
+    font-size: 14px;
+    color: #000000;
+    margin: 0;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 10% auto;
+    padding: 32px;
+    border: 1px solid #000000;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 0;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    margin-bottom: 24px;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.modal-body {
+    margin-bottom: 24px;
+}
+
+.modal-body textarea {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 120px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}

@@ -1,11 +1,11 @@
 package edu.fpt.groupfive.model;
 
+import edu.fpt.groupfive.common.Role;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 @Getter
 @Setter
 public class Users {
@@ -15,7 +15,9 @@ public class Users {
 
     private String passwordHash;
 
-    private String fullName;
+    private String firstName;
+
+    private String lastName;
 
     private String phoneNumber;
 
@@ -23,7 +25,7 @@ public class Users {
 
     private String status;
 
-    private String role;
+    private Role role;
 
     private LocalDateTime createdDate;
 
