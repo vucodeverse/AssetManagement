@@ -44,7 +44,7 @@ public class SupplierDAOImpl implements SupplierDAO {
             ps.setString(6, supplier.getTaxCode());
             int rows = ps.executeUpdate();
             if (rows != 1) {
-                throw new RuntimeException("Insert failed", null);
+                throw new RuntimeException("Insert failed for supplier: " + supplier.getSupplierCode());
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to create supplier: " + supplier.getSupplierCode(), e);
@@ -56,6 +56,7 @@ public class SupplierDAOImpl implements SupplierDAO {
         String query =
                 "UPDATE supplier SET " +
                         "supplier_name = ?, " +
+                        "tax_code = ?, " +
                         "phone_number = ?, " +
                         "email = ?, " +
                         "address = ?, " +
@@ -67,10 +68,11 @@ public class SupplierDAOImpl implements SupplierDAO {
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
             ps.setString(1, supplier.getSupplierName());
-            ps.setString(2, supplier.getPhoneNumber());
-            ps.setString(3, supplier.getEmail());
-            ps.setString(4, supplier.getAddress());
-            ps.setString(5, supplier.getSupplierCode());
+            ps.setString(2, supplier.getTaxCode());
+            ps.setString(3, supplier.getPhoneNumber());
+            ps.setString(4, supplier.getEmail());
+            ps.setString(5, supplier.getAddress());
+            ps.setString(6, supplier.getSupplierCode());
             return ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException("Failed to update supplier: " + supplier.getSupplierCode(), e);
@@ -79,38 +81,29 @@ public class SupplierDAOImpl implements SupplierDAO {
 
     @Override
     public int deactivateBySupplierCode(String supplierCode) {
-        String query = "UPDATE supplier SET " +
-                "status = 'INACTIVE', " +
-                "updated_date = GETDATE() " +
-                "WHERE supplier_code = ? " +
-                "AND status = 'ACTIVE'";
-        try (
-                Connection connection = databaseConfig.getConnection();
-                PreparedStatement ps = connection.prepareStatement(query)
-        ) {
-            ps.setString(1, supplierCode);
-            return ps.executeUpdate();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to deactivate supplier: " + supplierCode, e);
-        }
-    }
-
-    @Override
-    public int reactivateBySupplierCode(String supplierCode) {
         String query =
                 "UPDATE supplier SET " +
-                        "status = 'ACTIVE', " +
+                        "status = 'INACTIVE', " +
                         "updated_date = GETDATE() " +
                         "WHERE supplier_code = ? " +
-                        "AND status = 'INACTIVE'";
+                        "AND status = 'ACTIVE' " +
+                        "AND NOT EXISTS ( " +
+                        "   SELECT 1 FROM purchase_order po " +
+                        "   JOIN supplier s ON s.supplier_id = po.supplier_id " +
+                        "   WHERE s.supplier_code = ? " +
+                        "   AND po.status NOT IN ('CANCELLED', 'COMPLETED')" +
+                        ")";
+
         try (
                 Connection connection = databaseConfig.getConnection();
                 PreparedStatement ps = connection.prepareStatement(query)
         ) {
             ps.setString(1, supplierCode);
+            ps.setString(2, supplierCode);
             return ps.executeUpdate();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to reactivate supplier: " + supplierCode, e);
+            throw new RuntimeException(
+                    "Failed to deactivate supplier safely: " + supplierCode, e);
         }
     }
 
@@ -135,82 +128,6 @@ public class SupplierDAOImpl implements SupplierDAO {
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to find supplier by code: " + supplierCode, e);
-        }
-    }
-
-    @Override
-    public Optional<Supplier> findByTaxCode(String taxCode) {
-        String query = """
-            SELECT supplier_id, supplier_name, phone_number, email, address,
-                   supplier_code, tax_code, status, created_date, updated_date
-            FROM supplier
-            WHERE tax_code = ?
-        """;
-        try (
-                Connection connection = databaseConfig.getConnection();
-                PreparedStatement ps = connection.prepareStatement(query)
-        ) {
-            ps.setString(1, taxCode);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapRow(rs));
-                }
-                return Optional.empty();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to find supplier by tax code: " + taxCode, e);
-        }
-    }
-
-    @Override
-    public boolean existsBySupplierCode(String supplierCode) {
-        String query = "SELECT TOP 1 1 FROM supplier WHERE supplier_code = ?";
-        try (
-                Connection connection = databaseConfig.getConnection();
-                PreparedStatement ps = connection.prepareStatement(query)
-        ) {
-            ps.setString(1, supplierCode);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to check if supplier exists by code: " + supplierCode, e);
-        }
-    }
-
-    @Override
-    public boolean existsByTaxCode(String taxCode) {
-        String query = "SELECT TOP 1 1 FROM supplier WHERE tax_code = ?";
-        try (
-                Connection connection = databaseConfig.getConnection();
-                PreparedStatement ps = connection.prepareStatement(query)
-        ) {
-            ps.setString(1, taxCode);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to check if supplier exists by tax code: " + taxCode, e);
-        }
-    }
-
-    @Override
-    public boolean hasActivePurchaseOrders(String supplierCode) {
-        String query = "SELECT TOP 1 1 " +
-                "FROM purchase_order po " +
-                "JOIN supplier s ON s.supplier_id = po.supplier_id " +
-                "WHERE s.supplier_code = ? " +
-                "AND po.status NOT IN ('CANCELLED', 'COMPLETED')";
-        try (
-                Connection connection = databaseConfig.getConnection();
-                PreparedStatement ps = connection.prepareStatement(query)
-        ) {
-            ps.setString(1, supplierCode);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to check if supplier has active purchase orders: " + supplierCode, e);
         }
     }
 
@@ -249,7 +166,7 @@ public class SupplierDAOImpl implements SupplierDAO {
     @Override
     public int countSearch(SupplierSearchCriteria criteria) {
         StringBuilder query = new StringBuilder(
-                "SELECT TOP  1 1 FROM supplier WHERE 1=1"
+                "SELECT COUNT(*) FROM supplier WHERE 1=1"
         );
         List<Object> params = new ArrayList<>();
         appendFilters(query, params, criteria);
@@ -259,7 +176,10 @@ public class SupplierDAOImpl implements SupplierDAO {
         ) {
             setParameters(ps, params);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? 1 : 0;
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+                return 0;
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to count suppliers search result", e);
@@ -268,12 +188,24 @@ public class SupplierDAOImpl implements SupplierDAO {
     private void appendFilters(StringBuilder query,
                                List<Object> params,
                                SupplierSearchCriteria criteria) {
-        if (criteria.getSupplierName() != null && !criteria.getSupplierName().isBlank()) {
+
+        if (criteria.getSupplierCode() != null &&
+                !criteria.getSupplierCode().isBlank()) {
+
+            query.append(" AND supplier_code LIKE ?");
+            params.add("%" + criteria.getSupplierCode().trim() + "%");
+        }
+
+        if (criteria.getSupplierName() != null &&
+                !criteria.getSupplierName().isBlank()) {
+
             query.append(" AND supplier_name LIKE ?");
             params.add("%" + criteria.getSupplierName().trim() + "%");
         }
 
-        if (criteria.getStatus() != null && !criteria.getStatus().isBlank()) {
+        if (criteria.getStatus() != null &&
+                !criteria.getStatus().isBlank()) {
+
             query.append(" AND status = ?");
             params.add(criteria.getStatus());
         }
@@ -288,7 +220,6 @@ public class SupplierDAOImpl implements SupplierDAO {
             params.add(Timestamp.valueOf(criteria.getCreatedTo()));
         }
     }
-
     private void setParameters(PreparedStatement ps,
                                List<Object> params) throws SQLException {
         for (int i = 0; i < params.size(); i++) {
@@ -310,8 +241,13 @@ public class SupplierDAOImpl implements SupplierDAO {
         supplier.setTaxCode(rs.getString("tax_code"));
         supplier.setStatus(rs.getString("status"));
         supplier.setCreatedDate(rs.getTimestamp("created_date").toLocalDateTime());
-        supplier.setUpdatedDate(rs.getTimestamp("updated_date").toLocalDateTime());
+        Timestamp updated = rs.getTimestamp("updated_date");
+        if (updated != null) {
+            supplier.setUpdatedDate(updated.toLocalDateTime());
+        }
         return supplier;
     }
+
+
 
 }

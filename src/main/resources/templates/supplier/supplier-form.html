@@ -1,0 +1,88 @@
+<!-- templates/supplier/supplier-form.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Supplier Form</title>
+</head>
+<body>
+
+<h2 th:text="${supplierUpdateRequest != null} ? 'Edit Supplier' : 'Create Supplier'"></h2>
+
+<div th:if="${error}" style="color:red">
+    <p th:text="${error}"></p>
+</div>
+
+<!-- CREATE MODE -->
+<form th:if="${supplierUpdateRequest == null}"
+      th:action="@{/suppliers/create}"
+      method="post"
+      th:object="${supplierCreateRequest}">
+
+    Supplier Code:
+    <input type="text" th:field="*{supplierCode}" required/>
+    <br/><br/>
+
+    Supplier Name:
+    <input type="text" th:field="*{supplierName}" required/>
+    <br/><br/>
+
+    Tax Code:
+    <input type="text" th:field="*{taxCode}" required/>
+    <br/><br/>
+
+    Phone:
+    <input type="text" th:field="*{phoneNumber}" />
+    <br/><br/>
+
+    Email:
+    <input type="email" th:field="*{email}" />
+    <br/><br/>
+
+    Address:
+    <textarea th:field="*{address}"></textarea>
+    <br/><br/>
+
+    <button type="submit">Create</button>
+    <a th:href="@{/suppliers}">Cancel</a>
+
+</form>
+
+<!-- EDIT MODE -->
+<form th:if="${supplierUpdateRequest != null}"
+      th:action="@{/suppliers/{code}/edit(code=${supplierCode})}"
+      method="post"
+      th:object="${supplierUpdateRequest}">
+
+    <!-- supplierCode is readonly and shown as text -->
+    <p>
+        Supplier Code:
+        <strong th:text="${supplierCode}"></strong>
+    </p>
+
+    Supplier Name:
+    <input type="text" th:field="*{supplierName}" required/>
+    <br/><br/>
+
+    Tax Code:
+    <input type="text" th:field="*{taxCode}" required/>
+    <br/><br/>
+
+    Phone:
+    <input type="text" th:field="*{phoneNumber}" />
+    <br/><br/>
+
+    Email:
+    <input type="email" th:field="*{email}" />
+    <br/><br/>
+
+    Address:
+    <textarea th:field="*{address}"></textarea>
+    <br/><br/>
+
+    <button type="submit">Update</button>
+    <a th:href="@{/suppliers}">Cancel</a>
+
+</form>
+
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý nhà cung cấp</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <span class="title">QUẢN LÝ NHÀ CUNG CẤP</span>
+</div>
+
+<div class="container">
+
+    <!-- CREATE BUTTON -->
+    <div class="action-bar">
+        <a th:href="@{/suppliers/create}" class="btn-primary">
+            + Tạo nhà cung cấp
+        </a>
+    </div>
+
+    <!-- SEARCH CARD -->
+    <div class="card">
+        <form th:action="@{/suppliers}"
+              method="get"
+              th:object="${searchRequest}"
+              class="search-form">
+
+            <div class="form-group">
+                <label>Mã nhà cung cấp</label>
+                <input type="text" th:field="*{supplierCode}">
+            </div>
+
+            <div class="form-group">
+                <label>Tên nhà cung cấp</label>
+                <input type="text" th:field="*{supplierName}">
+            </div>
+
+            <div class="form-group">
+                <label>Trạng thái</label>
+                <select th:field="*{status}">
+                    <option value="">Tất cả</option>
+                    <option value="ACTIVE">Hoạt động</option>
+                    <option value="INACTIVE">Ngừng hoạt động</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary">Tìm kiếm</button>
+            <a th:href="@{/suppliers}" class="btn-secondary">Đặt lại</a>
+
+        </form>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Mã số thuế</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <!-- Empty -->
+            <tr th:if="${#lists.isEmpty(page.data)}">
+                <td colspan="5" class="empty">
+                    Không có nhà cung cấp nào.
+                </td>
+            </tr>
+
+            <!-- Data -->
+            <tr th:each="supplier : ${page.data}">
+                <td th:text="${supplier.supplierCode}" class="bold"></td>
+                <td th:text="${supplier.supplierName}"></td>
+                <td th:text="${supplier.taxCode}"></td>
+
+                <td>
+                    <span th:if="${supplier.status == 'ACTIVE'}"
+                          class="status-active">
+                        Hoạt động
+                    </span>
+
+                    <span th:if="${supplier.status == 'INACTIVE'}"
+                          class="status-inactive">
+                        Ngừng hoạt động
+                    </span>
+                </td>
+
+                <td class="actions">
+                    <a th:href="@{/suppliers/{code}(code=${supplier.supplierCode})}">👁</a>
+                    <a th:href="@{/suppliers/{code}/edit(code=${supplier.supplierCode})}">✏</a>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+
+        <!-- PAGINATION -->
+        <div class="pagination" th:if="${page.totalPages > 1}">
+
+            <a th:if="${page.currentPage > 0}"
+               th:href="@{/suppliers(pageNo=${page.currentPage - 1}, size=${size},
+                      supplierCode=${searchRequest.supplierCode},
+                      supplierName=${searchRequest.supplierName},
+                      status=${searchRequest.status})}">
+                « Trước
+            </a>
+
+            <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+
+                <a th:if="${i != page.currentPage}"
+                   th:href="@{/suppliers(pageNo=${i}, size=${size},
+                          supplierCode=${searchRequest.supplierCode},
+                          supplierName=${searchRequest.supplierName},
+                          status=${searchRequest.status})}"
+                   th:text="${i + 1}">
+                </a>
+
+                <span th:if="${i == page.currentPage}"
+                      class="active"
+                      th:text="${i + 1}">
+                </span>
+
+            </span>
+
+            <a th:if="${page.currentPage < page.totalPages - 1}"
+               th:href="@{/suppliers(pageNo=${page.currentPage + 1}, size=${size},
+                      supplierCode=${searchRequest.supplierCode},
+                      supplierName=${searchRequest.supplierName},
+                      status=${searchRequest.status})}">
+                Sau »
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
