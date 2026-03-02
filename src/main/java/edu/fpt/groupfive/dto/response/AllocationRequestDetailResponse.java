@@ -1,13 +1,13 @@
-package edu.fpt.groupfive.dto.request;
+package edu.fpt.groupfive.dto.response;
+
 
 import lombok.*;
 
-
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-public class AllocationRequestDetailRequest {
+public class AllocationRequestDetailResponse {
     private Integer assetTypeId;
     private Integer requestedQuantity;
     private String note;

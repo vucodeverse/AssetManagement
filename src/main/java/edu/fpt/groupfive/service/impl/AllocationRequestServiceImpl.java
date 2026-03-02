@@ -3,6 +3,8 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.dao.AllocationReqDao;
 import edu.fpt.groupfive.dao.AllocationReqDetailDao;
 import edu.fpt.groupfive.dto.request.AllocationRequestCreateRequest;
+import edu.fpt.groupfive.dto.request.AllocationRequestDetailRequest;
+import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
 import edu.fpt.groupfive.mapper.AllocationRequestMapper;
 import edu.fpt.groupfive.model.AllocationRequest;
 import edu.fpt.groupfive.model.AllocationRequestDetail;
@@ -26,10 +28,30 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
         return allocationReqDao.findAll(departmentId);
     }
 
+
+    @Override
+    public AllocationRequestResponse getRequestById(Integer id) {
+
+        AllocationRequest req = allocationReqDao.findById(id);
+
+        if (req == null) {
+            throw new RuntimeException("Yêu cầu không tồn tại!");
+        }
+
+        AllocationRequestResponse response = allocationRequestMapper.toResponse(req);
+
+        List<AllocationRequestDetail> details = allocationReqDetailDao.findByRequestId(id);
+
+        response.setDetails(allocationRequestMapper.toDetailResponseList(details));
+
+        return response;
+    }
+
     @Override
     public void createRequest(AllocationRequestCreateRequest dto) {
-        //Map dữ liệu dto vào model
+        // Map dữ liệu dto vào model
         AllocationRequest request = allocationRequestMapper.toAllocationRequest(dto);
+
         // Giá trị mặc định của hệ thống
         request.setStatus("PENDING_AM");
         request.setRequestDate(LocalDateTime.now());
@@ -49,8 +71,54 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
 
     }
 
+    @Override
+    public void updateRequest(Integer id, AllocationRequestCreateRequest dto) {
+        AllocationRequest req = allocationReqDao.findById(id);
 
+        if (req == null) {
+            throw new RuntimeException("Yêu cầu không tồn tại!");
+        }
 
+        if (!"PENDING_AM".equals(req.getStatus())) {
+            throw new RuntimeException("Chỉ được sửa khi ở trạng thái PENDING_AM!");
+        }
 
+        req.setRequestReason(dto.getRequestReason());
+        req.setPriority(dto.getPriority());
+        req.setNeededByDate(dto.getNeededByDate());
+
+        allocationReqDao.update(req);
+
+        allocationReqDetailDao.deleteByRequestId(id);
+
+        List<AllocationRequestDetail> details = allocationRequestMapper
+                .toListAllocationRequestDetail(dto.getDetails());
+
+        for (AllocationRequestDetail x : details) {
+            x.setRequestId(id);
+        }
+
+        allocationReqDetailDao.insertBatch(id, details);
+    }
+
+    @Override
+    public void deleteRequest(Integer id) {
+        AllocationRequest req = allocationReqDao.findById(id);
+
+        if (req == null) {
+            throw new RuntimeException("Yêu cầu không tồn tại!");
+        }
+        if (!"PENDING_AM".equals(req.getStatus())) {
+            throw new RuntimeException("Chỉ được xóa khi ở trạng thái PENDING_AM!");
+        }
+
+        allocationReqDetailDao.deleteByRequestId(id);
+        allocationReqDao.delete(id);
+    }
+
+    @Override
+    public void updateStatus(Integer id, String status, Integer amApprovedBy, String reasonReject) {
+        allocationReqDao.updateStatus(id, status, amApprovedBy, reasonReject);
+    }
 
 }

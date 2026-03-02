@@ -14,6 +14,5 @@ public class AllocationRequestDetail {
     private Integer requestId;
     private Integer assetTypeId;
     private Integer requestedQuantity;
-//    private String issuedCondition;
     private String note;
 }
