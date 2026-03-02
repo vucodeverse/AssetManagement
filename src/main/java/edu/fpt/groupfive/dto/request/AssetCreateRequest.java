@@ -1,9 +1,13 @@
 package edu.fpt.groupfive.dto.request;
 
 
+import edu.fpt.groupfive.common.AssetStatus;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,7 +15,12 @@ import java.time.LocalDate;
 @Data
 public class AssetCreateRequest {
 
-    @NotBlank(message = "Không được để trống serial")
+    @NotBlank(message = "Không được để trống tên tài sản")
+    private String assetName;
+
+    @Min(1)
+    private Integer quantity;
+
     private String serialNumber;
 
     @NotNull(message = "Phải chọn loại tài sản")
@@ -20,9 +29,12 @@ public class AssetCreateRequest {
     @NotNull(message = "Không được để trống nguyên giá")
     private BigDecimal originalCost;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate warrantyStartDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate warrantyEndDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate acquisitionDate;
-
-    private String currentStatus;
+    @NotNull(message = "Không được để trống trạng thái tài sản")
+    private AssetStatus currentStatus;
 }

@@ -1,7 +1,9 @@
 package edu.fpt.groupfive.controller.manager;
 
+import edu.fpt.groupfive.common.AssetStatus;
 import edu.fpt.groupfive.dto.request.AssetCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetUpdateRequest;
+import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetResponse;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.AssetTypeService;
@@ -27,15 +29,17 @@ public class AssetController {
     public String list(Model model) {
         List<AssetResponse> assets = assetService.getAll();
         model.addAttribute("assets", assets);
+        model.addAttribute("activeMenu", "asset");
         return "manager/asset/asset-list";
     }
 
 
-    @GetMapping("/{id}")
+    @GetMapping("detail/{id}")
     public String detail(@PathVariable("id") Integer id, Model model) {
         try {
-            AssetResponse asset = assetService.getById(id);
+            AssetDetailResponse asset = assetService.getDetailById(id);
             model.addAttribute("asset", asset);
+            model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-detail";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
@@ -48,7 +52,9 @@ public class AssetController {
     public String showCreateForm(Model model) {
         model.addAttribute("asset", new AssetCreateRequest());
         model.addAttribute("assetTypes", assetTypeService.getAll());
+        model.addAttribute("statuses", AssetStatus.values());
         model.addAttribute("isEdit", false);
+        model.addAttribute("activeMenu", "asset");
         return "manager/asset/asset-form";
     }
 
@@ -63,7 +69,9 @@ public class AssetController {
 
         if (result.hasErrors()) {
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("statuses", AssetStatus.values());
             model.addAttribute("isEdit", false);
+            model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-form";
         }
 
@@ -72,16 +80,17 @@ public class AssetController {
         } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("statuses", AssetStatus.values());
+
             model.addAttribute("isEdit", false);
+            model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-form";
         }
 
         return "redirect:/manager/assets";
     }
 
-    // =========================
-    // EDIT FORM
-    // =========================
+    //edit form
     @GetMapping("/edit/{id}")
     public String showEdit(@PathVariable("id") Integer id, Model model) {
 
@@ -90,9 +99,10 @@ public class AssetController {
 
             AssetUpdateRequest request = new AssetUpdateRequest();
             request.setAssetId(asset.getAssetId());
+            request.setAssetName(asset.getAssetName());
             request.setSerialNumber(asset.getSerialNumber());
-            request.setCurrentStatus(asset.getCurrentStatus());
             request.setWarrantyStartDate(asset.getWarrantyStartDate());
+            request.setCurrentStatus(AssetStatus.valueOf(asset.getCurrentStatus()));
             request.setWarrantyEndDate(asset.getWarrantyEndDate());
             request.setOriginalCost(asset.getOriginalCost());
             request.setAssetTypeId(asset.getAssetTypeId());
@@ -100,8 +110,9 @@ public class AssetController {
 
             model.addAttribute("asset", request);
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("statuses", AssetStatus.values());
             model.addAttribute("isEdit", true);
-
+            model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-form";
 
         } catch (Exception e) {
@@ -121,7 +132,9 @@ public class AssetController {
 
         if (result.hasErrors()) {
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("statuses", AssetStatus.values());
             model.addAttribute("isEdit", true);
+            model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-form";
         }
 
@@ -131,7 +144,9 @@ public class AssetController {
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("statuses", AssetStatus.values());
             model.addAttribute("isEdit", true);
+            model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-form";
         }
 

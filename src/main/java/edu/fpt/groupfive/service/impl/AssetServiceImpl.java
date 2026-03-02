@@ -1,9 +1,11 @@
 package edu.fpt.groupfive.service.impl;
 
+import edu.fpt.groupfive.common.AssetStatus;
 import edu.fpt.groupfive.dao.AssetDAO;
 import edu.fpt.groupfive.dao.AssetTypeDAO;
 import edu.fpt.groupfive.dto.request.AssetCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetUpdateRequest;
+import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetResponse;
 import edu.fpt.groupfive.mapper.AssetMapper;
 import edu.fpt.groupfive.model.Asset;
@@ -25,14 +27,14 @@ public class AssetServiceImpl implements AssetService {
     private final AssetTypeDAO assetTypeDAO;
     private final AssetMapper assetMapper;
 
-    // ================= GET ALL =================
+    // get all
     @Override
     public List<AssetResponse> getAll() {
         List<Asset> assets = assetDAO.findAll();
-        return assetMapper.toResponseList(assets);
+        return assetMapper.toAssetResponseList(assets);
     }
 
-    // ================= GET BY ID =================
+    // get by id
     @Override
     public AssetResponse getById(Integer id) {
 
@@ -40,21 +42,44 @@ public class AssetServiceImpl implements AssetService {
                 .orElseThrow(() ->
                         new InvalidDataException("Không tìm thấy tài sản với id = " + id));
 
-        return assetMapper.toResponse(asset);
+        return assetMapper.toAssetResponse(asset);
     }
 
-    // ================= CREATE =================
+
+
+    // create
     @Override
     @Transactional
     public void create(AssetCreateRequest request) {
+        Integer quantity = request.getQuantity();
 
-        // Validate serial trùng
-        if (request.getSerialNumber() != null &&
-                assetDAO.existsBySerial(request.getSerialNumber())) {
-            throw new InvalidDataException("Serial number đã tồn tại");
+        //ktra số lượng phản >=1
+        if (quantity == null || quantity < 1) {
+            throw new InvalidDataException("Số lượng phải >= 1");
         }
 
-        //  Validate assetType tồn tại
+        String serial = request.getSerialNumber();
+        if (serial != null) {
+            serial = serial.trim();
+            if (serial.isEmpty()) {
+                serial = null;
+            }
+        }
+//nếu nhập nhiều ts thì ko cho nhập serial
+        if (quantity > 1 && serial != null) {
+            throw new InvalidDataException(
+                    "Không thể nhập cùng serial cho nhiều tài sản"
+            );
+        }
+
+//nếu tạo 1 ts v có serial thì phải check trùng serial
+        if (quantity == 1 && serial != null) {
+            if (assetDAO.existsBySerial(serial)) {
+                throw new InvalidDataException("Serial đã tồn tại");
+            }
+        }
+
+        //  Validate assetType
         AssetType type = assetTypeDAO.findById(request.getAssetTypeId());
         if (type == null) {
             throw new InvalidDataException("Loại tài sản không tồn tại");
@@ -70,23 +95,25 @@ public class AssetServiceImpl implements AssetService {
                 request.getAcquisitionDate()
         );
 
-        // Map sang entity
-        Asset asset = assetMapper.toAsset(request);
 
-        // default status khi tạo mới
-        asset.setCurrentStatus("NEW");
+        for (int i = 0; i < quantity; i++) {
 
-        assetDAO.insert(asset);
+            Asset asset = assetMapper.toAsset(request);
+            asset.setSerialNumber(serial);
+            assetDAO.insert(asset);
+
+        }
+
     }
 
-    // ================= UPDATE =================
+    // update
     @Override
     @Transactional
     public void update(Integer id, AssetUpdateRequest request) {
 
         Asset existing = assetDAO.findById(id)
                 .orElseThrow(() ->
-                        new InvalidDataException("Không tìm thấy tài sản"));
+                        new InvalidDataException("Không tìm thấy tài sản với id = " + id));
 
         // Nếu đổi serial → check trùng
         if (request.getSerialNumber() != null &&
@@ -118,7 +145,7 @@ public class AssetServiceImpl implements AssetService {
         assetDAO.update(existing);
     }
 
-    // ================= DELETE =================
+    //DELETE
     @Override
     @Transactional
     public void delete(Integer id) {
@@ -128,7 +155,7 @@ public class AssetServiceImpl implements AssetService {
                         new InvalidDataException("Không tìm thấy tài sản"));
 
         // Business rule: chỉ cho xóa khi status NEW
-        if (!"NEW".equalsIgnoreCase(existing.getCurrentStatus())) {
+        if (existing.getCurrentStatus() != (AssetStatus.NEW)) {
             throw new InvalidDataException(
                     "Chỉ có thể xóa tài sản ở trạng thái NEW");
         }
@@ -136,7 +163,15 @@ public class AssetServiceImpl implements AssetService {
         assetDAO.delete(id);
     }
 
-    // ================= PRIVATE VALIDATION =================
+    @Override
+    public AssetDetailResponse getDetailById(Integer id) {
+        return assetDAO.findDetailById(id)
+                .orElseThrow(() ->
+                        new InvalidDataException("Không tìm thấy tài sản với id = " + id));
+    }
+
+
+    // validate
 
     private void validateOriginalCost(BigDecimal cost) {
         if (cost != null && cost.compareTo(BigDecimal.ZERO) < 0) {

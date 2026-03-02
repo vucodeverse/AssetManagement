@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.model;
 
+import edu.fpt.groupfive.common.AssetStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,12 +16,12 @@ import java.time.LocalDate;
 public class Asset {
 
     private Integer assetId;
+    private String assetName;
     private String serialNumber;
-    private String currentStatus;
+    private AssetStatus currentStatus;
     private BigDecimal originalCost;
     private LocalDate warrantyStartDate;
     private LocalDate warrantyEndDate;
-
     private LocalDate acquisitionDate;
     private Integer assetTypeId;
     private Integer shelfId;
@@ -28,5 +29,6 @@ public class Asset {
     private Integer goodsReceiptId;
     private Integer warehouseId;
     private LocalDate inServiceDate;
+
     private String assetTypeName;
 }
