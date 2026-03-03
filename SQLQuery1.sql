@@ -703,7 +703,7 @@ CREATE TABLE goods_receipt_detail (
 CREATE TABLE asset (
                        asset_id            INT IDENTITY(1,1) NOT NULL,
                        asset_name NVARCHAR(100) NOT NULL,
-                       serial_number       NVARCHAR(100) NULL UNIQUE,
+                       serial_number       NVARCHAR(100) NULL,
                        asset_type_id       INT NOT NULL,
                        goods_receipt_id    INT NULL,
                        current_status      NVARCHAR(40) NOT NULL,
@@ -732,7 +732,9 @@ CREATE TABLE asset (
                        CONSTRAINT FK_AST_Department
                            FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
-
+CREATE UNIQUE INDEX UQ_asset_serial
+    ON asset(serial_number)
+    WHERE serial_number IS NOT NULL;
 
 -- =============================================
 -- 5. NGHIỆP VỤ CẤP PHÁT (REFACTORED)

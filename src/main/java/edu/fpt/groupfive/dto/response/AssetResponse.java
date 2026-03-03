@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public class AssetResponse {
 
     private Integer assetId;
-
+    private String assetName;
     private String serialNumber;
 
     private String currentStatus;
@@ -25,8 +25,8 @@ public class AssetResponse {
     private BigDecimal originalCost;
 
     private Integer assetTypeId;
-
-    private LocalDate acquisitionDate;
     private String assetTypeName;
+    private LocalDate acquisitionDate;
+
 
 }
