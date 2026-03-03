@@ -1,0 +1,254 @@
+:root {
+    --pr-pending: #f59e0b;
+    --quo-draft: #94a3b8;
+    --quo-approved: #10b981;
+    --quo-sent: #6366f1;
+    --fulfillment-bg: #e2e8f0;
+    --fulfillment-fill: #1e293b;
+}
+
+.staff-dashboard-wrapper {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header Refinement */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.dashboard-header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 4px;
+}
+
+.dashboard-header p {
+    color: var(--muted2);
+    font-size: 14px;
+}
+
+/* Grid Layout */
+.top-section-grid {
+    display: grid;
+    grid-template-columns: 7fr 3fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+/* Cards */
+.dash-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+    padding: 24px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.card-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.badge-count {
+    background: #000;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+/* PR Table */
+.pr-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pr-table th {
+    text-align: left;
+    font-size: 12px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.pr-table td {
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.pr-info strong {
+    display: block;
+    color: var(--dark);
+    font-size: 14px;
+}
+
+.pr-info span {
+    font-size: 12px;
+    color: var(--muted2);
+}
+
+.deadline-cell {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.btn-create-quote {
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dark);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-create-quote:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+/* My Quotations List */
+.quo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.quo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+    border-left: 4px solid var(--quo-draft);
+}
+
+.quo-item.approved {
+    border-left-color: var(--quo-approved);
+}
+
+.quo-item.sent {
+    border-left-color: var(--quo-sent);
+}
+
+.quo-item.pending {
+    border-left-color: var(--pr-pending);
+}
+
+.quo-item.draft {
+    border-left-color: var(--quo-draft);
+}
+
+.quo-item.rejected {
+    border-left-color: #ef4444;
+}
+
+.quo-item:hover {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+.quo-details strong {
+    display: block;
+    font-size: 14px;
+    color: var(--dark);
+}
+
+.quo-details span {
+    font-size: 12px;
+    color: var(--muted2);
+}
+
+.status-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--muted2);
+    text-transform: uppercase;
+}
+
+/* PO Monitoring Table */
+.po-full-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.po-full-table th {
+    text-align: left;
+    font-size: 12px;
+    color: var(--muted2);
+    padding: 12px 0;
+}
+
+.po-full-table td {
+    padding: 16px 0;
+    border-top: 1px solid #f1f5f9;
+}
+
+/* Fulfillment Bar */
+.fulfillment-wrap {
+    width: 140px;
+}
+
+.progress-bar {
+    height: 6px;
+    background: var(--fulfillment-bg);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--fulfillment-fill);
+}
+
+.fulfillment-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted2);
+}
+
+.po-ref {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.po-link {
+    font-size: 12px;
+    color: var(--muted2);
+}
+
+.quick-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.quick-actions i {
+    color: var(--muted2);
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.quick-actions i:hover {
+    color: var(--dark);
+}

@@ -52,7 +52,6 @@ public class CustomerAuthenticationFailureHandler implements AuthenticationFailu
                 Locale.getDefault()
         );
         request.getSession().setAttribute("username", username);
-        request.getSession().setAttribute("password", password);
         request.getSession().setAttribute("error_login", errorMessage);
         response.sendRedirect(request.getContextPath() + "/auth/login");
     }

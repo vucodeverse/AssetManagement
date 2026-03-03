@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/manager-layout}">
+
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/asset-type/asset-type.css}">
+    </th:block>
+</head>
+
+<body>
+
+<th:block layout:fragment="content">
+
+    <!-- header -->
+    <header class="page-header">
+        <h1 class="page-title">QUẢN LÝ LOẠI TÀI SẢN</h1>
+    </header>
+
+    <div class="content-wrapper">
+
+        <!-- Flash message -->
+        <div th:if="${successMessage}" class="success-box">
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <div th:if="${errorMessage}" class="error-box">
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div class="main-content">
+
+            <!-- ================= LEFT TABLE ================= -->
+            <div class="left-panel">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>TÊN LOẠI</th>
+                        <th>DANH MỤC</th>
+                        <th>PHÂN LOẠI</th>
+                        <th>KHẤU HAO</th>
+                        <th>THÁNG SD</th>
+                        <th>HÀNH ĐỘNG</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="t : ${assetTypes}">
+                        <td th:text="${t.typeId}"></td>
+                        <td th:text="${t.typeName}"></td>
+                        <td th:text="${t.categoryName}"></td>
+                        <td th:text="${t.typeClass}"></td>
+                        <td th:text="${t.defaultDepreciationMethod}"></td>
+                        <td th:text="${t.defaultUsefulLifeMonths}"></td>
+
+                        <td class="action-cell">
+
+                            <!-- EDIT -->
+                            <a th:href="@{'/manager/asset-types/edit/' + ${t.typeId}}"
+                               class="action-icon">
+                                <i class="fas fa-edit"></i>
+                            </a>
+
+                            <!-- DELETE -->
+                            <form th:action="@{'/manager/asset-types/delete/' + ${t.typeId}}"
+                                  method="post"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Xác nhận xóa?')">
+
+                                <button type="submit" class="icon-btn">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(assetTypes)}">
+                        <td colspan="7" style="text-align:center;padding:20px">
+                            Không có loại tài sản nào
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ================= RIGHT FORM ================= -->
+            <div class="right-panel">
+                <div class="form-panel">
+
+                    <h3 class="form-title"
+                        th:text="${mode == 'update'} ? 'CẬP NHẬT LOẠI TÀI SẢN' : 'TẠO LOẠI TÀI SẢN'">
+                    </h3>
+
+                    <form th:action="${mode == 'create'}
+                            ? @{/manager/asset-types/create}
+                            : @{/manager/asset-types/update}"
+                          th:object="${assetType}"
+                          method="post">
+
+                        <!-- id -->
+                        <div th:if="${mode == 'update'}" class="form-field">
+                            <label class="form-label">ID</label>
+                            <input type="text" th:field="*{typeId}" class="form-input" readonly/>
+                            <input type="hidden" th:field="*{typeId}"/>
+                        </div>
+
+                        <!-- name -->
+                        <div class="form-field">
+                            <label class="form-label">TÊN LOẠI</label>
+                            <input type="text"
+                                   th:field="*{typeName}"
+                                   class="form-input"
+                                   required/>
+                            <div class="error" th:errors="*{typeName}"></div>
+                        </div>
+
+                        <!-- desc -->
+                        <div class="form-field">
+                            <label class="form-label">MÔ TẢ</label>
+                            <textarea th:field="*{description}"
+                                      class="form-textarea"></textarea>
+                        </div>
+
+                        <!-- spec -->
+                        <div class="form-field">
+                            <label class="form-label">THÔNG SỐ KỸ THUẬT</label>
+                            <textarea th:field="*{specification}"
+                                      class="form-textarea"></textarea>
+                        </div>
+
+                        <!-- model -->
+                        <div class="form-field">
+                            <label class="form-label">MODEL</label>
+                            <input type="text"
+                                   th:field="*{model}"
+                                   class="form-input"/>
+                        </div>
+
+                        <!-- CATEGORY -->
+                        <div class="form-field">
+                            <label class="form-label">DANH MỤC</label>
+                            <select th:field="*{categoryId}" class="form-input" required>
+                                <option value="">-- Chọn danh mục --</option>
+                                <option th:each="c : ${categories}"
+                                        th:value="${c.categoryId}"
+                                        th:text="${c.categoryName}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- type class -->
+                        <div class="form-field">
+                            <label class="form-label">PHÂN LOẠI</label>
+                            <select th:field="*{typeClass}" class="form-input" required>
+                                <option value="">-- Chọn phân loại --</option>
+                                <option th:each="c : ${typeClasses}"
+                                        th:value="${c}"
+                                        th:text="${c}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- khau hao-->
+                        <div class="form-field">
+                            <label class="form-label">KHẤU HAO</label>
+                            <select th:field="*{defaultDepreciationMethod}"
+                                    class="form-input"
+                                    required>
+                                <option value="">-- Chọn phương pháp --</option>
+                                <option th:each="d : ${depreciationMethods}"
+                                        th:value="${d}"
+                                        th:text="${d}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- tgian -->
+                        <div class="form-field">
+                            <label class="form-label">THỜI GIAN SD (THÁNG)</label>
+                            <input type="number"
+                                   th:field="*{defaultUsefulLifeMonths}"
+                                   class="form-input"
+                                   required/>
+                        </div>
+
+                        <!-- button -->
+                        <div class="form-actions">
+
+                            <button type="submit"
+                                    th:if="${mode == 'create'}"
+                                    class="btn-add">
+                                THÊM MỚI
+                            </button>
+
+                            <button type="submit"
+                                    th:if="${mode == 'update'}"
+                                    class="btn-add">
+                                CẬP NHẬT
+                            </button>
+
+                            <button type="button"
+                                    onclick="window.location.href='/manager/asset-types'"
+                                    class="btn-cancel">
+                                HỦY
+                            </button>
+
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</th:block>
+</body>
+</html>

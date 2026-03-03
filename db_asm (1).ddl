@@ -1,3 +1,15 @@
+CREATE DATABASE AssetManager;
+GO
+USE AssetManager;
+GO
+
+CREATE TABLE category (
+                          category_id INT IDENTITY PRIMARY KEY,
+                          category_name NVARCHAR(255) NOT NULL,
+                          description NVARCHAR(255),
+                          status NVARCHAR(40) NOT NULL
+);
+
 CREATE TABLE users (
   user_id INT IDENTITY NOT NULL,
   username VARCHAR(50) NOT NULL UNIQUE,
@@ -210,21 +222,29 @@ CREATE TABLE asset (
 );
 
 CREATE TABLE allocation_request (
-  allocation_request_id INT IDENTITY NOT NULL,
-  request_date DATE NOT NULL,
-  status VARCHAR(255) NOT NULL,
-  request_reason VARCHAR(255) NOT NULL,
-  reject_reason VARCHAR(255) NULL,
-  approved_by_user_id INT NOT NULL,
-  requested_department_id INT NOT NULL,
-  needed_by_date DATE NULL,
-  department_manager_approved_by_user_id INT NOT NULL,
-  department_manager_approved_date DATE NULL,
-  asset_manager_approved_by_user_id INT NOT NULL,
-  asset_manager_approved_date DATE NULL,
-  created_date DATE NULL,
-  updated_date DATE NOT NULL,
-  PRIMARY KEY (allocation_request_id)
+                                    request_id INT IDENTITY PRIMARY KEY,
+                                    request_date DATETIME2(0) NOT NULL,
+                                    status NVARCHAR(255) NOT NULL,
+                                    reason NVARCHAR(255) NOT NULL,
+                                    reason_reject NVARCHAR(255),
+                                    department_id INT NOT NULL,
+                                    needed_by_date DATETIME2(0),
+                                    am_approved_by INT,
+                                    am_approved_at DATETIME2(0),
+                                    created_at DATETIME2(0) NOT NULL,
+                                    updated_at DATETIME2(0),
+                                    quantity INT,
+                                    priority NVARCHAR(255),
+                                    creator_id INT,
+
+                                    CONSTRAINT FK_allocation_request_department
+                                        FOREIGN KEY (department_id) REFERENCES departments(department_id),
+
+                                    CONSTRAINT FK_allocation_request_am_approved
+                                        FOREIGN KEY (am_approved_by) REFERENCES users(user_id),
+
+                                    CONSTRAINT FK_allocation_request_creator
+                                        FOREIGN KEY (creator_id) REFERENCES users(user_id)
 );
 
 CREATE TABLE allocation_request_details (

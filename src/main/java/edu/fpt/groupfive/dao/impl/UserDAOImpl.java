@@ -4,13 +4,10 @@ import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.model.Users;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,9 +41,48 @@ public class UserDAOImpl implements UserDAO {
         return user;
     }
 
+    @NonNull
+    private List<Users> getUsers(String query) {
+        List<Users> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapRowToUser(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
     @Override
     public Optional<Users> findUserByUsername(String username) {
-        return Optional.empty();
+        String query = """
+                  select * from Users where username = ?
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)
+        ) {
+            preparedStatement.setString(1, username);
+            ResultSet rs = preparedStatement.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapRowToUser(rs));
+            }
+            return Optional.empty();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String findFullNameById(Integer purchaseId) {
+        return "";
     }
 
     @Override
@@ -88,15 +124,9 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 UPDATE Users
                 SET
-                    password_hash = ?,
-                    first_name = ?,
-                    last_name = ?,
-                    phone_number = ?,
-                    email = ?,
-                    status = ?,
-                    role = ?,
-                    updated_date = ?,
-                    department_id = ?
+                    password_hash = ?, first_name = ?, last_name = ?,
+                    phone_number = ?, email = ?, status = ?,
+                    role = ?, updated_date = ?, department_id = ?
                 WHERE user_id = ?
                 """;
         try (Connection connection = databaseConfig.getConnection();
@@ -118,6 +148,7 @@ public class UserDAOImpl implements UserDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
     @Override
@@ -158,15 +189,23 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean existsByEmail(String email) {
-        String query = """
+    public boolean existsByEmail(String email, Integer userId) {
+        StringBuilder query = new StringBuilder("""
                   SELECT 1 FROM Users WHERE email = ?
-                """;
+                """);
+
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)
+             PreparedStatement ps = connection.prepareStatement(query.toString())
         ) {
             ps.setString(1, email);
 
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
             return ps.executeQuery().next();
 
         } catch (Exception e) {
@@ -175,26 +214,46 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public List<Users> findAll() {
-        String query = """
-                SELECT * FROM users
-                """;
+    public boolean existsManagerByDepartment(Integer departmentId, Integer userId) {
 
-        List<Users> list = new ArrayList<>();
+        StringBuilder query = new StringBuilder("""
+                  SELECT 1 FROM Users
+                  WHERE department_id = ?
+                    AND role = 'DEPARTMENT_MANAGER'
+                """);
+
+        // Nếu userId khác null, ta loại trừ chính user đó ra & sẽ dùng khi Update
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
+             PreparedStatement ps = connection.prepareStatement(query.toString())
+        ) {
+            ps.setInt(1, departmentId);
+            if (userId != null) {
+                ps.setInt(2, userId);
             }
+
+            return ps.executeQuery().next();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
 
-        return list;
+
+    @Override
+    public List<Users> findAll() {
+        String query = """
+                SELECT * FROM users
+                """;
+        return getUsers(query);
+    }
+
+    @Override
+    public Integer findUserIdByUsername(String username) {
+        return 0;
     }
 
     @Override
@@ -223,7 +282,9 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public List<Users> findByDepartmentId(Integer departmentId) {
         String query = """
-                SELECT * FROM users WHERE department_id = ? AND status = 'ACTIVE'
+                SELECT * FROM users
+                         WHERE department_id = ?
+                           AND status = 'ACTIVE'
                 """;
 
         List<Users> list = new ArrayList<>();
@@ -252,21 +313,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 SELECT * FROM users ORDER BY first_name DESC
                 """;
-        List<Users> list = new ArrayList<>();
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return list;
+        return getUsers(query);
     }
 
     @Override
@@ -274,21 +321,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 SELECT * FROM users ORDER BY first_name ASC
                 """;
-        List<Users> list = new ArrayList<>();
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return list;
+        return getUsers(query);
     }
 
     @Override
@@ -296,21 +329,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 SELECT * FROM users ORDER BY created_date ASC
                 """;
-        List<Users> list = new ArrayList<>();
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return list;
+        return getUsers(query);
     }
 
     @Override
@@ -318,21 +337,7 @@ public class UserDAOImpl implements UserDAO {
         String query = """
                 SELECT * FROM users ORDER BY created_date DESC
                 """;
-        List<Users> list = new ArrayList<>();
-
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapRowToUser(rs));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return list;
+        return getUsers(query);
     }
 
     @Override
@@ -365,6 +370,7 @@ public class UserDAOImpl implements UserDAO {
         StringBuilder query = new StringBuilder("""
                 SELECT * FROM Users WHERE 1 = 1
                 """);
+
         List<Object> param = new ArrayList<>();
 
         if (status != null) {
@@ -410,10 +416,9 @@ public class UserDAOImpl implements UserDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
         return list;
-
     }
+
 
     @Override
     public int countUsersWithFilter(String status, Integer departmentId, Role role, String keyword) {

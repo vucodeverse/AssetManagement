@@ -1,9 +1,15 @@
 package edu.fpt.groupfive;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 public class Main {
     public static void main(String[] args) {
-        //testDatabaseConnection();
-        System.out.println("Hello world");
+//            BCryptPasswordEncoder enc = new BCryptPasswordEncoder();
+//            System.out.println(enc.encode("123456"));
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println(authentication.getName());
     }
 
 //    private static void testDatabaseConnection() {

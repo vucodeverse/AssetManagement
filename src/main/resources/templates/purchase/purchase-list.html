@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
+<!--~{}: link -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Request Management - Procurex</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/purchase/purchase-list.css}">
+    </th:block>
+
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+
+        <div class="purchase-content-wrapper">
+            <form id="filterForm" method="get" th:action="@{/purchase-staff/purchases/search}"
+                th:object="${searchAndFilter}">
+
+                <header class="top-bar">
+                    <h1>PURCHASE REQUEST MANAGEMENT</h1>
+                    <div class="top-actions">
+                        <!-- TODO: bật lại sec:authorize="hasRole('ASSET_MANAGER')" khi enable security -->
+                        <a th:href="@{/purchase-staff/purchases/create}" class="btn-create"
+                            style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#1e293b; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:13px;">
+                            <i class="fas fa-plus"></i> Create Purchase Request
+                        </a>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search by PR ID..." th:field="*{keyword}">
+                        </div>
+                    </div>
+                </header>
+
+                <section class="filters-bar">
+                    <div class="filter-group">
+
+                        <select id="statusFilter" th:field="*{status}">
+                            <option value="">Status: All</option>
+                            <option th:each="s : ${status}" th:value="${s}" th:text="${s}">
+                            </option>
+                        </select>
+
+                        <select id="priorityFilter" th:field="*{priority}">
+                            <option value="">Priority: All</option>
+                            <option th:each="pi : ${priorities}" th:value="${pi}" th:text="${pi}">
+                            </option>
+                        </select>
+
+                        <input type="date" th:field="*{from}">
+                        <input type="date" th:field="*{to}">
+
+                        <button type="submit">APPLY</button>
+                        <a class="btn-reset" th:href="@{/purchase-staff/purchases}">RESET</a>
+                    </div>
+                </section>
+            </form>
+
+
+            <!-- Phần bảng dữ liệu -->
+            <div class="table-container">
+                <table class="data-table" id="purchaseTO">
+                    <thead>
+                        <tr>
+                            <th>PR ID </th>
+                            <th>STATUS </th>
+                            <th>CREATOR </th>
+                            <th>NEEDED DATE</th>
+                            <th>PRIORITY </th>
+                            <th>CREATED AT </th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${purchases}" class="clickable-row"
+                            th:attr="onclick=|window.location.href='@{/purchase-staff/purchases/{id}(id=${p.purchaseId})}'|">
+
+                            <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
+                            <td>
+                                <span th:if="${p.status != null}" class="badge"
+                                    th:classappend="'badge-' + ${p.status.name()}" th:text="${p.status}"></span>
+                                <span th:if="${p.status == null}">—</span>
+                            </td>
+                            <td th:text="${p.creatorName ?: '—'}"></td>
+                            <td>
+                                <span th:if="${p.neededByDate != null}"
+                                    th:text="${#temporals.format(p.neededByDate,'dd-MM-yyyy')}"></span>
+                                <span th:if="${p.neededByDate == null}">—</span>
+                            </td>
+                            <td>
+                                <span th:if="${p.priority != null}" class="pill"
+                                    th:classappend="'pill-' + ${p.priority}" th:text="${p.priority}"></span>
+                                <span th:if="${p.priority == null}">—</span>
+                            </td>
+                            <td>
+                                <span th:if="${p.createdAt != null}"
+                                    th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></span>
+                                <span th:if="${p.createdAt == null}">—</span>
+                            </td>
+
+                            <td class="cell-actions" onclick="event.stopPropagation();">
+
+                                <!-- TODO: bật lại sec:authorize="hasRole('DIRECTOR')" khi enable security -->
+                                <form th:if="${p.status != null}" method="post"
+                                    th:action="@{/purchase-staff/purchases/{id}/actions(id=${p.purchaseId})}">
+                                    <div
+                                        th:if="${p.status.name() != 'APPROVED' && p.status.name() != 'REJECTED' && p.status.name() != 'DRAFT'}">
+                                        <button type="submit" name="actions" value="a"
+                                            class="btn-approve">APPROVE</button>
+                                        <a class="btn-reject" th:href="'#reject-' + ${p.purchaseId}"
+                                            onclick="event.stopPropagation();">
+                                            REJECT
+                                        </a>
+                                    </div>
+                                </form>
+
+                                <!-- TODO: bật lại sec:authorize="hasRole('ASSET_MANAGER')" khi enable security -->
+                                <a th:if="${p.status != null && p.status.name() == 'DRAFT'}"
+                                    th:href="@{/purchase-staff/purchases/{id}/edit(id=${p.purchaseId})}"
+                                    class="btn-approve" onclick="event.stopPropagation();">UPDATE</a>
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- TODO: bật lại sec:authorize="hasRole('DIRECTOR')" khi enable security -->
+        <th:block>
+            <div th:each="p : ${purchases}" th:id="'reject-' + ${p.purchaseId}" class="modal-overlay">
+
+                <div class="modal" role="dialog" aria-modal="true">
+                    <div class="modal-header">
+                        <h3 class="modal-title">
+                            Reject Reason - PR-<span th:text="${p.purchaseId}"></span>
+                        </h3>
+
+                        <!-- Nút X: đóng modal -->
+                        <a href="#" class="modal-close" aria-label="Close">✕</a>
+                    </div>
+
+                    <form method="post" th:action="@{/purchase-staff/purchases/{id}/actions(id=${p.purchaseId})}">
+
+                        <div class="modal-body">
+                            <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-submit" name="actions" value="r">Submit</button>
+                            <a href="#" class="btn-cancel">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </th:block>
+    </th:block>
+
+
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/purchase/pr-list.js}"></script>
+    </th:block>
+</body>
+
+</html>

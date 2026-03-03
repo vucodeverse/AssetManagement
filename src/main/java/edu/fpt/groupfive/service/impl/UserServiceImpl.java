@@ -3,11 +3,10 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.dao.DepartmentDAO;
 import edu.fpt.groupfive.dao.UserDAO;
+import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.dto.request.UserCreateRequest;
 import edu.fpt.groupfive.dto.request.UserUpdateRequest;
-import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.mapper.UserMapper;
-import edu.fpt.groupfive.model.Department;
 import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +14,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,22 +27,6 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final DepartmentDAO departmentDAO;
-
-    //Kiểm tra xem phòng có trưởng phòng hay chưa
-    private void existsDepartmentMgr(Integer departmentId, Integer userId) {
-
-        // Lấy department theo id
-        Department department = departmentDAO.findById(departmentId)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
-
-        // Nếu đã có manager khác
-        if (department.getManagerId() != null
-                && !department.getManagerId().equals(userId)) {
-
-            throw new IllegalArgumentException("Department already has a manager");
-        }
-    }
-
 
     // Tạo một user mới
     @Override
@@ -67,7 +50,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
     // Update thông tin của user
     @Override
     public void updateUser(UserUpdateRequest request) {
@@ -89,12 +71,10 @@ public class UserServiceImpl implements UserService {
         // Lưu thời gian cập nhật
         existing.setUpdatedDate(LocalDateTime.now());
 
-
         // Nếu trước là manager trong một phòng mà giờ không còn
         if (oldRole == Role.DEPARTMENT_MANAGER && existing.getRole() != Role.DEPARTMENT_MANAGER) {
             departmentDAO.updateManager(oldDepartmentId, null);
         }
-
 
         // Nếu trước không phải manager mà giờ là manager của phòng
         if (oldRole != Role.DEPARTMENT_MANAGER && existing.getRole() == Role.DEPARTMENT_MANAGER) {
@@ -120,7 +100,6 @@ public class UserServiceImpl implements UserService {
 
     }
 
-
     // Remove một user (Update status)
     @Override
     public void removeUser(Integer id) {
@@ -129,7 +108,6 @@ public class UserServiceImpl implements UserService {
 
         userDAO.delete(id);
     }
-
 
     // Tìm kiếm user theo keyword
     @Override
@@ -155,7 +133,6 @@ public class UserServiceImpl implements UserService {
         return (int) Math.ceil((double) total / size);
     }
 
-
     @Override
     public UserResponse getUserById(Integer id) {
         Users user = userDAO.findById(id)
@@ -170,33 +147,50 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<Users> getAllUsers() {
+        return List.of();
+    }
+
+    @Override
+    public List<UserResponse> getAllUsers2() {
+        return userDAO.findAll().stream().map(userMapper::toResponse).toList();
+    }
+
+    @Override
+    public Integer getUserIdByUsername(String username) {
+        return userDAO.findUserIdByUsername(username);
+    }
+
+    @Override
+    public String findNameById(Integer userId) {
+        return userDAO.findFullNameById(userId);
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
         return userDAO.existsByUsername(username);
     }
 
     @Override
-    public boolean existsByEmail(String email) {
-        return userDAO.existsByEmail(email);
+    public boolean existsByEmail(String email, Integer userId) {
+        return userDAO.existsByEmail(email, userId);
     }
 
-
-    //TODO: Need to refactor. implement new DAO to get list of user with role WAREHOUSE_STAFF
     @Override
-    public Map<Integer, String> getAllWarehouseStaffName() {
-
-        List<Users> warehouseStaffs = userDAO.findAll().stream().filter(u -> u.getRole() == Role.WAREHOUSE_STAFF).toList();
-
-        Map<Integer, String> warehouseStaffNames = new HashMap<>();
-
-        for(Users user : warehouseStaffs) {
-            warehouseStaffNames.put(
-                    user.getUserId(),
-                    user.getUsername()
-            );
-        }
-        return warehouseStaffNames;
-
+    public boolean existsManager(Integer departmentId, Integer userId) {
+        return userDAO.existsManagerByDepartment(departmentId, userId);
     }
 
+    @Override
+    public Map<Integer, String> getUserIdToUsernameMap() {
+
+        Map<Integer, String> userMap = new HashMap<>();
+
+        for (Users user : userDAO.findAll()) {
+            userMap.put(user.getUserId(), user.getFirstName() + ' ' + user.getLastName());
+        }
+
+        return userMap;
+    }
 
 }

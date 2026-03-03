@@ -41,9 +41,12 @@ build/
 /target/
 /.smarttomcat/
 /tomcat.8080/
+/.target/
+/.cursor/
+
+
 /out/
-.smarttomcat/ 
-.smarttomcat/ 
+.cursor
 
 ### Local docs ###
 docs/
