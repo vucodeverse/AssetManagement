@@ -42,7 +42,6 @@ public class QuotationServiceImpl implements QuotationService {
     private final RangeAmount rangeAmount;
     private final AssetTypeService assetTypeService;
     private final OrderCalculationUtil orderCalculationUtil;
-    private final AssetTypeDAO assetTypeDAO;
 
     private QuotationResponse toQuotationResponse(Quotation q, Map<Integer, String> supplierMap) {
         return QuotationResponse.builder()

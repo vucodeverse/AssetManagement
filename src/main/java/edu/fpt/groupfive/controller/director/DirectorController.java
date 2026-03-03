@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/director")
 @RequiredArgsConstructor
-@Slf4j(topic = "DIRECTOR-CONTROLLER")
 public class DirectorController {
     private final DashboardService dashboardService;
     private final PurchaseService purchaseService;

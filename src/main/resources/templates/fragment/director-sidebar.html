@@ -1,10 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+
 <body>
 
+    <aside class="sidebar" th:fragment="sidebar(activeMenu, activeSub)">
+        <div class="sidebar-logo" th:onclick="|window.location.href='@{/home}'|" style="cursor: pointer;">
+            <i class="fas fa-cube"></i> <span>PROCUREX</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- BẢNG ĐIỀU KHIỀN -->
+            <a class="nav-item" th:href="@{/director/dashboard}"
+                th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+
+            <!-- TRUNG TÂM PHÊ DUYỆT -->
+            <div class="nav-group">
+                <a class="nav-item" th:href="@{/director/purchases}"
+                    th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                    <i class="fas fa-check-circle"></i> Approval Center
+                </a>
+
+                <div class="sub-nav" th:if="${activeMenu}=='approval'">
+                    <a class="sub-item" th:href="@{/director/purchases}"
+                        th:classappend="${activeSub}=='pr' ? ' active' : ''">
+                        Purchase Requests
+                    </a>
+
+                    <a class="sub-item" th:href="@{/director/quotations}"
+                        th:classappend="${activeSub}=='qt' ? ' active' : ''">
+                        Quotations
+                    </a>
+
+                    <a class="nav-item" th:href="@{/purchase-staff/purchase-orders}"
+                       th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                        <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
+                    </a>
+                </div>
+            </div>
+
+            <a class="nav-item" th:href="@{/logout}">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <!-- Bạn có thể binding name và role thật vào đây -->
+            <div class="user-avatar">DR</div>
+            <div class="user-info">
+                <span class="user-name">Director</span>
+                <span class="user-role">Management</span>
+            </div>
+        </div>
+    </aside>
+
 </body>
+
 </html>

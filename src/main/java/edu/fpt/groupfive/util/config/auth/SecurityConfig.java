@@ -19,76 +19,82 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomerUserDetailsService userDetailsService;
-    private final CustomerAuthenticationFailureHandler customerAuthenticationFailureHandler;
+        private final CustomerUserDetailsService userDetailsService;
+        private final CustomerAuthenticationFailureHandler customerAuthenticationFailureHandler;
+        private final CustomerAuthenticationSuccessHandler customerAuthenticationSuccessHandler;
 
-    @Value("${app.security.enabled}")
-    private boolean securityEnable;
+        @Value("${app.security.enabled}")
+        private boolean securityEnable;
 
-    // các url dc truy cập tự do
-    private final String[] WHITE_LIST = {"/auth/login", "/static/css/**"};
+        // các url dc truy cập tự do
+        private final String[] WHITE_LIST = { "/auth/login", "/static/css/**" };
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        //return new BCryptPasswordEncoder(10);
-        return new BCryptPasswordEncoder(10);
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-
-
-        // tắt security
-        if (!securityEnable) {
-            httpSecurity
-                    .csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-            return httpSecurity.build();
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder(10);
         }
 
-        // bật bth
-        httpSecurity
-//                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-//                        .requestMatchers(WHITE_LIST)
-//                        .permitAll()
-//                        .requestMatchers("/admin/**").hasRole("ADMIN")
-//                        .requestMatchers("/dept-manager/**").hasAnyAuthority("DEPARTMENT_MANAGER", "ADMIN")
-//                        .requestMatchers("/director/**").hasAnyAuthority("DIRECTOR", "ADMIN")
-//                        .requestMatchers("/purchase-staff/**").hasAnyAuthority("PURCHASE_STAFF", "ADMIN")
-//                        .requestMatchers("/asset-manager/**").hasAnyAuthority("ASSET_MANAGER", "ADMIN")
-//                        .requestMatchers("/warehouse/**").hasAnyAuthority("WAREHOUSE_STAFF", "ADMIN")
-//                        .anyRequest()
-//                        .authenticated())
-                .authorizeHttpRequests(auth ->
-                auth.anyRequest().permitAll())
-                .authenticationProvider(authenticationProvider())
-                .formLogin(f -> f.loginPage("/auth/login")
-                        .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/home", true)
-                        .failureHandler(customerAuthenticationFailureHandler)
-                        .permitAll())
-                .logout(l -> l.logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll())
-                .sessionManagement(s -> s.sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::newSession).maximumSessions(1).maxSessionsPreventsLogin(false));
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
-        return httpSecurity.build();
-    }
+                // tắt security
+                if (!securityEnable) {
+                        httpSecurity
+                                        .csrf(csrf -> csrf.disable())
+                                        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                        return httpSecurity.build();
+                }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider(){
+                // bật bth
+                httpSecurity
+                                .authorizeHttpRequests(
+                                                authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
+                                                                .requestMatchers(WHITE_LIST)
+                                                                .permitAll()
+                                                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                                                .requestMatchers("/dept-manager/**")
+                                                                .hasAnyAuthority("DEPARTMENT_MANAGER", "ADMIN")
+                                                                .requestMatchers("/director/**")
+                                                                .hasAnyAuthority("DIRECTOR", "ADMIN", "PURCHASE_STAFF")
+                                                                .requestMatchers("/purchase-staff/**")
+                                                                .hasAnyAuthority("PURCHASE_STAFF", "ADMIN", "DIRECTOR")
+                                                                .requestMatchers("/asset-manager/**")
+                                                                .hasAnyAuthority("ASSET_MANAGER", "ADMIN")
+                                                                .requestMatchers("/warehouse/**")
+                                                                .hasAnyAuthority("WAREHOUSE_STAFF", "ADMIN")
+                                                                .anyRequest()
+                                                                .authenticated())
+                                .authenticationProvider(authenticationProvider())
+                                .formLogin(f -> f.loginPage("/auth/login")
+                                                .loginProcessingUrl("/login")
+                                                .successHandler(customerAuthenticationSuccessHandler)
+                                                .failureHandler(customerAuthenticationFailureHandler)
+                                                .permitAll())
+                                .logout(l -> l.logoutUrl("/logout")
+                                                .logoutSuccessUrl("/login?logout=true")
+                                                .invalidateHttpSession(true)
+                                                .deleteCookies("JSESSIONID")
+                                                .permitAll())
+                                .sessionManagement(
+                                                s -> s.sessionFixation(
+                                                                SessionManagementConfigurer.SessionFixationConfigurer::newSession)
+                                                                .maximumSessions(1).maxSessionsPreventsLogin(false));
 
-    DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+                return httpSecurity.build();
+        }
 
-    daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-    daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        @Bean
+        public AuthenticationProvider authenticationProvider() {
 
-    // hiển thị lỗi
-    daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
+                DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
 
-    return daoAuthenticationProvider;
-    }
+                daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+                daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+
+                // hiển thị lỗi
+                daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
+
+                return daoAuthenticationProvider;
+        }
 
 }

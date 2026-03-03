@@ -127,22 +127,21 @@
                             <td class="cell-actions" onclick="event.stopPropagation()">
 
                                 <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
-                                   th:href="@{/purchase-staff/quotations/{quotationId}/edit(quotationId=${q.quotationId})}"
-                                   title="Edit">
+                                    th:href="@{/purchase-staff/quotations/{quotationId}/edit(quotationId=${q.quotationId})}"
+                                    title="Edit">
                                     <i class="far fa-edit action-icon"></i>
                                 </a>
 
                                 <a class="btn-approve-sm"
-                                   th:href="@{/purchase-staff/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}"
-                                   th:if="${q.quotationStatus.name() == 'PENDING'}">
+                                    th:href="@{/purchase-staff/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}"
+                                    th:if="${q.quotationStatus.name() == 'PENDING'}">
                                     APPROVE &amp; PO
                                 </a>
 
-                                <button class="btn-reject-sm"
-                                        type="button"
-                                        th:if="${q.quotationStatus.name() == 'PENDING'}"
-                                        th:attr="data-action=@{/purchase-staff/quotations/{id}/reject(id=${q.quotationId})}"
-                                        onclick="openRejectModal(event, this)">
+                                <button class="btn-reject-sm" type="button"
+                                    th:if="${q.quotationStatus.name() == 'PENDING'}"
+                                    th:attr="data-action=@{/purchase-staff/quotations/{id}/reject(id=${q.quotationId})}"
+                                    onclick="openRejectModal(event, this)">
                                     REJECT
                                 </button>
 
@@ -167,21 +166,15 @@
                         <p style="font-size: 14px; margin-bottom: 16px; color: #666;">
                             Please provide a reason for rejecting this quotation.
                         </p>
-                        <textarea name="reason"
-                                  placeholder="Enter rejection reason here..."
-                                  required></textarea>
+                        <textarea name="reason" placeholder="Enter rejection reason here..." required></textarea>
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button"
-                                class="btn-outline-prem"
-                                onclick="closeRejectModal()">
+                        <button type="button" class="btn-outline-prem" onclick="closeRejectModal()">
                             CANCEL
                         </button>
 
-                        <button type="submit"
-                                class="btn-solid-prem"
-                                style="background:#ff0000; border-color:#ff0000;">
+                        <button type="submit" class="btn-solid-prem" style="background:#ff0000; border-color:#ff0000;">
                             CONFIRM REJECTION
                         </button>
                     </div>

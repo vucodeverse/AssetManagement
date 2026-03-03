@@ -6,10 +6,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class Main {
     public static void main(String[] args) {
-//            BCryptPasswordEncoder enc = new BCryptPasswordEncoder();
-//            System.out.println(enc.encode("123456"));
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(authentication.getName());
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String rawPassword = "12345";   // password anh muốn test
+        String encodedPassword = encoder.encode(rawPassword);
+
+        System.out.println("BCrypt hash:");
+        System.out.println(encodedPassword);
+//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        System.out.println(authentication.getName());
     }
 
 //    private static void testDatabaseConnection() {
