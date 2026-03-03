@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public class ShelfDAOImpl implements ShelfDAO {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
         shelf.setCreatedAt(now);
         shelf.setUpdatedAt(now);
         shelf.setStatus("ACTIVE");
@@ -63,7 +64,7 @@ public class ShelfDAOImpl implements ShelfDAO {
                 UPDATE shelf SET name = ?, max_capacity = ?, description = ?, updated_at = ?
                 WHERE id = ?
                 """;
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
         shelf.setUpdatedAt(now);
         int rows = jdbcTemplate.update(sql,
                 shelf.getName(),

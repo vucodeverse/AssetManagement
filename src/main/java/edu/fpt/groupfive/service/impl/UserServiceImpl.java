@@ -193,4 +193,9 @@ public class UserServiceImpl implements UserService {
         return userMap;
     }
 
+    @Override
+    public Map<Integer, String> getAllWarehouseStaffName() {
+        return Map.of();
+    }
+
 }

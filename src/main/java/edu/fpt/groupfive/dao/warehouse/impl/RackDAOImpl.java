@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public class RackDAOImpl implements RackDAO {
                 VALUES (?, ?, ?, ?, ?, ?)
                 """;
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
         rack.setCreatedAt(now);
         rack.setUpdatedAt(now);
         rack.setStatus("ACTIVE");
@@ -58,7 +59,7 @@ public class RackDAOImpl implements RackDAO {
                 UPDATE rack SET name = ?, description = ?, updated_at = ?
                 WHERE id = ?
                 """;
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
         rack.setUpdatedAt(now);
         int rows = jdbcTemplate.update(sql,
                 rack.getName(),

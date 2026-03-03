@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +35,7 @@ public class WarehouseDAOImpl implements WarehouseDAO {
                 """;
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
         newWarehouse.setCreatedAt(now);
         newWarehouse.setUpdatedAt(now);
         newWarehouse.deactive();
@@ -130,7 +131,7 @@ public class WarehouseDAOImpl implements WarehouseDAO {
                 name = ?, address = ?, manager_id = ?, updated_at = ?
                 WHERE id = ?
                 """;
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
         warehouse.setUpdatedAt(now);
         int rowAffected = jdbcTemplate.update(
                 sql,
