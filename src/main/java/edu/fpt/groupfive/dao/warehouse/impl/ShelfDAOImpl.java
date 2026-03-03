@@ -27,7 +27,7 @@ public class ShelfDAOImpl implements ShelfDAO {
     @Override
     public Shelf create(Shelf shelf) {
         String sql = """
-                INSERT INTO shelf (name, current_capacity, max_capacity, description, rack_id, status, created_at, updated_at)
+                INSERT INTO shelf (shelf_name, current_capacity, max_capacity, description, rack_id, status, created_date, updated_date)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -61,8 +61,8 @@ public class ShelfDAOImpl implements ShelfDAO {
     @Override
     public Shelf update(Shelf shelf) {
         String sql = """
-                UPDATE shelf SET name = ?, max_capacity = ?, description = ?, updated_at = ?
-                WHERE id = ?
+                UPDATE shelf SET shelf_name = ?, max_capacity = ?, description = ?, updated_date = ?
+                WHERE shelf_id = ?
                 """;
         LocalDate now = LocalDate.now();
         shelf.setUpdatedAt(now);
@@ -80,7 +80,7 @@ public class ShelfDAOImpl implements ShelfDAO {
 
     @Override
     public Optional<Shelf> getById(Integer id) {
-        String sql = "SELECT id, name, current_capacity, max_capacity, description, rack_id, status, created_at, updated_at FROM shelf WHERE id = ?";
+        String sql = "SELECT shelf_id, shelf_name, current_capacity, max_capacity, description, rack_id, status, created_date, updated_date FROM shelf WHERE shelf_id = ?";
         List<Shelf> result = jdbcTemplate.query(sql, this::toModel, id);
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
@@ -88,11 +88,11 @@ public class ShelfDAOImpl implements ShelfDAO {
     @Override
     public Optional<ShelfRespDto> getDetailById(Integer id) {
         String sql = """
-                SELECT s.id, s.name, s.current_capacity, s.max_capacity, s.description, s.status,
-                       s.rack_id, r.name AS rack_name, r.warehouse_id
+                SELECT s.shelf_id, s.shelf_name, s.current_capacity, s.max_capacity, s.description, s.status,
+                       s.rack_id, r.rack_name AS rack_name, r.warehouse_id
                 FROM shelf s
-                JOIN rack r ON s.rack_id = r.id
-                WHERE s.id = ?
+                JOIN rack r ON s.rack_id = r.rack_id
+                WHERE s.shelf_id = ?
                 """;
         List<ShelfRespDto> result = jdbcTemplate.query(sql, this::toDto, id);
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
@@ -101,33 +101,33 @@ public class ShelfDAOImpl implements ShelfDAO {
     @Override
     public List<ShelfRespDto> getAllByRackId(Integer rackId) {
         String sql = """
-                SELECT s.id, s.name, s.current_capacity, s.max_capacity, s.description, s.status,
-                       s.rack_id, r.name AS rack_name, r.warehouse_id
+                SELECT s.shelf_id, s.shelf_name, s.current_capacity, s.max_capacity, s.description, s.status,
+                       s.rack_id, r.rack_name AS rack_name, r.warehouse_id
                 FROM shelf s
-                JOIN rack r ON s.rack_id = r.id
+                JOIN rack r ON s.rack_id = r.rack_id
                 WHERE s.rack_id = ?
-                ORDER BY s.name ASC
+                ORDER BY s.shelf_name ASC
                 """;
         return jdbcTemplate.query(sql, this::toDto, rackId);
     }
 
     @Override
     public void deleteById(Integer id) {
-        String sql = "DELETE FROM shelf WHERE id = ?";
+        String sql = "DELETE FROM shelf WHERE shelf_id = ?";
         jdbcTemplate.update(sql, id);
     }
 
     @Override
     public boolean existById(Integer id) {
-        String sql = "SELECT COUNT(1) FROM shelf WHERE id = ?";
+        String sql = "SELECT COUNT(1) FROM shelf WHERE shelf_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
 
     private Shelf toModel(ResultSet rs, int rowNum) throws SQLException {
         Shelf shelf = new Shelf();
-        shelf.setId(rs.getInt("id"));
-        shelf.setName(rs.getString("name"));
+        shelf.setId(rs.getInt("shelf_id"));
+        shelf.setName(rs.getString("shelf_name"));
         shelf.setCurrentCapacity(rs.getInt("current_capacity"));
         shelf.setMaxCapacity(rs.getInt("max_capacity"));
         shelf.setDescription(rs.getString("description"));
@@ -139,8 +139,8 @@ public class ShelfDAOImpl implements ShelfDAO {
     private ShelfRespDto toDto(ResultSet rs, int rowNum) throws SQLException {
         String status = rs.getString("status");
         return new ShelfRespDto(
-                rs.getInt("id"),
-                rs.getString("name"),
+                rs.getInt("shelf_id"),
+                rs.getString("shelf_name"),
                 rs.getInt("current_capacity"),
                 rs.getInt("max_capacity"),
                 rs.getString("description"),
@@ -148,7 +148,6 @@ public class ShelfDAOImpl implements ShelfDAO {
                 "ACTIVE".equals(status),
                 rs.getInt("rack_id"),
                 rs.getString("rack_name"),
-                rs.getInt("warehouse_id")
-        );
+                rs.getInt("warehouse_id"));
     }
 }

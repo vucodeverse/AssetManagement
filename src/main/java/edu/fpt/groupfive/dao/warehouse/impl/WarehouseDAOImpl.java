@@ -25,13 +25,12 @@ public class WarehouseDAOImpl implements WarehouseDAO {
 
     private final JdbcTemplate jdbcTemplate;
 
-
     @Override
     public Warehouse create(Warehouse newWarehouse) {
 
         String sql = """
-                INSERT INTO warehouse (name, address, status, manager_id, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO warehouse (warehouse_name, address, status, managed_by_user_id)
+                VALUES (?, ?, ?, ?)
                 """;
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -47,12 +46,9 @@ public class WarehouseDAOImpl implements WarehouseDAO {
                     ps.setString(2, newWarehouse.getAddress());
                     ps.setString(3, newWarehouse.getStatus().name());
                     ps.setObject(4, newWarehouse.getManagerId());
-                    ps.setObject(5, newWarehouse.getCreatedAt());
-                    ps.setObject(6, newWarehouse.getUpdatedAt());
                     return ps;
                 },
-                keyHolder
-        );
+                keyHolder);
 
         if (keyHolder.getKey() != null) {
             newWarehouse.setId(keyHolder.getKey().intValue());
@@ -60,16 +56,15 @@ public class WarehouseDAOImpl implements WarehouseDAO {
 
         return newWarehouse;
 
-
     }
 
     @Override
     public Optional<WarehouseRespDto> getDetail(Integer id) {
         String sql = """
-                SELECT w.id, w.name, w.address, w.status, u.first_name, u.last_name
+                SELECT w.warehouse_id, w.warehouse_name, w.address, w.status, u.first_name, u.last_name
                 FROM warehouse w
-                JOIN users u ON w.manager_id = u.user_id
-                WHERE w.id = ?
+                JOIN users u ON w.managed_by_user_id = u.user_id
+                WHERE w.warehouse_id = ?
                 """;
         return Optional.of(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> toDto(rs, rowNum), id));
     }
@@ -77,9 +72,9 @@ public class WarehouseDAOImpl implements WarehouseDAO {
     @Override
     public List<WarehouseRespDto> getAllDetail() {
         String sql = """
-                SELECT w.id, w.name, w.address, w.status, u.first_name, u.last_name
+                SELECT w.warehouse_id, w.warehouse_name, w.address, w.status, u.first_name, u.last_name
                 FROM warehouse w
-                JOIN users u ON w.manager_id = u.user_id
+                JOIN users u ON w.managed_by_user_id = u.user_id
                 """;
         return jdbcTemplate.query(sql, this::toDto);
     }
@@ -87,9 +82,9 @@ public class WarehouseDAOImpl implements WarehouseDAO {
     @Override
     public void activeById(Integer id) {
         String sql = """
-                UPDATE warehouse 
-                SET status = 'ACTIVE' 
-                WHERE id = ?
+                UPDATE warehouse
+                SET status = 'ACTIVE'
+                WHERE warehouse_id = ?
                 """;
         jdbcTemplate.update(sql, id);
     }
@@ -97,7 +92,7 @@ public class WarehouseDAOImpl implements WarehouseDAO {
     @Override
     public boolean existById(Integer id) {
 
-        String sql = "SELECT COUNT(1) FROM warehouse WHERE id = ?";
+        String sql = "SELECT COUNT(1) FROM warehouse WHERE warehouse_id = ?";
 
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
 
@@ -107,20 +102,20 @@ public class WarehouseDAOImpl implements WarehouseDAO {
     @Override
     public Optional<Warehouse> getById(Integer id) {
         String sql = """
-                SELECT id, name, address, status, manager_id
-                FROM warehouse WHERE id = ?
+                SELECT warehouse_id, warehouse_name, address, status, managed_by_user_id
+                FROM warehouse WHERE warehouse_id = ?
                 """;
-        Warehouse wh = jdbcTemplate.queryForObject(sql,this::toModel,id);
+        Warehouse wh = jdbcTemplate.queryForObject(sql, this::toModel, id);
         return Optional.of(wh);
     }
 
     private Warehouse toModel(ResultSet resultSet, int rowNum) throws SQLException {
         Warehouse wh = new Warehouse();
-        wh.setId(resultSet.getInt("id"));
-        wh.setName(resultSet.getString("name"));
+        wh.setId(resultSet.getInt("warehouse_id"));
+        wh.setName(resultSet.getString("warehouse_name"));
         wh.setAddress(resultSet.getString("address"));
         wh.setStatus(WarehouseStatus.valueOf(resultSet.getString("status")));
-        wh.setManagerId(resultSet.getInt("manager_id"));
+        wh.setManagerId(resultSet.getInt("managed_by_user_id"));
         return wh;
     }
 
@@ -128,8 +123,8 @@ public class WarehouseDAOImpl implements WarehouseDAO {
     public Warehouse update(Warehouse warehouse) {
         String sql = """
                 UPDATE warehouse SET
-                name = ?, address = ?, manager_id = ?, updated_at = ?
-                WHERE id = ?
+                warehouse_name = ?, address = ?, managed_by_user_id = ?
+                WHERE warehouse_id = ?
                 """;
         LocalDate now = LocalDate.now();
         warehouse.setUpdatedAt(now);
@@ -138,11 +133,9 @@ public class WarehouseDAOImpl implements WarehouseDAO {
                 warehouse.getName(),
                 warehouse.getAddress(),
                 warehouse.getManagerId(),
-                warehouse.getUpdatedAt(),
-                warehouse.getId()
-        );
+                warehouse.getId());
 
-        if(rowAffected == 0) {
+        if (rowAffected == 0) {
             throw new RuntimeException("Khong the sua Kho");
         }
 
@@ -152,22 +145,21 @@ public class WarehouseDAOImpl implements WarehouseDAO {
 
     private WarehouseRespDto toDto(ResultSet rs, int rowNum) throws SQLException {
         WarehouseRespDto dto = new WarehouseRespDto(
-                rs.getInt("id"),
-                rs.getString("name"),
+                rs.getInt("warehouse_id"),
+                rs.getString("warehouse_name"),
                 rs.getString("address"),
                 WarehouseStatus.valueOf(rs.getString("status")) == WarehouseStatus.ACTIVE,
-                rs.getString("first_name") + " " + rs.getString("last_name")
-        );
+                rs.getString("first_name") + " " + rs.getString("last_name"));
         return dto;
     }
 
     @Override
     public Optional<WarehouseRespDto> getDetailByManagerId(Integer managerId) {
         String sql = """
-                SELECT w.id, w.name, w.address, w.status, u.first_name, u.last_name
+                SELECT w.warehouse_id, w.warehouse_name, w.address, w.status, u.first_name, u.last_name
                 FROM warehouse w
-                LEFT JOIN users u ON w.manager_id = u.user_id
-                WHERE w.manager_id = ?
+                LEFT JOIN users u ON w.managed_by_user_id = u.user_id
+                WHERE w.managed_by_user_id = ?
                 """;
         List<WarehouseRespDto> result = jdbcTemplate.query(sql, this::toDto, managerId);
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));

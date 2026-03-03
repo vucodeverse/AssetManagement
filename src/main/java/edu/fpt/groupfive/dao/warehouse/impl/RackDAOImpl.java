@@ -27,7 +27,7 @@ public class RackDAOImpl implements RackDAO {
     @Override
     public Rack create(Rack rack) {
         String sql = """
-                INSERT INTO rack (warehouse_id, name, description, status, created_at, updated_at)
+                INSERT INTO rack (warehouse_id, rack_name, description, status, created_date, updated_date)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """;
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -56,8 +56,8 @@ public class RackDAOImpl implements RackDAO {
     @Override
     public Rack update(Rack rack) {
         String sql = """
-                UPDATE rack SET name = ?, description = ?, updated_at = ?
-                WHERE id = ?
+                UPDATE rack SET rack_name = ?, description = ?, updated_date = ?
+                WHERE rack_id = ?
                 """;
         LocalDate now = LocalDate.now();
         rack.setUpdatedAt(now);
@@ -74,7 +74,7 @@ public class RackDAOImpl implements RackDAO {
 
     @Override
     public Optional<Rack> getById(Integer id) {
-        String sql = "SELECT id, warehouse_id, name, description, status, created_at, updated_at FROM rack WHERE id = ?";
+        String sql = "SELECT rack_id, warehouse_id, rack_name, description, status, created_date, updated_date FROM rack WHERE rack_id = ?";
         List<Rack> result = jdbcTemplate.query(sql, this::toModel, id);
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
@@ -82,12 +82,12 @@ public class RackDAOImpl implements RackDAO {
     @Override
     public Optional<RackRespDto> getDetailById(Integer id) {
         String sql = """
-                SELECT r.id, r.name, r.description, r.status, r.warehouse_id,
-                       w.name AS warehouse_name,
-                       (SELECT COUNT(1) FROM shelf s WHERE s.rack_id = r.id) AS shelf_count
+                SELECT r.rack_id, r.rack_name, r.description, r.status, r.warehouse_id,
+                       w.warehouse_name,
+                       (SELECT COUNT(1) FROM shelf s WHERE s.rack_id = r.rack_id) AS shelf_count
                 FROM rack r
-                JOIN warehouse w ON r.warehouse_id = w.id
-                WHERE r.id = ?
+                JOIN warehouse w ON r.warehouse_id = w.warehouse_id
+                WHERE r.rack_id = ?
                 """;
         List<RackRespDto> result = jdbcTemplate.query(sql, this::toDto, id);
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
@@ -96,35 +96,35 @@ public class RackDAOImpl implements RackDAO {
     @Override
     public List<RackRespDto> getAllByWarehouseId(Integer warehouseId) {
         String sql = """
-                SELECT r.id, r.name, r.description, r.status, r.warehouse_id,
-                       w.name AS warehouse_name,
-                       (SELECT COUNT(1) FROM shelf s WHERE s.rack_id = r.id) AS shelf_count
+                SELECT r.rack_id, r.rack_name, r.description, r.status, r.warehouse_id,
+                       w.warehouse_name,
+                       (SELECT COUNT(1) FROM shelf s WHERE s.rack_id = r.rack_id) AS shelf_count
                 FROM rack r
-                JOIN warehouse w ON r.warehouse_id = w.id
+                JOIN warehouse w ON r.warehouse_id = w.warehouse_id
                 WHERE r.warehouse_id = ?
-                ORDER BY r.created_at ASC
+                ORDER BY r.created_date ASC
                 """;
         return jdbcTemplate.query(sql, this::toDto, warehouseId);
     }
 
     @Override
     public void deleteById(Integer id) {
-        String sql = "DELETE FROM rack WHERE id = ?";
+        String sql = "DELETE FROM rack WHERE rack_id = ?";
         jdbcTemplate.update(sql, id);
     }
 
     @Override
     public boolean existById(Integer id) {
-        String sql = "SELECT COUNT(1) FROM rack WHERE id = ?";
+        String sql = "SELECT COUNT(1) FROM rack WHERE rack_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
 
     private Rack toModel(ResultSet rs, int rowNum) throws SQLException {
         Rack rack = new Rack();
-        rack.setId(rs.getInt("id"));
+        rack.setId(rs.getInt("rack_id"));
         rack.setWarehouseId(rs.getInt("warehouse_id"));
-        rack.setName(rs.getString("name"));
+        rack.setName(rs.getString("rack_name"));
         rack.setDescription(rs.getString("description"));
         rack.setStatus(rs.getString("status"));
         return rack;
@@ -133,14 +133,13 @@ public class RackDAOImpl implements RackDAO {
     private RackRespDto toDto(ResultSet rs, int rowNum) throws SQLException {
         String status = rs.getString("status");
         return new RackRespDto(
-                rs.getInt("id"),
-                rs.getString("name"),
+                rs.getInt("rack_id"),
+                rs.getString("rack_name"),
                 rs.getString("description"),
                 status,
                 "ACTIVE".equals(status),
                 rs.getInt("warehouse_id"),
                 rs.getString("warehouse_name"),
-                rs.getInt("shelf_count")
-        );
+                rs.getInt("shelf_count"));
     }
 }
