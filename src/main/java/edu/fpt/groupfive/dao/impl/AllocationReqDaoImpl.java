@@ -169,7 +169,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         String query = """
                 UPDATE allocation_request
                 SET status = ?,
-                    am_approved = ?,
+                    am_approved_by = ?,
                     am_approved_at = CURRENT_TIMESTAMP,
                     reason_reject = ?,
                     updated_at = CURRENT_TIMESTAMP
