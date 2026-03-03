@@ -1,0 +1,294 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard Kho Hàng</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #fff;
+        color: #000;
+        padding: 40px;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      /* Header */
+      .page-header {
+        border-bottom: 2px solid #000;
+        padding-bottom: 16px;
+        margin-bottom: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .page-header h1 {
+        font-size: 22px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .badge {
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid #000;
+        text-transform: uppercase;
+      }
+      .badge.active {
+        background-color: #000;
+        color: #fff;
+      }
+      .badge.inactive {
+        background-color: #fff;
+        color: #000;
+      }
+
+      /* Info grid */
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 40px;
+      }
+      .info-card {
+        border: 1px solid #eaeaea;
+        padding: 16px;
+      }
+      .info-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #888;
+        margin-bottom: 6px;
+      }
+      .info-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: #000;
+      }
+
+      /* Racks section */
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .btn {
+        display: inline-block;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        border: 1px solid #000;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .btn-black {
+        background-color: #000;
+        color: #fff;
+      }
+      .btn-black:hover {
+        background-color: #333;
+      }
+      .btn-white {
+        background-color: #fff;
+        color: #000;
+      }
+      .btn-white:hover {
+        background-color: #f0f0f0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        border-top: 2px solid #000;
+      }
+      th,
+      td {
+        padding: 13px 12px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        font-size: 13px;
+      }
+      th {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #666;
+        font-size: 11px;
+      }
+      tr:hover td {
+        background-color: #fafafa;
+      }
+      .link {
+        color: #000;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .link:hover {
+        color: #555;
+      }
+      .capacity-bar-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .capacity-bar {
+        height: 6px;
+        background-color: #eee;
+        flex: 1;
+        max-width: 80px;
+      }
+      .capacity-fill {
+        height: 100%;
+        background-color: #000;
+      }
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-size: 14px;
+      }
+      .alert {
+        padding: 16px;
+        border: 1px solid #000;
+        background-color: #f9f9f9;
+        font-size: 14px;
+        margin-bottom: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <h1>Dashboard Kho Hàng</h1>
+        <a href="/wh/warehouses" class="btn btn-white">← Tất Cả Kho</a>
+      </div>
+
+      <!-- No warehouse assigned -->
+      <div th:if="${warehouse == null}" class="alert" th:text="${message}">
+        Bạn chưa được giao quản lý kho nào.
+      </div>
+
+      <!-- Warehouse info -->
+      <div th:if="${warehouse != null}">
+        <div
+          class="page-header"
+          style="border-bottom: 1px solid #eee; margin-bottom: 24px"
+        >
+          <h1 th:text="${warehouse.name}">Tên Kho</h1>
+          <span
+            th:classappend="${warehouse.active ? 'badge active' : 'badge inactive'}"
+            th:text="${warehouse.active ? 'Đang Hoạt Động' : 'Tạm Dừng'}"
+          ></span>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-label">Địa Chỉ</div>
+            <div class="info-value" th:text="${warehouse.address}">—</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Quản Lý</div>
+            <div class="info-value" th:text="${warehouse.managerName}">—</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Số Kệ</div>
+            <div class="info-value" th:text="${racks.size()}">0</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Chi Tiết Kho</div>
+            <div class="info-value">
+              <a
+                class="link"
+                th:href="@{/wh/warehouses/{id}/detail(id=${warehouse.id})}"
+                >Xem đầy đủ →</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Rack list -->
+        <div class="section-header">
+          <span class="section-title">Danh Sách Kệ</span>
+          <a
+            th:href="@{/wh/warehouses/{id}/racks/add(id=${warehouse.id})}"
+            class="btn btn-black"
+            >+ Thêm Kệ</a
+          >
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Tên Kệ</th>
+              <th>Mô Tả</th>
+              <th>Số Tầng</th>
+              <th>Trạng Thái</th>
+              <th>Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="rack : ${racks}">
+              <td>
+                <a
+                  class="link"
+                  th:href="@{/wh/warehouses/{whId}/racks/{rackId}/shelves(whId=${warehouse.id},rackId=${rack.id})}"
+                  th:text="${rack.name}"
+                  >Kệ A</a
+                >
+              </td>
+              <td
+                th:text="${rack.description != null ? rack.description : '—'}"
+              >
+                —
+              </td>
+              <td th:text="${rack.shelfCount}">0</td>
+              <td>
+                <span
+                  th:classappend="${rack.active ? 'badge active' : 'badge inactive'}"
+                  th:text="${rack.active ? 'HĐ' : 'Dừng'}"
+                ></span>
+              </td>
+              <td>
+                <a
+                  class="link"
+                  th:href="@{/wh/warehouses/{whId}/racks/{rackId}/edit(whId=${warehouse.id},rackId=${rack.id})}"
+                >
+                  Sửa
+                </a>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(racks)}">
+              <td colspan="5" class="empty-state">
+                Kho chưa có kệ nào. Nhấn "+ Thêm Kệ" để bắt đầu.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
