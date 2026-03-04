@@ -21,16 +21,18 @@ public class SupplierController {
 
     //view list and search
     @GetMapping
-    public String listSuppliers(
-            @ModelAttribute("searchRequest") SupplierSearchCriteria searchCriteria,
+    public String getSuppliers(
+            @ModelAttribute("searchCriteria") SupplierSearchCriteria searchCriteria,
             @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
             @RequestParam(value = "size", defaultValue = "5") int size,
-            @RequestParam(value = "supplierCode", defaultValue = "supplierCode") String sortField,
+            @RequestParam(value = "sortField", defaultValue = "supplierCode") String sortField,
             @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir,
             Model model) {
-        PageResponse<SupplierResponse> page = supplierService.searchSuppliers(searchCriteria, pageNo, size, sortField, sortDir);
+
+        PageResponse<SupplierResponse> page =
+                supplierService.searchSuppliers(searchCriteria, pageNo, size, sortField, sortDir);
+
         model.addAttribute("page", page);
-        model.addAttribute("pageNo", pageNo);
         model.addAttribute("size", size);
         model.addAttribute("sortField", sortField);
         model.addAttribute("sortDir", sortDir);
@@ -38,6 +40,7 @@ public class SupplierController {
         activeNavbar(model);
         return "supplier/supplier-list";
     }
+
     //show create form
     @GetMapping("/create")
     public String showCreateForm(Model model) {
@@ -97,7 +100,7 @@ public class SupplierController {
     }
 
     //view details
-    @GetMapping("{supplierCode}")
+    @GetMapping("/detail/{supplierCode}")
     public String viewDetails(
             @PathVariable String supplierCode,
             Model model
@@ -105,7 +108,7 @@ public class SupplierController {
         SupplierResponse supplierResponse = supplierService.getSupplierDetail(supplierCode);
         model.addAttribute("supplierResponse", supplierResponse);
         activeNavbar(model);
-        return "supplier/supplier-details";
+        return "supplier/supplier-detail";
     }
 
     //deactivate

@@ -133,24 +133,52 @@ public class SupplierDAOImpl implements SupplierDAO {
 
     //paginated search
     @Override
-    public List<Supplier> search(SupplierSearchCriteria criteria, int offset, int limit) {
+    public List<Supplier> search(
+            SupplierSearchCriteria criteria,
+            int offset,
+            int size,
+            String sortField,
+            String sortDir) {
+
         StringBuilder query = new StringBuilder(
                 "SELECT supplier_id, supplier_name, phone_number, email, address, " +
                         "supplier_code, tax_code, status, created_date, updated_date " +
                         "FROM supplier WHERE 1=1"
         );
+
         List<Object> params = new ArrayList<>();
+
         appendFilters(query, params, criteria);
-        query.append(" ORDER BY created_date DESC " +
-                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        String orderByColumn;
+        if (sortField == null || sortField.isBlank()) {
+            sortField = "supplierCode";
+        }
+        switch (sortField) {
+            case "supplierName" -> orderByColumn = "supplier_name";
+            case "taxCode" -> orderByColumn = "tax_code";
+            case "createdDate" -> orderByColumn = "created_date";
+            case "status" -> orderByColumn = "status";
+            default -> orderByColumn = "supplier_code";
+        }
+
+        String direction = "desc".equalsIgnoreCase(sortDir) ? "DESC" : "ASC";
+
+        query.append(" ORDER BY ")
+                .append(orderByColumn)
+                .append(" ")
+                .append(direction)
+                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
         params.add(offset);
-        params.add(limit);
+        params.add(size);
 
         try (
-            Connection connection = databaseConfig.getConnection();
-            PreparedStatement ps = connection.prepareStatement(query.toString());
+                Connection connection = databaseConfig.getConnection();
+                PreparedStatement ps = connection.prepareStatement(query.toString())
         ) {
             setParameters(ps, params);
+
             try (ResultSet rs = ps.executeQuery()) {
                 List<Supplier> result = new ArrayList<>();
                 while (rs.next()) {
@@ -158,6 +186,7 @@ public class SupplierDAOImpl implements SupplierDAO {
                 }
                 return result;
             }
+
         } catch (SQLException e) {
             throw new RuntimeException("Failed to search suppliers", e);
         }

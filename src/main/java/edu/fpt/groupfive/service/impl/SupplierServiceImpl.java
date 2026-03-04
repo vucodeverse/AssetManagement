@@ -32,27 +32,28 @@ public class SupplierServiceImpl implements ISupplierService {
     }
 
     @Override
-    public PageResponse<SupplierResponse> searchSuppliers(SupplierSearchCriteria criteria, int page, int size) {
+    public PageResponse<SupplierResponse> searchSuppliers(
+            SupplierSearchCriteria criteria,
+            int page,
+            int size,
+            String sortField,
+            String sortDir) {
+
         int offset = page * size;
-        //int offset = (page - 1) * size;
-        var suppliers = supplierDAO.search(criteria, offset, size);
+
+        var suppliers = supplierDAO.search(criteria, offset, size, sortField, sortDir);
         int total = supplierDAO.countSearch(criteria);
 
         var responses = suppliers.stream()
                 .map(this::mapToResponse)
                 .toList();
-        Sort sort = sortDir.equalsIgnoreCase("asc")
-                ? Sort.by(sortField).ascending()
-                : Sort.by(sortField).descending();
 
-        Pageable pageable = PageRequest.of(pageNo, size, sort);
         return new PageResponse<>(responses, page, size, total);
     }
 
-
     @Override
     public void createSupplier(SupplierCreateRequest request) {
-        supplierNormalizer.normalize(request);
+        supplierNormalizer.normalizeForCreate(request);
         supplierValidator.validateForCreate(request);
 
         Supplier supplier = mapToEntity(request);
@@ -71,7 +72,7 @@ public class SupplierServiceImpl implements ISupplierService {
     public boolean updateSupplier(String supplierCode, SupplierUpdateRequest request) {
         String normalizedCode = supplierNormalizer.trimSafe(supplierCode).toUpperCase();
 
-        supplierNormalizer.normalize(request);
+        supplierNormalizer.normalizeCommonFields(request);
         supplierValidator.validateForUpdate(request);
 
         Supplier existing = supplierDAO.findBySupplierCode(normalizedCode)

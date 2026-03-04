@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SupplierNormalizer {
 
-    public <T extends ISupplierRequest> T normalize(T request) {
+    public <T extends ISupplierRequest> T normalizeCommonFields(T request) {
         if (request == null) return null;
         request.setSupplierName(trimSafe(request.getSupplierName()));
         request.setTaxCode(normalizeTaxCode(request.getTaxCode()));
@@ -17,8 +17,8 @@ public class SupplierNormalizer {
         return request;
     }
 
-    public SupplierCreateRequest normalize(SupplierCreateRequest request) {
-        normalize(request);
+    public SupplierCreateRequest normalizeForCreate(SupplierCreateRequest request) {
+        normalizeCommonFields(request);
         request.setSupplierCode(normalizeCode(request.getSupplierCode()));
         return request;
     }

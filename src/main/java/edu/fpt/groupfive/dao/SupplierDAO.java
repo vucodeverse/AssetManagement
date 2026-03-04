@@ -17,7 +17,12 @@ public interface SupplierDAO {
     Optional<Supplier> findBySupplierCode(String supplierCode);
 
     //paginated search
-    List<Supplier> search(SupplierSearchCriteria criteria, int offset, int limit);
+    List<Supplier> search(
+            SupplierSearchCriteria criteria,
+            int offset,
+            int size,
+            String sortField,
+            String sortDir);
 
     int countSearch(SupplierSearchCriteria criteria);
 

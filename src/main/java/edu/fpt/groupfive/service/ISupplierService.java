@@ -11,13 +11,14 @@ public interface ISupplierService {
     PageResponse<SupplierResponse> searchSuppliers(
             SupplierSearchCriteria criteria,
             int page,
-            int size
-    );
+            int size,
+            String sortField,
+            String sortDir);
 
     void createSupplier(SupplierCreateRequest request);
 
     boolean updateSupplier(String supplierCode,
-                        SupplierUpdateRequest request);
+                           SupplierUpdateRequest request);
 
     SupplierUpdateRequest loadForUpdate(String supplierCode);
 
