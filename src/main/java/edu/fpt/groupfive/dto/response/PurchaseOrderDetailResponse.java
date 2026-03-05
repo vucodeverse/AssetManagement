@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PurchaseOrderDetailResponse {
-    private Integer id;
+    private Integer purchaseOrderDetailId;
     private String assetTypeName;
     private Integer quantity;
     private BigDecimal price;

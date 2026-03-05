@@ -23,6 +23,8 @@ public class AssetCreateRequest {
 
     private String serialNumber;
 
+    private Integer purchaseOrderDetailId;
+
     @NotNull(message = "Phải chọn loại tài sản")
     private Integer assetTypeId;
 

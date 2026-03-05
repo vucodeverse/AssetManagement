@@ -7,6 +7,7 @@ import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetResponse;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.AssetTypeService;
+import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class AssetController {
 
     private final AssetService assetService;
     private final AssetTypeService assetTypeService;
+private  final OrderService orderService;
 
     @GetMapping
     public String list(Model model) {
@@ -50,8 +52,10 @@ public class AssetController {
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
+
         model.addAttribute("asset", new AssetCreateRequest());
         model.addAttribute("assetTypes", assetTypeService.getAll());
+        model.addAttribute("orders", orderService.getAllOrderDetails());
         model.addAttribute("statuses", AssetStatus.values());
         model.addAttribute("isEdit", false);
         model.addAttribute("activeMenu", "asset");
@@ -69,6 +73,7 @@ public class AssetController {
 
         if (result.hasErrors()) {
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("orders", orderService.getAllOrderDetails());
             model.addAttribute("statuses", AssetStatus.values());
             model.addAttribute("isEdit", false);
             model.addAttribute("activeMenu", "asset");
@@ -80,6 +85,7 @@ public class AssetController {
         } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("orders", orderService.getAllOrderDetails());
             model.addAttribute("statuses", AssetStatus.values());
 
             model.addAttribute("isEdit", false);
@@ -100,6 +106,7 @@ public class AssetController {
             AssetUpdateRequest request = new AssetUpdateRequest();
             request.setAssetId(asset.getAssetId());
             request.setAssetName(asset.getAssetName());
+            request.setPurchaseOrderDetailId(asset.getPurchaseOrderDetailId());
             request.setSerialNumber(asset.getSerialNumber());
             request.setWarrantyStartDate(asset.getWarrantyStartDate());
             request.setCurrentStatus(AssetStatus.valueOf(asset.getCurrentStatus()));
@@ -110,6 +117,7 @@ public class AssetController {
 
             model.addAttribute("asset", request);
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("orders", orderService.getAllOrderDetails());
             model.addAttribute("statuses", AssetStatus.values());
             model.addAttribute("isEdit", true);
             model.addAttribute("activeMenu", "asset");
@@ -132,6 +140,7 @@ public class AssetController {
 
         if (result.hasErrors()) {
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("orders", orderService.getAllOrderDetails());
             model.addAttribute("statuses", AssetStatus.values());
             model.addAttribute("isEdit", true);
             model.addAttribute("activeMenu", "asset");
@@ -144,6 +153,7 @@ public class AssetController {
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("assetTypes", assetTypeService.getAll());
+            model.addAttribute("orders", orderService.getAllOrderDetails());
             model.addAttribute("statuses", AssetStatus.values());
             model.addAttribute("isEdit", true);
             model.addAttribute("activeMenu", "asset");

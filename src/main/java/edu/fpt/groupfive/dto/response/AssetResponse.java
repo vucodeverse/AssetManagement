@@ -15,7 +15,7 @@ public class AssetResponse {
     private Integer assetId;
     private String assetName;
     private String serialNumber;
-
+    private  Integer purchaseOrderDetailId;
     private String currentStatus;
 
     private LocalDate warrantyStartDate;

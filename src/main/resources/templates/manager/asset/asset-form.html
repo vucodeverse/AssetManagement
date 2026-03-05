@@ -70,7 +70,21 @@
                                         th:text="${type.typeName}"></option>
                             </select>
                         </div>
+                        <!-- purchase order -->
+                        <div class="form-field">
+                            <label class="form-label">ĐƠN MUA</label>
 
+                            <select th:field="*{purchaseOrderDetailId}" class="form-input">
+                                <option value="">-- Chọn đơn mua --</option>
+
+                                <option th:each="order : ${orders}"
+                                        th:value="${order.purchaseOrderDetailId}"
+                                        th:text="'PO-' + ${order.purchaseOrderDetailId} + ' | SL: ' + ${order.quantity}">
+                                </option>
+
+                            </select>
+
+                        </div>
                         <!-- ngày mua -->
                         <div class="form-field">
                             <label class="form-label">NGÀY MUA</label>

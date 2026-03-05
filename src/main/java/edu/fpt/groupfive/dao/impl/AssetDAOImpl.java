@@ -27,29 +27,31 @@ public class AssetDAOImpl implements AssetDAO {
                     INSERT INTO asset
                     (asset_name,
                      serial_number,
+                     purchase_order_detail_id,
                      current_status,
                      warranty_start_date,
                      warranty_end_date,
                      original_cost,
                      asset_type_id,
                      acquisition_date)
-                    VALUES (?,?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?,?,?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, asset.getAssetName());
             ps.setString(2, asset.getSerialNumber());
-            ps.setString(3, asset.getCurrentStatus().name());
+            ps.setInt(3, asset.getPurchaseOrderDetailId());
+            ps.setString(4, asset.getCurrentStatus().name());
 
-            setDate(ps, 4, asset.getWarrantyStartDate());
-            setDate(ps, 5, asset.getWarrantyEndDate());
+            setDate(ps, 5, asset.getWarrantyStartDate());
+            setDate(ps, 6, asset.getWarrantyEndDate());
 
-            setBigDecimal(ps, 6, asset.getOriginalCost());
+            setBigDecimal(ps, 7, asset.getOriginalCost());
 
-            ps.setInt(7, asset.getAssetTypeId());
+            ps.setInt(8, asset.getAssetTypeId());
 
-            setDate(ps, 8, asset.getAcquisitionDate());
+            setDate(ps, 9, asset.getAcquisitionDate());
 
             ps.executeUpdate();
 
@@ -65,6 +67,7 @@ public class AssetDAOImpl implements AssetDAO {
                     UPDATE asset
                     SET asset_name = ?,
                         serial_number = ?,
+                        purchase_order_detail_id=?,
                         warranty_start_date = ?,
                         warranty_end_date = ?,
                         original_cost = ?,
@@ -79,15 +82,17 @@ public class AssetDAOImpl implements AssetDAO {
 
             ps.setString(1, asset.getAssetName());
             ps.setString(2, asset.getSerialNumber());
-            setDate(ps, 3, asset.getWarrantyStartDate());
-            setDate(ps, 4, asset.getWarrantyEndDate());
-            setBigDecimal(ps, 5, asset.getOriginalCost());
+            ps.setInt(3, asset.getPurchaseOrderDetailId());
 
-            ps.setInt(6, asset.getAssetTypeId());
-            ps.setString(7,asset.getCurrentStatus().name());
-            setDate(ps, 8, asset.getAcquisitionDate());
+            setDate(ps, 4, asset.getWarrantyStartDate());
+            setDate(ps, 5, asset.getWarrantyEndDate());
+            setBigDecimal(ps, 6, asset.getOriginalCost());
 
-            ps.setInt(9, asset.getAssetId());
+            ps.setInt(7, asset.getAssetTypeId());
+            ps.setString(8,asset.getCurrentStatus().name());
+            setDate(ps, 9, asset.getAcquisitionDate());
+
+            ps.setInt(10, asset.getAssetId());
 
             ps.executeUpdate();
 
@@ -113,7 +118,7 @@ public class AssetDAOImpl implements AssetDAO {
         }
     }
 
-    //  FIND BY ID
+    //  find asset by id
     @Override
     public Optional<Asset> findById(Integer id) {
 
@@ -287,6 +292,7 @@ public class AssetDAOImpl implements AssetDAO {
         asset.setAssetId(rs.getInt("asset_id"));
         asset.setAssetName(rs.getString("asset_name"));
         asset.setSerialNumber(rs.getString("serial_number"));
+        asset.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
         asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
 
         asset.setOriginalCost(rs.getBigDecimal("original_cost"));

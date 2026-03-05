@@ -702,14 +702,13 @@ CREATE TABLE goods_receipt_detail (
 
 CREATE TABLE asset (
                        asset_id            INT IDENTITY(1,1) NOT NULL,
-                       asset_name NVARCHAR(100) NOT NULL,
+                       asset_name          NVARCHAR(100) NOT NULL,
                        serial_number       NVARCHAR(100) NULL,
                        asset_type_id       INT NOT NULL,
+                       purchase_order_detail_id INT NULL,
                        goods_receipt_id    INT NULL,
                        current_status      NVARCHAR(40) NOT NULL,
                        original_cost       NUMERIC(19, 2) NULL,
-                       shelf_id            INT NULL,
-                       warehouse_id        INT NULL,
                        department_id       INT NULL,
                        acquisition_date    DATE NULL,
                        in_service_date     DATE NULL,
@@ -723,11 +722,8 @@ CREATE TABLE asset (
                        CONSTRAINT FK_AST_GR
                            FOREIGN KEY (goods_receipt_id) REFERENCES goods_receipt(goods_receipt_id),
 
-                       CONSTRAINT FK_AST_Shelf
-                           FOREIGN KEY (shelf_id) REFERENCES shelf(shelf_id),
-
-                       CONSTRAINT FK_AST_Warehouse
-                           FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id),
+                       CONSTRAINT FK_AST_POD
+                           FOREIGN KEY (purchase_order_detail_id) REFERENCES purchase_order_details(purchase_order_detail_id),
 
                        CONSTRAINT FK_AST_Department
                            FOREIGN KEY (department_id) REFERENCES departments(department_id)

@@ -232,6 +232,13 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    @Override
+    public List<PurchaseOrderDetailResponse> getAllOrderDetails() {
+        List<OrderDetail> list=orderDetailDAO.findAll();
+
+        return orderDetailMapper.toListOrderDetailResponse(list);
+    }
+
     private void parseAmountRange(PurchaseOrderSearchCriteria criteria) {
 
         if (criteria.getAmountRange() == null || criteria.getAmountRange().isBlank())

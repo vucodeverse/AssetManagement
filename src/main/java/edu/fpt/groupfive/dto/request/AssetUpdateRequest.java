@@ -17,6 +17,9 @@ public class AssetUpdateRequest {
     @NotNull(message = "Không được để trống tên tài sản")
     private String assetName;
     private String serialNumber;
+
+    private Integer purchaseOrderDetailId;
+
     @NotNull(message = "Không được để trống trạng thái tài sản")
     private AssetStatus currentStatus;
     @NotNull(message = "Không được để trống nguyên giá")

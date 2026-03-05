@@ -24,10 +24,11 @@ public class Asset {
     private LocalDate warrantyEndDate;
     private LocalDate acquisitionDate;
     private Integer assetTypeId;
-    private Integer shelfId;
+    private  Integer purchaseOrderDetailId;
+
     private Integer departmentId;
     private Integer goodsReceiptId;
-    private Integer warehouseId;
+
     private LocalDate inServiceDate;
 
     private String assetTypeName;

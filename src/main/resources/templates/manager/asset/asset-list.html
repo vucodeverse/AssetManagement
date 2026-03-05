@@ -34,6 +34,7 @@
                 <th>Loại</th>
                 <th>Trạng thái</th>
                 <th>Giá</th>
+                <th>Ma don mua</th>
                 <th>Ngày mua</th>
                 <th>Hành động</th>
             </tr>
@@ -47,6 +48,7 @@
                 <td th:text="${asset.assetTypeName}"></td>
                 <td th:text="${asset.currentStatus}"></td>
                 <td th:text="${#numbers.formatDecimal(asset.originalCost, 0, 'COMMA', 0, 'POINT')}"></td>
+                <td th:text="'PO-'+${asset.purchaseOrderDetailId}"></td>
                 <td th:text="${asset.acquisitionDate}"></td>
 
                 <td class="action-buttons">
