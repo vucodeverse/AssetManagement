@@ -102,35 +102,53 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="supplier : ${page.data}">
+
+                <!-- Có dữ liệu -->
+                <tr th:each="supplier : ${page.data}"
+                    th:if="${page.data != null and !#lists.isEmpty(page.data)}">
+
                     <td th:text="${supplier.supplierCode}" class="bold"></td>
                     <td th:text="${supplier.supplierName}"></td>
                     <td th:text="${supplier.taxCode}"></td>
+
                     <td>
-                        <span th:if="${supplier.status == 'ACTIVE'}"
-                              class="status-active">Hoạt động</span>
+        <span th:if="${supplier.status == 'ACTIVE'}"
+              class="status-active">Hoạt động</span>
+
                         <span th:if="${supplier.status == 'INACTIVE'}"
                               class="status-inactive">Ngừng hoạt động</span>
                     </td>
+
                     <td class="actions">
-                        <a th:href="@{/suppliers/detail/{code}(code=${supplier.supplierCode})}">
+                        <a th:href="@{/suppliers/{supplierCode}(supplierCode=${supplier.supplierCode})}">
                             <i data-lucide="eye" style="width:18px;"></i>
                         </a>
-                        <a th:href="@{/suppliers/{code}/edit(code=${supplier.supplierCode})}">
+
+                        <a th:href="@{/suppliers/{supplierCode}(supplierCode=${supplier.supplierCode},mode='edit')}">
                             <i data-lucide="pencil" style="width:18px;"></i>
                         </a>
                     </td>
+
                 </tr>
+
+                <!-- EMPTY STATE -->
+                <tr th:if="${page.data == null or #lists.isEmpty(page.data)}">
+                    <td colspan="5" class="empty-table">
+                        Không tìm thấy nhà cung cấp nào
+                    </td>
+                </tr>
+
                 </tbody>
             </table>
         </div>
 
         <!-- FOOTER -->
-        <div class="table-footer" th:if="${page.totalPages > 0}">
+        <div class="table-footer">
             <div class="table-summary">
                 Hiển thị
-                <span th:text="${page.currentPage * size + 1}"></span> -
-                <span th:text="${page.currentPage * size + page.data.size()}"></span>
+                <span th:text="${page.totalRecords == 0 ? 0 : page.currentPage * size + 1}"></span>
+                -
+                <span th:text="${page.totalRecords == 0 ? 0 : page.currentPage * size + page.data.size()}"></span>
                 của <span th:text="${page.totalRecords}"></span>
                 nhà cung cấp
             </div>

@@ -13,6 +13,7 @@ import edu.fpt.groupfive.util.validator.SupplierValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.Objects;
 
 @Service
@@ -53,6 +54,7 @@ public class SupplierServiceImpl implements ISupplierService {
 
     @Override
     public void createSupplier(SupplierCreateRequest request) {
+
         supplierNormalizer.normalizeForCreate(request);
         supplierValidator.validateForCreate(request);
 
@@ -60,11 +62,16 @@ public class SupplierServiceImpl implements ISupplierService {
 
         try {
             supplierDAO.createSupplier(supplier);
+
         } catch (RuntimeException ex) {
+
             if (isDuplicateKey(ex)) {
-                throw new IllegalArgumentException("Supplier code or tax code already exists.");
+                throw new IllegalArgumentException(
+                        "Mã nhà cung cấp hoặc mã số thuế đã tồn tại.");
             }
-            throw ex;
+
+            throw new IllegalStateException(
+                    "Đã xảy ra lỗi không mong muốn khi tạo nhà cung cấp.", ex);
         }
     }
 
@@ -77,10 +84,10 @@ public class SupplierServiceImpl implements ISupplierService {
 
         Supplier existing = supplierDAO.findBySupplierCode(normalizedCode)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Supplier not found: " + normalizedCode));
+                        new IllegalArgumentException("Không tìm thấy nhà cung cấp: " + normalizedCode));
 
         if ("INACTIVE".equals(existing.getStatus())) {
-            throw new IllegalArgumentException("Supplier is inactive: " + normalizedCode);
+            throw new IllegalArgumentException("Nhà cung cấp đã bị vô hiệu hóa. Không thể cập nhật.");
         }
 
         if (isUnchanged(existing, request)) {
@@ -96,12 +103,12 @@ public class SupplierServiceImpl implements ISupplierService {
         try {
             int rows = supplierDAO.updateBySupplierCode(existing);
             if (rows == 0) {
-                throw new IllegalStateException("Update failed due to concurrent modification.");
+                throw new IllegalStateException("Cập nhật thất bại do dữ liệu đã bị thay đổi bởi người dùng khác.");
             }
             return true;
         } catch (RuntimeException ex) {
             if (isDuplicateKey(ex)) {
-                throw new IllegalArgumentException("Tax code already exists.");
+                throw new IllegalArgumentException("Mã số thuế đã tồn tại.");
             }
             throw ex;
         }
@@ -113,7 +120,7 @@ public class SupplierServiceImpl implements ISupplierService {
 
         Supplier supplier = supplierDAO.findBySupplierCode(normalized)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Supplier not found: " + normalized));
+                        new IllegalArgumentException("Không tìm thấy nhà cung cấp: " + normalized));
 
         SupplierUpdateRequest request = new SupplierUpdateRequest();
         request.setSupplierName(supplier.getSupplierName());
@@ -130,8 +137,8 @@ public class SupplierServiceImpl implements ISupplierService {
         String normalizedCode = supplierNormalizer.trimSafe(supplierCode).toUpperCase();
         int rows = supplierDAO.deactivateBySupplierCode(normalizedCode);
         if (rows == 0) {
-            throw new IllegalStateException("Cannot deactivate supplier with code: " + normalizedCode +
-                    ". Either not found, already inactive, or has purchase orders.");
+            throw new IllegalStateException("Không thể vô hiệu hóa nhà cung cấp với mã: " + normalizedCode +
+                    ". Có thể nhà cung cấp không tồn tại, đã bị vô hiệu hóa trước đó, hoặc đang được sử dụng trong đơn mua hàng.");
         }
     }
 
@@ -141,7 +148,7 @@ public class SupplierServiceImpl implements ISupplierService {
 
         Supplier supplier = supplierDAO.findBySupplierCode(normalized)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Supplier not found: " + normalized));
+                        new IllegalArgumentException("Không tìm thấy nhà cung cấp: " + normalized));
 
         return mapToResponse(supplier);
     }
@@ -191,6 +198,14 @@ public class SupplierServiceImpl implements ISupplierService {
     }
 
     public boolean isDuplicateKey(RuntimeException ex) {
-        return ex.getCause() instanceof java.sql.SQLIntegrityConstraintViolationException;
+
+        Throwable cause = ex.getCause();
+
+        if (cause instanceof SQLException sqlEx) {
+            int code = sqlEx.getErrorCode();
+            return code == 2627 || code == 2601;
+        }
+
+        return false;
     }
 }

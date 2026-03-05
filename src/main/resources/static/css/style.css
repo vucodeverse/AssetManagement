@@ -237,7 +237,6 @@ tbody tr:hover {
     align-items: center;
     margin-top: 24px;
     padding-top: 16px;
-    border-top: 1px solid #f1f3f5;
 }
 
 .table-summary {
@@ -325,4 +324,11 @@ thead th a {
 .sort-icon.active {
     opacity: 1;
     color: #111827;
+}
+
+.empty-table{
+    text-align:center;
+    padding:40px;
+    color:#6b7280;
+    font-style:italic;
 }

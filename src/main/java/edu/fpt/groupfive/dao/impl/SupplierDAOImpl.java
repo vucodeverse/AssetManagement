@@ -44,10 +44,10 @@ public class SupplierDAOImpl implements SupplierDAO {
             ps.setString(6, supplier.getTaxCode());
             int rows = ps.executeUpdate();
             if (rows != 1) {
-                throw new RuntimeException("Insert failed for supplier: " + supplier.getSupplierCode());
+                throw new RuntimeException("Thêm nhà cung cấp thất bại: " + supplier.getSupplierCode());
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create supplier: " + supplier.getSupplierCode(), e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Không thể tạo nhà cung cấp với mã: " + supplier.getSupplierCode(), e);
         }
     }
 
@@ -75,7 +75,7 @@ public class SupplierDAOImpl implements SupplierDAO {
             ps.setString(6, supplier.getSupplierCode());
             return ps.executeUpdate();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to update supplier: " + supplier.getSupplierCode(), e);
+            throw new RuntimeException("Không thể cập nhật nhà cung cấp với mã: " + supplier.getSupplierCode(), e);
         }
     }
 
@@ -103,7 +103,7 @@ public class SupplierDAOImpl implements SupplierDAO {
             return ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(
-                    "Failed to deactivate supplier safely: " + supplierCode, e);
+                    "Không thể vô hiệu hóa nhà cung cấp với mã: " + supplierCode, e);
         }
     }
 
@@ -127,7 +127,7 @@ public class SupplierDAOImpl implements SupplierDAO {
                 return Optional.empty();
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to find supplier by code: " + supplierCode, e);
+            throw new RuntimeException("Không thể tìm nhà cung cấp với mã: " + supplierCode, e);
         }
     }
 
@@ -188,7 +188,7 @@ public class SupplierDAOImpl implements SupplierDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to search suppliers", e);
+            throw new RuntimeException("Lỗi khi tìm kiếm danh sách nhà cung cấp.", e);
         }
     }
 
@@ -211,7 +211,7 @@ public class SupplierDAOImpl implements SupplierDAO {
                 return 0;
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to count suppliers search result", e);
+            throw new RuntimeException("Lỗi khi đếm số lượng nhà cung cấp theo điều kiện tìm kiếm", e);
         }
     }
     private void appendFilters(StringBuilder query,

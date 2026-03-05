@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supplier Form</title>
+    <title>Tạo nhà cung cấp</title>
 
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/css/form.css}">
@@ -16,14 +16,12 @@
 
 <header class="topbar">
     <div class="topbar-left">
-        <i data-lucide="menu"></i>
+        <i data-lucide="menu" class="menu-icon"></i>
         <span class="title">QUẢN LÝ NHÀ CUNG CẤP</span>
     </div>
-
     <div class="topbar-right">
-        <i data-lucide="bell" style="width:20px;color:#6b7280;cursor:pointer;"></i>
         <div class="avatar">
-            <i data-lucide="user"></i>
+            <i data-lucide="user" style="width:18px;height:18px;"></i>
         </div>
     </div>
 </header>
@@ -32,15 +30,15 @@
 
     <!-- Breadcrumb -->
     <nav class="breadcrumb">
-        <a th:href="@{/}">Trang chủ</a> /
-        <a th:href="@{/suppliers}">Quản lý nhà cung cấp</a> /
-        <span th:text="${supplierUpdateRequest != null} ? 'Chỉnh sửa nhà cung cấp' : 'Tạo nhà cung cấp'"></span>
+        <a th:href="@{/suppliers}">Trang chủ</a>
+        <span>/</span>
+        <span>Tạo nhà cung cấp</span>
     </nav>
 
     <!-- Page Header -->
     <div class="page-header">
-        <h2 th:text="${supplierUpdateRequest != null} ? 'Chỉnh sửa nhà cung cấp' : 'Tạo mới nhà cung cấp'"></h2>
-        <p>Vui lòng điền đầy đủ các thông tin bắt buộc để hoàn tất việc đăng ký nhà cung cấp vào hệ thống.</p>
+        <h2>Tạo mới nhà cung cấp</h2>
+        <p>Vui lòng điền đầy đủ các thông tin bắt buộc để đăng ký nhà cung cấp vào hệ thống.</p>
     </div>
 
     <!-- Error Alert -->
@@ -55,22 +53,15 @@
         <h3 class="section-title">Thông tin cơ bản</h3>
 
         <form method="post"
-              th:action="${supplierUpdateRequest != null} ? @{/suppliers/{code}/edit(code=${supplierCode})} : @{/suppliers/create}"
-              th:object="${supplierUpdateRequest != null ? supplierUpdateRequest : supplierCreateRequest}">
+              th:action="@{/suppliers/create}"
+              th:object="${supplierCreateRequest}">
 
             <div class="form-grid">
 
                 <!-- Supplier Code -->
                 <div class="form-group">
                     <label>Mã nhà cung cấp <span class="required">*</span></label>
-
-                    <div th:if="${supplierUpdateRequest != null}"
-                         class="readonly-box"
-                         th:text="${supplierCode}">
-                    </div>
-
-                    <input th:if="${supplierUpdateRequest == null}"
-                           type="text"
+                    <input type="text"
                            th:field="*{supplierCode}"
                            placeholder="Nhập mã nhà cung cấp..."
                            required>
@@ -125,11 +116,13 @@
 
             <!-- Actions -->
             <div class="form-actions">
-                <a th:href="@{/suppliers}" class="btn btn-outline">Hủy bỏ</a>
+                <a th:href="@{/suppliers}" class="btn btn-outline">
+                    Hủy bỏ
+                </a>
 
                 <button type="submit" class="btn btn-primary">
                     <i data-lucide="save" style="width:16px;margin-right:8px;"></i>
-                    <span th:text="${supplierUpdateRequest != null} ? 'Cập nhật thông tin' : 'Lưu thông tin'"></span>
+                    Lưu thông tin
                 </button>
             </div>
 
