@@ -5,6 +5,7 @@ import edu.fpt.groupfive.model.warehouse.InventoryTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -12,10 +13,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class InventoryTransactionDAOImpl implements InventoryTransactionDAO {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     private RowMapper<InventoryTransaction> rowMapper = new RowMapper<InventoryTransaction>() {
         @Override
