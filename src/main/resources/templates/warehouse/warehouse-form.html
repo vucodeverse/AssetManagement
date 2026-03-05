@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Form Quản Lý Kho</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        body {
+            background-color: #f4f7f6;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 240px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #212529;
+            color: white;
+            padding-top: 20px;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #343a40;
+            color: white;
+        }
+
+        .sidebar a.active {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .header-title {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .detail-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h4 class="text-center mb-4">Warehouse Panel</h4>
+        <a href="/warehouse/warehouses/list" class="active">Quản lý kho</a>
+    </div>
+
+    <div class="content">
+        <h1 class="header-title" th:text="${warehouse == null} ? 'Thêm Mới Kho' : 'Cập Nhật Kho'"></h1>
+        <hr />
+        <div class="row">
+            <div class="col-lg-6 mx-auto">
+                <div class="detail-card">
+                    <form
+                        th:action="@{${warehouse == null} ? '/warehouse/warehouses/create' : '/warehouse/warehouses/edit/' + ${warehouse.id}}"
+                        method="post">
+
+                        <div class="form-group" th:if="${warehouse != null}">
+                            <label class="font-weight-bold">Mã Kho</label>
+                            <input type="text" class="form-control bg-light" th:value="${warehouse.id}" readonly />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Tên Kho</label>
+                            <input type="text" name="name" class="form-control"
+                                th:value="${warehouse != null ? warehouse.name : ''}" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Địa chỉ</label>
+                            <input type="text" name="address" class="form-control"
+                                th:value="${warehouse != null ? warehouse.address : ''}" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">ID Quản lý (User ID)</label>
+                            <input type="number" name="managerId" class="form-control"
+                                th:value="${warehouse != null ? warehouse.managerId : ''}" required />
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="/warehouse/warehouses/list" class="btn btn-secondary"><i
+                                    class="fas fa-arrow-left"></i> Quay Lại</a>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu Dữ
+                                Liệu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Chi Tiết Phiếu Kho</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        body {
+            background-color: #f4f7f6;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 240px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #212529;
+            color: white;
+            padding-top: 20px;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #343a40;
+            color: white;
+        }
+
+        .sidebar a.active {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .header-title {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h4 class="text-center mb-4">Warehouse Panel</h4>
+        <a href="/warehouse/warehouses/list">Quản lý kho</a>
+        <a th:href="@{/warehouse/tickets/warehouse/{id}(id=${ticket.warehouseId})}" class="active">Phiếu nhập/xuất</a>
+    </div>
+
+    <div class="content" th:if="${ticket != null}">
+        <a th:href="@{/warehouse/tickets/warehouse/{id}(id=${ticket.warehouseId})}"
+            class="btn btn-sm btn-secondary mb-3"><i class="fas fa-arrow-left"></i> Quay lại Danh sách</a>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="header-title">Chi Tiết Phiếu #<span th:text="${ticket.id}"></span></h1>
+            <div>
+                <span th:if="${ticket.type == 'IN'}" class="badge badge-success text-uppercase p-2">NHẬP KHO</span>
+                <span th:if="${ticket.type == 'OUT'}" class="badge badge-warning text-uppercase p-2">XUẤT KHO</span>
+
+                <span th:text="${ticket.status}" class="badge badge-dark text-uppercase p-2 ml-2"></span>
+            </div>
+        </div>
+        <hr />
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="info-box">
+                    <p><strong>Kho ID:</strong> <span th:text="${ticket.warehouseId}"></span></p>
+                    <p><strong>Người Tạo ID:</strong> <span th:text="${ticket.createdBy}"></span></p>
+                    <p><strong>Người Duyệt ID:</strong> <span
+                            th:text="${ticket.approvedBy != null ? ticket.approvedBy : 'Chưa duyệt'}"></span></p>
+                    <p><strong>Ngày Tạo:</strong> <span
+                            th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}"></span></p>
+                </div>
+            </div>
+            <div class="col-md-6 text-right">
+                <a th:href="@{/warehouse/transactions/ticket/{id}(id=${ticket.id})}" class="btn btn-outline-info">
+                    <i class="fas fa-history"></i> Xem Log Giao Dịch
+                </a>
+                <button class="btn btn-success mt-2 d-block ml-auto"><i class="fas fa-check"></i> Duyệt Phiếu</button>
+            </div>
+        </div>
+
+        <h4>Danh sách hàng hóa / tài sản yêu cầu</h4>
+        <table class="table table-bordered bg-white">
+            <thead class="thead-light">
+                <tr>
+                    <th>Mã Dòng Chi Tiết</th>
+                    <th>Loại Tài Sản ID</th>
+                    <th>Số lượng</th>
+                    <th>Zone Đích ID</th>
+                    <th>Xử lý Mapping</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="d : ${ticket.details}">
+                    <td th:text="${d.id}"></td>
+                    <td th:text="${d.assetTypeId}"></td>
+                    <td th:text="${d.quantity}"></td>
+                    <td th:text="${d.targetZoneId != null ? d.targetZoneId : 'Tự động sắp xếp'}"></td>
+                    <td>
+                        <a th:href="@{/warehouse/ticket-asset-mappings/detail/{id}(id=${d.id})}"
+                            class="btn btn-sm btn-primary">
+                            Chi tiết Mapping Tài Sản
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="content" th:if="${ticket == null}">
+        <div class="alert alert-danger">Không tìm thấy phiếu.</div>
+    </div>
+
+</body>
+
+</html>

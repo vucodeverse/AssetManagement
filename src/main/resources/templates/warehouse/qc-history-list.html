@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Danh Sách Quality Control (QC)</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        body {
+            background-color: #f4f7f6;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 240px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #212529;
+            color: white;
+            padding-top: 20px;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #343a40;
+            color: white;
+        }
+
+        .sidebar a.active {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .header-title {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h4 class="text-center mb-4">Warehouse Panel</h4>
+        <a href="/warehouse/warehouses/list">Quản lý kho</a>
+        <a href="#" class="active">Lịch Sử QC</a>
+    </div>
+
+    <div class="content">
+        <button onclick="window.history.back()" class="btn btn-sm btn-secondary mb-3"><i class="fas fa-arrow-left"></i>
+            Quay lại</button>
+        <h1 class="header-title">Danh Sách Lịch Sử Quality Control (QC)</h1>
+        <hr />
+
+        <div class="row">
+            <div class="col-lg-12">
+                <table class="table table-bordered table-striped shadow-sm bg-white">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>QC ID</th>
+                            <th>Ticket ID</th>
+                            <th>Asset ID</th>
+                            <th>Kết Quả QC</th>
+                            <th>Inspector ID</th>
+                            <th>Ngày Kiểm Tra</th>
+                            <th>Ghi Chú Lỗi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="qc : ${qcHistories}">
+                            <td th:text="${qc.id}"></td>
+                            <td th:text="${qc.ticketId}"></td>
+                            <td th:text="${qc.assetId}"></td>
+                            <td>
+                                <span th:if="${qc.qcStatus == 'PASSED'}" class="badge badge-success">ĐẠT (PASSED)</span>
+                                <span th:if="${qc.qcStatus == 'FAILED'}" class="badge badge-danger">LỖI (FAILED)</span>
+                            </td>
+                            <td th:text="${qc.inspectorId}"></td>
+                            <td th:text="${#temporals.format(qc.inspectionDate, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${qc.defectNotes != null ? qc.defectNotes : '-'}"></td>
+                        </tr>
+                        <tr th:if="${qcHistories == null or qcHistories.empty}">
+                            <td colspan="7" class="text-center">Chưa có bản ghi kết quả QC nào.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

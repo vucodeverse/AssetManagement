@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Danh Sách Quét Kiểm Kê</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        body {
+            background-color: #f4f7f6;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 240px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #212529;
+            color: white;
+            padding-top: 20px;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #343a40;
+            color: white;
+        }
+
+        .sidebar a.active {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .header-title {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h4 class="text-center mb-4">Warehouse Panel</h4>
+        <a href="/warehouse/warehouses/list">Quản lý kho</a>
+        <a th:href="@{/warehouse/audits/{id}(id=${auditId})}" class="active">Kỳ Kiểm Kê #<span
+                th:text="${auditId}"></span></a>
+    </div>
+
+    <div class="content">
+        <a th:href="@{/warehouse/audits/{id}(id=${auditId})}" class="btn btn-sm btn-secondary mb-3"><i
+                class="fas fa-arrow-left"></i> Quay lại Chi Tiết Phiên</a>
+        <h1 class="header-title">Kết Quả Quét Kiểm Kê - Phiên #<span th:text="${auditId}"></span></h1>
+        <hr />
+
+        <div class="row">
+            <div class="col-lg-12">
+                <table class="table table-bordered table-striped shadow-sm bg-white">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Record ID</th>
+                            <th>Asset ID</th>
+                            <th>Zone Hiện Tại Được Quét</th>
+                            <th>Tình Trạng (Status)</th>
+                            <th>Thời Gian Quét</th>
+                            <th>Ghi Chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="s : ${scans}">
+                            <td th:text="${s.id}"></td>
+                            <td th:text="${s.assetId}"></td>
+                            <td th:text="${s.scannedZoneId}"></td>
+                            <td>
+                                <span th:if="${s.status == 'GOOD'}" class="badge badge-success">TỐT</span>
+                                <span th:if="${s.status == 'DAMAGED'}" class="badge badge-warning">HƯ HỎNG</span>
+                                <span th:if="${s.status == 'MISSING'}" class="badge badge-danger">MẤT TÍCH</span>
+                            </td>
+                            <td th:text="${#temporals.format(s.scanTime, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                            <td th:text="${s.notes != null ? s.notes : '-'}"></td>
+                        </tr>
+                        <tr th:if="${scans == null or scans.empty}">
+                            <td colspan="6" class="text-center">Kỳ kiểm kê này chưa có tài sản nào được quét.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
