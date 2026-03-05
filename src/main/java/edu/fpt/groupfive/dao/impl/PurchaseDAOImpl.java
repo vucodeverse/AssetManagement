@@ -229,8 +229,9 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
         // khai báo dynamic sql
         StringBuilder sql = new StringBuilder(
-                "select p.*, u.first_name, u.last_name " +
-                        "from purchase_request p left join users u on p.creator_id = u.user_id where 1 = 1");
+                "select p.*" +
+                        "from purchase_request p left join users u on p.creator_id = u.user_id where 1 = 1 and p" +
+                        ".status <> 'DELETED'");
         List<Purchase> purchases = new ArrayList<>();
 
         List<Object> params = new ArrayList<>();
@@ -255,20 +256,13 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             params.add(Date.valueOf(p.getTo()));
         }
 
-        if (p.getKeyword() != null && !p.getKeyword().isBlank()) {
+        if(p.getKeyword() != null && !p.getKeyword().isBlank()) {
             sql.append(" and (");
             String keyword = p.getKeyword().trim();
 
-            // validte keyword
-            String idStr = keyword;
-            if (idStr.toUpperCase().startsWith("PR-")) {
-                idStr = idStr.substring(3);
-            }
-
-            // nếu là số thì search theo id
-            if (idStr.matches("\\d+")) {
+            if(keyword.matches("//d+")){
                 sql.append(" p.purchase_request_id = ? or ");
-                params.add(Integer.parseInt(idStr));
+                params.add(Integer.parseInt(keyword));
             }
 
             sql.append(" lower(u.first_name) like ? or lower(u.last_name) like ? )");
@@ -289,7 +283,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                     Purchase mappedPurchase = mapRowForList(rs);
                     purchases.add(mappedPurchase);
                 } catch (Exception e) {
-                    log.error("Error mapping filtered purchase row: {}", e.getMessage());
+                    throw new DataAccessException("Lỗi không thể map dữ liệu", e);
                 }
             }
 
@@ -323,7 +317,6 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 preparedStatement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
                 preparedStatement.setObject(5, userId);
             } else {
-                preparedStatement.setNull(4, Types.TIMESTAMP);
                 preparedStatement.setNull(5, Types.INTEGER);
             }
 

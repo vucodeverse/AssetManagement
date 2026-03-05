@@ -60,6 +60,12 @@
             </form>
 
 
+            <!-- Error banner khi search thất bại -->
+            <div th:if="${error}" class="alert-error-banner">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
             <!-- Phần bảng dữ liệu -->
             <div class="table-container">
                 <table class="data-table" id="purchaseTO">

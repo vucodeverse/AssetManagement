@@ -5,6 +5,7 @@ import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dto.request.PurchaseRequestCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
+import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
@@ -20,6 +21,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -56,7 +59,18 @@ public class PurchaseController {
     public String searchPurchases(@ModelAttribute("searchAndFilter") PurchaseRequestSearchCriteria criteria,
             Model model) {
 
-        model.addAttribute("purchases", purchaseService.searchAndFilter(criteria));
+        List<PurchaseRequestResponse> purchaseRequestResponses = List.of();
+
+        try {
+            purchaseRequestResponses = purchaseService.searchAndFilter(criteria);
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("purchases", purchaseRequestResponses);
+            prepareFilter(model);
+            return URL_PURCHASE_LIST;
+        }
+
+        model.addAttribute("purchases", purchaseRequestResponses);
         prepareFilter(model);
 
         return URL_PURCHASE_LIST;
@@ -119,7 +133,7 @@ public class PurchaseController {
             @ModelAttribute("purchaseCreateRequest") PurchaseRequestCreateRequest purchaseCreateRequest,
             @RequestParam("remove") int index, Model model) {
 
-        // chỉ index > 0  thì mới có thể xóa
+        // chỉ index > 0 thì mới có thể xóa
         if (index >= 0 && purchaseCreateRequest.getPurchaseRequestDetailCreateRequests().size() > 1) {
             purchaseCreateRequest.getPurchaseRequestDetailCreateRequests().remove(index);
         }
@@ -151,7 +165,7 @@ public class PurchaseController {
         Integer purchaseId = purchaseService.createPurchaseRequest(purchaseCreateRequest, getCurrentUserId(), status);
 
         // nếu tạo thành công
-        if(purchaseId != null && purchaseId > 0){
+        if (purchaseId != null && purchaseId > 0) {
             redirectAttributes.addFlashAttribute("message", messageSuccess);
         }
         return "redirect:/purchases/" + purchaseId;

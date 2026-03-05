@@ -125,12 +125,12 @@ public class PurchaseServiceImpl implements PurchaseService {
         // lấy ra user
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
 
-        // Chuyển đổi sang PurchaseRequestResponse để hiển thị trên giao diện
         return purchaseDAO.getPurchaseByFilter(p).stream()
                 .map(pr -> {
+
+                    // Chuyển đổi sang PurchaseRequestResponse để hiển thị trên giao diện
                     PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(pr);
                     resp.setCreatorName(userMap.getOrDefault(pr.getCreatedByUser(), "Không tồn tại người dùng"));
-                    resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(pr.getId()));
                     return resp;
                 })
                 .toList();
@@ -156,13 +156,17 @@ public class PurchaseServiceImpl implements PurchaseService {
     // lấy ra purchase đã save draft để sửa
     @Override
     public PurchaseRequestCreateRequest loadDraftForEdit(Integer purchaseId) {
+
+        // check tồn tại
         Purchase purchase = purchaseDAO.findById(purchaseId)
                 .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại: " + purchaseId));
 
+        // nếu ko phải draft thì ko thể sửa
         if (Request.DRAFT != purchase.getStatus()) {
             throw new InvalidDataException("Yêu cầu mua sắm này không thể update");
         }
 
+        // trả về purchase request và toàn bộ detail đã có
         return PurchaseRequestCreateRequest.builder()
                 .purchaseId(purchase.getId())
                 .purchaseNote(purchase.getPurchaseNote())
