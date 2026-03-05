@@ -9,10 +9,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Warehouse {
+public class TicketDetail {
     private Integer id;
-    private String name;
-    private String address;
-    private Integer managerUserId;
-    private String status;
+    private Integer ticketId;
+    private Integer assetTypeId;
+    private Integer expectedQuantity;
+    private Integer actualQuantity;
+    private String note;
 }

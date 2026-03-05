@@ -1,26 +1,14 @@
 package edu.fpt.groupfive.dao.warehouse;
 
-import edu.fpt.groupfive.dto.warehouse.WarehouseRespDto;
 import edu.fpt.groupfive.model.warehouse.Warehouse;
-
 import java.util.List;
-import java.util.Optional;
 
 public interface WarehouseDAO {
+    Warehouse findById(Integer id);
 
-    Warehouse create(Warehouse newWarehouse);
+    List<Warehouse> findAll();
 
-    Optional<WarehouseRespDto> getDetail(Integer id);
+    int insert(Warehouse warehouse);
 
-    List<WarehouseRespDto> getAllDetail();
-
-    void activeById(Integer id);
-
-    boolean existById(Integer id);
-
-    Optional<Warehouse> getById(Integer id);
-
-    Warehouse update(Warehouse warehouse);
-
-    Optional<WarehouseRespDto> getDetailByManagerId(Integer managerId);
+    int update(Warehouse warehouse);
 }

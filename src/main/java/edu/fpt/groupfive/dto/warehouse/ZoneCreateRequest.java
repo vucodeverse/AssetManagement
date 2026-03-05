@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.model.warehouse;
+package edu.fpt.groupfive.dto.warehouse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Warehouse {
-    private Integer id;
+public class ZoneCreateRequest {
+    private Integer warehouseId;
     private String name;
-    private String address;
-    private Integer managerUserId;
-    private String status;
+    private Integer assignedAssetTypeId;
+    private Integer maxCapacity;
 }

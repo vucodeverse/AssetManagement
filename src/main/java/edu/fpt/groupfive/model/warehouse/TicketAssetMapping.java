@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Warehouse {
+public class TicketAssetMapping {
     private Integer id;
-    private String name;
-    private String address;
-    private Integer managerUserId;
-    private String status;
+    private Integer detailId;
+    private Integer assetId;
 }

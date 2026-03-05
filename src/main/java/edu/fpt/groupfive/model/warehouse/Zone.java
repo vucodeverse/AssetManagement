@@ -9,10 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Warehouse {
+public class Zone {
     private Integer id;
+    private Integer warehouseId;
     private String name;
-    private String address;
-    private Integer managerUserId;
+    private Integer assignedAssetTypeId;
+    private Integer maxCapacity;
+    private Integer currentCapacity;
     private String status;
 }
