@@ -54,10 +54,20 @@ public class SecurityConfig {
                                                                 .requestMatchers("/admin/**").hasRole("ADMIN")
                                                                 .requestMatchers("/dept-manager/**")
                                                                 .hasAnyAuthority("DEPARTMENT_MANAGER", "ADMIN")
+                                                                // Domain URLs: không gắn với role
+                                                                .requestMatchers("/purchases/**")
+                                                                .hasAnyAuthority("ASSET_MANAGER", "DIRECTOR",
+                                                                                "PURCHASE_STAFF","ASSET-MANAGER" ,
+                                                                        "ADMIN")
+                                                                .requestMatchers("/quotations/**")
+                                                                .hasAnyAuthority("PURCHASE_STAFF", "DIRECTOR", "ADMIN")
+                                                                .requestMatchers("/purchase-orders/**")
+                                                                .hasAnyAuthority("PURCHASE_STAFF", "DIRECTOR", "ADMIN")
+                                                                // Role dashboards: gắn với role
                                                                 .requestMatchers("/director/**")
-                                                                .hasAnyAuthority("DIRECTOR", "ADMIN", "PURCHASE_STAFF")
+                                                                .hasAnyAuthority("DIRECTOR", "ADMIN")
                                                                 .requestMatchers("/purchase-staff/**")
-                                                                .hasAnyAuthority("PURCHASE_STAFF", "ADMIN", "DIRECTOR")
+                                                                .hasAnyAuthority("PURCHASE_STAFF", "ADMIN")
                                                                 .requestMatchers("/asset-manager/**")
                                                                 .hasAnyAuthority("ASSET_MANAGER", "ADMIN")
                                                                 .requestMatchers("/warehouse/**")

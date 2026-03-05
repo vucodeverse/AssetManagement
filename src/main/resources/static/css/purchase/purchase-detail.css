@@ -521,3 +521,58 @@
     font-size: 13px;
     font-weight: 600;
 }
+
+/* ───── FLASH BANNER (success after create) ───── */
+.alert-success-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    border-left: 4px solid #10b981;
+    border-radius: 10px;
+    padding: 13px 18px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    animation: fadeInDown 0.35s ease;
+}
+
+.alert-success-banner i {
+    font-size: 15px;
+    color: #10b981;
+    flex-shrink: 0;
+}
+
+.alert-success-banner span {
+    flex: 1;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #10b981;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: opacity .15s;
+}
+
+.alert-close:hover {
+    opacity: .6;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

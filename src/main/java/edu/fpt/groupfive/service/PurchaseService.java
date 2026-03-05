@@ -17,7 +17,7 @@ public interface PurchaseService {
 
     List<PurchaseRequestResponse> searchAndFilter(PurchaseRequestSearchCriteria purchaseRequestSearchCriteria);
 
-    void actionsWithPurchase(Integer purchaseId, String action, String reasonReject);
+    void actionsWithPurchase(Integer purchaseId, String action, String reasonReject,Integer userId);
 
     PurchaseRequestCreateRequest loadDraftForEdit(Integer purchaseId);
 }

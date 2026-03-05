@@ -8,7 +8,8 @@ public enum Role {
     ASSET_MANAGER("Quản lý tài sản"),
     DEPARTMENT_MANAGER("Trưởng phòng ban"),
     WAREHOUSE_STAFF("Nhân viên kho"),
-    DIRECTOR("Giám đốc");
+    DIRECTOR("Giám đốc"),
+    MANAGER("t");
 
     private final String displayName;
 

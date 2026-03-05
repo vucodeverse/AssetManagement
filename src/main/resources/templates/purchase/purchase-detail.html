@@ -16,14 +16,20 @@
     <th:block layout:fragment="content">
 
         <main class="main-content">
+
+            <!-- Flash message thành công -->
+            <div th:if="${message}" class="alert-success-banner">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${message}"></span>
+            </div>
+
             <!-- Tiêu đề -->
             <header class="top-bar">
                 <div class="title-section">
                     <h1>PURCHASE REQUEST DETAIL</h1>
                 </div>
                 <div class="header-actions">
-                    <form method="post"
-                        th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
+                    <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
 
                         <div th:if="${purchase.status.name() != 'APPROVED' && purchase.status.name() != 'REJECTED'}">
                             <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
@@ -135,8 +141,8 @@
                                     class="btn-outline">
                                     <i class="fas fa-file-invoice"></i> View All Quotations
                                 </a>
-                                <a th:href="@{/quotations/create/{id}(id=${purchase.purchaseId})}"
-                                    class="btn-solid" th:if="${purchase.status.name() == 'PENDING'}">
+                                <a th:href="@{/quotations/create/{id}(id=${purchase.purchaseId})}" class="btn-solid"
+                                    th:if="${purchase.status.name() == 'PENDING'}">
                                     <i class="fas fa-plus"></i> Add New Quotation
                                 </a>
                             </div>

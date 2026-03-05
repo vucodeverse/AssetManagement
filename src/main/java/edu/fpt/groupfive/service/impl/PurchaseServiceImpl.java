@@ -44,7 +44,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         Integer purchaseId;
 
-        // check xem purchase này đã được tạo hay chưa (đang update draft)
+        // check xem purchase này đã được tạo hay chưa
         // nếu rồi lấy luôn id đó để update
         // không thì tạo mới
         if (purchaseCreateRequest.getPurchaseId() != null) {
@@ -58,6 +58,7 @@ public class PurchaseServiceImpl implements PurchaseService {
             purchaseId = purchaseDAO.insert(purchase);
         }
 
+        // trả về id sau khi đã insert
         return purchaseId;
     }
 
@@ -97,13 +98,16 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     public List<PurchaseRequestResponse> findAllPurchases() {
 
-        // lấy ra tất user
+        // lấy ra tất first name và last name của use
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
 
         return purchaseDAO.findAll().stream().map(p -> {
+
+            // map sang response để trả về client
             PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(p);
+
+            // lấy ra tên người dùng
             resp.setCreatorName(userMap.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"));
-            resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()));
             return resp;
         }).toList();
     }
@@ -134,16 +138,16 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // thực hiện save và draft
     @Override
-    public void actionsWithPurchase(Integer purchaseId, String action, String reasonReject) {
+    public void actionsWithPurchase(Integer purchaseId, String action, String reasonReject, Integer userId) {
 
         // check purchase có tồn tại hay ko
         purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException("Purchase request không tộn tại"));
 
         // Xử lý các hành động (actions) nhận được từ controller
         if ("a".equals(action)) {
-            purchaseDAO.updatePurchaseStatus(Request.APPROVED, purchaseId, null);
+            purchaseDAO.updatePurchaseStatus(Request.APPROVED, purchaseId, null, userId);
         } else if ("r".equals(action)) {
-            purchaseDAO.updatePurchaseStatus(Request.REJECTED, purchaseId, reasonReject);
+            purchaseDAO.updatePurchaseStatus(Request.REJECTED, purchaseId, reasonReject, userId);
         } else {
             throw new InvalidDataException("Action không hợp lệ: " + action);
         }

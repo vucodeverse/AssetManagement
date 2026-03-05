@@ -3,6 +3,7 @@ package edu.fpt.groupfive.dao.impl;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.model.PurchaseDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
+import edu.fpt.groupfive.util.exception.DataAccessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -32,7 +33,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             preparedStatement.setString(6, purchaseDetail.getPurchaseDetailNote());
             preparedStatement.executeUpdate();
         } catch (Exception exception) {
-            throw new RuntimeException(exception);
+            throw new DataAccessException("Lỗi không thể chèn dữ liệu",exception);
         }
     }
 
@@ -50,7 +51,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
                 "where pd.purchase_request_id = ?";
         List<PurchaseDetail> purchaseDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, purchaseRequestId);
 
@@ -73,8 +74,8 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Error finding PurchaseDetails by purchaseRequestId=" + purchaseRequestId, e);
+            throw new DataAccessException(
+                    "Lỗi không thể chèn dữ liệu", e);
         }
 
         return purchaseDetails;
@@ -88,7 +89,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             ps.setInt(1, purchaseRequestId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting PurchaseDetails by purchaseRequestId=" + purchaseRequestId, e);
+            throw new DataAccessException("Lỗi không thể chèn dữ liệu", e);
         }
     }
 }

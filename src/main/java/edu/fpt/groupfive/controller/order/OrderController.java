@@ -21,10 +21,8 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/purchase-staff/purchase-orders")
+@RequestMapping("/purchase-orders")
 public class OrderController {
-
-    private static final int PAGE_SIZE = 4;
 
     private final OrderService orderService;
     private final SupplierService supplierService;
@@ -98,7 +96,7 @@ public class OrderController {
 
         try {
             Integer orderId = orderService.createOrder(quotationId, orderCreateRequest);
-            return "redirect:/purchase-staff/purchase-orders/" + orderId;
+            return "redirect:/purchase-orders/" + orderId;
         } catch (edu.fpt.groupfive.util.exception.InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
             return "order/order-form";

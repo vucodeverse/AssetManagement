@@ -20,11 +20,11 @@ public interface PurchaseDAO {
 
     List<Purchase> getPurchaseByFilter(PurchaseRequestSearchCriteria purchaseRequestSearchCriteria);
 
-    void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject);
+    void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject, Integer userId);
 
     void update(Purchase purchase);
 
-    Map<Integer, Object[]> findQuotationSummaryByFilter(QuotationSearchCriteria s);
+    Map<Integer, Object[]> findQuotaSummaryByFilter(QuotationSearchCriteria s);
 
     long countByStatus(Request status);
 

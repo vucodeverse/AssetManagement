@@ -23,6 +23,9 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
             redirectUrl += "/director/dashboard";
         }
 
+        if(authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("PURCHASE_STAFF"))) {
+            redirectUrl += "/purchase-staff/dashboard";
+        }
         response.sendRedirect(redirectUrl);
     }
 }

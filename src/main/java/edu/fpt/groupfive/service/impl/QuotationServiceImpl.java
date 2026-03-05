@@ -308,7 +308,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // Khóa: ID yêu cầu mua sắm - Giá trị: mảng các đối tượng chứa thông tin tóm tắt
         // của quotaiton
-        Map<Integer, Object[]> summaryMap = purchaseDAO.findQuotationSummaryByFilter(s);
+        Map<Integer, Object[]> summaryMap = purchaseDAO.findQuotaSummaryByFilter(s);
 
         List<QuotationSummaryResponse> out = new ArrayList<>();
         for (Map.Entry<Integer, Object[]> entry : summaryMap.entrySet()) {
