@@ -46,8 +46,21 @@ public class WarehouseDAOImpl implements WarehouseDAO {
     @Override
     public int insert(Warehouse warehouse) {
         String sql = "INSERT INTO wh_warehouse (name, address, manager_user_id, status) VALUES (?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, warehouse.getName(), warehouse.getAddress(), warehouse.getManagerUserId(),
-                warehouse.getStatus());
+        org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            java.sql.PreparedStatement ps = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, warehouse.getName());
+            ps.setString(2, warehouse.getAddress());
+            ps.setInt(3, warehouse.getManagerUserId());
+            ps.setString(4, warehouse.getStatus());
+            return ps;
+        }, keyHolder);
+
+        if (keyHolder.getKey() != null) {
+            warehouse.setId(keyHolder.getKey().intValue());
+            return keyHolder.getKey().intValue();
+        }
+        return 0;
     }
 
     @Override

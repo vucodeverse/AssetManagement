@@ -35,8 +35,21 @@ public class AuditScanRecordDAOImpl implements AuditScanRecordDAO {
     @Override
     public int insert(AuditScanRecord record) {
         String sql = "INSERT INTO wh_audit_scan_record (audit_id, asset_id, match_status, action_taken) VALUES (?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, record.getAuditId(), record.getAssetId(), record.getMatchStatus(),
-                record.getActionTaken());
+        org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            java.sql.PreparedStatement ps = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, record.getAuditId());
+            ps.setInt(2, record.getAssetId());
+            ps.setString(3, record.getMatchStatus());
+            ps.setString(4, record.getActionTaken());
+            return ps;
+        }, keyHolder);
+
+        if (keyHolder.getKey() != null) {
+            record.setId(keyHolder.getKey().intValue());
+            return keyHolder.getKey().intValue();
+        }
+        return 0;
     }
 
     @Override

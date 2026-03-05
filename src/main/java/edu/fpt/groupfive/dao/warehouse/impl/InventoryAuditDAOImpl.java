@@ -37,8 +37,26 @@ public class InventoryAuditDAOImpl implements InventoryAuditDAO {
     @Override
     public int insert(InventoryAudit audit) {
         String sql = "INSERT INTO wh_inventory_audit (warehouse_id, zone_id, status, auditor_id, note) VALUES (?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, audit.getWarehouseId(), audit.getZoneId(), audit.getStatus(),
-                audit.getAuditorId(), audit.getNote());
+        org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            java.sql.PreparedStatement ps = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, audit.getWarehouseId());
+            if (audit.getZoneId() != null) {
+                ps.setInt(2, audit.getZoneId());
+            } else {
+                ps.setNull(2, java.sql.Types.INTEGER);
+            }
+            ps.setString(3, audit.getStatus());
+            ps.setInt(4, audit.getAuditorId());
+            ps.setString(5, audit.getNote());
+            return ps;
+        }, keyHolder);
+
+        if (keyHolder.getKey() != null) {
+            audit.setId(keyHolder.getKey().intValue());
+            return keyHolder.getKey().intValue();
+        }
+        return 0;
     }
 
     @Override
