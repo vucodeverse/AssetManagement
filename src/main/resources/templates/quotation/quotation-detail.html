@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout/main-layout}">
 
@@ -27,14 +27,14 @@
                         <button type="button" class="btn-outline-prem"
                             th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
                             onclick="openRejectModal()">REJECT</button>
-                        <a th:href="@{/purchase-staff/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
+                        <a th:href="@{/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
                             th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
                             class="btn-approve">
                             APPROVE & GENERATE PO
                         </a>
                         <a th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT'}"
                             class="btn-solid-prem"
-                            th:href="@{/purchase-staff/quotations/{id}/edit(id=${quotation.quotationId})}">
+                            th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
                             UPDATE QUOTATION
                         </a>
                     </th:block>
@@ -158,7 +158,7 @@
                 <div class="modal-header">
                     <h2>REJECT QUOTATION</h2>
                 </div>
-                <form th:action="@{/purchase-staff/quotations/{id}/reject(id=${quotation.quotationId})}" method="post">
+                <form th:action="@{/quotations/{id}/reject(id=${quotation.quotationId})}" method="post">
                     <div class="modal-body">
                         <p style="font-size: 14px; margin-bottom: 16px; color: #666;">Please provide a reason for
                             rejecting

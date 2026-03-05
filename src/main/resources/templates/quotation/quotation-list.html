@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout/main-layout}" xmlns:sec="http://www.w3.org/1999/xhtml">
 
@@ -15,7 +15,7 @@
     <th:block layout:fragment="content">
         <div class="quotation-content-wrapper">
 
-            <form id="filterForm" method="get" th:action="@{/purchase-staff/quotations/search}"
+            <form id="filterForm" method="get" th:action="@{/quotations/search}"
                 th:object="${searchForQuotation}">
                 <header class="top-bar">
                     <h1>QUOTATIONS</h1>
@@ -62,7 +62,7 @@
                         </div>
                     </div>
                     <div class="filter-actions">
-                        <a class="btn-reset-filters" th:href="@{/purchase-staff/quotations}">
+                        <a class="btn-reset-filters" th:href="@{/quotations}">
                             <i class="fas fa-undo-alt"></i> RESET FILTERS
                         </a>
                     </div>
@@ -96,7 +96,7 @@
                                     th:text="${q.priority}"></span>
                             </td>
                             <td>
-                                <form th:action="@{/purchase-staff/quotations/of-purchase/{id}(id=${q.purchaseId})}"
+                                <form th:action="@{/quotations/of-purchase/{id}(id=${q.purchaseId})}"
                                     th:method="get">
                                     <button type="submit" class="btn-review">REVIEW ALL</button>
                                 </form>

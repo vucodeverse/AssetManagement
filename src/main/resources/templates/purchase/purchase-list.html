@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
 <!--~{}: link -->
@@ -17,17 +17,17 @@
     <th:block layout:fragment="content">
 
         <div class="purchase-content-wrapper">
-            <form id="filterForm" method="get" th:action="@{/purchase-staff/purchases/search}"
-                th:object="${searchAndFilter}">
+            <form id="filterForm" method="get" th:action="@{/purchases/search}" th:object="${searchAndFilter}">
 
                 <header class="top-bar">
                     <h1>PURCHASE REQUEST MANAGEMENT</h1>
                     <div class="top-actions">
-                        <!-- TODO: bật lại sec:authorize="hasRole('ASSET_MANAGER')" khi enable security -->
-                        <a th:href="@{/purchase-staff/purchases/create}" class="btn-create"
-                            style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#1e293b; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:13px;">
-                            <i class="fas fa-plus"></i> Create Purchase Request
-                        </a>
+                        <div sec:authorize="hasAuthority('ASSET_MANAGER')">
+                            <a th:href="@{/purchases/create}" class="btn-create"
+                                style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#1e293b; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:13px;">
+                                <i class="fas fa-plus"></i> Create Purchase Request
+                            </a>
+                        </div>
                         <div class="search-box">
                             <i class="fas fa-search"></i>
                             <input type="text" placeholder="Search by PR ID..." th:field="*{keyword}">
@@ -54,7 +54,7 @@
                         <input type="date" th:field="*{to}">
 
                         <button type="submit">APPLY</button>
-                        <a class="btn-reset" th:href="@{/purchase-staff/purchases}">RESET</a>
+                        <a class="btn-reset" th:href="@{/purchases}">RESET</a>
                     </div>
                 </section>
             </form>
@@ -76,7 +76,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="p : ${purchases}" class="clickable-row"
-                            th:attr="onclick=|window.location.href='@{/purchase-staff/purchases/{id}(id=${p.purchaseId})}'|">
+                            th:attr="onclick=|window.location.href='@{/purchases/{id}(id=${p.purchaseId})}'|">
 
                             <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
                             <td>
@@ -103,24 +103,32 @@
 
                             <td class="cell-actions" onclick="event.stopPropagation();">
 
-                                <!-- TODO: bật lại sec:authorize="hasRole('DIRECTOR')" khi enable security -->
-                                <form th:if="${p.status != null}" method="post"
-                                    th:action="@{/purchase-staff/purchases/{id}/actions(id=${p.purchaseId})}">
-                                    <div
-                                        th:if="${p.status.name() != 'APPROVED' && p.status.name() != 'REJECTED' && p.status.name() != 'DRAFT'}">
-                                        <button type="submit" name="actions" value="a"
-                                            class="btn-approve">APPROVE</button>
-                                        <a class="btn-reject" th:href="'#reject-' + ${p.purchaseId}"
-                                            onclick="event.stopPropagation();">
-                                            REJECT
-                                        </a>
-                                    </div>
-                                </form>
+                                <div sec:authorize="hasAuthority('DIRECTOR')">
+                                    <form th:if="${p.status != null}" method="post"
+                                        th:action="@{/purchases/{id}/actions(id=${p.purchaseId})}">
+                                        <div
+                                            th:if="${p.status.name() != 'APPROVED' && p.status.name() != 'REJECTED' && p.status.name() != 'DRAFT'}">
+                                            <button type="submit" name="actions" value="a"
+                                                class="btn-approve">APPROVE</button>
+                                            <a class="btn-reject" th:href="'#reject-' + ${p.purchaseId}"
+                                                onclick="event.stopPropagation();">
+                                                REJECT
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
 
-                                <!-- TODO: bật lại sec:authorize="hasRole('ASSET_MANAGER')" khi enable security -->
-                                <a th:if="${p.status != null && p.status.name() == 'DRAFT'}"
-                                    th:href="@{/purchase-staff/purchases/{id}/edit(id=${p.purchaseId})}"
-                                    class="btn-approve" onclick="event.stopPropagation();">UPDATE</a>
+                                <div sec:authorize="hasAnyAuthority('ASSET_MANAGER')">
+                                    <a th:if="${p.status != null && p.status.name() == 'DRAFT'}"
+                                        th:href="@{/purchases/{id}/edit(id=${p.purchaseId})}" class="btn-approve"
+                                        onclick="event.stopPropagation();">UPDATE</a>
+                                </div>
+
+                                <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                                    <a th:if="${p.status != null && p.status.name() == 'APPROVED'}"
+                                        th:href="@{/quotations/create/{id}(id=${p.purchaseId})}" class="btn-approve"
+                                        onclick="event.stopPropagation();">CREATE QUOTATION</a>
+                                </div>
 
                             </td>
                         </tr>
@@ -128,7 +136,6 @@
                 </table>
             </div>
         </div>
-        <!-- TODO: bật lại sec:authorize="hasRole('DIRECTOR')" khi enable security -->
         <th:block>
             <div th:each="p : ${purchases}" th:id="'reject-' + ${p.purchaseId}" class="modal-overlay">
 
@@ -142,7 +149,7 @@
                         <a href="#" class="modal-close" aria-label="Close">✕</a>
                     </div>
 
-                    <form method="post" th:action="@{/purchase-staff/purchases/{id}/actions(id=${p.purchaseId})}">
+                    <form method="post" th:action="@{/purchases/{id}/actions(id=${p.purchaseId})}">
 
                         <div class="modal-body">
                             <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>

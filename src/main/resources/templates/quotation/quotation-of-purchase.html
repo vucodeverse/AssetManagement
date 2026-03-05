@@ -1,6 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/main-layout}">
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
 
 <head>
     <meta charset="UTF-8">
@@ -18,15 +18,14 @@
                 <div class="header-text">
                     <h1 th:text="'Quotations for PR-' + ${purchaseId}">Quotations for
                         PR-000052</h1>
-                    <p>Review and compare received vendor bids for the requested hardware assets.</p>
                 </div>
-                <div class="header-actions">
-                    <a th:href="@{/purchase-staff/quotations/create/{id}(id=${purchaseId})}" class="btn-primary">
+                <div sec:authorize="hasAuthority('PURCHASE_STAFF')" class="header-actions">
+                    <a th:href="@{/quotations/create/{id}(id=${purchaseId})}" class="btn-primary">
                         <i class="fas fa-plus"></i> Add New Quotation
                     </a>
                 </div>
             </header>
-            <form method="get" th:action="@{/purchase-staff/quotations/of-purchase/{id}/search(id=${purchaseId})}"
+            <form method="get" th:action="@{/quotations/of-purchase/{id}/search(id=${purchaseId})}"
                 id="filterForm">
                 <div class="table-actions">
                     <div class="search-wrap">
@@ -74,7 +73,7 @@
                             </select>
                         </div>
                         <button class="btn-more" type="button" onclick="window.location.href=this.dataset.resetUrl"
-                            th:data-reset-url="@{/purchase-staff/quotations/of-purchase/{id}(id=${purchaseId})}">
+                            th:data-reset-url="@{/quotations/of-purchase/{id}(id=${purchaseId})}">
                             <i class="fas fa-sliders-h"></i>
                             RESET
                         </button>
@@ -97,7 +96,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="q : ${quotations}"
-                            th:attr="onclick=|window.location.href='@{/purchase-staff/quotations/{id}(id=${q.quotationId})}'|">
+                            th:attr="onclick=|window.location.href='@{/quotations/{id}(id=${q.quotationId})}'|">
                             <td class="td-id" th:text="'QT-' + ${q.quotationId}">
                                 QT-001
                             </td>
@@ -126,24 +125,28 @@
                             </td>
                             <td class="cell-actions" onclick="event.stopPropagation()">
 
-                                <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
-                                    th:href="@{/purchase-staff/quotations/{quotationId}/edit(quotationId=${q.quotationId})}"
-                                    title="Edit">
-                                    <i class="far fa-edit action-icon"></i>
-                                </a>
+                                <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                                    <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
+                                        th:href="@{/quotations/{quotationId}/edit(quotationId=${q.quotationId})}"
+                                        title="Edit">
+                                        <i class="far fa-edit action-icon"></i>
+                                    </a>
+                                </div>
 
-                                <a class="btn-approve-sm"
-                                    th:href="@{/purchase-staff/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}"
-                                    th:if="${q.quotationStatus.name() == 'PENDING'}">
-                                    APPROVE &amp; PO
-                                </a>
+                                <div sec:authorize="hasAuthority('DIRECTOR')">
+                                    <a class="btn-approve-sm"
+                                        th:href="@{/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}"
+                                        th:if="${q.quotationStatus.name() == 'PENDING'}">
+                                        APPROVE &amp; PO
+                                    </a>
 
-                                <button class="btn-reject-sm" type="button"
-                                    th:if="${q.quotationStatus.name() == 'PENDING'}"
-                                    th:attr="data-action=@{/purchase-staff/quotations/{id}/reject(id=${q.quotationId})}"
-                                    onclick="openRejectModal(event, this)">
-                                    REJECT
-                                </button>
+                                    <button class="btn-reject-sm" type="button"
+                                        th:if="${q.quotationStatus.name() == 'PENDING'}"
+                                        th:attr="data-action=@{/quotations/{id}/reject(id=${q.quotationId})}"
+                                        onclick="openRejectModal(event, this)">
+                                        REJECT
+                                    </button>
+                                </div>
 
                             </td>
                         </tr>
@@ -161,7 +164,8 @@
                     <h2>REJECT QUOTATION</h2>
                 </div>
 
-                <form id="rejectForm" method="post">
+                <form id="rejectForm" method="post" th:action="'#'">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     <div class="modal-body">
                         <p style="font-size: 14px; margin-bottom: 16px; color: #666;">
                             Please provide a reason for rejecting this quotation.

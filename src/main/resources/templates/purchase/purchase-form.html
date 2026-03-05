@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout/main-layout}">
 
@@ -14,7 +14,7 @@
         <div class="pr-container">
             <div class="breadcrumb">
                 <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a> /
-                <a th:href="@{/purchase-staff/purchases}">PURCHASES</a> /
+                <a th:href="@{/purchases}">PURCHASES</a> /
                 <span class="active">NEW REQUEST</span>
             </div>
             <!-- Tiêu đề -->
@@ -30,7 +30,7 @@
             </header>
 
             <!-- BIỂU MẪU -->
-            <form th:action="@{/purchase-staff/purchases/create}" th:object="${purchaseCreateRequest}" method="post">
+            <form th:action="@{/purchases/create}" th:object="${purchaseCreateRequest}" method="post">
 
                 <!-- hidden purchaseId cho update draft -->
                 <input type="hidden" th:field="*{purchaseId}">
@@ -115,7 +115,7 @@
 
                                     <!-- Quantity -->
                                     <td>
-                                        <input type="number" min="1" class="input-prem"
+                                        <input type="number" step="1" class="input-prem"
                                             th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].quantity}" />
 
                                         <div class="field-error"
@@ -126,7 +126,7 @@
 
                                     <!-- Estimate Price -->
                                     <td>
-                                        <input type="number" step="0.01" min="0" class="input-prem"
+                                        <input type="number" step="0.01" class="input-prem"
                                             th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].estimatePrice}" />
 
                                         <div class="field-error"

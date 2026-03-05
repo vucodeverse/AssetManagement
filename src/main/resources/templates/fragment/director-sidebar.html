@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
@@ -32,13 +32,14 @@
                         th:classappend="${activeSub}=='qt' ? ' active' : ''">
                         Quotations
                     </a>
-
-                    <a class="nav-item" th:href="@{/purchase-staff/purchase-orders}"
-                       th:classappend="${activeMenu}=='po' ? ' active' : ''">
-                        <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
-                    </a>
                 </div>
             </div>
+
+            <!-- ĐƠN HÀNG MUA SẮM -->
+            <a class="nav-item" th:href="@{/purchase-orders}"
+                th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
+            </a>
 
             <a class="nav-item" th:href="@{/logout}">
                 <i class="fas fa-sign-out-alt"></i> Logout

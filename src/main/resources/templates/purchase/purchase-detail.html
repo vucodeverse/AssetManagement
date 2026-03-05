@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout/main-layout}">
 
@@ -23,7 +23,7 @@
                 </div>
                 <div class="header-actions">
                     <form method="post"
-                        th:action="@{/purchase-staff/purchases/{id}/actions(id=${purchase.purchaseId})}">
+                        th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
 
                         <div th:if="${purchase.status.name() != 'APPROVED' && purchase.status.name() != 'REJECTED'}">
                             <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
@@ -131,11 +131,11 @@
                                     RECEIVED</span>
                             </div>
                             <div class="q-actions">
-                                <a th:href="@{/purchase-staff/quotations/of-purchase/{id}(id=${purchase.purchaseId})}"
+                                <a th:href="@{/quotations/of-purchase/{id}(id=${purchase.purchaseId})}"
                                     class="btn-outline">
                                     <i class="fas fa-file-invoice"></i> View All Quotations
                                 </a>
-                                <a th:href="@{/purchase-staff/quotations/create/{id}(id=${purchase.purchaseId})}"
+                                <a th:href="@{/quotations/create/{id}(id=${purchase.purchaseId})}"
                                     class="btn-solid" th:if="${purchase.status.name() == 'PENDING'}">
                                     <i class="fas fa-plus"></i> Add New Quotation
                                 </a>
@@ -156,7 +156,7 @@
                     <a href="#" class="modal-close" aria-label="Close">✕</a>
                 </div>
 
-                <form th:action="@{/purchase-staff/purchases/{id}/actions(id=${purchase.purchaseId})}" method="post">
+                <form th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}" method="post">
                     <div class="modal-body">
                         <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
                     </div>

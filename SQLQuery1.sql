@@ -596,8 +596,6 @@ CREATE TABLE purchase_orders (
                                  quotation_id        INT NOT NULL,
 
                                  approved_by         INT NULL,
-                                 updated_at          DATETIME2(0) NULL,
-                                 updated_by          INT NULL,
 
                                  CONSTRAINT FK_purchase_orders_purchase_request
                                      FOREIGN KEY (purchase_request_id) REFERENCES purchase_request(purchase_request_id),
@@ -611,8 +609,6 @@ CREATE TABLE purchase_orders (
                                  CONSTRAINT FK_purchase_orders_approved_by
                                      FOREIGN KEY (approved_by) REFERENCES users(user_id),
 
-                                 CONSTRAINT FK_purchase_orders_updated_by
-                                     FOREIGN KEY (updated_by) REFERENCES users(user_id)
 );
 
 CREATE TABLE purchase_order_details (

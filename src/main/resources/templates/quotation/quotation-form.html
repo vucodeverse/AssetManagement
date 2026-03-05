@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
      layout:decorate="~{layout/main-layout}">
 
@@ -17,7 +17,7 @@
      <div layout:fragment="content">
           <div class="quotation-form-wrapper">
 
-               <form th:action="@{/purchase-staff/quotations/create/{id}(id=${purchaseId})}"
+               <form th:action="@{/quotations/create/{id}(id=${purchaseId})}"
                     th:object="${quotationCreateRequest}" method="post" id="quotationForm">
                     <input type="hidden" th:field="*{quotationId}">
                     <input type="hidden" th:field="*{purchaseId}">
@@ -178,7 +178,7 @@
                               <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
                               Please verify all rates before saving. This action is recorded.
                          </p>
-                         <a th:href="@{/purchase-staff/purchases}" class="btn-form btn-cancel">CANCEL</a>
+                         <a th:href="@{/purchases}" class="btn-form btn-cancel">CANCEL</a>
                          <button type="submit" name="actions" value="draft" class="btn-form btn-draft">
                               <i class="fas fa-save" style="margin-right: 8px; font-size: 10px;"></i>
                               SAVE AS DRAFT

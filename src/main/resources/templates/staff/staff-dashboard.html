@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout/main-layout}">
 
@@ -68,7 +68,7 @@
                                             th:text="${pr.priority}">URGENT</span>
                                     </td>
                                     <td>
-                                        <a th:href="@{/purchases/{id}/quotation-form(id=${pr.getPurchaseId})}"
+                                        <a th:href="@{/quotations/create/{id}(id=${pr.getPurchaseId})}"
                                             class="btn-create-quote">CREATE QUOTE</a>
                                     </td>
                                 </tr>
@@ -92,7 +92,8 @@
                     <div class="quo-list">
                         <a class="quo-item" th:each="quo : ${dashboard.recentQuotations}"
                             th:classappend="${quo.quotationStatus.name().toLowerCase()}"
-                            th:href="@{/quotations/{id}(id=${quo.quotationId})}" style="text-decoration: none;">
+                            th:href="@{/quotations/{id}(id=${quo.quotationId})}"
+                            style="text-decoration: none;">
                             <div class="quo-details">
                                 <strong th:text="'#QTN-' + ${quo.quotationId}">#QTN-9901</strong>
                                 <span th:text="${quo.supplierName}">Global Logistics</span>

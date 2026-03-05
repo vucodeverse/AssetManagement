@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
@@ -16,19 +16,19 @@
             </a>
 
             <!-- YÊU CẦU MUA SẮM -->
-            <a class="nav-item" th:href="@{/purchase-staff/purchases}"
+            <a class="nav-item" th:href="@{/purchases}"
                 th:classappend="${activeMenu}=='approval' ? ' active' : ''">
                 <i class="fas fa-shopping-cart"></i> Purchases
             </a>
 
             <!-- BÁO GIÁ -->
-            <a class="nav-item" th:href="@{/purchase-staff/quotations}"
+            <a class="nav-item" th:href="@{/quotations}"
                 th:classappend="${activeMenu}=='quotation' ? ' active' : ''">
                 <i class="fas fa-file-invoice"></i> Quotations
             </a>
 
             <!-- ĐƠN HÀNG MUA SẮM -->
-            <a class="nav-item" th:href="@{/purchase-staff/purchase-orders}"
+            <a class="nav-item" th:href="@{/purchase-orders}"
                 th:classappend="${activeMenu}=='po' ? ' active' : ''">
                 <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
             </a>
