@@ -3,17 +3,17 @@ package edu.fpt.groupfive.controller.warehouse;
 import edu.fpt.groupfive.dto.warehouse.ZoneCreateRequest;
 import edu.fpt.groupfive.dto.warehouse.ZoneUpdateRequest;
 import edu.fpt.groupfive.service.warehouse.ZoneService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/warehouse/zones")
 public class ZoneController {
 
-    @Autowired
-    private ZoneService zoneService;
+    private final ZoneService zoneService;
 
     @GetMapping("/warehouse/{warehouseId}")
     public String getByWarehouseId(@PathVariable Integer warehouseId, Model model) {

@@ -3,17 +3,17 @@ package edu.fpt.groupfive.controller.warehouse;
 import edu.fpt.groupfive.dto.warehouse.AuditCreateRequest;
 import edu.fpt.groupfive.dto.warehouse.AuditUpdateRequest;
 import edu.fpt.groupfive.service.warehouse.InventoryAuditService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/warehouse/audits")
 public class InventoryAuditController {
 
-    @Autowired
-    private InventoryAuditService auditService;
+    private final InventoryAuditService auditService;
 
     @GetMapping("/warehouse/{warehouseId}")
     public String getAuditsByWarehouseId(@PathVariable Integer warehouseId, Model model) {

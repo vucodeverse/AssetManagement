@@ -2,17 +2,17 @@ package edu.fpt.groupfive.controller.warehouse;
 
 import edu.fpt.groupfive.dto.warehouse.AuditScanRequest;
 import edu.fpt.groupfive.service.warehouse.AuditScanRecordService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/warehouse/audit-scans")
 public class AuditScanRecordController {
 
-    @Autowired
-    private AuditScanRecordService scanRecordService;
+    private final AuditScanRecordService scanRecordService;
 
     @GetMapping("/audit/{auditId}")
     public String getRecordsByAuditId(@PathVariable Integer auditId, Model model) {

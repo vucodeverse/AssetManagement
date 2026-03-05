@@ -2,17 +2,17 @@ package edu.fpt.groupfive.controller.warehouse;
 
 import edu.fpt.groupfive.dto.warehouse.TicketAssetMappingRequest;
 import edu.fpt.groupfive.service.warehouse.TicketAssetMappingService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/warehouse/ticket-asset-mappings")
 public class TicketAssetMappingController {
 
-    @Autowired
-    private TicketAssetMappingService mappingService;
+    private final TicketAssetMappingService mappingService;
 
     @GetMapping("/detail/{detailId}")
     public String getMappingsByDetailId(@PathVariable Integer detailId, Model model) {

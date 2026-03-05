@@ -3,17 +3,17 @@ package edu.fpt.groupfive.controller.warehouse;
 import edu.fpt.groupfive.dto.warehouse.WarehouseCreateRequest;
 import edu.fpt.groupfive.dto.warehouse.WarehouseUpdateRequest;
 import edu.fpt.groupfive.service.warehouse.WarehouseService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/warehouse/warehouses")
 public class WarehouseController {
 
-    @Autowired
-    private WarehouseService warehouseService;
+    private final WarehouseService warehouseService;
 
     @GetMapping("/list")
     public String getAll(Model model) {

@@ -2,17 +2,17 @@ package edu.fpt.groupfive.controller.warehouse;
 
 import edu.fpt.groupfive.dto.warehouse.AssetCapacityRequest;
 import edu.fpt.groupfive.service.warehouse.AssetCapacityService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/warehouse/capacities")
 public class AssetCapacityController {
 
-    @Autowired
-    private AssetCapacityService capacityService;
+    private final AssetCapacityService capacityService;
 
     @GetMapping("/asset-type/{assetTypeId}")
     public String getCapacityByAssetTypeId(@PathVariable Integer assetTypeId, Model model) {
