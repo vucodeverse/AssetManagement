@@ -2,7 +2,6 @@ package edu.fpt.groupfive.dao.warehouse.impl;
 
 import edu.fpt.groupfive.dao.warehouse.WarehouseDAO;
 import edu.fpt.groupfive.model.warehouse.Warehouse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import lombok.RequiredArgsConstructor;

@@ -2,7 +2,6 @@ package edu.fpt.groupfive.dao.warehouse.impl;
 
 import edu.fpt.groupfive.dao.warehouse.ZoneDAO;
 import edu.fpt.groupfive.model.warehouse.Zone;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +32,26 @@ public class ZoneDAOImpl implements ZoneDAO {
                     .build();
         }
     };
+
+    @Override
+    public Zone findById(Integer id) {
+        String sql = "SELECT * FROM wh_zone WHERE id = ?";
+        List<Zone> result = jdbcTemplate.query(sql, rowMapper, id);
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    @Override
+    public int update(Zone zone) {
+        String sql = "UPDATE wh_zone SET warehouse_id = ?, name = ?, assigned_asset_type_id = ?, max_capacity = ?, current_capacity = ?, status = ? WHERE id = ?";
+        return jdbcTemplate.update(sql,
+                zone.getWarehouseId(),
+                zone.getName(),
+                zone.getAssignedAssetTypeId(),
+                zone.getMaxCapacity(),
+                zone.getCurrentCapacity(),
+                zone.getStatus(),
+                zone.getId());
+    }
 
     @Override
     public List<Zone> findByWarehouseId(Integer warehouseId) {
