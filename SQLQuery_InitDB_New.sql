@@ -327,6 +327,7 @@ CREATE TABLE wh_inventory_ticket (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     warehouse_id INT NOT NULL REFERENCES wh_warehouse(id),
     ticket_type  NVARCHAR(20) NOT NULL, 
+    ticket_ref  VARCHAR(20) NOT NULL, --ALLOCATION, RETURN, PURCHASE, OTHER
     status       NVARCHAR(40) DEFAULT N'PENDING', 
     created_by   INT NOT NULL,
     created_at   DATETIME2 DEFAULT SYSDATETIME(),

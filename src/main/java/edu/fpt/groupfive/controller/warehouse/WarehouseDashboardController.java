@@ -1,9 +1,7 @@
 package edu.fpt.groupfive.controller.warehouse;
 
-import edu.fpt.groupfive.dto.warehouse.AuditResponse;
 import edu.fpt.groupfive.dto.warehouse.TicketResponse;
 import edu.fpt.groupfive.dto.warehouse.WarehouseResponse;
-import edu.fpt.groupfive.service.warehouse.InventoryAuditService;
 import edu.fpt.groupfive.service.warehouse.InventoryTicketService;
 import edu.fpt.groupfive.service.warehouse.WarehouseService;
 import lombok.RequiredArgsConstructor;
