@@ -37,7 +37,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
-/.idea/
+/.idea/*
 /target/
 /.smarttomcat/
 /tomcat.8080/
@@ -51,3 +51,5 @@ build/
 ### Local docs ###
 docs/
 db-change-notes.md
+/.idea
+
