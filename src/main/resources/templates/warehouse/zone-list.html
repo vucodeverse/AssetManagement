@@ -2,184 +2,50 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8" />
-    <title>Quản Lý Khu Vực (Zone)</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    <style>
-        body {
-            background-color: #f4f7f6;
-        }
-
-        .sidebar {
-            height: 100vh;
-            width: 240px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: #212529;
-            color: white;
-            padding-top: 20px;
-            z-index: 1000;
-        }
-
-        .sidebar a {
-            display: block;
-            color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        .sidebar a:hover {
-            background: #343a40;
-            color: white;
-        }
-
-        .sidebar a.active {
-            background: #007bff;
-            color: white;
-            font-weight: bold;
-        }
-
-        .content {
-            margin-left: 250px;
-            padding: 30px;
-        }
-
-        .header-title {
-            color: #007bff;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>Danh Sách Zones</title>
 </head>
 
 <body>
-    <div class="sidebar">
-        <h4 class="text-center mb-4">Warehouse Panel</h4>
-        <a href="/warehouse/warehouses/list">Quản lý kho</a>
-        <a href="#" class="active">Khu vực (Zone) - Kho #<span th:text="${warehouseId}"></span></a>
-    </div>
+    <h1>Danh Sách Khu Vực (Zone) - Trong Kho ID: <span th:text="${warehouseId}"></span></h1>
+    <a th:href="@{/warehouse/warehouses/list}">Trở Về Danh Sách Kho</a> |
+    <a th:href="@{/wh/{id}(id=${warehouseId})}">Trở Về Dashboard</a>
+    <hr />
 
-    <div class="content">
-        <a href="/warehouse/warehouses/list" class="btn btn-sm btn-secondary mb-3"><i class="fas fa-arrow-left"></i>
-            Quay lại Danh sách Kho</a>
-        <h1 class="header-title">Danh Sách Zone - Kho #<span th:text="${warehouseId}"></span></h1>
-        <hr />
+    <h2>Thêm Zone Mới</h2>
+    <form th:action="@{/warehouse/zones/create}" method="post">
+        <input type="hidden" name="warehouseId" th:value="${warehouseId}" />
+        <label>Tên Zone:</label> <input type="text" name="name" required /> <br />
+        <label>Chuyên Môn Hóa (Loại Asset ID - Bỏ trống nếu không Fix):</label> <input type="number"
+            name="assignedAssetTypeId" /> <br />
+        <label>Sức Chứa Lớn Nhất (Capacity):</label> <input type="number" name="maxCapacity" required value="100" />
+        <br />
+        <button type="submit">Tạo Mới</button>
+    </form>
 
-        <div class="row">
-            <div class="col-lg-8">
-                <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#addZoneModal">
-                    + Thêm Zone mới
-                </button>
-
-                <table class="table table-bordered table-striped shadow-sm bg-white">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Mã Zone</th>
-                            <th>Tên Zone</th>
-                            <th>Sức chứa tối đa</th>
-                            <th>Sức chứa hiện tại</th>
-                            <th>Loại tài sản ID</th>
-                            <th style="width: 150px">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="z : ${zones}">
-                            <td th:text="${z.id}"></td>
-                            <td th:text="${z.name}"></td>
-                            <td th:text="${z.maxCapacity}"></td>
-                            <td th:text="${z.currentCapacity}"></td>
-                            <td th:text="${z.assignedAssetTypeId}"></td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary" data-toggle="modal"
-                                    th:data-target="'#editZoneModal' + ${z.id}">
-                                    <i class="fas fa-edit"></i> Sửa
-                                </button>
-                            </td>
-                        </tr>
-                        <tr th:if="${zones == null or zones.empty}">
-                            <td colspan="6" class="text-center">Kho này chưa có Zone nào.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Zone Modal -->
-    <div class="modal fade" id="addZoneModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <form th:action="@{/warehouse/zones/create}" method="post">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Thêm Zone Mới</h5>
-                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="warehouseId" th:value="${warehouseId}" />
-                        <div class="form-group">
-                            <label>Tên Zone</label>
-                            <input type="text" name="name" class="form-control" required />
-                        </div>
-                        <div class="form-group">
-                            <label>Sức chứa tối đa</label>
-                            <input type="number" name="maxCapacity" class="form-control" required />
-                        </div>
-                        <div class="form-group">
-                            <label>ID Loại tài sản được gắn</label>
-                            <input type="number" name="assignedAssetTypeId" class="form-control" />
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-primary">Lưu</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Zone Modals -->
-    <div th:each="z : ${zones}">
-        <div class="modal fade" th:id="'editZoneModal' + ${z.id}" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <form th:action="@{/warehouse/zones/edit/{id}(id=${z.id})}" method="post">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Chỉnh sửa Zone #<span th:text="${z.id}"></span></h5>
-                            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" name="warehouseId" th:value="${warehouseId}" />
-                            <div class="form-group">
-                                <label>Tên Zone</label>
-                                <input type="text" name="name" class="form-control" th:value="${z.name}" required />
-                            </div>
-                            <div class="form-group">
-                                <label>Sức chứa tối đa</label>
-                                <input type="number" name="maxCapacity" class="form-control" th:value="${z.maxCapacity}"
-                                    required />
-                            </div>
-                            <div class="form-group">
-                                <label>ID Loại tài sản được gắn</label>
-                                <input type="number" name="assignedAssetTypeId" class="form-control"
-                                    th:value="${z.assignedAssetTypeId}" />
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                            <button type="submit" class="btn btn-primary">Cập nhật</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <hr />
+    <h2>Các Zone Hiện Tại</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Zone ID</th>
+                <th>Tên Zone</th>
+                <th>Loại Asset Yêu Cầu</th>
+                <th>Tình Trạng Chứa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="z : ${zones}">
+                <td th:text="${z.id}"></td>
+                <td th:text="${z.name}"></td>
+                <td th:text="${z.assignedAssetTypeId != null ? z.assignedAssetTypeId : 'Tự Do (All)'}"></td>
+                <td><span th:text="${z.currentCapacity}"></span> / <span th:text="${z.maxCapacity}"></span></td>
+            </tr>
+            <tr th:if="${zones.empty}">
+                <td colspan="4">Không có Zone nào được cấu hình trong kho này.</td>
+            </tr>
+        </tbody>
+    </table>
 </body>
 
 </html>

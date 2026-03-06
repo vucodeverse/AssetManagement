@@ -15,7 +15,7 @@ public class AuditScanRecordController {
     private final AuditScanRecordService scanRecordService;
 
     @GetMapping("/audit/{auditId}")
-    public String getRecordsByAuditId(@PathVariable Integer auditId, Model model) {
+    public String getRecordsByAuditId(@PathVariable("auditId") Integer auditId, Model model) {
         model.addAttribute("scans", scanRecordService.getRecordsByAuditId(auditId));
         model.addAttribute("auditId", auditId);
         return "warehouse/audit-scan-list";

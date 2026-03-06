@@ -9,4 +9,6 @@ public interface InventoryTransactionDAO {
     List<InventoryTransaction> findByAssetId(Integer assetId);
 
     List<InventoryTransaction> findByTicketId(Integer ticketId);
+
+    List<Integer> findAssetIdsInZone(Integer zoneId);
 }

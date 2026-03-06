@@ -6,19 +6,18 @@ import edu.fpt.groupfive.dto.warehouse.TransactionResponse;
 import edu.fpt.groupfive.mapper.warehouse.InventoryTransactionMapper;
 import edu.fpt.groupfive.model.warehouse.InventoryTransaction;
 import edu.fpt.groupfive.service.warehouse.InventoryTransactionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class InventoryTransactionServiceImpl implements InventoryTransactionService {
 
-    @Autowired
-    private InventoryTransactionDAO transactionDAO;
+    private final InventoryTransactionDAO transactionDAO;
 
-    @Autowired
-    private InventoryTransactionMapper transactionMapper;
+    private final InventoryTransactionMapper transactionMapper;
 
     @Override
     public TransactionResponse logTransaction(TransactionCreateRequest request) {

@@ -37,7 +37,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
-/.idea/*
+/.idea/
 /target/
 /.smarttomcat/
 /tomcat.8080/

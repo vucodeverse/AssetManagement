@@ -11,4 +11,6 @@ public interface InventoryTicketDAO {
     InventoryTicket findById(Integer id);
 
     List<InventoryTicket> findByWarehouseId(Integer warehouseId);
+
+    int updateStatus(Integer id, String status);
 }

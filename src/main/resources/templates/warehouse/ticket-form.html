@@ -2,170 +2,90 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8" />
-    <title>Tạo Phiếu Kho</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    <style>
-        body {
-            background-color: #f4f7f6;
-        }
-
-        .sidebar {
-            height: 100vh;
-            width: 240px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: #212529;
-            color: white;
-            padding-top: 20px;
-            z-index: 1000;
-        }
-
-        .sidebar a {
-            display: block;
-            color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        .sidebar a:hover {
-            background: #343a40;
-            color: white;
-        }
-
-        .sidebar a.active {
-            background: #007bff;
-            color: white;
-            font-weight: bold;
-        }
-
-        .content {
-            margin-left: 250px;
-            padding: 30px;
-        }
-
-        .header-title {
-            color: #007bff;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .detail-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>Tạo Phiếu Mới</title>
 </head>
 
 <body>
-    <div class="sidebar">
-        <h4 class="text-center mb-4">Warehouse Panel</h4>
-        <a href="/warehouse/warehouses/list" class="active">Quản lý kho</a>
-    </div>
+    <h1>Tạo Phiếu Nhập/Xuất Mới</h1>
+    <a th:href="@{/warehouse/tickets/warehouse/{id}(id=${param.warehouseId})}">Hủy & Quay lại</a>
+    <hr />
 
-    <div class="content">
-        <h1 class="header-title">Tạo Phiếu Nhập/Xuất Mới</h1>
-        <hr />
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="detail-card">
-                    <form th:action="@{/warehouse/tickets/create}" method="post">
-
-                        <div class="row">
-                            <div class="col-md-6 form-group">
-                                <label class="font-weight-bold">ID Kho</label>
-                                <input type="number" name="warehouseId" class="form-control"
-                                    th:value="${param.warehouseId}" required readonly />
-                            </div>
-                            <div class="col-md-6 form-group">
-                                <label class="font-weight-bold">Loại Phiếu</label>
-                                <select name="type" class="form-control" required>
-                                    <option value="IN">NHẬP KHO (IN)</option>
-                                    <option value="OUT">XUẤT KHO (OUT)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 form-group">
-                                <label class="font-weight-bold">ID Người Tạo</label>
-                                <input type="number" name="createdBy" class="form-control" required />
-                            </div>
-                            <div class="col-md-6 form-group">
-                                <label class="font-weight-bold">Trạng Thái Khởi Tạo</label>
-                                <select name="status" class="form-control" required>
-                                    <option value="PENDING">PENDING</option>
-                                    <option value="PROCESSING">PROCESSING</option>
-                                    <option value="COMPLETED">COMPLETED</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <h5 class="mt-4 mb-3 border-bottom pb-2">Danh sách tài sản/vật tư</h5>
-                        <div id="details-container">
-                            <div class="detail-row row mb-2 align-items-end">
-                                <div class="col-md-4 form-group mb-0">
-                                    <label>Loại TS / Vật tư ID</label>
-                                    <input type="number" name="details[0].assetTypeId" class="form-control" required />
-                                </div>
-                                <div class="col-md-4 form-group mb-0">
-                                    <label>Số lượng</label>
-                                    <input type="number" name="details[0].quantity" class="form-control" value="1"
-                                        min="1" required />
-                                </div>
-                                <div class="col-md-4 form-group mb-0">
-                                    <label>Mã Zone đích (Tùy chọn)</label>
-                                    <input type="number" name="details[0].targetZoneId" class="form-control" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="button" class="btn btn-sm btn-outline-info mt-2" onclick="addDetailRow()">+ Thêm
-                            dòng</button>
-
-                        <div class="mt-5 d-flex justify-content-between">
-                            <a th:href="@{/warehouse/tickets/warehouse/{id}(id=${param.warehouseId})}"
-                                class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Hủy</a>
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Tạo Phiếu</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    <form th:action="@{/warehouse/tickets/create}" method="post">
+        <div>
+            <label>Kho ID:</label>
+            <input type="number" name="warehouseId" th:value="${param.warehouseId}" readonly required />
         </div>
-    </div>
+        <br />
 
-    <script>
-        let detailIndex = 1;
-        function addDetailRow() {
-            const container = document.getElementById('details-container');
-            const row = document.createElement('div');
-            row.className = 'detail-row row mb-2 align-items-end';
-            row.innerHTML = `
-            <div class="col-md-4 form-group mb-0">
-                <label>Loại TS / Vật tư ID</label>
-                <input type="number" name="details[${detailIndex}].assetTypeId" class="form-control" required/>
-            </div>
-            <div class="col-md-4 form-group mb-0">
-                <label>Số lượng</label>
-                <input type="number" name="details[${detailIndex}].quantity" class="form-control" value="1" min="1" required/>
-            </div>
-            <div class="col-md-3 form-group mb-0">
-                <label>Mã Zone đích</label>
-                <input type="number" name="details[${detailIndex}].targetZoneId" class="form-control"/>
-            </div>
-            <div class="col-md-1 form-group mb-0 text-right">
-                <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.detail-row').remove()">X</button>
-            </div>
-        `;
-            container.appendChild(row);
-            detailIndex++;
-        }
-    </script>
+        <div>
+            <label>Loại Phiếu (Ticket Type):</label>
+            <select name="ticketType" required>
+                <option value="IN">Nhập Kho (IN)</option>
+                <option value="OUT">Xuất Kho (OUT)</option>
+            </select>
+        </div>
+        <br />
+
+        <div>
+            <label>Lý Do (Ticket Ref):</label>
+            <select name="ticketRef" required>
+                <option value="RETURN">Thu hồi tài sản về kho (RETURN)</option>
+                <option value="TRANSFER">Điều chuyển (TRANSFER)</option>
+                <option value="ALLOCATION">Cấp phát tài sản (ALLOCATION)</option>
+                <option value="OTHER">Khác (OTHER)</option>
+            </select>
+        </div>
+        <br />
+
+        <div>
+            <label>Người tạo (ID User):</label>
+            <input type="number" name="createdBy" required />
+        </div>
+        <br />
+
+        <div>
+            <label>Ghi chú Phiếu:</label>
+            <input type="text" name="note" />
+        </div>
+        <br />
+
+        <h3>Chi Tiết Tài Sản (Dự kiến)</h3>
+        <table border="1" id="detail-table">
+            <thead>
+                <tr>
+                    <th>Asset Type ID</th>
+                    <th>Số lượng dự kiến</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dòng 1 -->
+                <tr>
+                    <td><input type="number" name="details[0].assetTypeId" required /></td>
+                    <td><input type="number" name="details[0].expectedQuantity" value="1" min="1" required /></td>
+                    <td><input type="text" name="details[0].note" /></td>
+                </tr>
+                <!-- Dòng 2 -->
+                <tr>
+                    <td><input type="number" name="details[1].assetTypeId" /></td>
+                    <td><input type="number" name="details[1].expectedQuantity" /></td>
+                    <td><input type="text" name="details[1].note" /></td>
+                </tr>
+                <!-- Dòng 3 -->
+                <tr>
+                    <td><input type="number" name="details[2].assetTypeId" /></td>
+                    <td><input type="number" name="details[2].expectedQuantity" /></td>
+                    <td><input type="text" name="details[2].note" /></td>
+                </tr>
+            </tbody>
+        </table>
+        <i>* Hệ thống tạm thời cho phép nhập tối đa 3 loại tài sản trong 1 Phiếu. Bỏ trống Asset Type ID nếu không
+            dùng.</i>
+        <br /><br />
+
+        <button type="submit">Lưu Phiếu Mới</button>
+    </form>
 </body>
 
 </html>

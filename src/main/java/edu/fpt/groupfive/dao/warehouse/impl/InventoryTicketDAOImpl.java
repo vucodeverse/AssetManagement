@@ -25,6 +25,7 @@ public class InventoryTicketDAOImpl implements InventoryTicketDAO {
                     .id(rs.getInt("id"))
                     .warehouseId(rs.getInt("warehouse_id"))
                     .ticketType(rs.getString("ticket_type"))
+                    .ticketRef(rs.getString("ticket_ref"))
                     .status(rs.getString("status"))
                     .createdBy(rs.getInt("created_by"))
                     .createdAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime()
@@ -39,15 +40,16 @@ public class InventoryTicketDAOImpl implements InventoryTicketDAO {
 
     @Override
     public int insert(InventoryTicket ticket) {
-        String sql = "INSERT INTO wh_inventory_ticket (warehouse_id, ticket_type, status, created_by, note) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO wh_inventory_ticket (warehouse_id, ticket_type, ticket_ref, status, created_by, note) VALUES (?, ?, ?, ?, ?, ?)";
         org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             java.sql.PreparedStatement ps = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, ticket.getWarehouseId());
             ps.setString(2, ticket.getTicketType());
-            ps.setString(3, ticket.getStatus());
-            ps.setInt(4, ticket.getCreatedBy());
-            ps.setString(5, ticket.getNote());
+            ps.setString(3, ticket.getTicketRef());
+            ps.setString(4, ticket.getStatus());
+            ps.setInt(5, ticket.getCreatedBy());
+            ps.setString(6, ticket.getNote());
             return ps;
         }, keyHolder);
 
@@ -75,5 +77,11 @@ public class InventoryTicketDAOImpl implements InventoryTicketDAO {
     public List<InventoryTicket> findByWarehouseId(Integer warehouseId) {
         String sql = "SELECT * FROM wh_inventory_ticket WHERE warehouse_id = ? ORDER BY id DESC";
         return jdbcTemplate.query(sql, rowMapper, warehouseId);
+    }
+
+    @Override
+    public int updateStatus(Integer id, String status) {
+        String sql = "UPDATE wh_inventory_ticket SET status = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, status, id);
     }
 }

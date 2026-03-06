@@ -5,22 +5,28 @@ import edu.fpt.groupfive.dto.warehouse.AuditCreateRequest;
 import edu.fpt.groupfive.dto.warehouse.AuditResponse;
 import edu.fpt.groupfive.dto.warehouse.AuditUpdateRequest;
 import edu.fpt.groupfive.mapper.warehouse.InventoryAuditMapper;
+import edu.fpt.groupfive.model.warehouse.AuditScanRecord;
 import edu.fpt.groupfive.model.warehouse.InventoryAudit;
 import edu.fpt.groupfive.service.warehouse.InventoryAuditService;
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.fpt.groupfive.dao.warehouse.AuditScanRecordDAO;
+import edu.fpt.groupfive.dao.warehouse.InventoryTransactionDAO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class InventoryAuditServiceImpl implements InventoryAuditService {
 
-    @Autowired
-    private InventoryAuditDAO auditDAO;
+    private final InventoryAuditDAO auditDAO;
+    private final AuditScanRecordDAO scanRecordDAO;
+    private final InventoryTransactionDAO transactionDAO;
 
-    @Autowired
-    private InventoryAuditMapper auditMapper;
+    private final InventoryAuditMapper auditMapper;
 
     @Override
     public AuditResponse createAudit(AuditCreateRequest request) {
@@ -49,7 +55,25 @@ public class InventoryAuditServiceImpl implements InventoryAuditService {
         existing.setNote(request.getNote());
 
         // If completed or cancelled, set end time
-        if ("COMPLETED".equals(request.getStatus()) || "CANCELLED".equals(request.getStatus())) {
+        if ("COMPLETED".equals(request.getStatus())) {
+            List<Integer> expectedAssetIds = transactionDAO.findAssetIdsInZone(existing.getZoneId());
+
+            List<AuditScanRecord> scans = scanRecordDAO.findByAuditId(existing.getId());
+            Set<Integer> scannedIds = scans.stream().map(AuditScanRecord::getAssetId).collect(Collectors.toSet());
+
+            for (Integer expectedId : expectedAssetIds) {
+                if (!scannedIds.contains(expectedId)) {
+                    AuditScanRecord missingRecord = AuditScanRecord.builder()
+                            .auditId(existing.getId())
+                            .assetId(expectedId)
+                            .matchStatus("MISSING")
+                            .actionTaken("Auto-generated upon completion")
+                            .build();
+                    scanRecordDAO.insert(missingRecord);
+                }
+            }
+            existing.setEndTime(LocalDateTime.now());
+        } else if ("CANCELLED".equals(request.getStatus())) {
             existing.setEndTime(LocalDateTime.now());
         }
 

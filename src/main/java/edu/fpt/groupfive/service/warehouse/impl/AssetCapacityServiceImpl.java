@@ -6,17 +6,16 @@ import edu.fpt.groupfive.dto.warehouse.AssetCapacityResponse;
 import edu.fpt.groupfive.mapper.warehouse.AssetCapacityMapper;
 import edu.fpt.groupfive.model.warehouse.AssetCapacity;
 import edu.fpt.groupfive.service.warehouse.AssetCapacityService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class AssetCapacityServiceImpl implements AssetCapacityService {
 
-    @Autowired
-    private AssetCapacityDAO capacityDAO;
+    private final AssetCapacityDAO capacityDAO;
 
-    @Autowired
-    private AssetCapacityMapper capacityMapper;
+    private final AssetCapacityMapper capacityMapper;
 
     @Override
     public AssetCapacityResponse createOrUpdateCapacity(AssetCapacityRequest request) {

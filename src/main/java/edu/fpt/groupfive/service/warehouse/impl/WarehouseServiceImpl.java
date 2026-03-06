@@ -7,19 +7,18 @@ import edu.fpt.groupfive.dto.warehouse.WarehouseUpdateRequest;
 import edu.fpt.groupfive.mapper.warehouse.WarehouseMapper;
 import edu.fpt.groupfive.model.warehouse.Warehouse;
 import edu.fpt.groupfive.service.warehouse.WarehouseService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class WarehouseServiceImpl implements WarehouseService {
 
-    @Autowired
-    private WarehouseDAO warehouseDAO;
+    private final WarehouseDAO warehouseDAO;
 
-    @Autowired
-    private WarehouseMapper warehouseMapper;
+    private final WarehouseMapper warehouseMapper;
 
     @Override
     public WarehouseResponse createWarehouse(WarehouseCreateRequest request) {

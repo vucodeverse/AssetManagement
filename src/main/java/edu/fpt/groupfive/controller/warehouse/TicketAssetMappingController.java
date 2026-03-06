@@ -15,7 +15,7 @@ public class TicketAssetMappingController {
     private final TicketAssetMappingService mappingService;
 
     @GetMapping("/detail/{detailId}")
-    public String getMappingsByDetailId(@PathVariable Integer detailId, Model model) {
+    public String getMappingsByDetailId(@PathVariable("detailId") Integer detailId, Model model) {
         model.addAttribute("mappings", mappingService.getMappingsByDetailId(detailId));
         return "warehouse/ticket-asset-mapping-list";
     }

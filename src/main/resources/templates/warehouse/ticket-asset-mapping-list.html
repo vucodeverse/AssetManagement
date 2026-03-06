@@ -2,100 +2,45 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8" />
-    <title>Danh Sách Mapping Tài Sản - Phiếu Kho</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    <style>
-        body {
-            background-color: #f4f7f6;
-        }
-
-        .sidebar {
-            height: 100vh;
-            width: 240px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: #212529;
-            color: white;
-            padding-top: 20px;
-            z-index: 1000;
-        }
-
-        .sidebar a {
-            display: block;
-            color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        .sidebar a:hover {
-            background: #343a40;
-            color: white;
-        }
-
-        .sidebar a.active {
-            background: #007bff;
-            color: white;
-            font-weight: bold;
-        }
-
-        .content {
-            margin-left: 250px;
-            padding: 30px;
-        }
-
-        .header-title {
-            color: #007bff;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>Asset Mapping Định Danh</title>
 </head>
 
 <body>
-    <div class="sidebar">
-        <h4 class="text-center mb-4">Warehouse Panel</h4>
-        <a href="/warehouse/warehouses/list">Quản lý kho</a>
-        <a href="#" class="active">Mapping Tài Sản</a>
-    </div>
+    <h1>Định Danh Tài Sản Thực Tế Cho Yêu Cầu Nhập/Xuất</h1>
+    <p>Thuộc Line Dòng Yêu Cầu Phiếu (Detail Line ID): <span th:text="${detailId}"></span></p>
+    <button onclick="window.history.back()">Quay lại Chi Tiết Phiếu</button>
+    <hr />
 
-    <div class="content">
-        <button onclick="window.history.back()" class="btn btn-sm btn-secondary mb-3"><i class="fas fa-arrow-left"></i>
-            Quay lại Dòng Chi Tiết</button>
-        <h1 class="header-title">Chi Tiết Mapping Tài Sản</h1>
-        <hr />
+    <h2>Thêm Mapping Mới</h2>
+    <form th:action="@{/warehouse/ticket-asset-mappings/create}" method="post">
+        <input type="hidden" name="detailId" th:value="${detailId}" />
+        <label>Bắn Mã Asset ID Định Danh:</label>
+        <input type="number" name="assetId" required />
+        <button type="submit">Lưu Mapping</button>
+    </form>
+    <p><i>Đối với phiếu nhập/xuất, hệ thống yêu cầu bạn quét từng mã vạch (Asset ID) để gắn chính xác món đồ thực tế vào
+            dòng yêu cầu trên phiếu. Sau đó phải QC món đồ này!</i></p>
 
-        <div class="row">
-            <div class="col-lg-12">
-                <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#addMapModal">
-                    + Thêm Mapping Định Danh
-                </button>
-                <table class="table table-bordered table-striped shadow-sm bg-white">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Mapping ID</th>
-                            <th>Detail Line ID</th>
-                            <th>Mã Tài Sản Thực Tế (Asset ID)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="m : ${mappings}">
-                            <td th:text="${m.id}"></td>
-                            <td th:text="${m.detailId}"></td>
-                            <td><strong>#<span th:text="${m.assetId}"></span></strong></td>
-                        </tr>
-                        <tr th:if="${mappings == null or mappings.empty}">
-                            <td colspan="3" class="text-center">Chưa có tài sản định danh nào được gán cho dòng chi tiết
-                                này.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <hr />
+    <h2>Danh Sách Định Danh Đã Gắn</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Mapping ID</th>
+                <th>Mã Asset Định Danh Tương Ứng</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="m : ${mappings}">
+                <td th:text="${m.id}"></td>
+                <td th:text="${m.assetId}"></td>
+            </tr>
+            <tr th:if="${mappings.empty}">
+                <td colspan="2">Chưa gán bất kỳ tài sản định danh nào cho dòng yêu cầu này.</td>
+            </tr>
+        </tbody>
+    </table>
 </body>
 
 </html>

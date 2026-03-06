@@ -15,7 +15,7 @@ public class AssetCapacityController {
     private final AssetCapacityService capacityService;
 
     @GetMapping("/asset-type/{assetTypeId}")
-    public String getCapacityByAssetTypeId(@PathVariable Integer assetTypeId, Model model) {
+    public String getCapacityByAssetTypeId(@PathVariable("assetTypeId") Integer assetTypeId, Model model) {
         model.addAttribute("capacity", capacityService.getCapacityByAssetTypeId(assetTypeId));
         return "warehouse/capacity-detail";
     }

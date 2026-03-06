@@ -16,7 +16,7 @@ public class InventoryAuditController {
     private final InventoryAuditService auditService;
 
     @GetMapping("/warehouse/{warehouseId}")
-    public String getAuditsByWarehouseId(@PathVariable Integer warehouseId, Model model) {
+    public String getAuditsByWarehouseId(@PathVariable("warehouseId") Integer warehouseId, Model model) {
         model.addAttribute("audits", auditService.getAuditsByWarehouseId(warehouseId));
         model.addAttribute("warehouseId", warehouseId);
         return "warehouse/audit-list";
@@ -29,13 +29,13 @@ public class InventoryAuditController {
     }
 
     @GetMapping("/{id}")
-    public String getAuditById(@PathVariable Integer id, Model model) {
+    public String getAuditById(@PathVariable("id") Integer id, Model model) {
         model.addAttribute("audit", auditService.getAuditById(id));
         return "warehouse/audit-detail";
     }
 
     @PostMapping("/edit/{id}")
-    public String updateAudit(@PathVariable Integer id, @ModelAttribute AuditUpdateRequest request) {
+    public String updateAudit(@PathVariable("id") Integer id, @ModelAttribute AuditUpdateRequest request) {
         request.setId(id);
         // Assuming we need to redirect back to warehouse list, but we don't have
         // warehouseId easily here.

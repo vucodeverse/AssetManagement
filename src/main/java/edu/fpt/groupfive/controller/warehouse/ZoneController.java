@@ -16,7 +16,7 @@ public class ZoneController {
     private final ZoneService zoneService;
 
     @GetMapping("/warehouse/{warehouseId}")
-    public String getByWarehouseId(@PathVariable Integer warehouseId, Model model) {
+    public String getByWarehouseId(@PathVariable("warehouseId") Integer warehouseId, Model model) {
         model.addAttribute("zones", zoneService.getZonesByWarehouseId(warehouseId));
         model.addAttribute("warehouseId", warehouseId);
         return "warehouse/zone-list";
@@ -29,7 +29,7 @@ public class ZoneController {
     }
 
     @PostMapping("/edit/{id}")
-    public String update(@PathVariable Integer id, @ModelAttribute ZoneUpdateRequest request) {
+    public String update(@PathVariable("id") Integer id, @ModelAttribute ZoneUpdateRequest request) {
         request.setId(id);
         zoneService.updateZone(request);
         return "redirect:/warehouse/zones/warehouse/" + request.getWarehouseId();

@@ -8,7 +8,7 @@ import edu.fpt.groupfive.mapper.warehouse.InventoryTicketMapper;
 import edu.fpt.groupfive.model.warehouse.InventoryTicket;
 import edu.fpt.groupfive.model.warehouse.TicketDetail;
 import edu.fpt.groupfive.service.warehouse.InventoryTicketService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,16 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class InventoryTicketServiceImpl implements InventoryTicketService {
 
-    @Autowired
-    private InventoryTicketDAO ticketDAO;
+    private final InventoryTicketDAO ticketDAO;
 
-    @Autowired
-    private TicketDetailDAO ticketDetailDAO;
+    private final TicketDetailDAO ticketDetailDAO;
 
-    @Autowired
-    private InventoryTicketMapper ticketMapper;
+    private final InventoryTicketMapper ticketMapper;
 
     @Override
     @Transactional
@@ -33,6 +31,7 @@ public class InventoryTicketServiceImpl implements InventoryTicketService {
         InventoryTicket ticket = InventoryTicket.builder()
                 .warehouseId(request.getWarehouseId())
                 .ticketType(request.getTicketType())
+                .ticketRef(request.getTicketRef())
                 .status("PENDING")
                 .createdBy(request.getCreatedBy())
                 .note(request.getNote())

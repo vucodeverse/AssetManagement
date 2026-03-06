@@ -15,6 +15,7 @@ public class TicketResponse {
     private Integer id;
     private Integer warehouseId;
     private String ticketType;
+    private String ticketRef;
     private String status;
     private Integer createdBy;
     private LocalDateTime createdAt;

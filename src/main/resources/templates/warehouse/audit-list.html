@@ -2,149 +2,60 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8" />
-    <title>Danh Sách Kiểm Kê (Audit)</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    <style>
-        body {
-            background-color: #f4f7f6;
-        }
-
-        .sidebar {
-            height: 100vh;
-            width: 240px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: #212529;
-            color: white;
-            padding-top: 20px;
-            z-index: 1000;
-        }
-
-        .sidebar a {
-            display: block;
-            color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        .sidebar a:hover {
-            background: #343a40;
-            color: white;
-        }
-
-        .sidebar a.active {
-            background: #007bff;
-            color: white;
-            font-weight: bold;
-        }
-
-        .content {
-            margin-left: 250px;
-            padding: 30px;
-        }
-
-        .header-title {
-            color: #007bff;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>Danh Sách Kiểm Kê</title>
 </head>
 
 <body>
-    <div class="sidebar">
-        <h4 class="text-center mb-4">Warehouse Panel</h4>
-        <a href="/warehouse/warehouses/list">Quản lý kho</a>
-        <a href="#" class="active">Kỳ Kiểm Kê - Kho #<span th:text="${warehouseId}"></span></a>
-    </div>
+    <h1>Danh Sách Kiểm Kê - Kho ID: <span th:text="${warehouseId}"></span></h1>
+    <a th:href="@{/wh/{id}(id=${warehouseId})}">Quay Về Dashboard</a>
+    <hr />
 
-    <div class="content">
-        <a href="/warehouse/warehouses/list" class="btn btn-sm btn-secondary mb-3"><i class="fas fa-arrow-left"></i>
-            Quay lại Danh sách Kho</a>
-        <h1 class="header-title">Danh Sách Kỳ Kiểm Kê - Kho #<span th:text="${warehouseId}"></span></h1>
-        <hr />
+    <h2>Tạo Phiên Kiểm Kê Mới</h2>
+    <form th:action="@{/warehouse/audits/create}" method="post">
+        <input type="hidden" name="warehouseId" th:value="${warehouseId}" />
 
-        <div class="row">
-            <div class="col-lg-10">
-                <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#addAuditModal">
-                    + Khởi Tạo Kỳ Kiểm Kê Mới
-                </button>
+        <label>Zone ID cần kiểm:</label>
+        <input type="number" name="zoneId" required /> <br /><br />
 
-                <table class="table table-bordered table-striped shadow-sm bg-white">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Audit ID</th>
-                            <th>Ngày Tạo</th>
-                            <th>Trạng Thái</th>
-                            <th>Người Thực Hiện (ID)</th>
-                            <th>Ghi chú</th>
-                            <th style="width: 150px">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="a : ${audits}">
-                            <td th:text="${a.id}"></td>
-                            <td th:text="${#temporals.format(a.auditDate, 'dd/MM/yyyy')}"></td>
-                            <td>
-                                <span th:if="${a.status == 'PLANNED'}" class="badge badge-secondary">LÊN KẾ HOẠCH</span>
-                                <span th:if="${a.status == 'IN_PROGRESS'}" class="badge badge-info">ĐANG THỰC
-                                    HIỆN</span>
-                                <span th:if="${a.status == 'COMPLETED'}" class="badge badge-success">HOÀN THÀNH</span>
-                                <span th:if="${a.status == 'CANCELLED'}" class="badge badge-danger">ĐÃ HỦY</span>
-                            </td>
-                            <td th:text="${a.auditorId}"></td>
-                            <td th:text="${a.notes}"></td>
-                            <td>
-                                <a th:href="@{/warehouse/audits/{id}(id=${a.id})}"
-                                    class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i> Xem/Quét
-                                </a>
-                            </td>
-                        </tr>
-                        <tr th:if="${audits == null or audits.empty}">
-                            <td colspan="6" class="text-center">Kho này chưa có kỳ kiểm kê nào.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+        <label>ID Người Kiểm Kê (Auditor):</label>
+        <input type="number" name="auditorId" required /> <br /><br />
 
-    <!-- Add Modal -->
-    <div class="modal fade" id="addAuditModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <form th:action="@{/warehouse/audits/create}" method="post">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Khởi Tạo Kỳ Kiểm Kê</h5>
-                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="warehouseId" th:value="${warehouseId}" />
-                        <div class="form-group">
-                            <label>Auditor ID (Người thực hiện)</label>
-                            <input type="number" name="auditorId" class="form-control" required />
-                        </div>
-                        <div class="form-group">
-                            <label>Ghi chú ban đầu</label>
-                            <textarea name="notes" class="form-control"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-primary">Tạo mới</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+        <label>Ghi chú mục đích:</label>
+        <input type="text" name="note" /> <br /><br />
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+        <button type="submit">Bắt Đầu Đợt Kiểm Mới</button>
+    </form>
+
+    <hr />
+    <h2>Các Phiên Kiểm Kê</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Audit ID</th>
+                <th>Zone ID</th>
+                <th>Ngày Bắt Đầu</th>
+                <th>Trạng Thái</th>
+                <th>Người Kiểm Kê ID</th>
+                <th>Ghi Chú</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="a : ${audits}">
+                <td th:text="${a.id}"></td>
+                <td th:text="${a.zoneId}"></td>
+                <td th:text="${#temporals.format(a.startTime, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="${a.status}"></td>
+                <td th:text="${a.auditorId}"></td>
+                <td th:text="${a.note}"></td>
+                <td><a th:href="@{/warehouse/audits/{id}(id=${a.id})}">Quét thiết bị / Chi tiết Audit</a></td>
+            </tr>
+            <tr th:if="${audits.empty}">
+                <td colspan="7">Không có phiên kiểm kê nào trong kho.</td>
+            </tr>
+        </tbody>
+    </table>
 </body>
 
 </html>

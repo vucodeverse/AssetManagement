@@ -8,7 +8,7 @@ import java.util.List;
 public interface TicketQcHistoryService {
     QcHistoryResponse createQcHistory(QcHistoryCreateRequest request);
 
-    List<QcHistoryResponse> getByTicketId(Integer ticketId);
+    List<QcHistoryResponse> getQcHistoryByTicketId(Integer ticketId);
 
     List<QcHistoryResponse> getByAssetId(Integer assetId);
 }

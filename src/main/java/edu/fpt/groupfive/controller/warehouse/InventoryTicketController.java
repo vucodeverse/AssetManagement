@@ -15,7 +15,7 @@ public class InventoryTicketController {
     private final InventoryTicketService ticketService;
 
     @GetMapping("/warehouse/{warehouseId}")
-    public String getTicketsByWarehouseId(@PathVariable Integer warehouseId, Model model) {
+    public String getTicketsByWarehouseId(@PathVariable("warehouseId") Integer warehouseId, Model model) {
         model.addAttribute("tickets", ticketService.getTicketsByWarehouseId(warehouseId));
         model.addAttribute("warehouseId", warehouseId);
         return "warehouse/ticket-list";
@@ -33,7 +33,7 @@ public class InventoryTicketController {
     }
 
     @GetMapping("/{id}")
-    public String getTicketById(@PathVariable Integer id, Model model) {
+    public String getTicketById(@PathVariable("id") Integer id, Model model) {
         model.addAttribute("ticket", ticketService.getTicketById(id));
         return "warehouse/ticket-detail";
     }

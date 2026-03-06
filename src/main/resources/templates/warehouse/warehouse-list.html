@@ -1,97 +1,45 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <meta charset="UTF-8"/>
-    <title>Quản Lý Kho (Warehouse)</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-    <style>
-        body { background-color: #f4f7f6; }
-        .sidebar {
-            height: 100vh;
-            width: 240px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: #212529;
-            color: white;
-            padding-top: 20px;
-            z-index: 1000;
-        }
-        .sidebar a {
-            display: block;
-            color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-        .sidebar a:hover {
-            background: #343a40;
-            color: white;
-        }
-        .sidebar a.active {
-            background: #007bff;
-            color: white;
-            font-weight: bold;
-        }
-        .content { margin-left: 250px; padding: 30px; }
-        .header-title { color: #007bff; margin-bottom: 20px; font-weight: bold; }
-        .detail-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>Danh Sách Kho</title>
 </head>
+
 <body>
-<div class="sidebar">
-    <h4 class="text-center mb-4">Warehouse Panel</h4>
-    <a href="/warehouse/warehouses/list" class="active">Quản lý kho</a>
-    <a href="/warehouse/tickets/warehouse/1">Phiếu xuất nhập</a>
-</div>
+    <h1>Quản Lý Các Kho (Warehouses)</h1>
+    <a href="/warehouse/warehouses/create">Thêm Kho Mới</a>
+    <hr />
 
-<div class="content">
-    <h1 class="header-title">Quản Lý Danh Sách Kho</h1>
-    <hr/>
-
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <a th:href="@{/warehouse/warehouses/create}" class="btn btn-primary">
-                    + Thêm kho mới
-                </a>
-            </div>
-
-            <table class="table table-bordered table-striped shadow-sm bg-white">
-                <thead class="thead-dark">
-                <tr>
-                    <th>Mã Kho</th>
-                    <th>Tên Kho</th>
-                    <th>Địa Chỉ</th>
-                    <th>Quản Lý (ID)</th>
-                    <th style="width: 200px">Hành động</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="w : ${warehouses}">
-                    <td th:text="${w.id}"></td>
-                    <td th:text="${w.name}"></td>
-                    <td th:text="${w.address}"></td>
-                    <td th:text="${w.managerId}"></td>
-                    <td>
-                        <a th:href="@{/warehouse/warehouses/edit/{id}(id=${w.id})}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-edit"></i> Sửa
-                        </a>
-                        <a th:href="@{/warehouse/zones/warehouse/{id}(id=${w.id})}" class="btn btn-sm btn-outline-info">
-                            <i class="fas fa-map"></i> Các Zone
-                        </a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên Kho</th>
+                <th>Địa Chỉ</th>
+                <th>Quản lý ID</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="w : ${warehouses}">
+                <td th:text="${w.id}"></td>
+                <td th:text="${w.name}"></td>
+                <td th:text="${w.address}"></td>
+                <td th:text="${w.managerUserId}"></td>
+                <td th:text="${w.status}"></td>
+                <td>
+                    <a th:href="@{/warehouse/warehouses/edit/{id}(id=${w.id})}">Sửa</a> |
+                    <a th:href="@{/wh/{id}(id=${w.id})}">Vào Dashboard Kho Này</a> |
+                    <a th:href="@{/warehouse/zones/warehouse/{id}(id=${w.id})}">Quản Lý Vùng (Zone)</a>
+                </td>
+            </tr>
+            <tr th:if="${warehouses.empty}">
+                <td colspan="6">Không có dữ liệu Kho nào trong hệ thống.</td>
+            </tr>
+        </tbody>
+    </table>
 </body>
+
 </html>

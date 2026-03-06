@@ -13,6 +13,7 @@ import java.util.List;
 public class TicketCreateRequest {
     private Integer warehouseId;
     private String ticketType; // IN, OUT
+    private String ticketRef; // ALLOCATION, RETURN, TRANSFER
     private Integer createdBy;
     private String note;
     private List<TicketDetailRequest> details;

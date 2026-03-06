@@ -15,7 +15,7 @@ public class TicketQcHistoryController {
     private final TicketQcHistoryService qcHistoryService;
 
     @GetMapping("/ticket/{ticketId}")
-    public String getByTicketId(@PathVariable Integer ticketId, Model model) {
+    public String getByTicketId(@PathVariable("ticketId") Integer ticketId, Model model) {
         model.addAttribute("qcHistories", qcHistoryService.getQcHistoryByTicketId(ticketId));
         return "warehouse/qc-history-list";
     }

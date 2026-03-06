@@ -15,6 +15,7 @@ public class InventoryTicket {
     private Integer id;
     private Integer warehouseId;
     private String ticketType; // IN, OUT
+    private String ticketRef; // ALLOCATION, RETURN, TRANSFER
     private String status; // PENDING, PROCESSING, COMPLETED, CANCELLED
     private Integer createdBy;
     private LocalDateTime createdAt;

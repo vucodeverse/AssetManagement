@@ -6,19 +6,18 @@ import edu.fpt.groupfive.dto.warehouse.TicketAssetMappingResponse;
 import edu.fpt.groupfive.mapper.warehouse.TicketAssetMappingMapper;
 import edu.fpt.groupfive.model.warehouse.TicketAssetMapping;
 import edu.fpt.groupfive.service.warehouse.TicketAssetMappingService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TicketAssetMappingServiceImpl implements TicketAssetMappingService {
 
-    @Autowired
-    private TicketAssetMappingDAO mappingDAO;
+    private final TicketAssetMappingDAO mappingDAO;
 
-    @Autowired
-    private TicketAssetMappingMapper mappingMapper;
+    private final TicketAssetMappingMapper mappingMapper;
 
     @Override
     public TicketAssetMappingResponse mapAssetToTicketDetail(TicketAssetMappingRequest request) {

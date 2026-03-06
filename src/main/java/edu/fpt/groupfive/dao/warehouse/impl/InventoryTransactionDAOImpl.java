@@ -81,4 +81,18 @@ public class InventoryTransactionDAOImpl implements InventoryTransactionDAO {
         String sql = "SELECT * FROM wh_inventory_transaction WHERE ticket_id = ? ORDER BY transaction_date DESC";
         return jdbcTemplate.query(sql, rowMapper, ticketId);
     }
+
+    @Override
+    public List<Integer> findAssetIdsInZone(Integer zoneId) {
+        String sql = "SELECT asset_id " +
+                "FROM wh_inventory_transaction it1 " +
+                "WHERE to_zone_id = ? " +
+                "  AND transaction_id = (" +
+                "      SELECT TOP 1 transaction_id " +
+                "      FROM wh_inventory_transaction it2 " +
+                "      WHERE it1.asset_id = it2.asset_id " +
+                "      ORDER BY transaction_date DESC, transaction_id DESC" +
+                "  )";
+        return jdbcTemplate.queryForList(sql, Integer.class, zoneId);
+    }
 }

@@ -1,31 +1,52 @@
 package edu.fpt.groupfive.service.warehouse.impl;
 
 import edu.fpt.groupfive.dao.warehouse.AuditScanRecordDAO;
+import edu.fpt.groupfive.dao.warehouse.InventoryAuditDAO;
+import edu.fpt.groupfive.dao.warehouse.InventoryTransactionDAO;
 import edu.fpt.groupfive.dto.warehouse.AuditScanRequest;
 import edu.fpt.groupfive.dto.warehouse.AuditScanResponse;
 import edu.fpt.groupfive.mapper.warehouse.AuditScanRecordMapper;
 import edu.fpt.groupfive.model.warehouse.AuditScanRecord;
+import edu.fpt.groupfive.model.warehouse.InventoryAudit;
+import edu.fpt.groupfive.model.warehouse.InventoryTransaction;
 import edu.fpt.groupfive.service.warehouse.AuditScanRecordService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AuditScanRecordServiceImpl implements AuditScanRecordService {
 
-    @Autowired
-    private AuditScanRecordDAO scanRecordDAO;
+    private final AuditScanRecordDAO scanRecordDAO;
+    private final InventoryAuditDAO auditDAO;
+    private final InventoryTransactionDAO transactionDAO;
 
-    @Autowired
-    private AuditScanRecordMapper scanRecordMapper;
+    private final AuditScanRecordMapper scanRecordMapper;
 
     @Override
     public AuditScanResponse scanAsset(AuditScanRequest request) {
+        // 1. Fetch Audit to get Zone ID
+        InventoryAudit audit = auditDAO.findById(request.getAuditId());
+
+        // 2. Determine actual Zone ID of Asset
+        List<InventoryTransaction> txs = transactionDAO.findByAssetId(request.getAssetId());
+        Integer actualZoneId = null;
+        if (txs != null && !txs.isEmpty()) {
+            actualZoneId = txs.get(0).getToZoneId(); // Assuming list is ordered by date DESC
+        }
+
+        // 3. Compare Zone ID
+        String matchStatus = "MISPLACED";
+        if (audit != null && audit.getZoneId().equals(actualZoneId)) {
+            matchStatus = "MATCHED";
+        }
+
         AuditScanRecord record = AuditScanRecord.builder()
                 .auditId(request.getAuditId())
                 .assetId(request.getAssetId())
-                .matchStatus(request.getMatchStatus())
+                .matchStatus(matchStatus)
                 .actionTaken(request.getActionTaken())
                 .build();
 

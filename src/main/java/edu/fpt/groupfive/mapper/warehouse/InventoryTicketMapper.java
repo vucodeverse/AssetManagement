@@ -27,6 +27,7 @@ public class InventoryTicketMapper {
                 .id(ticket.getId())
                 .warehouseId(ticket.getWarehouseId())
                 .ticketType(ticket.getTicketType())
+                .ticketRef(ticket.getTicketRef())
                 .status(ticket.getStatus())
                 .createdBy(ticket.getCreatedBy())
                 .createdAt(ticket.getCreatedAt())

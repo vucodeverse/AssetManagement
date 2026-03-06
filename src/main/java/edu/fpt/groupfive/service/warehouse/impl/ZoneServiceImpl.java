@@ -7,19 +7,18 @@ import edu.fpt.groupfive.dto.warehouse.ZoneUpdateRequest;
 import edu.fpt.groupfive.mapper.warehouse.ZoneMapper;
 import edu.fpt.groupfive.model.warehouse.Zone;
 import edu.fpt.groupfive.service.warehouse.ZoneService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ZoneServiceImpl implements ZoneService {
 
-    @Autowired
-    private ZoneDAO zoneDAO;
+    private final ZoneDAO zoneDAO;
 
-    @Autowired
-    private ZoneMapper zoneMapper;
+    private final ZoneMapper zoneMapper;
 
     @Override
     public ZoneResponse createZone(ZoneCreateRequest request) {

@@ -34,13 +34,13 @@ public class WarehouseController {
     }
 
     @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Integer id, Model model) {
+    public String showEditForm(@PathVariable("id") Integer id, Model model) {
         model.addAttribute("warehouse", warehouseService.getWarehouseById(id));
         return "warehouse/warehouse-form";
     }
 
     @PostMapping("/edit/{id}")
-    public String update(@PathVariable Integer id, @ModelAttribute WarehouseUpdateRequest request) {
+    public String update(@PathVariable("id") Integer id, @ModelAttribute WarehouseUpdateRequest request) {
         request.setId(id);
         warehouseService.updateWarehouse(request);
         return "redirect:/warehouse/warehouses/list";
