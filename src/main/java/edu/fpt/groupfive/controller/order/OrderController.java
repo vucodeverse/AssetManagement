@@ -1,21 +1,19 @@
 package edu.fpt.groupfive.controller.order;
 
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
-import edu.fpt.groupfive.dto.response.PurchaseOrderFullResponse;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -24,93 +22,97 @@ import java.util.List;
 @RequestMapping("/purchase-orders")
 public class OrderController {
 
+    private static final String VIEW_ORDER_LIST = "order/order-from-purchase";
+    private static final String VIEW_ORDER_FORM = "order/order-form";
+    private static final String VIEW_ORDER_DETAIL = "order/order-of-purchase";
+
     private final OrderService orderService;
     private final SupplierService supplierService;
     private final OrderCalculationUtil orderCalculationUtil;
 
+
+    @ModelAttribute
+    public void addCommonAttributes(Model model) {
+        model.addAttribute("activeMenu", "po");
+        model.addAttribute("suppliers", supplierService.getAllSupplier());
+    }
+
     // list purchase order
     @GetMapping("")
-    public String listPurchaseOrders(@ModelAttribute PurchaseOrderSearchCriteria criteria, Model model) {
-        List<PurchaseOrderResponse> purchaseOrders = orderService.getPurchaseOrdersFlat(criteria);
-
+    public String listPurchaseOrders(@ModelAttribute("criteria") PurchaseOrderSearchCriteria criteria, Model model) {
+        List<PurchaseOrderResponse> purchaseOrders = orderService.getPurchaseOrders(criteria);
         model.addAttribute("orders", purchaseOrders);
-        model.addAttribute("criteria", criteria);
-        model.addAttribute("suppliers", supplierService.getAllSupplier());
-        model.addAttribute("activeMenu", "po");
-        return "order/order-from-purchase";
+        return VIEW_ORDER_LIST;
     }
 
-    // tạo purchase order từ quotaiton
+    // tạo form purchase order từ quotation
     @GetMapping("/create-from-quotation/{quotationId}")
-    public String createPurchseOrder(@PathVariable("quotationId") Integer quotationId, Model model) {
-
-        // load order create lên form
-        PurchaseOrderCreateRequest orderCreateRequest;
+    public String showCreateForm(@PathVariable("quotationId") Integer quotationId, Model model) {
         try {
-            orderCreateRequest = orderService.checkFormCreateOrder(quotationId);
+            PurchaseOrderCreateRequest orderCreateRequest = orderService.checkFormCreateOrder(quotationId);
+            model.addAttribute("orderCreateRequest", orderCreateRequest);
         } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("activeMenu", "po");
-            return "order/order-form";
         }
-
-        model.addAttribute("orderCreateRequest", orderCreateRequest);
-        model.addAttribute("suppliers", supplierService.getAllSupplier());
-        model.addAttribute("activeMenu", "po");
-        return "order/order-form";
+        return VIEW_ORDER_FORM;
     }
 
-    // xóa 1 dòng
-    @PostMapping(value = "/create-from-quotation/{quotationId}", params = "removeLine")
-    public String removeOrderLine(@PathVariable("quotationId") Integer quotationId,
-            @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest orderCreateRequest,
-            @RequestParam("removeLine") int removeLine,
-            Model model, jakarta.servlet.http.HttpServletRequest request) {
+    // xử lý form
+    @PostMapping("/create-from-quotation/{quotationId}")
+    public String handleOrderForm(@PathVariable("quotationId") Integer quotationId,
+                                  @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest request,
+                                  BindingResult result,
+                                  @RequestParam(value = "removeLine", required = false) Integer removeLine,
+                                  Model model) {
+        
+        // logic xóa dòng
+        if (removeLine != null && removeLine >= 0) {
+            List<PurchaseOrderDetailCreateRequest> lines = request.getPurchaseOrderDetailCreateRequests();
+            if (lines != null && lines.size() > 1 && removeLine < lines.size()) {
 
-        var lines = orderCreateRequest.getPurchaseOrderDetailCreateRequests();
-        if (lines != null && removeLine >= 0 && removeLine < lines.size() && lines.size() > 1) {
-            lines.remove(removeLine);
-            orderCalculationUtil.recalculateTotal(orderCreateRequest);
+                // thực hiện xóa đi dòng cần xóa
+                lines.remove(removeLine.intValue());
+
+                // tính toán lại giá tiền
+                orderCalculationUtil.recalculateTotal(request);
+            }
+            return VIEW_ORDER_FORM;
         }
 
-        model.addAttribute("orderCreateRequest", orderCreateRequest);
-        model.addAttribute("suppliers", supplierService.getAllSupplier());
-        model.addAttribute("activeMenu", "po");
-        return "order/order-form";
-    }
-
-    // create po
-    @PostMapping(value = "/create-from-quotation/{quotationId}", params = "!removeLine")
-    public String createOrder(@PathVariable("quotationId") Integer quotationId,
-            @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest orderCreateRequest,
-            BindingResult result,
-            Model model, jakarta.servlet.http.HttpServletRequest request) {
-
-        model.addAttribute("suppliers", supplierService.getAllSupplier());
-        model.addAttribute("activeMenu", "po");
         if (result.hasErrors()) {
-            return "order/order-form";
+            return VIEW_ORDER_FORM;
         }
 
-        orderCalculationUtil.recalculateTotal(orderCreateRequest);
+        orderCalculationUtil.recalculateTotal(request);
 
         try {
-            Integer orderId = orderService.createOrder(quotationId, orderCreateRequest);
+            Integer orderId = orderService.createOrder(quotationId, request);
             return "redirect:/purchase-orders/" + orderId;
-        } catch (edu.fpt.groupfive.util.exception.InvalidDataException e) {
+        } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
-            return "order/order-form";
+            return VIEW_ORDER_FORM;
         }
     }
 
     // hiển thị po detail
     @GetMapping("/{id}")
-    public String getOrderDetail(@PathVariable("id") Integer id, Model model,
-            jakarta.servlet.http.HttpServletRequest request) {
-        PurchaseOrderFullResponse detail = orderService.getOrderDetail(id);
+    public String getOrderDetail(@PathVariable("id") Integer id, Model model) {
+        PurchaseOrderResponse detail = orderService.getOrderDetail(id);
         model.addAttribute("order", detail);
-        model.addAttribute("activeMenu", "po");
-        return "order/order-of-purchase";
+        return VIEW_ORDER_DETAIL;
+    }
+
+    @PostMapping("/{id}/update-delivery-date")
+    public String updateDeliveryDate(@PathVariable("id") Integer id,
+                                     @RequestParam("deliveryDate") String deliveryDate,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            orderService.updateDeliveryDate(id, deliveryDate);
+            redirectAttributes.addFlashAttribute("message", "Cập nhật ngày giao hàng thành công");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/purchase-orders/" + id;
     }
 
 }

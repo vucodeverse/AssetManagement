@@ -17,5 +17,5 @@ public class PurchaseOrderDetailResponse {
     private BigDecimal price;
     private BigDecimal taxRate;
     private BigDecimal discountRate;
-    private LocalDate expectedDeliveryDate;
+    private LocalDate deliveryDate;
 }

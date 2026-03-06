@@ -4,6 +4,7 @@ import edu.fpt.groupfive.dao.QuotationDetailDAO;
 import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
 import edu.fpt.groupfive.model.QuotationDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
+import edu.fpt.groupfive.util.exception.DataAccessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -134,8 +135,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
         }
     }
 
-    // xóa quotation detail theo quotation id (dùng connection chia sẻ cho
-    // transaction)
+    // xóa quotation detail theo quotation id
     @Override
     public void deleteByQuotationId(Integer quotationId, Connection connection) {
         String sql = "delete from quotation_detail where quotation_id = ?";
@@ -147,6 +147,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
         }
     }
 
+    // lấy ra quotation detail theo quotation id
     @Override
     public List<QuotationDetail> findByQuotationId(Integer quotationId) {
 
@@ -179,7 +180,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 quotationDetails.add(q);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Chèn dữ liệu thất bại",e);
         }
         return quotationDetails;
     }

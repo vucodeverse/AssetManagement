@@ -10,7 +10,6 @@ import java.util.Optional;
 public interface OrderDAO {
     Integer insert(Order order);
 
-    Map<Integer, Integer> getOrderedQtyByQuotationDetail(List<Integer> quotationDetailId);
 
     Map<Integer, Integer> getOrderedQtyByPurchaseDetail(List<Integer> purchaseDetailIds);
 

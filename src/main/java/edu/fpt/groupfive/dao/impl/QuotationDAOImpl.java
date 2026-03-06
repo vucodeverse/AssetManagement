@@ -7,6 +7,7 @@ import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.model.Quotation;
 import edu.fpt.groupfive.model.QuotationDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
+import edu.fpt.groupfive.util.exception.DataAccessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -26,57 +27,48 @@ public class QuotationDAOImpl implements QuotationDAO {
     public Integer insert(Quotation quotation) {
 
         String sql = "insert into quotation (purchase_request_id, supplier_id, status, total_amount, " +
-                "created_at, reject_reason) VALUES (?,?,?,?,?,?)";
-        Connection connection = null;
-        try {
-            connection = databaseConfig.getConnection();
-            connection.setAutoCommit(false);
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setObject(1, quotation.getPurchaseId());
-            preparedStatement.setObject(2, quotation.getSupplierId());
-            preparedStatement.setString(3, quotation.getQuotationStatus().toString());
-            preparedStatement.setBigDecimal(4, quotation.getTotalAmount());
-            preparedStatement.setTimestamp(5, Timestamp.valueOf(quotation.getCreatedAt().atStartOfDay()));
-            preparedStatement.setString(6, quotation.getRejectedReason());
+                "created_at, reject_reason) values (?,?,?,?,?,?)";
 
-            preparedStatement.executeUpdate();
-            ResultSet rs = preparedStatement.getGeneratedKeys();
+        try(Connection connection = databaseConfig.getConnection()){
+         connection.setAutoCommit(false);
 
-            int quotationId = 0;
-            if (rs.next()) {
-                quotationId = rs.getInt(1);
-            }
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+                preparedStatement.setObject(1, quotation.getPurchaseId());
+                preparedStatement.setObject(2, quotation.getSupplierId());
+                preparedStatement.setString(3, quotation.getQuotationStatus().toString());
+                preparedStatement.setBigDecimal(4, quotation.getTotalAmount());
+                preparedStatement.setTimestamp(5, Timestamp.valueOf(quotation.getCreatedAt().atStartOfDay()));
+                preparedStatement.setString(6, quotation.getRejectedReason());
 
-            // insert details cùng 1 connection/transaction
-            if (quotationId != 0 && quotation.getQuotationDetails() != null) {
-                for (QuotationDetail qd : quotation.getQuotationDetails()) {
-                    qd.setQuotationId(quotationId);
-                    quotationDetailDAO.insert(qd, connection);
+                preparedStatement.executeUpdate();
+                ResultSet rs = preparedStatement.getGeneratedKeys();
+
+                int quotationId = 0;
+                if (rs.next()) {
+                    quotationId = rs.getInt(1);
                 }
-            }
 
-            connection.commit();
-            return quotationId;
-        } catch (SQLException e) {
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException ignored) {
-
+                // insert details cùng 1 connection
+                if (quotationId != 0 && quotation.getQuotationDetails() != null) {
+                    for (QuotationDetail qd : quotation.getQuotationDetails()) {
+                        qd.setQuotationId(quotationId);
+                        quotationDetailDAO.insert(qd, connection);
+                    }
                 }
+
+                connection.commit();
+                return quotationId;
+            } catch (SQLException e) {
+                connection.rollback();
+
+                throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            } finally {
+                connection.setAutoCommit(true);
             }
-
-            throw new RuntimeException(e);
-        } finally {
-
-            // reset auto commit lại về true và đóng cổng.
-            if (connection != null)
-                try {
-                    connection.setAutoCommit(true);
-                    connection.close();
-                } catch (Exception ignored) {
-                }
+        }catch(SQLException e){
+            throw new DataAccessException("Thêm yêu cầu mua sắm thất bại",e);
         }
+
     }
 
     // update khi save draft

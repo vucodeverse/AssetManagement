@@ -1,4 +1,3 @@
-
 package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.dao.OrderDetailDAO;
@@ -8,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -16,10 +16,11 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    // insert po detail
     @Override
     public Integer insert(OrderDetail orderDetail, Integer orderId, Connection connection) {
         String sql = "insert into purchase_order_details " +
-                "(quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, discount, note, quotation_detail_id, expected_delivery_date) "
+                "(quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, discount, note, quotation_detail_id, delivery_date) "
                 +
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -35,7 +36,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
             ps.setString(7, orderDetail.getOrderDetailNote());
             ps.setObject(8, orderDetail.getQuotationDetailId());
             ps.setDate(9,
-                    orderDetail.getExpectedDeliveryDate() != null ? Date.valueOf(orderDetail.getExpectedDeliveryDate())
+                    orderDetail.getDeliveryDate() != null ? Date.valueOf(orderDetail.getDeliveryDate())
                             : null);
 
             ps.executeUpdate();
@@ -51,10 +52,11 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
         return null;
     }
 
+    // lấy  ra list detail theo po
     @Override
     public List<OrderDetail> findByOrderId(Integer orderId) {
         String sql = "select purchase_order_detail_id, quantity, unit_price, tax_rate, " +
-                "discount, note, asset_type_id, quotation_detail_id, expected_delivery_date " +
+                "discount, note, asset_type_id, quotation_detail_id, delivery_date " +
                 "from purchase_order_details " +
                 "where purchase_order_id = ?";
 
@@ -74,8 +76,8 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
                 detail.setOrderDetailNote(rs.getString("note"));
                 detail.setAssetTypeId(rs.getInt("asset_type_id"));
                 detail.setQuotationDetailId(rs.getInt("quotation_detail_id"));
-                detail.setExpectedDeliveryDate(rs.getDate("expected_delivery_date") != null
-                        ? rs.getDate("expected_delivery_date").toLocalDate()
+                detail.setDeliveryDate(rs.getDate("delivery_date") != null
+                        ? rs.getDate("delivery_date").toLocalDate()
                         : null);
 
                 results.add(detail);
@@ -84,5 +86,18 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
             throw new RuntimeException("Failed to find order details", e);
         }
         return results;
+    }
+
+    @Override
+    public void updateDeliveryDate(Integer orderId, LocalDate deliveryDate) {
+        String sql = "UPDATE purchase_order_details SET delivery_date = ? WHERE purchase_order_id = ?";
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, deliveryDate != null ? Date.valueOf(deliveryDate) : null);
+            ps.setInt(2, orderId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update delivery date", e);
+        }
     }
 }

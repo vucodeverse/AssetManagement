@@ -33,6 +33,6 @@ public class PurchaseRequestCreateRequest {
     @NotNull(message = "Độ ưu tiên Không được để trống")
     private Priority priority;
 
-    @Valid
+    @Valid @Builder.Default
     private List<PurchaseRequestDetailCreateRequest> purchaseRequestDetailCreateRequests = new ArrayList<>();
 }

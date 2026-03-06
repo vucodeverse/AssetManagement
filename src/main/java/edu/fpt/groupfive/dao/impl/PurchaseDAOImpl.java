@@ -41,9 +41,9 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         purchase.setNeededByDate(neededByDate != null ? neededByDate.toLocalDate() : null);
         purchase.setReason(rs.getString("request_reason"));
 
-        purchase.setPriority(Priority.valueOf( rs.getString("priority").trim().toUpperCase()));
+        purchase.setPriority(Priority.valueOf(rs.getString("priority").trim().toUpperCase()));
 
-         // sửa thành LocalDateTime
+        // sửa thành LocalDateTime
         purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
 
         purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
@@ -70,8 +70,8 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
             connection.setAutoCommit(false);
 
-            try (PreparedStatement preparedStatement =
-                         connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql,
+                    Statement.RETURN_GENERATED_KEYS)) {
 
                 preparedStatement.setString(1, purchase.getStatus().name());
                 preparedStatement.setString(2, purchase.getPurchaseNote());
@@ -111,13 +111,13 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
             } catch (Exception e) {
                 connection.rollback();
-                throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+                throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
             } finally {
                 connection.setAutoCommit(true);
             }
 
         } catch (Exception e) {
-            throw new DataAccessException("Thêm yêu cầu mua sắm thất bại",e);
+            throw new DataAccessException("Thêm yêu cầu mua sắm thất bại", e);
         }
     }
 
@@ -143,7 +143,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
         }
 
         return Optional.empty();
@@ -193,7 +193,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
         }
 
         return Optional.empty();
@@ -217,13 +217,12 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
         }
         return purchases;
     }
 
-
-    // lấy purchase theo các thuộc tính trong filter
+    // lấy purchase lọc theo filter và search
     @Override
     public List<Purchase> getPurchaseByFilter(PurchaseRequestSearchCriteria p) {
 
@@ -256,11 +255,11 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             params.add(Date.valueOf(p.getTo()));
         }
 
-        if(p.getKeyword() != null && !p.getKeyword().isBlank()) {
+        if (p.getKeyword() != null && !p.getKeyword().isBlank()) {
             sql.append(" and (");
             String keyword = p.getKeyword().trim();
 
-            if(keyword.matches("//d+")){
+            if (keyword.matches("//d+")) {
                 sql.append(" p.purchase_request_id = ? or ");
                 params.add(Integer.parseInt(keyword));
             }
@@ -288,12 +287,12 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
         }
         return purchases;
     }
 
-    // update status của purchase
+    // update purchase
     @Override
     public void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject, Integer userId) {
 
@@ -301,7 +300,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 "approved_by_director_at = ?, approved_by_director_id = ? where purchase_request_id = ?";
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setString(1, request.name());
 
@@ -317,6 +316,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 preparedStatement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
                 preparedStatement.setObject(5, userId);
             } else {
+                preparedStatement.setNull(4, Types.TIMESTAMP);
                 preparedStatement.setNull(5, Types.INTEGER);
             }
 
@@ -325,7 +325,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
         }
     }
 
@@ -415,6 +415,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         return result;
     }
 
+    // đếm số lượng purchase theo status
     @Override
     public long countByStatus(Request status) {
         String sql = "select count(*) from purchase_request where status = ?";
@@ -425,11 +426,12 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             if (rs.next())
                 return rs.getLong(1);
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
         }
         return 0;
     }
 
+    // lấy ra những records mưới nhất
     @Override
     public List<Purchase> findRecent(int limit) {
         String sql = "select p.*, u.first_name, u.last_name " +
@@ -445,7 +447,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 purchases.add(mapRowForList(rs));
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
         }
         return purchases;
     }
@@ -466,7 +468,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 purchases.add(mapRowForList(rs));
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
         }
         return purchases;
     }
@@ -512,7 +514,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             connection.commit();
 
         } catch (Exception e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
         }
     }
 }

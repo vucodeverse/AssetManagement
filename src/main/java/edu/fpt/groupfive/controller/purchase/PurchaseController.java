@@ -65,9 +65,6 @@ public class PurchaseController {
             purchaseRequestResponses = purchaseService.searchAndFilter(criteria);
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("purchases", purchaseRequestResponses);
-            prepareFilter(model);
-            return URL_PURCHASE_LIST;
         }
 
         model.addAttribute("purchases", purchaseRequestResponses);

@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/main-layout}">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/main-layout}">
 
 <head>
     <title th:text="'Quotation Detail #' + ${quotation.quotationId} + ' | PROCUREX'">Quotation Detail | PROCUREX</title>
@@ -24,22 +25,33 @@
                 <div class="header-actions">
                     <!-- Các hành động của Director -->
                     <th:block>
-                        <button type="button" class="btn-outline-prem"
-                            th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
-                            onclick="openRejectModal()">REJECT</button>
-                        <a th:href="@{/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
-                            th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
-                            class="btn-approve">
-                            APPROVE & GENERATE PO
-                        </a>
-                        <a th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT'}"
-                            class="btn-solid-prem"
-                            th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
-                            UPDATE QUOTATION
-                        </a>
+                        <div sec:authorize="hasAuthority('DIRECTOR')">
+                            <button type="button" class="btn-outline-prem"
+                                    th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
+                                    onclick="openRejectModal()">REJECT</button>
+                            <a th:href="@{/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
+                               th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
+                               class="btn-approve">
+                                APPROVE & GENERATE PO
+                            </a>
+                        </div>
+                        <div sec:authorize="hasAuthority('PURCHASE-STAFF')">
+                            <a th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT'}"
+                               class="btn-solid-prem"
+                               th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
+                                UPDATE QUOTATION
+                            </a>
+                        </div>
                     </th:block>
                 </div>
             </header>
+
+            <!-- Success Message -->
+            <div th:if="${message}" class="success-alert" 
+                 style="background-color: #f0fdf4; border: 1px solid #16a34a; color: #166534; padding: 16px; border-radius: 4px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${message}" style="font-weight: 600; font-size: 14px;">Success message here</span>
+            </div>
 
             <div class="details-card">
                 <!-- Thông tin tiêu đề -->

@@ -7,26 +7,26 @@ import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
-import edu.fpt.groupfive.dto.response.PurchaseOrderFullResponse;
-import edu.fpt.groupfive.dto.response.PurchaseOrderGroupResponse;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.mapper.OrderDetailMapper;
 import edu.fpt.groupfive.mapper.OrderMapper;
 import edu.fpt.groupfive.model.*;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.OrderService;
+import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
+import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j(topic = "ORDER-SERVICE")
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
     private final QuotationDAO quotationDAO;
@@ -35,14 +35,17 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final OrderDAO orderDAO;
     private final OrderDetailDAO orderDetailDAO;
-    private final SupplierDAO supplierDAO;
     private final AssetTypeService assetTypeService;
     private final PurchaseDetailDAO purchaseDetailDAO;
     private final OrderCalculationUtil orderCalculationUtil;
+    private final RangeAmount rangeAmount;
+    private final SupplierService supplierService;
 
     // kiểm tra order hợp lệ hay ko
     @Override
     public PurchaseOrderCreateRequest checkFormCreateOrder(Integer quotationId) {
+
+        // check quotation có đang tồn tịaij hay ko
         Quotation quotation = quotationDAO.findById(quotationId)
                 .orElseThrow(() -> new InvalidDataException("Quotation không tồn tại: " + quotationId));
 
@@ -62,8 +65,7 @@ public class OrderServiceImpl implements OrderService {
                         .assetTypeId(qd.getAssetTypeId())
                         .assetTypeName(assetTypeNames.getOrDefault(qd.getAssetTypeId(), "N/A"))
                         .quantity(qd.getQuantity())
-                        .build())
-                .collect(Collectors.toCollection(ArrayList::new));
+                        .build()).toList() ;
 
         // trả về order create
         return PurchaseOrderCreateRequest.builder()
@@ -179,13 +181,31 @@ public class OrderServiceImpl implements OrderService {
         return orderId;
     }
 
+    // lấy ra toàn bộ po và pr id tương ứng
     @Override
-    public List<PurchaseOrderResponse> getPurchaseOrdersFlat(PurchaseOrderSearchCriteria criteria) {
-        parseAmountRange(criteria);
+    public List<PurchaseOrderResponse> getPurchaseOrders(PurchaseOrderSearchCriteria criteria) {
+
+        // set mặc điịnh min max
+        criteria.setMinAmount(null);
+        criteria.setMaxAmount(null);
+
+
+        if(criteria.getAmountRange() != null && !criteria.getAmountRange().isBlank()) {
+            List<BigDecimal> list = rangeAmount.applyRangeAMount(criteria.getAmountRange());
+
+            if(list.size() == 1) {
+                criteria.setMinAmount(list.get(0));
+            }else if(list.size() == 2) {
+                criteria.setMinAmount(list.get(0));
+                criteria.setMaxAmount(list.get(list.size()-1));
+            }
+        }
+
 
         List<Object[]> results = orderDAO.searchAndFilter(criteria);
         List<PurchaseOrderResponse> list = new ArrayList<>();
 
+        // map từng row sang po response
         for (Object[] row : results) {
             Order order = (Order) row[0];
             String supplierName = (String) row[1];
@@ -198,19 +218,21 @@ public class OrderServiceImpl implements OrderService {
         return list;
     }
 
+    // lấy ra toàn bộ po detail
     @Override
-    public PurchaseOrderFullResponse getOrderDetail(Integer orderId) {
+    public PurchaseOrderResponse getOrderDetail(Integer orderId) {
         Order order = orderDAO.findById(orderId)
                 .orElseThrow(() -> new InvalidDataException("Purchase Order không tồn tại: " + orderId));
 
-        String supplierName = supplierDAO.findById(order.getSupplierId())
-                .map(Supplier::getSupplierName)
-                .orElse("N/A");
 
-        List<OrderDetail> detailModels = orderDetailDAO.findByOrderId(orderId);
+        Map<Integer, String> map = supplierService.getSupplierIdToNameMap();
         Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
 
-        List<PurchaseOrderDetailResponse> items = detailModels.stream()
+        // lấy ra list po detail theo po id
+        List<OrderDetail> poDetails = orderDetailDAO.findByOrderId(orderId);
+
+        // map sang po detail response
+        List<PurchaseOrderDetailResponse> items = poDetails.stream()
                 .map(detail -> {
                     PurchaseOrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
                     itemDto.setAssetTypeName(assetTypeNames.getOrDefault(detail.getAssetTypeId(), "N/A"));
@@ -218,37 +240,31 @@ public class OrderServiceImpl implements OrderService {
                 })
                 .toList();
 
-        // Use centralized calculation utility
-        BigDecimal[] breakdown = orderCalculationUtil.calculateBreakdownForOrder(detailModels);
+        // tính toán các loại giá cho order detail đó
+        BigDecimal[] calculated = orderCalculationUtil.calculatePoDetail(poDetails);
 
-        PurchaseOrderFullResponse response = orderMapper.toPurchaseOrderFullResponse(order);
-        response.setSupplierName(supplierName);
+        PurchaseOrderResponse response = orderMapper.toPurchaseOrderResponse(order);
+        response.setSupplierName(map.getOrDefault(order.getSupplierId(), "N/A"));
         response.setItems(items);
-        response.setSubtotal(breakdown[0]);
-        response.setTotalDiscount(breakdown[1]);
-        response.setTotalTax(breakdown[2]);
-        response.setTotalAmount(breakdown[3]);
+        response.setSubtotal(calculated[0]);
+        response.setTotalDiscount(calculated[1]);
+        response.setTotalTax(calculated[2]);
+        response.setTotalAmount(calculated[3]);
 
         return response;
-    }
-
-    private void parseAmountRange(PurchaseOrderSearchCriteria criteria) {
-
-        if (criteria.getAmountRange() == null || criteria.getAmountRange().isBlank())
-            return;
-        switch (criteria.getAmountRange()) {
-            case "0-5000" -> {
-                criteria.setMinAmount(BigDecimal.ZERO);
-                criteria.setMaxAmount(new BigDecimal("5000"));
-            }
-            case "5000-20000" -> {
-                criteria.setMinAmount(new BigDecimal("5000"));
-                criteria.setMaxAmount(new BigDecimal("20000"));
-            }
-            case "20000+" -> {
-                criteria.setMinAmount(new BigDecimal("20000"));
-                criteria.setMaxAmount(null);
-            }
         }
-    }
-}
+
+        @Override
+        public void updateDeliveryDate(Integer orderId, String deliveryDateStr) {
+        if (deliveryDateStr == null || deliveryDateStr.isBlank()) {
+            throw new InvalidDataException("Ngày giao hàng không được để trống");
+        }
+        try {
+            LocalDate deliveryDate = LocalDate.parse(deliveryDateStr);
+            orderDetailDAO.updateDeliveryDate(orderId, deliveryDate);
+        } catch (Exception e) {
+            throw new InvalidDataException("Định dạng ngày giao hàng không hợp lệ: " + deliveryDateStr);
+        }
+        }
+
+        }

@@ -17,18 +17,18 @@
 
             <!-- TRUNG TÂM PHÊ DUYỆT -->
             <div class="nav-group">
-                <a class="nav-item" th:href="@{/director/purchases}"
+                <a class="nav-item" th:href="@{/purchases}"
                     th:classappend="${activeMenu}=='approval' ? ' active' : ''">
                     <i class="fas fa-check-circle"></i> Approval Center
                 </a>
 
                 <div class="sub-nav" th:if="${activeMenu}=='approval'">
-                    <a class="sub-item" th:href="@{/director/purchases}"
+                    <a class="sub-item" th:href="@{/purchases}"
                         th:classappend="${activeSub}=='pr' ? ' active' : ''">
                         Purchase Requests
                     </a>
 
-                    <a class="sub-item" th:href="@{/director/quotations}"
+                    <a class="sub-item" th:href="@{/quotations}"
                         th:classappend="${activeSub}=='qt' ? ' active' : ''">
                         Quotations
                     </a>

@@ -7,7 +7,6 @@ import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.model.Order;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j(topic = "ORDER-DAO")
 public class OrderDAOImpl implements OrderDAO {
 
     private final DatabaseConfig databaseConfig;
@@ -95,36 +93,6 @@ public class OrderDAOImpl implements OrderDAO {
         }
     }
 
-    @Override
-    public Map<Integer, Integer> getOrderedQtyByQuotationDetail(List<Integer> quotationDetailIds) {
-        if (quotationDetailIds == null || quotationDetailIds.isEmpty()) {
-            return new HashMap<>();
-        }
-        String placeholders = quotationDetailIds.stream().map(id -> "?").collect(Collectors.joining(", "));
-        String sql = "select pod.quotation_detail_id, sum(pod.quantity) as total_qty " +
-                "from purchase_orders po " +
-                "join purchase_order_details pod on po.purchase_order_id = pod.purchase_order_id " +
-                "where pod.quotation_detail_id in (" + placeholders + ") " +
-                "group by pod.quotation_detail_id";
-
-        Map<Integer, Integer> map = new HashMap<>();
-        try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            for (int i = 0; i < quotationDetailIds.size(); i++) {
-                ps.setInt(i + 1, quotationDetailIds.get(i));
-            }
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                map.put(rs.getInt("quotation_detail_id"), rs.getInt("total_qty"));
-            }
-        } catch (SQLException e) {
-            log.error("Failed to get ordered qty: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to get ordered qty", e);
-        }
-        return map;
-    }
-
     // lấy ra số lượng đã order ứng với từng purchas id
     @Override
     public Map<Integer, Integer> getOrderedQtyByPurchaseDetail(List<Integer> purchaseDetailIds) {
@@ -155,6 +123,8 @@ public class OrderDAOImpl implements OrderDAO {
         return map;
     }
 
+
+    // search cho màn purchase orderlisst
     @Override
     public List<Object[]> searchAndFilter(PurchaseOrderSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder(
@@ -240,14 +210,13 @@ public class OrderDAOImpl implements OrderDAO {
             }
 
         } catch (SQLException e) {
-            log.error("Failed to search purchase orders: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to search purchase orders", e);
         }
         return results;
     }
 
     @Override
-    public java.util.Optional<Order> findById(Integer orderId) {
+    public Optional<Order> findById(Integer orderId) {
         String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by " +
@@ -277,7 +246,6 @@ public class OrderDAOImpl implements OrderDAO {
                 return java.util.Optional.of(order);
             }
         } catch (SQLException e) {
-            log.error("Failed to find purchase order by id {}: {}", orderId, e.getMessage(), e);
             throw new RuntimeException("Failed to find purchase order", e);
         }
         return java.util.Optional.empty();
@@ -311,6 +279,7 @@ public class OrderDAOImpl implements OrderDAO {
         return java.math.BigDecimal.ZERO;
     }
 
+    // lấy ra các po gần đây theo giới hạn
     @Override
     public List<Order> findRecent(int limit) {
         String sql = "select top " + limit + " purchase_order_id, order_date, total_amount, note, status, " +
@@ -341,7 +310,6 @@ public class OrderDAOImpl implements OrderDAO {
                 orders.add(order);
             }
         } catch (SQLException e) {
-            log.error("Failed to find recent purchase orders: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to find recent purchase orders", e);
         }
         return orders;

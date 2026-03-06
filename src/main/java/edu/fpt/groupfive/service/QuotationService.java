@@ -9,7 +9,7 @@ import edu.fpt.groupfive.dto.response.QuotationResponse;
 import java.util.List;
 
 public interface QuotationService {
-    void createQuotation(QuotationCreateRequest quotationCreateRequest, Integer purchaseId, String action);
+    Integer createQuotation(QuotationCreateRequest quotationCreateRequest, Integer purchaseId, String action);
 
     QuotationCreateRequest checkFormQuotation(Integer purchaseId);
 
