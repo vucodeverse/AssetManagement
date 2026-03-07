@@ -32,7 +32,7 @@
                     <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
 
                         <div th:if="${purchase.status.name() != 'APPROVED' && purchase.status.name() != 'REJECTED'}">
-                            <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
+                            <button type="submit" name="action" value="a" class="btn-approve">APPROVE</button>
                             <!-- đổi reject thành button để mở popup -->
                             <a class="btn-reject" th:href="'#reject-' + ${purchase.purchaseId}"
                                 onclick="event.stopPropagation();">
@@ -168,7 +168,7 @@
                     </div>
 
                     <div class="modal-actions">
-                        <button type="submit" class="btn-submit" name="actions" value="r">Submit</button>
+                        <button type="submit" class="btn-submit" name="action" value="r">Submit</button>
                         <a href="#" class="btn-cancel">Cancel</a>
                     </div>
                 </form>

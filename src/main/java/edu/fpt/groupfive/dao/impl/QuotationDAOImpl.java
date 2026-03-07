@@ -29,10 +29,11 @@ public class QuotationDAOImpl implements QuotationDAO {
         String sql = "insert into quotation (purchase_request_id, supplier_id, status, total_amount, " +
                 "created_at, reject_reason) values (?,?,?,?,?,?)";
 
-        try(Connection connection = databaseConfig.getConnection()){
-         connection.setAutoCommit(false);
+        try (Connection connection = databaseConfig.getConnection()) {
+            connection.setAutoCommit(false);
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql,
+                    Statement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setObject(1, quotation.getPurchaseId());
                 preparedStatement.setObject(2, quotation.getSupplierId());
                 preparedStatement.setString(3, quotation.getQuotationStatus().toString());
@@ -61,12 +62,12 @@ public class QuotationDAOImpl implements QuotationDAO {
             } catch (SQLException e) {
                 connection.rollback();
 
-                throw new DataAccessException("Lỗi khi chèn dữ liệu",e);
+                throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
             } finally {
                 connection.setAutoCommit(true);
             }
-        }catch(SQLException e){
-            throw new DataAccessException("Thêm yêu cầu mua sắm thất bại",e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Thêm yêu cầu mua sắm thất bại", e);
         }
 
     }
@@ -130,7 +131,7 @@ public class QuotationDAOImpl implements QuotationDAO {
             connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, status.toString());
-            preparedStatement.setString(2, rejectedReason);
+            preparedStatement.setString(2, rejectedReason != null ? rejectedReason : null);
             preparedStatement.setInt(3, quotationId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -189,7 +190,7 @@ public class QuotationDAOImpl implements QuotationDAO {
     @Override
     public List<Quotation> findByPurchaseId(Integer purchaseId) {
 
-        String sql = "select * from quotation where purchase_request_id = ?";
+        String sql = "select * from quotation where purchase_request_id = ? and status <> 'DELETED'";
 
         List<Quotation> quotations = new ArrayList<>();
 
@@ -251,15 +252,7 @@ public class QuotationDAOImpl implements QuotationDAO {
         return Optional.empty();
     }
 
-    @Override
-    public List<Quotation> findResponsesByPurchaseId(Integer purchaseId) {
-        return List.of();
-    }
 
-    @Override
-    public List<Quotation> getAll() {
-        return List.of();
-    }
 
     // tinsh số lượng quotation theo từng purchase
     @Override
@@ -291,7 +284,7 @@ public class QuotationDAOImpl implements QuotationDAO {
         StringBuilder sql = new StringBuilder(
                 "select q.* from quotation q " +
                         "join supplier s on q.supplier_id = s.supplier_id " +
-                        "where 1=1 ");
+                        "where q.status <> 'DELETED' ");
 
         List<Object> params = new ArrayList<>();
 
@@ -360,33 +353,15 @@ public class QuotationDAOImpl implements QuotationDAO {
         return quotations;
     }
 
-    // đếm số lượng quotaiton dựa trên status
-    @Override
-    public long countByStatus(QuotationStatus status) {
-        String sql = "select count(*) from quotation where status = ?";
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, status.name());
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next())
-                return rs.getLong(1);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return 0;
-    }
-
     // lấy ra những quotaiton đc thêm gần đây
     @Override
-    public List<Quotation> findRecent(int limit) {
+    public List<Quotation> findAll() {
         String sql = "select q.*, s.supplier_name from quotation q " +
                 "join supplier s on q.supplier_id = s.supplier_id " +
-                "order by q.created_at desc, q.quotation_id desc " +
-                "offset 0 rows fetch next ? rows only";
+                "where q.status <> 'DELETED' ";
         List<Quotation> quotations = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, limit);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 Quotation quotation = new Quotation();
@@ -407,23 +382,4 @@ public class QuotationDAOImpl implements QuotationDAO {
         return quotations;
     }
 
-    @Override
-    public BigDecimal totalAmountForPurchaseId(Integer purchaseId) {
-
-        String sql = "select min(q.total_amount) from quotation q where q.purchase_request_id = ?";
-
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, purchaseId);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-
-                return rs.getBigDecimal(1);
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return BigDecimal.ZERO;
-    }
 }

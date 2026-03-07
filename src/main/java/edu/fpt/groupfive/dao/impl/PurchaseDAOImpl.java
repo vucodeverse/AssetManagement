@@ -436,6 +436,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     public List<Purchase> findRecent(int limit) {
         String sql = "select p.*, u.first_name, u.last_name " +
                 "from purchase_request p left join users u on p.creator_id = u.user_id " +
+                "where p.status = 'PENDING' " +
                 "order by p.created_at desc, p.purchase_request_id desc " +
                 "offset 0 rows fetch next ? rows only";
         List<Purchase> purchases = new ArrayList<>();

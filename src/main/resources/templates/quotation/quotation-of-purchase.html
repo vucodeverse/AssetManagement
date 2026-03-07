@@ -25,8 +25,7 @@
                     </a>
                 </div>
             </header>
-            <form method="get" th:action="@{/quotations/of-purchase/{id}/search(id=${purchaseId})}"
-                id="filterForm">
+            <form method="get" th:action="@{/quotations/of-purchase/{id}/search(id=${purchaseId})}" id="filterForm">
                 <div class="table-actions">
                     <div class="search-wrap">
                         <i class="fas fa-search"></i>
@@ -80,7 +79,10 @@
                     </div>
                 </div>
             </form>
-
+            <div th:if="${message}">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${message}"></span>
+            </div>
             <!-- Bảng danh sách báo giá -->
             <div class="table-container">
                 <table class="data-table" id="quotationDetailTable">
@@ -125,28 +127,43 @@
                             </td>
                             <td class="cell-actions" onclick="event.stopPropagation()">
 
+                                <!-- Navigation actions -->
                                 <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
                                     <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
-                                        th:href="@{/quotations/{quotationId}/edit(quotationId=${q.quotationId})}"
-                                        title="Edit">
+                                        th:href="@{/quotations/{id}/edit(id=${q.quotationId})}" title="Edit">
                                         <i class="far fa-edit action-icon"></i>
                                     </a>
                                 </div>
 
                                 <div sec:authorize="hasAuthority('DIRECTOR')">
-                                    <a class="btn-approve-sm"
-                                        th:href="@{/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}"
-                                        th:if="${q.quotationStatus.name() == 'PENDING'}">
-                                        APPROVE &amp; PO
+                                    <a th:if="${q.quotationStatus.name() == 'PENDING'}" class="btn-approve-sm"
+                                        th:href="@{/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}">
+                                        APPROVE & PO
                                     </a>
-
-                                    <button class="btn-reject-sm" type="button"
-                                        th:if="${q.quotationStatus.name() == 'PENDING'}"
-                                        th:attr="data-action=@{/quotations/{id}/reject(id=${q.quotationId})}"
-                                        onclick="openRejectModal(event, this)">
-                                        REJECT
-                                    </button>
                                 </div>
+
+                                <!-- POST actions -->
+                                <form
+                                    th:if="${q.quotationStatus.name() == 'DRAFT' || q.quotationStatus.name() == 'PENDING'}"
+                                    method="post" th:action="@{/quotations/{id}/actions(id=${q.quotationId})}"
+                                    class="inline-form">
+
+                                    <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                                        <button type="submit" name="action" value="d" class="btn-reject-sm">
+                                            DELETE
+                                        </button>
+                                    </div>
+
+                                    <div sec:authorize="hasAuthority('DIRECTOR')">
+                                        <button type="button" class="btn-reject-sm"
+                                            th:if="${q.quotationStatus.name() == 'PENDING' || q.quotationStatus.name() == 'DRAFT'}"
+                                            th:attr="data-action=@{/quotations/{id}/actions(id=${q.quotationId})}"
+                                            onclick="openRejectModal(event,this)">
+                                            REJECT
+                                        </button>
+                                    </div>
+
+                                </form>
 
                             </td>
                         </tr>
@@ -178,7 +195,8 @@
                             CANCEL
                         </button>
 
-                        <button type="submit" class="btn-solid-prem" style="background:#ff0000; border-color:#ff0000;">
+                        <button type="submit" name="action" value="r" class="btn-solid-prem" style="background:#ff0000;
+                        border-color:#ff0000;">
                             CONFIRM REJECTION
                         </button>
                     </div>
@@ -189,33 +207,7 @@
 
     <th:block layout:fragment="extra-js">
         <script th:src="@{/js/quotation/quotation-of-purchase.js}"></script>
-        <script>
-            function openRejectModal(e, btn) {
-                e.stopPropagation();
 
-                const modal = document.getElementById('rejectModal');
-                const form = document.getElementById('rejectForm');
-
-                // Set đúng URL reject theo quotationId
-                form.action = btn.dataset.action;
-
-                // Reset textarea mỗi lần mở
-                form.querySelector('textarea[name="reason"]').value = '';
-
-                modal.style.display = 'block';
-            }
-
-            function closeRejectModal() {
-                document.getElementById('rejectModal').style.display = 'none';
-            }
-
-            window.onclick = function (event) {
-                const modal = document.getElementById('rejectModal');
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-            }
-        </script>
     </th:block>
 </body>
 

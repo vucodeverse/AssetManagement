@@ -144,7 +144,7 @@ public class QuotationServiceImpl implements QuotationService {
         // check quotation có tồn tịa hay ko
         Quotation q = quotationDAO.findById(id)
                 .orElseThrow(() -> new InvalidDataException("Quotation not found"));
-        if(QuotationStatus.DRAFT.equals(q.getQuotationStatus())) {
+        if(QuotationStatus.DRAFT.equals(q.getQuotationStatus().name())) {
             throw new InvalidDataException("Báo giá này không thể cập nhật");
         }
 
@@ -185,9 +185,18 @@ public class QuotationServiceImpl implements QuotationService {
 
     // update quotation
     @Override
-    public void rejectQuotation(Integer id, String reason) {
+    public void actionWithQuota(Integer id, String action,String reason) {
+
+        quotationDAO.findById(id).orElseThrow(() -> new InvalidDataException("Quotation not found"));
+
+        if("r".equals(action)) {
         quotationDAO.updateStatusReject(id, QuotationStatus.REJECTED, reason);
+        }else if("d".equals(action)) {
+            quotationDAO.updateStatusReject(id, QuotationStatus.DELETED, null);
+        }
+
     }
+
 
     // kiểm tra form để tạo quotation
     @Override

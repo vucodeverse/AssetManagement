@@ -21,5 +21,5 @@ public interface OrderDAO {
 
     java.math.BigDecimal sumTotalAmount();
 
-    List<Order> findRecent(int limit);
+    List<Order> findRecent();
 }

@@ -19,7 +19,8 @@ public interface QuotationService {
 
     QuotationCreateRequest getQuotationRequestById(Integer id);
 
-    void rejectQuotation(Integer quotationId, String reason);
+    void actionWithQuota(Integer quotationId, String action,String reason);
+
 
     List<QuotationSummaryResponse> searchAndFilterForQuotation(QuotationSearchCriteria quotationSearchCriteria);
 

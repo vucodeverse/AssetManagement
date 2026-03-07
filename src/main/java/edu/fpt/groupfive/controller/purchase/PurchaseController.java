@@ -104,10 +104,10 @@ public class PurchaseController {
     }
 
     // duyệt và từ chối purhcase reuqest
-    @IsDirector
+
     @PostMapping("/{id}/actions")
     public String actionWithPr(@PathVariable("id") Integer id,
-            @RequestParam("actions") String actions,
+            @RequestParam("action") String actions,
             @RequestParam(value = "reasonReject", required = false) String reasonReject) {
         purchaseService.actionsWithPurchase(id, actions, reasonReject, getCurrentUserId());
         return "redirect:/purchases";

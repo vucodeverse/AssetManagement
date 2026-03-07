@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/purchase-staff")
 public class StaffController {
-    private final PurchaseService purchaseService;
     private final DashboardService dashboardService;
 
     // hiển thị dashboard của purchase staff
@@ -25,8 +24,4 @@ public class StaffController {
         return "staff/staff-dashboard";
     }
 
-    @ModelAttribute("searchAndFilter")
-    public PurchaseRequestSearchCriteria initSearchAndFilter() {
-        return new PurchaseRequestSearchCriteria();
-    }
 }

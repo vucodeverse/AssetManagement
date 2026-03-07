@@ -243,7 +243,7 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
 
-                return java.util.Optional.of(order);
+                return Optional.of(order);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to find purchase order", e);
@@ -281,8 +281,8 @@ public class OrderDAOImpl implements OrderDAO {
 
     // lấy ra các po gần đây theo giới hạn
     @Override
-    public List<Order> findRecent(int limit) {
-        String sql = "select top " + limit + " purchase_order_id, order_date, total_amount, note, status, " +
+    public List<Order> findRecent() {
+        String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by " +
                 "from purchase_orders " +

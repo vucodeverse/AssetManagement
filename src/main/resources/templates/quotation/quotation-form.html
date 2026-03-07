@@ -17,8 +17,8 @@
      <div layout:fragment="content">
           <div class="quotation-form-wrapper">
 
-               <form th:action="@{/quotations/create/{id}(id=${purchaseId})}"
-                    th:object="${quotationCreateRequest}" method="post" id="quotationForm">
+               <form th:action="@{/quotations/create/{id}(id=${purchaseId})}" th:object="${quotationCreateRequest}"
+                    method="post" id="quotationForm">
                     <input type="hidden" th:field="*{quotationId}">
                     <input type="hidden" th:field="*{purchaseId}">
 
@@ -194,26 +194,7 @@
 
      <th:block layout:fragment="extra-js">
           <script th:src="@{/js/quotation/quotation-form.js}"></script>
-          <style>
-               .btn-icon {
-                    width: 28px;
-                    height: 28px;
-                    border: 1px solid #000;
-                    background: #fff;
-                    color: #000;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 800;
-                    transition: 0.2s;
-               }
 
-               .btn-icon:hover {
-                    background: #000;
-                    color: #fff;
-               }
-          </style>
      </th:block>
 </body>
 

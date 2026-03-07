@@ -34,3 +34,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+function openRejectModal(btn) {
+    const id = btn.dataset.id;
+    const modal = document.getElementById("rejectModal");
+    const form = document.getElementById("rejectForm");
+
+    form.action = "/purchases/" + id + "/actions";
+    form.querySelector("textarea").value = "";
+    modal.style.display = "flex";
+}
+
+function closeRejectModal() {
+    document.getElementById("rejectModal").style.display = "none";
+}

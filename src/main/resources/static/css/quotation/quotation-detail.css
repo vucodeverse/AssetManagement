@@ -55,8 +55,9 @@
 
 .details-card {
     background: #ffffff;
-    border-radius: 0px;
-    border: 1px solid #000000;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     padding: 32px;
 }
 
@@ -88,7 +89,7 @@
     display: inline-flex;
     align-items: center;
     padding: 6px 14px;
-    border-radius: 4px;
+    border-radius: 20px;
     font-size: 11px;
     font-weight: 800;
     color: #000000;
@@ -109,7 +110,7 @@
 
 .divider {
     border: none;
-    border-top: 1px solid #000000;
+    border-top: 1px solid #f1f5f9;
     margin: 40px 0;
 }
 
@@ -125,8 +126,8 @@
 }
 
 .details-table-wrap {
-    border: 1px solid #000000;
-    border-radius: 0px;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
     overflow: hidden;
 }
 
@@ -144,14 +145,14 @@
     color: #000000;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid #000000;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .details-table td {
     padding: 20px;
     font-size: 14px;
     color: #000000;
-    border-bottom: 1px solid #000000;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .td-id {

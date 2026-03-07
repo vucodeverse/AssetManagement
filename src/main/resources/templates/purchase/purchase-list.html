@@ -109,32 +109,51 @@
 
                             <td class="cell-actions" onclick="event.stopPropagation();">
 
-                                <div sec:authorize="hasAuthority('DIRECTOR')">
-                                    <form th:if="${p.status != null}" method="post"
-                                        th:action="@{/purchases/{id}/actions(id=${p.purchaseId})}">
-                                        <div
-                                            th:if="${p.status.name() != 'APPROVED' && p.status.name() != 'REJECTED' && p.status.name() != 'DRAFT'}">
-                                            <button type="submit" name="actions" value="a"
-                                                class="btn-approve">APPROVE</button>
-                                            <a class="btn-reject" th:href="'#reject-' + ${p.purchaseId}"
-                                                onclick="event.stopPropagation();">
-                                                REJECT
-                                            </a>
-                                        </div>
-                                    </form>
-                                </div>
+                                <form method="post" th:action="@{/purchases/{id}/actions(id=${p.purchaseId})}">
 
-                                <div sec:authorize="hasAnyAuthority('ASSET_MANAGER')">
+                                    <div sec:authorize="hasAuthority('DIRECTOR')">
+                                        <div th:if="${p.status != null
+                                 && p.status.name() != 'APPROVED'
+                                 && p.status.name() != 'REJECTED'
+                                    && p.status.name() != 'DRAFT'}">
+
+                                            <button type="submit" name="action" value="a" class="btn-approve">
+                                                APPROVE
+                                            </button>
+
+                                            <button type="button" class="btn-reject" th:data-id="${p.purchaseId}"
+                                                onclick="openRejectModal(this)">
+                                                REJECT
+                                            </button>
+
+                                        </div>
+                                    </div>
+
+                                    <div sec:authorize="hasAuthority('ASSET_MANAGER')">
+                                        <button type="submit"
+                                            th:if="${p.status != null && (p.status.name() == 'DRAFT' || p.status.name() == 'PENDING')}"
+                                            class="btn-reject" name="action" value="d">
+                                            DELETE
+                                        </button>
+                                    </div>
+
+                                    <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                                        <button type="button" class="btn-reject" th:data-id="${p.purchaseId}"
+                                            onclick="openRejectModal(this)">
+                                            REJECT
+                                        </button>
+                                    </div>
+
+                                </form>
+
+                                <div sec:authorize="hasAuthority('ASSET_MANAGER')">
                                     <a th:if="${p.status != null && p.status.name() == 'DRAFT'}"
                                         th:href="@{/purchases/{id}/edit(id=${p.purchaseId})}" class="btn-approve"
-                                        onclick="event.stopPropagation();">UPDATE</a>
+                                        onclick="event.stopPropagation();">
+                                        UPDATE
+                                    </a>
                                 </div>
 
-                                <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
-                                    <a th:if="${p.status != null && p.status.name() == 'APPROVED'}"
-                                        th:href="@{/quotations/create/{id}(id=${p.purchaseId})}" class="btn-approve"
-                                        onclick="event.stopPropagation();">CREATE QUOTATION</a>
-                                </div>
 
                             </td>
                         </tr>
@@ -143,30 +162,36 @@
             </div>
         </div>
         <th:block>
-            <div th:each="p : ${purchases}" th:id="'reject-' + ${p.purchaseId}" class="modal-overlay">
+            <div id="rejectModal" class="modal-overlay">
 
-                <div class="modal" role="dialog" aria-modal="true">
+                <div class="modal">
                     <div class="modal-header">
                         <h3 class="modal-title">
-                            Reject Reason - PR-<span th:text="${p.purchaseId}"></span>
+                            Reject Reason
                         </h3>
 
-                        <!-- Nút X: đóng modal -->
-                        <a href="#" class="modal-close" aria-label="Close">✕</a>
+                        <button type="button" class="modal-close" onclick="closeRejectModal()">✕</button>
                     </div>
 
-                    <form method="post" th:action="@{/purchases/{id}/actions(id=${p.purchaseId})}">
+                    <form method="post" id="rejectForm">
 
                         <div class="modal-body">
                             <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
                         </div>
 
                         <div class="modal-actions">
-                            <button type="submit" class="btn-submit" name="actions" value="r">Submit</button>
-                            <a href="#" class="btn-cancel">Cancel</a>
+                            <button type="submit" class="btn-submit" name="action" value="r">
+                                Submit
+                            </button>
+
+                            <button type="button" class="btn-cancel" onclick="closeRejectModal()">
+                                Cancel
+                            </button>
                         </div>
+
                     </form>
                 </div>
+
             </div>
         </th:block>
     </th:block>
@@ -174,6 +199,7 @@
 
     <th:block layout:fragment="extra-js">
         <script th:src="@{/js/purchase/pr-list.js}"></script>
+
     </th:block>
 </body>
 

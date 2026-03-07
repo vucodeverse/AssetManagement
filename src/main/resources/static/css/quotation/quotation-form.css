@@ -54,10 +54,11 @@
 /* Card Styles */
 .form-section-card {
     background: var(--bg-card);
-    border: 1px solid var(--border-color);
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
     padding: 32px;
     margin-bottom: 32px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .grid-fields {
@@ -82,7 +83,8 @@
 
 .input-prem {
     padding: 14px 16px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     background: var(--input-bg);
     font-size: 14px;
     font-weight: 500;
@@ -265,4 +267,23 @@
     font-size: 11px;
     font-weight: 600;
     margin-top: 4px;
+}
+
+.btn-icon {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    transition: 0.2s;
+}
+
+.btn-icon:hover {
+    background: #000;
+    color: #fff;
 }

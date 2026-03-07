@@ -18,66 +18,72 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
-    private final PurchaseDAO purchaseDAO;
-    private final QuotationDAO quotationDAO;
-    private final OrderDAO orderDAO;
-    private final SupplierDAO supplierDAO;
+        private final PurchaseDAO purchaseDAO;
+        private final QuotationDAO quotationDAO;
+        private final OrderDAO orderDAO;
+        private final SupplierDAO supplierDAO;
+        private final UserServiceImpl userService;
 
-    private final PurchaseMapper purchaseMapper;
-    private final OrderMapper orderMapper;
+        private final PurchaseMapper purchaseMapper;
+        private final OrderMapper orderMapper;
 
-    @Override
-    public DashboardDTO getDirectorDashboardData() {
-        return DashboardDTO.builder()
-                .pendingPRCount(purchaseDAO.countByStatus(Request.PENDING))
-                .pendingQuoCount(quotationDAO.countByStatus(QuotationStatus.PENDING))
-                .totalPOCount(orderDAO.countAll())
-                .totalPOValue(orderDAO.sumTotalAmount())
-                .recentPRs(fetchRecentPRs())
-                .recentQuotations(fetchRecentQuotations())
-                .build();
-    }
+        @Override
+        public DashboardDTO getDirectorDashboardData() {
+                return DashboardDTO.builder()
+                                .recentPRs(fetchRecentPRs())
+                                .recentQuotations(fetchRecentQuotations())
+                                .build();
+        }
 
-    private List<PurchaseRequestResponse> fetchRecentPRs() {
-        return purchaseDAO.findRecent(5).stream()
-                .map(purchaseMapper::toPurchaseResponse)
-                .collect(Collectors.toList());
-    }
+        // lấy ra các purchase request
+        private List<PurchaseRequestResponse> fetchRecentPRs() {
+                Map<Integer, String> map  = userService.getUserIdToUsernameMap();
 
-    private List<QuotationResponse> fetchRecentQuotations() {
-        return quotationDAO.findRecent(5).stream()
-                .map(q -> {
-                    String supplierName = supplierDAO.findById(q.getSupplierId())
-                            .map(Supplier::getSupplierName)
-                            .orElse("N/A");
-                    return QuotationResponse.builder()
-                            .quotationId(q.getId())
-                            .purchaseId(q.getPurchaseId())
-                            .quotationStatus(q.getQuotationStatus())
-                            .totalAmount(q.getTotalAmount())
-                            .createdAt(q.getCreatedAt())
-                            .supplierName(supplierName)
-                            .build();
-                }).toList();
-    }
+                return purchaseDAO.findAll().stream()
+                                .filter(p -> Request.PENDING.equals(p.getStatus()))
+                                .map(p ->{
+                                        PurchaseRequestResponse response = purchaseMapper.toPurchaseResponse(p);
+                                        response.setCreatorName(map.getOrDefault(p.getCreatedByUser(), "N/A"));
+                                        return response;
+                                }).toList();
+        }
 
-    @Override
-    public StaffDashboardDTO getStaffDashboardData() {
-        return StaffDashboardDTO.builder()
-                .awaitingQuoCount(purchaseDAO.countByStatus(Request.APPROVED))
-                .approvedPRs(purchaseDAO.findApprovedPRs(5).stream()
-                        .map(purchaseMapper::toPurchaseResponse)
-                        .toList())
-                .recentQuotations(fetchRecentQuotations())
-                .activeOrders(orderDAO.findRecent(3).stream()
-                        .map(orderMapper::toPurchaseOrderResponse)
-                        .toList())
-                .build();
-    }
+        // lấy ra toàn bộ quotation
+        private List<QuotationResponse> fetchRecentQuotations() {
+                return quotationDAO.findAll().stream()
+                                .filter(q -> QuotationStatus.PENDING.equals(q.getQuotationStatus()))
+                                .map(q -> {
+                                        String supplierName = supplierDAO.findById(q.getSupplierId())
+                                                        .map(Supplier::getSupplierName)
+                                                        .orElse("N/A");
+                                        return QuotationResponse.builder()
+                                                        .quotationId(q.getId())
+                                                        .purchaseId(q.getPurchaseId())
+                                                        .quotationStatus(q.getQuotationStatus())
+                                                        .totalAmount(q.getTotalAmount())
+                                                        .createdAt(q.getCreatedAt())
+                                                        .supplierName(supplierName)
+                                                        .build();
+                                }).toList();
+        }
+
+        @Override
+        public StaffDashboardDTO getStaffDashboardData() {
+                return StaffDashboardDTO.builder()
+                                .awaitingQuoCount(purchaseDAO.countByStatus(Request.APPROVED))
+                                .approvedPRs(purchaseDAO.findAll().stream().filter(p -> Request.PENDING.equals(p.getStatus()))
+                                                .map(purchaseMapper::toPurchaseResponse)
+                                                .toList())
+                                .recentQuotations(fetchRecentQuotations())
+                                .activeOrders(orderDAO.findRecent().stream()
+                                                .map(orderMapper::toPurchaseOrderResponse)
+                                                .toList())
+                                .build();
+        }
 }

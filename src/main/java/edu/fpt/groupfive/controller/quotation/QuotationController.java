@@ -26,8 +26,7 @@ public class QuotationController {
 
     private static final String URL_PURCHASE_OF_DETAIL = "quotation/quotation-of-purchase";
     private static final String URL_QUOTATION_LIST = "quotation/quotation-list";
-    private static final String URL_QUOTATION_FORM =  "quotation/quotation-form";
-
+    private static final String URL_QUOTATION_FORM = "quotation/quotation-form";
 
     private final QuotationService quotationService;
     private final SupplierService supplierService;
@@ -41,8 +40,7 @@ public class QuotationController {
         quotationCreateRequest.setPurchaseId(purchaseId);
 
         // map purchase detail sang quotation detail
-        List<QuotationDetailCreateRequest> details =
-                quotationService.mapPurchaseToQuotation(purchaseId);
+        List<QuotationDetailCreateRequest> details = quotationService.mapPurchaseToQuotation(purchaseId);
 
         quotationCreateRequest.setQuotationDetailCreateRequests(details);
 
@@ -52,14 +50,12 @@ public class QuotationController {
         return URL_QUOTATION_FORM;
     }
 
-
     // form update quotation
     @IsPurchaseStaff
     @GetMapping("/{quotationId}/edit")
     public String showEditQuotationForm(@PathVariable("quotationId") Integer quotationId, Model model) {
 
-        QuotationCreateRequest request =
-                quotationService.getQuotationRequestById(quotationId);
+        QuotationCreateRequest request = quotationService.getQuotationRequestById(quotationId);
 
         model.addAttribute("quotationCreateRequest", request);
         prepareQuotationFormModel(model, request.getPurchaseId());
@@ -78,7 +74,7 @@ public class QuotationController {
             @RequestParam(value = "addDetail", required = false) Integer addIndex,
             @RequestParam(value = "removeDetail", required = false) Integer removeIndex,
             Model model,
-            RedirectAttributes  redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
 
         // xử lí việc thêm 1 dùng detail mới
         if (addIndex != null) {
@@ -103,29 +99,25 @@ public class QuotationController {
         // tạo quotation
         Integer quotationId = quotationService.createQuotation(request, purchaseId, action);
 
-        if(quotationId != null) {
+        if (quotationId != null) {
             redirectAttributes.addFlashAttribute("message", "Thêm báo giá thành công");
         }
-
 
         return "redirect:/quotations/" + quotationId;
     }
 
-
-    // reject quotation
-    @IsDirector
-    @PostMapping("/{id}/reject")
-    public String rejectQuotation(
-            @PathVariable("id") Integer id,
+    // xử lí các actions
+    @PostMapping("/{id}/actions")
+    public String formActions(@PathVariable("id") Integer id,
+            @RequestParam("action") String action,
             @RequestParam(value = "reason", required = false) String reason,
             RedirectAttributes redirectAttributes) {
 
-        quotationService.rejectQuotation(id, reason);
+        int purchaseId = quotationService.getQuotationById(id).getPurchaseId();
+        quotationService.actionWithQuota(id, action, reason);
 
-        redirectAttributes.addFlashAttribute("message",
-                "Từ chối báo giá thành công");
-
-        return "redirect:/quotations/" + id;
+        redirectAttributes.addFlashAttribute("message", "Thay đổi báo giá thành công");
+        return "redirect:/quotations/of-purchase/" + purchaseId;
     }
 
     // hiển thị ra list quotation của từng purchase reuqest
@@ -135,8 +127,7 @@ public class QuotationController {
             Model model) {
 
         // lấy ra list quotation
-        List<QuotationResponse> quotations =
-                quotationService.getQuotationsByPurchase(purchaseId);
+        List<QuotationResponse> quotations = quotationService.getQuotationsByPurchase(purchaseId);
 
         prepareQuotationFilter(model);
 
@@ -146,13 +137,11 @@ public class QuotationController {
         return URL_PURCHASE_OF_DETAIL;
     }
 
-
     // hiển thị quotation chi tiết
     @GetMapping("/{id}")
     public String getQuotation(@PathVariable("id") Integer id, Model model) {
 
-        QuotationResponse quotation =
-                quotationService.getQuotationById(id);
+        QuotationResponse quotation = quotationService.getQuotationById(id);
 
         model.addAttribute("quotation", quotation);
         prepareQuotationMenu(model);
@@ -192,12 +181,12 @@ public class QuotationController {
         prepareQuotationSearchModel(model);
         List<QuotationSummaryResponse> quotationResponses;
         if (result.hasErrors()) {
-            quotationResponses =  quotationService.getQuotationAndPurchase();
-        }else {
+            quotationResponses = quotationService.getQuotationAndPurchase();
+        } else {
             quotationResponses = quotationService.searchAndFilterForQuotation(criteria);
         }
 
-        model.addAttribute("quotations",quotationResponses);
+        model.addAttribute("quotations", quotationResponses);
 
         return URL_QUOTATION_LIST;
     }
@@ -251,20 +240,18 @@ public class QuotationController {
             QuotationCreateRequest request,
             Integer index) {
 
-        QuotationDetailCreateRequest original =
-                request.getQuotationDetailCreateRequests().get(index);
+        QuotationDetailCreateRequest original = request.getQuotationDetailCreateRequests().get(index);
 
-        QuotationDetailCreateRequest duplicate =
-                QuotationDetailCreateRequest.builder()
-                        .purchaseRequestDetailId(original.getPurchaseRequestDetailId())
-                        .assetTypeName(original.getAssetTypeName())
-                        .specificationRequirement(original.getSpecificationRequirement())
-                        .quantity(original.getQuantity())
-                        .warrantyMonths(original.getWarrantyMonths())
-                        .price(original.getPrice())
-                        .taxRate(original.getTaxRate())
-                        .discountRate(original.getDiscountRate())
-                        .build();
+        QuotationDetailCreateRequest duplicate = QuotationDetailCreateRequest.builder()
+                .purchaseRequestDetailId(original.getPurchaseRequestDetailId())
+                .assetTypeName(original.getAssetTypeName())
+                .specificationRequirement(original.getSpecificationRequirement())
+                .quantity(original.getQuantity())
+                .warrantyMonths(original.getWarrantyMonths())
+                .price(original.getPrice())
+                .taxRate(original.getTaxRate())
+                .discountRate(original.getDiscountRate())
+                .build();
 
         request.getQuotationDetailCreateRequests().add(index + 1, duplicate);
     }

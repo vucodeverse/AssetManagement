@@ -148,6 +148,8 @@ public class PurchaseServiceImpl implements PurchaseService {
             purchaseDAO.updatePurchaseStatus(Request.APPROVED, purchaseId, null, userId);
         } else if ("r".equals(action)) {
             purchaseDAO.updatePurchaseStatus(Request.REJECTED, purchaseId, reasonReject, userId);
+        } else if ("d".equals(action)) {
+            purchaseDAO.updatePurchaseStatus(Request.DELETED, purchaseId, null, userId);
         } else {
             throw new InvalidDataException("Action không hợp lệ: " + action);
         }

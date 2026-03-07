@@ -209,7 +209,6 @@ public class OrderServiceImpl implements OrderService {
         for (Object[] row : results) {
             Order order = (Order) row[0];
             String supplierName = (String) row[1];
-
             PurchaseOrderResponse poResponse = orderMapper.toPurchaseOrderResponse(order);
             poResponse.setSupplierName(supplierName);
             list.add(poResponse);
@@ -256,19 +255,19 @@ public class OrderServiceImpl implements OrderService {
 
         @Override
         public void updateDeliveryDate(Integer orderId, String deliveryDateStr) {
-        if (deliveryDateStr == null || deliveryDateStr.isBlank()) {
+           if (deliveryDateStr == null || deliveryDateStr.isBlank()) {
             throw new InvalidDataException("Ngày giao hàng không được để trống");
-        }
+           }
 
             LocalDate deliveryDate = LocalDate.parse(deliveryDateStr);
-        if(deliveryDate.isBefore(LocalDate.now())) {
+           if(deliveryDate.isBefore(LocalDate.now())) {
             throw new InvalidDataException("Ngày giao hàng không được trong quá khứ");
-        }
-        try {
+          }
+           try {
             orderDetailDAO.updateDeliveryDate(orderId, deliveryDate);
-        } catch (Exception e) {
+          } catch (Exception e) {
             throw new InvalidDataException("Định dạng ngày giao hàng không hợp lệ: " + deliveryDateStr);
-        }
-        }
+          }
+    }
 
-        }
+}
