@@ -259,8 +259,12 @@ public class OrderServiceImpl implements OrderService {
         if (deliveryDateStr == null || deliveryDateStr.isBlank()) {
             throw new InvalidDataException("Ngày giao hàng không được để trống");
         }
-        try {
+
             LocalDate deliveryDate = LocalDate.parse(deliveryDateStr);
+        if(deliveryDate.isBefore(LocalDate.now())) {
+            throw new InvalidDataException("Ngày giao hàng không được trong quá khứ");
+        }
+        try {
             orderDetailDAO.updateDeliveryDate(orderId, deliveryDate);
         } catch (Exception e) {
             throw new InvalidDataException("Định dạng ngày giao hàng không hợp lệ: " + deliveryDateStr);

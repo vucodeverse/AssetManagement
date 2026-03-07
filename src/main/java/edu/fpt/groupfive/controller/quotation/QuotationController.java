@@ -7,6 +7,7 @@ import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.dto.response.QuotationSummaryResponse;
 import edu.fpt.groupfive.service.QuotationService;
 import edu.fpt.groupfive.service.SupplierService;
+import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,7 @@ public class QuotationController {
 
 
     // form update quotation
+    @IsPurchaseStaff
     @GetMapping("/{quotationId}/edit")
     public String showEditQuotationForm(@PathVariable("quotationId") Integer quotationId, Model model) {
 
@@ -111,6 +113,7 @@ public class QuotationController {
 
 
     // reject quotation
+    @IsDirector
     @PostMapping("/{id}/reject")
     public String rejectQuotation(
             @PathVariable("id") Integer id,

@@ -7,6 +7,8 @@ import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
+import edu.fpt.groupfive.util.annotation.IsDirector;
+import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -46,6 +48,7 @@ public class OrderController {
     }
 
     // tạo form purchase order từ quotation
+    @IsDirector
     @GetMapping("/create-from-quotation/{quotationId}")
     public String showCreateForm(@PathVariable("quotationId") Integer quotationId, Model model) {
         try {
@@ -58,6 +61,7 @@ public class OrderController {
     }
 
     // xử lý form
+    @IsDirector
     @PostMapping("/create-from-quotation/{quotationId}")
     public String handleOrderForm(@PathVariable("quotationId") Integer quotationId,
                                   @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest request,
@@ -102,6 +106,8 @@ public class OrderController {
         return VIEW_ORDER_DETAIL;
     }
 
+    // update ngày giao hàng
+    @IsPurchaseStaff
     @PostMapping("/{id}/update-delivery-date")
     public String updateDeliveryDate(@PathVariable("id") Integer id,
                                      @RequestParam("deliveryDate") String deliveryDate,
