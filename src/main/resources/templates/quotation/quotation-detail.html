@@ -37,7 +37,7 @@
                                 APPROVE & GENERATE PO
                             </a>
                         </div>
-                        <div sec:authorize="hasAuthority('PURCHASE-STAFF')">
+                        <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
                             <a th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT'}"
                                 class="btn-solid-prem" th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
                                 UPDATE QUOTATION

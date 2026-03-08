@@ -12,5 +12,4 @@ public class StaffDashboardDTO {
     private List<QuotationResponse> recentQuotations;
     private List<PurchaseOrderResponse> activeOrders;
 
-    private long awaitingQuoCount;
 }

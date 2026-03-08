@@ -415,65 +415,6 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         return result;
     }
 
-    // đếm số lượng purchase theo status
-    @Override
-    public long countByStatus(Request status) {
-        String sql = "select count(*) from purchase_request where status = ?";
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, status.name());
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next())
-                return rs.getLong(1);
-        } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
-        }
-        return 0;
-    }
-
-    // lấy ra những records mưới nhất
-    @Override
-    public List<Purchase> findRecent(int limit) {
-        String sql = "select p.*, u.first_name, u.last_name " +
-                "from purchase_request p left join users u on p.creator_id = u.user_id " +
-                "where p.status = 'PENDING' " +
-                "order by p.created_at desc, p.purchase_request_id desc " +
-                "offset 0 rows fetch next ? rows only";
-        List<Purchase> purchases = new ArrayList<>();
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, limit);
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                purchases.add(mapRowForList(rs));
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
-        }
-        return purchases;
-    }
-
-    @Override
-    public List<Purchase> findApprovedPRs(int limit) {
-        String sql = "select p.*, u.first_name, u.last_name " +
-                "from purchase_request p left join users u on p.creator_id = u.user_id " +
-                "where p.status = 'APPROVED' " +
-                "order by p.approved_by_director_at desc, p.purchase_request_id desc " +
-                "offset 0 rows fetch next ? rows only";
-        List<Purchase> purchases = new ArrayList<>();
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, limit);
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                purchases.add(mapRowForList(rs));
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
-        }
-        return purchases;
-    }
-
     // update purchase request nếu là draft
     @Override
     public void update(Purchase purchase) {

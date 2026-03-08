@@ -26,9 +26,4 @@ public interface PurchaseDAO {
 
     Map<Integer, Object[]> findQuotaSummaryByFilter(QuotationSearchCriteria s);
 
-    long countByStatus(Request status);
-
-    List<Purchase> findRecent(int limit);
-
-    List<Purchase> findApprovedPRs(int limit);
 }

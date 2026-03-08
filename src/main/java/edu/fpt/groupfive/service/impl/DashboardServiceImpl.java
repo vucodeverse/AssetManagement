@@ -37,7 +37,7 @@ public class DashboardServiceImpl implements DashboardService {
         public DashboardDTO getDirectorDashboardData() {
                 return DashboardDTO.builder()
                                 .recentPRs(fetchRecentPRs())
-                                .recentQuotations(fetchRecentQuotations())
+                                .recentQuotations(fetchRecentQuotations(QuotationStatus.PENDING))
                                 .build();
         }
 
@@ -55,9 +55,9 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         // lấy ra toàn bộ quotation
-        private List<QuotationResponse> fetchRecentQuotations() {
+        private List<QuotationResponse> fetchRecentQuotations(QuotationStatus  status) {
                 return quotationDAO.findAll().stream()
-                                .filter(q -> QuotationStatus.PENDING.equals(q.getQuotationStatus()))
+                                .filter(q -> status.equals(q.getQuotationStatus()))
                                 .map(q -> {
                                         String supplierName = supplierDAO.findById(q.getSupplierId())
                                                         .map(Supplier::getSupplierName)
@@ -73,14 +73,15 @@ public class DashboardServiceImpl implements DashboardService {
                                 }).toList();
         }
 
+
+        // db của pstaff
         @Override
         public StaffDashboardDTO getStaffDashboardData() {
                 return StaffDashboardDTO.builder()
-                                .awaitingQuoCount(purchaseDAO.countByStatus(Request.APPROVED))
-                                .approvedPRs(purchaseDAO.findAll().stream().filter(p -> Request.PENDING.equals(p.getStatus()))
+                                .approvedPRs(purchaseDAO.findAll().stream().filter(p -> Request.APPROVED.equals(p.getStatus()))
                                                 .map(purchaseMapper::toPurchaseResponse)
                                                 .toList())
-                                .recentQuotations(fetchRecentQuotations())
+                                .recentQuotations(fetchRecentQuotations(QuotationStatus.DRAFT))
                                 .activeOrders(orderDAO.findRecent().stream()
                                                 .map(orderMapper::toPurchaseOrderResponse)
                                                 .toList())
