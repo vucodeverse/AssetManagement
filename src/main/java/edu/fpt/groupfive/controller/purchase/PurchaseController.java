@@ -104,7 +104,6 @@ public class PurchaseController {
     }
 
     // duyệt và từ chối purhcase reuqest
-
     @PostMapping("/{id}/actions")
     public String actionWithPr(@PathVariable("id") Integer id,
             @RequestParam("action") String actions,

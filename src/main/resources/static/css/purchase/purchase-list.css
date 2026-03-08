@@ -346,22 +346,32 @@ table.dataTable tbody tr:hover,
 
 .cell-actions {
     white-space: nowrap;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
 }
 
 .cell-actions form {
     display: flex;
     gap: 12px;
     justify-content: flex-end;
+    align-items: center;
+    margin: 0;
 }
 
 .btn-approve,
 .btn-reject {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 12px;
     padding: 10px 16px;
     font-size: 12px;
     font-weight: 900;
     cursor: pointer;
     border: 1px solid #111827;
+    text-decoration: none;
     transition: .15s ease;
 }
 
@@ -375,19 +385,8 @@ table.dataTable tbody tr:hover,
 }
 
 .btn-reject {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    padding: 10px 16px;
-    font-size: 12px;
-    font-weight: 900;
-    cursor: pointer;
-    border: 1px solid #111827;
     background: #fff;
     color: #111827;
-    text-decoration: none;
-    transition: .15s ease;
 }
 
 .btn-reject:hover {

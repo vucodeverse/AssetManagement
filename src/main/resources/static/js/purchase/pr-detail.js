@@ -7,14 +7,33 @@ document.addEventListener("DOMContentLoaded", function () {
     rows.forEach(row => {
         const qty = parseFloat(row.dataset.qty) || 0;
         const price = parseFloat(row.dataset.price) || 0;
+
         subtotal += qty * price;
     });
 
-    const fmt = (n) => n.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    // format decimal(9,2) + dấu chấm ngăn cách
+    const formatMoney = (num) => {
+        return num.toLocaleString('vi-VN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    };
 
-    const subtotalEl = document.getElementById("subtotal");
-    if (subtotalEl) subtotalEl.textContent = fmt(subtotal);
+    document.getElementById("subtotal").textContent = formatMoney(subtotal);
+    document.getElementById("total").textContent = formatMoney(subtotal);
 
-    const totalEl = document.getElementById("total");
-    if (totalEl) totalEl.textContent = fmt(subtotal);
 });
+
+function openRejectModal(btn) {
+    const action = btn.dataset.action;
+    const modal = document.getElementById("rejectModal");
+    const form = document.getElementById("rejectForm");
+
+    form.action = action;
+    form.querySelector("textarea").value = "";
+    modal.style.display = "flex";
+}
+
+function closeRejectModal() {
+    document.getElementById("rejectModal").style.display = "none";
+}

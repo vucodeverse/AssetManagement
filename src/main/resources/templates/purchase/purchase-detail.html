@@ -1,5 +1,7 @@
 ﻿<!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout/main-layout}">
 
 <head>
@@ -28,18 +30,18 @@
                 <div class="title-section">
                     <h1>PURCHASE REQUEST DETAIL</h1>
                 </div>
-                <div class="header-actions">
-                    <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
-
-                        <div th:if="${purchase.status.name() != 'APPROVED' && purchase.status.name() != 'REJECTED'}">
+                <div class="header-actions" sec:authorize="hasAuthority('DIRECTOR')">
+                    <div th:if="${purchase.status.name() == 'PENDING'}" style="display: flex; gap: 12px;">
+                        <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
                             <button type="submit" name="action" value="a" class="btn-approve">APPROVE</button>
-                            <!-- đổi reject thành button để mở popup -->
-                            <a class="btn-reject" th:href="'#reject-' + ${purchase.purchaseId}"
-                                onclick="event.stopPropagation();">
-                                REJECT
-                            </a>
-                        </div>
-                    </form>
+                        </form>
+                        <button type="button" class="btn-reject" 
+                                th:data-id="${purchase.purchaseId}"
+                                th:data-action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}"
+                                onclick="openRejectModal(this)">
+                            REJECT
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -153,27 +155,39 @@
                 </div>
         </main>
         <!-- Modal từ chối -->
-        <div th:id="'reject-' + ${purchase.purchaseId}" class="modal-overlay">
-            <div class="modal" role="dialog" aria-modal="true">
-                <div class="modal-header">
-                    <h3 class="modal-title">
-                        Reject Reason - PR-<span th:text="${purchase.purchaseId}"></span>
-                    </h3>
-                    <a href="#" class="modal-close" aria-label="Close">✕</a>
+        <th:block>
+            <div id="rejectModal" class="modal-overlay">
+
+                <div class="modal">
+                    <div class="modal-header">
+                        <h3 class="modal-title">
+                            Reject Reason
+                        </h3>
+
+                        <button type="button" class="modal-close" onclick="closeRejectModal()">✕</button>
+                    </div>
+
+                    <form method="post" id="rejectForm" th:action="@{/purchases/0/actions}">
+
+                        <div class="modal-body">
+                            <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-submit" name="action" value="r">
+                                Submit
+                            </button>
+
+                            <button type="button" class="btn-cancel" onclick="closeRejectModal()">
+                                Cancel
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
 
-                <form th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}" method="post">
-                    <div class="modal-body">
-                        <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
-                    </div>
-
-                    <div class="modal-actions">
-                        <button type="submit" class="btn-submit" name="action" value="r">Submit</button>
-                        <a href="#" class="btn-cancel">Cancel</a>
-                    </div>
-                </form>
             </div>
-        </div>
+        </th:block>
     </th:block>
 
     <th:block layout:fragment="extra-js">

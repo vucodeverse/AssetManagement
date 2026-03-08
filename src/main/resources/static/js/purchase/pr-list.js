@@ -36,11 +36,11 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function openRejectModal(btn) {
-    const id = btn.dataset.id;
+    const action = btn.dataset.action;
     const modal = document.getElementById("rejectModal");
     const form = document.getElementById("rejectForm");
 
-    form.action = "/purchases/" + id + "/actions";
+    form.action = action;
     form.querySelector("textarea").value = "";
     modal.style.display = "flex";
 }

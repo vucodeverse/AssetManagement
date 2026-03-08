@@ -259,7 +259,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             sql.append(" and (");
             String keyword = p.getKeyword().trim();
 
-            if (keyword.matches("//d+")) {
+            if (keyword.matches("\\d+")) {
                 sql.append(" p.purchase_request_id = ? or ");
                 params.add(Integer.parseInt(keyword));
             }
