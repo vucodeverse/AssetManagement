@@ -21,33 +21,9 @@ public class WarehouseDashboardController {
 
         private final WarehouseService warehouseService;
         private final InventoryTicketService ticketService;
-        private final InventoryAuditService auditService;
 
         @GetMapping("/{warehouseId}")
         public String viewDashboard(@PathVariable("warehouseId") Integer warehouseId, Model model) {
-                WarehouseResponse warehouse = warehouseService.getWarehouseById(warehouseId);
-
-                List<TicketResponse> allTickets = ticketService.getTicketsByWarehouseId(warehouseId);
-                List<TicketResponse> pendingInTickets = allTickets.stream()
-                                .filter(t -> "IN".equalsIgnoreCase(t.getTicketType()))
-                                .filter(t -> "PENDING".equalsIgnoreCase(t.getStatus())
-                                                || "IN_PROGRESS".equalsIgnoreCase(t.getStatus()))
-                                .collect(Collectors.toList());
-                List<TicketResponse> pendingOutTickets = allTickets.stream()
-                                .filter(t -> "OUT".equalsIgnoreCase(t.getTicketType()))
-                                .filter(t -> "PENDING".equalsIgnoreCase(t.getStatus())
-                                                || "IN_PROGRESS".equalsIgnoreCase(t.getStatus()))
-                                .collect(Collectors.toList());
-
-                List<AuditResponse> allAudits = auditService.getAuditsByWarehouseId(warehouseId);
-                List<AuditResponse> activeAudits = allAudits.stream()
-                                .filter(a -> "IN_PROGRESS".equalsIgnoreCase(a.getStatus()))
-                                .collect(Collectors.toList());
-
-                model.addAttribute("warehouse", warehouse);
-                model.addAttribute("pendingInTickets", pendingInTickets);
-                model.addAttribute("pendingOutTickets", pendingOutTickets);
-                model.addAttribute("activeAudits", activeAudits);
 
                 return "warehouse/dashboard";
         }

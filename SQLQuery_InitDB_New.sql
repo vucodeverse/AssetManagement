@@ -298,8 +298,9 @@ CREATE TABLE allocation_detail (
 -- Thay vì thêm dung lượng vào master table asset_type, ta thiết kế bảng Mapping độc lập
 CREATE TABLE wh_asset_capacity (
     id              INT IDENTITY(1,1) PRIMARY KEY,
-    asset_type_id   INT NOT NULL UNIQUE, 
-    capacity_units  INT NOT NULL DEFAULT 1 
+    asset_type_id   INT NOT NULL UNIQUE,
+    capacity_units  INT NOT NULL DEFAULT 1,
+    CONSTRAINT FK_wh_asset_capacity_asset_type FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id)
 );
 
 -- Thông tin Kho hàng
@@ -307,8 +308,9 @@ CREATE TABLE wh_warehouse (
     id              INT IDENTITY(1,1) PRIMARY KEY,
     name            NVARCHAR(100) NOT NULL,
     address         NVARCHAR(255) NOT NULL,
-    manager_user_id INT NOT NULL, 
-    status          NVARCHAR(40) DEFAULT N'ACTIVE'
+    manager_user_id INT NOT NULL,
+    status          NVARCHAR(40) DEFAULT N'ACTIVE',
+    CONSTRAINT FK_wh_warehouse_manager FOREIGN KEY (manager_user_id) REFERENCES users(user_id)
 );
 
 -- Vùng Không gian (Zone) - Điểm lưu trữ 
@@ -349,30 +351,35 @@ CREATE TABLE wh_ticket_detail (
 CREATE TABLE wh_ticket_asset_mapping (
     id         INT IDENTITY(1,1) PRIMARY KEY,
     detail_id  INT NOT NULL REFERENCES wh_ticket_detail(id),
-    asset_id   INT NOT NULL
+    asset_id   INT NOT NULL,
+    CONSTRAINT FK_wh_ticket_asset_mapping_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id)
 );
 
 -- Hồ sơ Khám Sức Khỏe Tài Sản
 CREATE TABLE wh_ticket_qc_history (
     id            INT IDENTITY(1,1) PRIMARY KEY,
     ticket_id     INT NOT NULL REFERENCES wh_inventory_ticket(id),
-    asset_id      INT NOT NULL, 
-    qc_status     NVARCHAR(40) NOT NULL, 
+    asset_id      INT NOT NULL,
+    qc_status     NVARCHAR(40) NOT NULL,
     inspected_by  INT NOT NULL,
     qc_date       DATETIME2 DEFAULT SYSDATETIME(),
-    note          NVARCHAR(MAX)
+    note          NVARCHAR(MAX),
+    CONSTRAINT FK_wh_ticket_qc_history_asset      FOREIGN KEY (asset_id)     REFERENCES asset(asset_id),
+    CONSTRAINT FK_wh_ticket_qc_history_inspector  FOREIGN KEY (inspected_by) REFERENCES users(user_id)
 );
 
 -- Thẻ Kho
 CREATE TABLE wh_inventory_transaction (
     id               INT IDENTITY(1,1) PRIMARY KEY,
-    asset_id         INT NOT NULL, 
-    ticket_id        INT REFERENCES wh_inventory_ticket(id), 
-    transaction_type NVARCHAR(20) NOT NULL, 
+    asset_id         INT NOT NULL,
+    ticket_id        INT REFERENCES wh_inventory_ticket(id),
+    transaction_type NVARCHAR(20) NOT NULL,
     from_zone_id     INT REFERENCES wh_zone(id),
     to_zone_id       INT REFERENCES wh_zone(id),
     performer_id     INT NOT NULL,
-    transaction_date DATETIME2 DEFAULT SYSDATETIME()
+    transaction_date DATETIME2 DEFAULT SYSDATETIME(),
+    CONSTRAINT FK_wh_inv_transaction_asset     FOREIGN KEY (asset_id)     REFERENCES asset(asset_id),
+    CONSTRAINT FK_wh_inv_transaction_performer FOREIGN KEY (performer_id) REFERENCES users(user_id)
 );
 
 -- Phiếu Kiểm kê (Audit)
@@ -384,7 +391,8 @@ CREATE TABLE wh_inventory_audit (
     auditor_id   INT NOT NULL,
     start_time   DATETIME2 DEFAULT SYSDATETIME(),
     end_time     DATETIME2,
-    note         NVARCHAR(MAX)
+    note         NVARCHAR(MAX),
+    CONSTRAINT FK_wh_inventory_audit_auditor FOREIGN KEY (auditor_id) REFERENCES users(user_id)
 );
 
 -- Chi tiết Quét
@@ -392,7 +400,8 @@ CREATE TABLE wh_audit_scan_record (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     audit_id     INT NOT NULL REFERENCES wh_inventory_audit(id),
     asset_id     INT NOT NULL,
-    match_status NVARCHAR(30) NOT NULL, 
+    match_status NVARCHAR(30) NOT NULL,
     scanned_at   DATETIME2 DEFAULT SYSDATETIME(),
-    action_taken NVARCHAR(255)
+    action_taken NVARCHAR(255),
+    CONSTRAINT FK_wh_audit_scan_record_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id)
 );
