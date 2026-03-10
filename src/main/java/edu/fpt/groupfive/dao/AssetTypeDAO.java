@@ -1,5 +1,7 @@
 package edu.fpt.groupfive.dao;
 
+import edu.fpt.groupfive.common.AssetTypeClass;
+import edu.fpt.groupfive.common.DepreciationMethod;
 import edu.fpt.groupfive.model.AssetType;
 
 import java.util.List;
@@ -20,4 +22,16 @@ public interface AssetTypeDAO {
 
     boolean existByTypeName(String typeName);
 
+    List<AssetType> search(String keyword,
+                           Integer categoryId,
+                           AssetTypeClass typeClass,
+                           DepreciationMethod depreciationMethod,
+                           String direction,
+                           int offset,
+                           int limit);
+
+    int count(String keyword,
+              Integer categoryId,
+              AssetTypeClass typeClass,
+              DepreciationMethod depreciationMethod);
 }

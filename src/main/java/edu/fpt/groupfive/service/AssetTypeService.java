@@ -1,5 +1,7 @@
 package edu.fpt.groupfive.service;
 
+import edu.fpt.groupfive.common.AssetTypeClass;
+import edu.fpt.groupfive.common.DepreciationMethod;
 import edu.fpt.groupfive.dto.request.AssetTypeCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetTypeUpdateRequest;
 import edu.fpt.groupfive.dto.response.AssetTypeResponse;
@@ -27,4 +29,18 @@ public interface AssetTypeService {
     void delete(Integer id);
 
     Map<Integer, String> getAssetTypeIdToNameMap();
+
+
+    List<AssetTypeResponse> search(String keyword,
+                                   Integer categoryId,
+                                   AssetTypeClass typeClass,
+                                   DepreciationMethod depreciationMethod,
+                                   String direction,
+                                   int offset,
+                                   int limit);
+
+    int count(String keyword,
+              Integer categoryId,
+              AssetTypeClass typeClass,
+              DepreciationMethod depreciationMethod);
 }

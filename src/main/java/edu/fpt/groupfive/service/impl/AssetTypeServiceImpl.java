@@ -1,5 +1,7 @@
 package edu.fpt.groupfive.service.impl;
 
+import edu.fpt.groupfive.common.AssetTypeClass;
+import edu.fpt.groupfive.common.DepreciationMethod;
 import edu.fpt.groupfive.dao.AssetTypeDAO;
 import edu.fpt.groupfive.dao.impl.AssetTypeDAOImpl;
 import edu.fpt.groupfive.dto.request.AssetTypeCreateRequest;
@@ -114,5 +116,30 @@ public class AssetTypeServiceImpl implements AssetTypeService {
         }
 
         return map;
+    }
+
+    @Override
+    public List<AssetTypeResponse> search(String keyword,
+                                          Integer categoryId,
+                                          AssetTypeClass typeClass,
+                                          DepreciationMethod depreciationMethod,
+                                          String direction,
+                                          int offset,
+                                          int limit) {
+
+        List<AssetType> assetTypes =
+                assetTypeDAO.search(keyword, categoryId, typeClass, depreciationMethod, direction, offset, limit);
+
+        return assetTypeMapper.toAssetTypeResponseList(assetTypes);
+    }
+
+
+    @Override
+    public int count(String keyword,
+                     Integer categoryId,
+                     AssetTypeClass typeClass,
+                     DepreciationMethod depreciationMethod) {
+
+        return assetTypeDAO.count(keyword, categoryId, typeClass, depreciationMethod);
     }
 }
