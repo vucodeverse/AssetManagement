@@ -21,6 +21,9 @@ public interface AllocationRequestMapper {
 
     List<AllocationRequestDetail> toListAllocationRequestDetail(List<AllocationRequestDetailRequest> list);
 
+    @Mapping(source = "assetManagerApprovedByUserId", target = "amApprovedBy")
+    @Mapping(source = "assetManagerApprovedDate", target = "amApprovedAt")
+    @Mapping(source = "rejectReason", target = "reasonReject")
     AllocationRequestResponse toResponse(AllocationRequest request);
 
     List<AllocationRequestResponse> toResponseList(List<AllocationRequest> allocationRequests);

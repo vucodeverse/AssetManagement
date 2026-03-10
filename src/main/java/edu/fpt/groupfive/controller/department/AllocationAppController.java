@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -19,14 +18,12 @@ public class AllocationAppController {
     @GetMapping("/listbyAssetMgr")
     public String showList2(Model model) {
         // Lấy toàn bộ dang sách yêu cầu cấp phát
-        List<AllocationRequest> list =
-                allocationRequestService.getAllAllocationRequest(2);
+        List<AllocationRequest> list = allocationRequestService.getAllAllocationRequest(2);
 
         model.addAttribute("requests", list);
 
         return "allocation/allocation_request_action";
     }
-
 
     @PostMapping("/approve/{id}")
     public String approveRequest(@PathVariable("id") Integer id) {
@@ -34,23 +31,21 @@ public class AllocationAppController {
         allocationRequestService.updateStatus(
                 id,
                 "APPROVED",
-                6,          // id AM (sau này lấy từ session)
-                null
-        );
+                6, // id AM (sau này lấy từ session)
+                null);
 
         return "redirect:/asset-manager/allocation-request/listbyAssetMgr";
     }
 
-
     @PostMapping("/reject/{id}")
     public String rejectRequest(@PathVariable("id") Integer id,
-                                @RequestParam String reasonReject) {
+            @RequestParam("reasonReject") String reasonReject) {
 
         allocationRequestService.updateStatus(
                 id,
                 "REJECTED",
-                6,                  // id AM
-                reasonReject);  // sau này có thể cho nhập reason
+                6, // id AM
+                reasonReject); // sau này có thể cho nhập reason
 
         return "redirect:/asset-manager/allocation-request/listbyAssetMgr";
     }

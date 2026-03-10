@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,18 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         if (updated != null)
             request.setUpdateAt(updated.toLocalDateTime());
 
+        int amApprovedBy = rs.getInt("am_approved_by");
+        if (!rs.wasNull()) {
+            request.setAssetManagerApprovedByUserId(amApprovedBy);
+        }
+
+        Timestamp amApprovedAt = rs.getTimestamp("am_approved_at");
+        if (amApprovedAt != null) {
+            request.setAssetManagerApprovedDate(amApprovedAt.toLocalDateTime());
+        }
+
+        request.setRejectReason(rs.getString("reason_reject"));
+
         return request;
     }
 
@@ -50,7 +63,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         List<AllocationRequest> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+                PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, departmentId);
             ResultSet rs = ps.executeQuery();
 
@@ -72,7 +85,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                          WHERE request_id = ?
                 """;
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+                PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
 
@@ -96,8 +109,8 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                 """;
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query,
-                     PreparedStatement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = connection.prepareStatement(query,
+                        PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, request.getRequesterId());
             ps.setInt(2, request.getRequestedDepartmentId());
             ps.setTimestamp(3, Timestamp.valueOf(request.getRequestDate()));
@@ -134,7 +147,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                 WHERE request_id = ?
                 """;
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+                PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setObject(1, request.getNeededByDate());
             ps.setString(2, request.getPriority());
@@ -154,7 +167,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                 DELETE FROM allocation_request WHERE request_id = ?
                 """;
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+                PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();
@@ -177,7 +190,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+                PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setString(1, status);
             ps.setInt(2, amApprovedBy);
@@ -185,6 +198,157 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
             ps.setInt(4, id);
 
             ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<AllocationRequest> search(Integer departmentId, String requestId, String status,
+            String priority, LocalDate fromDate, LocalDate toDate
+    /* int offset, int size */) {
+        StringBuilder query = new StringBuilder("""
+                    SELECT *
+                    FROM allocation_request
+                    WHERE requested_department_id = ?
+                """);
+
+        List<Object> params = new ArrayList<>();
+        params.add(departmentId);
+
+        if (requestId != null && !requestId.trim().isEmpty()) {
+            query.append(" AND request_id = ?");
+            params.add(Integer.parseInt(requestId.trim()));
+        }
+
+        if (status != null && !status.isEmpty()) {
+            query.append(" AND status = ?");
+            params.add(status);
+        }
+
+        if (priority != null && !priority.isEmpty()) {
+            query.append(" AND priority = ?");
+            params.add(priority);
+        }
+
+        if (fromDate != null) {
+            query.append(" AND request_date >= ?");
+            params.add(fromDate);
+        }
+
+        if (toDate != null) {
+            query.append(" AND request_date <= ?");
+            params.add(toDate);
+        }
+
+        // query.append("""
+        // ORDER BY request_id ASC
+        // OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+        // """);
+        //
+        // params.add(offset);
+        // params.add(size);
+
+        List<AllocationRequest> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(query.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapRowToRequest(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public int countInFilter(Integer departmentId, String requestId, String status,
+            String priority, LocalDate fromDate, LocalDate toDate) {
+        StringBuilder query = new StringBuilder("""
+                    SELECT COUNT(*)
+                    FROM allocation_request
+                    WHERE requested_department_id = ?
+                """);
+
+        List<Object> params = new ArrayList<>();
+        params.add(departmentId);
+
+        if (requestId != null && !requestId.trim().isEmpty()) {
+            query.append(" AND request_id = ?");
+            params.add(Integer.parseInt(requestId.trim()));
+        }
+
+        if (status != null && !status.isEmpty()) {
+            query.append(" AND status = ?");
+            params.add(status);
+        }
+
+        if (priority != null && !priority.isEmpty()) {
+            query.append(" AND priority = ?");
+            params.add(priority);
+        }
+
+        if (fromDate != null) {
+            query.append(" AND request_date >= ?");
+            params.add(fromDate);
+        }
+
+        if (toDate != null) {
+            query.append(" AND request_date <= ?");
+            params.add(toDate);
+        }
+
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(query.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+
+    }
+
+    @Override
+    public int countAll(Integer departmentId) {
+        String query = """
+                SELECT COUNT(*) FROM allocation_request
+                WHERE requested_department_id = ?
+                """;
+
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, departmentId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+            return 0;
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -29,6 +29,8 @@ public class UserResponse {
 
     private LocalDateTime createdDate;
 
+    private LocalDateTime updatedDate;
+
     //Foreign key of table Department
     private Integer departmentId;
 }

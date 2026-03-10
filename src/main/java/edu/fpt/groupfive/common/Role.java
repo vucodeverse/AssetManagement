@@ -1,5 +1,7 @@
 package edu.fpt.groupfive.common;
 
+import java.util.List;
+
 public enum Role {
     ADMIN("Quản trị viên"),
     PURCHASE_STAFF("Nhân viên mua sắm"),
@@ -16,5 +18,15 @@ public enum Role {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public static List<Role> getRoles() {
+        return List.of(
+                DIRECTOR,
+                DEPARTMENT_MANAGER,
+                ASSET_MANAGER,
+                PURCHASE_STAFF,
+                WAREHOUSE_STAFF
+        );
     }
 }

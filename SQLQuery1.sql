@@ -391,46 +391,38 @@ CREATE TABLE allocation_request_detail (
     CONSTRAINT FK_req_details_type FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id)
 );
 
--- 3. Lệnh cấp phát (AM thực hiện sau khi duyệt)
-CREATE TABLE allocation (
-  allocation_id              INT IDENTITY(1,1) NOT NULL,
-  allocation_request_id      INT NOT NULL,          -- Link tới yêu cầu của DM
-  allocated_by_user_id       INT NOT NULL,          -- Asset Manager thực hiện
-  allocated_to_department_id INT NOT NULL,          -- Phòng ban nhận máy
-  
-  allocation_date            DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(), -- Ngày giờ xuất kho
-  status                     VARCHAR(40) NOT NULL,  -- PENDING, SUCCESSFUL
-  note                       NVARCHAR(255) NULL,    -- Ghi chú (NVARCHAR để viết tiếng Việt)
-  
-  created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-  updated_date               DATETIME2(0) NULL,
-  PRIMARY KEY (allocation_id),
-  CONSTRAINT FK_alloc_request FOREIGN KEY (allocation_request_id) REFERENCES allocation_request(request_id),
-  CONSTRAINT FK_alloc_user    FOREIGN KEY (allocated_by_user_id) REFERENCES users(user_id),
-  CONSTRAINT FK_alloc_dept    FOREIGN KEY (allocated_to_department_id) REFERENCES departments(department_id)
+CREATE TABLE return_request (
+    request_id              INT IDENTITY(1,1) NOT NULL,
+    requester_id            INT NOT NULL,
+    requested_department_id INT NOT NULL,
+    request_date            DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+    reason                  NVARCHAR(500) NOT NULL,
+    status                  NVARCHAR(40) NOT NULL,
+    wh_confirmed_by          INT NULL,
+    wh_confirmed_at          DATETIME2(0) NULL,
+    reason_reject           NVARCHAR(255) NULL,
+    created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+    updated_at              DATETIME2(0) NULL,
+    PRIMARY KEY (request_id),
+    CONSTRAINT FK_return_req_requester 
+        FOREIGN KEY (requester_id) REFERENCES users(user_id),
+
+    CONSTRAINT FK_return_req_dept 
+        FOREIGN KEY (requested_department_id) REFERENCES departments(department_id),
+
+    CONSTRAINT FK_return_req_wh_confirmed 
+        FOREIGN KEY (wh_confirmed_by) REFERENCES users(user_id)
 );
-/*
-CREATE TABLE allocation (
-    allocation_id   INT IDENTITY(1,1) NOT NULL,
-    request_id      INT NOT NULL,          
-    allocation_date DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-    allocated_by    INT NOT NULL,          -- Asset Manager
-    status          NVARCHAR(40) NOT NULL, -- PENDING_HANDOVER, SUCCESSFUL
-    note            NVARCHAR(255) NULL,
-    PRIMARY KEY (allocation_id),
-    CONSTRAINT FK_allocation_request FOREIGN KEY (request_id) REFERENCES allocation_request(request_id),
-    CONSTRAINT FK_allocation_admin FOREIGN KEY (allocated_by) REFERENCES users(user_id)
-);
-*/
--- 4. Chi tiết cấp phát (Nơi gán Asset_ID/Serial cụ thể cho từng nhân viên)
-CREATE TABLE allocation_detail (
-    allocation_detail_id INT IDENTITY(1,1) NOT NULL,
-    allocation_id        INT NOT NULL,
-    asset_id             INT NOT NULL,    -- Serial máy cụ thể
-    assigned_to_user_id  INT NULL,        -- Nhân viên cụ thể nhận máy
-    issued_condition     NVARCHAR(255) NULL,
-    PRIMARY KEY (allocation_detail_id),
-    CONSTRAINT FK_detail_alloc_parent FOREIGN KEY (allocation_id) REFERENCES allocation(allocation_id),
-    CONSTRAINT FK_detail_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
-    CONSTRAINT FK_detail_user FOREIGN KEY (assigned_to_user_id) REFERENCES users(user_id)
+
+CREATE TABLE return_request_detail (
+    request_detail_id    INT IDENTITY(1,1) NOT NULL,
+    request_id           INT NOT NULL,
+    asset_id			 INT NOT NULL,
+    note                 NVARCHAR(255) NULL,
+    PRIMARY KEY (request_detail_id),
+    CONSTRAINT FK_return_req_detail_parent
+	FOREIGN KEY (request_id) REFERENCES return_request(request_id),
+
+	CONSTRAINT FK_return_req_detail_asset
+	FOREIGN KEY (asset_id) REFERENCES asset(asset_id)
 );

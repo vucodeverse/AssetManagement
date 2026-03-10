@@ -11,6 +11,16 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
+
     <style>
         body {
           background-color: #f4f7f6;
@@ -93,9 +103,10 @@
 <!--                Filter theo status-->
                 <select name="status" class="form-control mr-2 border-primary">
                     <option value="">Trạng thái</option>
-                    <option value="ACTIVE" th:selected="${status=='ACTIVE'}">ACTIVE</option>
-                    <option value="INACTIVE" th:selected="${status=='INACTIVE'}">INACTIVE</option>
+                    <option value="ACTIVE" th:selected="${status=='ACTIVE'}">Hoạt động</option>
+                    <option value="INACTIVE" th:selected="${status=='INACTIVE'}">Không hoạt động</option>
                 </select>
+
 <!--                Filter theo department-->
                 <select name="departmentId" class="form-control mr-2 border-primary">
                     <option value="">Phòng ban</option>
@@ -105,6 +116,7 @@
                             th:selected="${departmentId == d.departmentId}">
                     </option>
                 </select>
+
 <!--                Filter theo role-->
                 <select name="role" class="form-control mr-2 border-primary">
                     <option value="">Vai trò</option>
@@ -114,6 +126,7 @@
                             th:selected="${role != null and r == role}">
                     </option>
                 </select>
+
 <!--                Chỗ tìm kiếm-->
                 <div class="input-group">
                     <input type="text"
@@ -130,9 +143,10 @@
             </form>
         </div>
 
-        <table class="table table-bordered table-hover shadow-sm bg-white">
+        <table id="userTable" class="table table-bordered table-hover shadow-sm bg-white">
             <thead>
             <tr>
+                <th>ID</th>
                 <th>Tên đăng nhập</th>
                 <th>Họ và tên</th>
                 <th>Email</th>
@@ -143,6 +157,7 @@
             </thead>
             <tbody>
             <tr th:each="x : ${users}">
+                <td th:text="${x.userId}"></td>
                 <td th:text="${x.username}" class="font-weight-bold"></td>
                 <td th:text="${x.firstName + ' ' + x.lastName}"></td>
                 <td th:text="${x.email}"></td>
@@ -156,6 +171,10 @@
                 <td th:text="${x.role.displayName}"></td>
 <!--                Nút action-->
                 <td>
+                    <a th:href="@{'/admin/detail/' + ${x.userId}}"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="far fa-eye"></i>
+                    </a>
                     <a th:href="@{'/admin/edit/' + ${x.userId}}"
                        class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-edit"></i>
@@ -167,10 +186,13 @@
                     </a>
                 </td>
             </tr>
+
             <tr th:if="${users == null or users.isEmpty()}">
                 <td colspan="6" class="text-center">Không tìm thấy người dùng nào.</td>
             </tr>
+
             </tbody>
+
         </table>
 
         <nav th:if="${totalPages > 0}">
@@ -218,6 +240,29 @@
 
     </div>
 </div>
+
+<script>
+
+    $(document).ready(function () {
+
+        $('#userTable').DataTable({
+
+            paging: false,
+            lengthChange: false,
+            searching: false,
+            info: false,
+
+            ordering: true,
+
+            columnDefs: [
+                { orderable: false, targets: [5] }, // cột action không sort
+                { orderable: false, targets: [6] }
+            ]
+        });
+
+    });
+
+</script>
 
 </body>
 </html>

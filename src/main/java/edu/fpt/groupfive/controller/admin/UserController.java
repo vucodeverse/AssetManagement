@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,8 +24,23 @@ public class UserController {
 
     //Set up dữ liệu cho phòng ban và vai trò
     private void setupData(Model model) {
-        model.addAttribute("roles", Role.values());
+        model.addAttribute("roles", Role.getRoles());
         model.addAttribute("departments", departmentService.getAllDepartments());
+    }
+
+    private void setupAttributes(Model model, Object user, boolean canEdit, boolean isEditMode) {
+        model.addAttribute("user", user);
+        model.addAttribute("roles", Role.getRoles());
+        model.addAttribute("departments", departmentService.getAllDepartments());
+        model.addAttribute("canEdit", canEdit);
+        model.addAttribute("isEditMode", isEditMode);
+    }
+
+    // Giữ lại dữ liệu trong form khi lỗi
+    private String returnData(Model model, String mode) {
+        setupData(model);
+        model.addAttribute("mode", mode);
+        return "user-detail";
     }
 
     @GetMapping("/home")
@@ -64,9 +80,7 @@ public class UserController {
 
     @GetMapping("/add")
     public String addForm(Model model) {
-        model.addAttribute("user", new UserCreateRequest());
-        setupData(model);
-        model.addAttribute("mode", "Add");
+        setupAttributes(model, new UserCreateRequest(), true, false);
         return "user-detail";
     }
 
@@ -86,23 +100,39 @@ public class UserController {
         request.setStatus(response.getStatus());
         request.setDepartmentId(response.getDepartmentId());
 
-        model.addAttribute("user", request);
-        setupData(model);
-        model.addAttribute("mode", "Edit");
+
+        setupAttributes(model, request, true, true);
+
         return "user-detail";
     }
 
+    @GetMapping("/detail/{id}")
+    public String showDetail(@PathVariable("id") Integer id, Model model) {
+
+        UserResponse response = userService.getUserById(id);
+
+        setupAttributes(model, response, false, false);
+
+        return "user-detail";
+    }
+
+    /**
+     * Hàm điều hướng khi ấn nút add
+     * @param request nhận giá trị từ form
+     * @param bindingResult kiểm tra lỗi
+     * @param model truyền lại data
+     * @return trang chủ
+     */
     @PostMapping("/create")
     public String createUser(
             @Valid @ModelAttribute("user") UserCreateRequest request,
             BindingResult bindingResult,
-            Model model) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
         // Nếu form nhập có lỗi
         if (bindingResult.hasErrors()) {
-            setupData(model);
-            model.addAttribute("mode", "Add");
-            return "user-detail";
+            return returnData(model, "Add");
         }
 
         // Nếu username bị trùng
@@ -112,40 +142,93 @@ public class UserController {
                     "duplicate.username",
                     "Username đã tồn tại!"
             );
-            setupData(model);
-            model.addAttribute("mode", "Add");
-            return "user-detail";
         }
 
         // Nếu email bị trùng
-        if (userService.existsByEmail(request.getEmail())) {
+        if (userService.existsByEmail(request.getEmail(), null)) {
             bindingResult.rejectValue(
                     "email",
                     "duplicate.email",
                     "Email đã tồn tại!"
             );
-            setupData(model);
-            model.addAttribute("mode", "Add");
+        }
+
+        // Nếu phòng ban đã có trưởng phòng
+        if (request.getRole() == Role.DEPARTMENT_MANAGER) {
+            if (userService.existsManager(request.getDepartmentId(), null)) {
+                bindingResult.rejectValue(
+                        "role",
+                        "duplicate.manager",
+                        "Phòng ban này đã có trưởng phòng!"
+                );
+            }
+        }
+
+        if (bindingResult.hasErrors()) {
+            setupAttributes(model, request, true, false);
             return "user-detail";
         }
+
+        redirectAttributes.addFlashAttribute(
+                "message",
+                "Tạo user thành công!"
+        );
 
         userService.createUser(request);
         return "redirect:/admin/home";
     }
 
+    /**
+     * Hàm điều hướng khi ấn nút add
+     * @param request nhận giá trị từ form
+     * @param bindingResult kiểm tra lỗi
+     * @param model truyền lại data
+     * @return trang chủ
+     */
     @PostMapping("/update")
     public String updateUser(
             @Valid @ModelAttribute("user") UserUpdateRequest request,
             BindingResult bindingResult,
-            Model model) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        // Nếu có lỗi trong form
+        if (bindingResult.hasErrors()) {
+            return returnData(model, "Edit");
+        }
+
+        // Nếu email bị trùng
+        if (userService.existsByEmail(request.getEmail(), request.getUserId())) {
+            bindingResult.rejectValue(
+                    "email",
+                    "duplicate.email",
+                    "Email đã tồn tại!"
+            );
+        }
+
+        // Nếu phòng ban đã có trưởng phòng
+        if (request.getRole() == Role.DEPARTMENT_MANAGER) {
+            if (userService.existsManager(request.getDepartmentId(), request.getUserId())) {
+                bindingResult.rejectValue(
+                        "role",
+                        "duplicate.manager",
+                        "Phòng ban này đã có trưởng phòng!"
+                );
+            }
+        }
 
         if (bindingResult.hasErrors()) {
-            setupData(model);
-            model.addAttribute("mode", "Edit");
+            setupAttributes(model, request, true, true);
             return "user-detail";
         }
 
         userService.updateUser(request);
+
+        redirectAttributes.addFlashAttribute(
+                "message",
+                "Cập nhật thành công!"
+        );
+
         return "redirect:/admin/home";
     }
 

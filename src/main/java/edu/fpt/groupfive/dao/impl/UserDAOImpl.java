@@ -7,10 +7,7 @@ import edu.fpt.groupfive.model.Users;
 import lombok.*;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,8 +62,24 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public Optional<Users> findUserByUsername(String username) {
-        return Optional.empty();
+        String query = """
+                  select * from Users where username = ?
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)
+        ) {
+            preparedStatement.setString(1, username);
+            ResultSet rs = preparedStatement.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapRowToUser(rs));
+            }
+            return Optional.empty();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     @Override
     public void insert(Users users) {
@@ -131,6 +144,7 @@ public class UserDAOImpl implements UserDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
     @Override
@@ -171,15 +185,23 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean existsByEmail(String email) {
-        String query = """
+    public boolean existsByEmail(String email, Integer userId) {
+        StringBuilder query = new StringBuilder("""
                   SELECT 1 FROM Users WHERE email = ?
-                """;
+                """);
+
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)
+             PreparedStatement ps = connection.prepareStatement(query.toString())
         ) {
             ps.setString(1, email);
 
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
             return ps.executeQuery().next();
 
         } catch (Exception e) {
@@ -188,12 +210,46 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public boolean existsManagerByDepartment(Integer departmentId, Integer userId) {
+
+        StringBuilder query = new StringBuilder("""
+                  SELECT 1 FROM Users
+                  WHERE department_id = ?
+                    AND role = 'DEPARTMENT_MANAGER'
+                """);
+
+        // Nếu userId khác null, ta loại trừ chính user đó ra & sẽ dùng khi Update
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query.toString())
+        ) {
+            ps.setInt(1, departmentId);
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
+
+            return ps.executeQuery().next();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    @Override
     public List<Users> findAll() {
         String query = """
                 SELECT * FROM users
                 """;
-
         return getUsers(query);
+    }
+
+    @Override
+    public Integer findUserIdByUsername(String username) {
+        return 0;
     }
 
     @Override
@@ -249,38 +305,6 @@ public class UserDAOImpl implements UserDAO {
 
 
     @Override
-    public List<Users> findAllByFirstNameDesc() {
-        String query = """
-                SELECT * FROM users ORDER BY first_name DESC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
-    public List<Users> findAllByFirstNameAsc() {
-        String query = """
-                SELECT * FROM users ORDER BY first_name ASC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
-    public List<Users> findAllByCreateDateAsc() {
-        String query = """
-                SELECT * FROM users ORDER BY created_date ASC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
-    public List<Users> findAllByCreateDateDesc() {
-        String query = """
-                SELECT * FROM users ORDER BY created_date DESC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
     public int countUsersInDepartment(Integer departmentId) {
         String sql = """
                     SELECT COUNT(*)
@@ -310,6 +334,7 @@ public class UserDAOImpl implements UserDAO {
         StringBuilder query = new StringBuilder("""
                 SELECT * FROM Users WHERE 1 = 1
                 """);
+
         List<Object> param = new ArrayList<>();
 
         if (status != null) {
@@ -335,6 +360,7 @@ public class UserDAOImpl implements UserDAO {
 
         query.append(" ORDER BY user_id");
         query.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
         param.add(offset);
         param.add(size);
 
@@ -355,10 +381,9 @@ public class UserDAOImpl implements UserDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
         return list;
-
     }
+
 
     @Override
     public int countUsersWithFilter(String status, Integer departmentId, Role role, String keyword) {

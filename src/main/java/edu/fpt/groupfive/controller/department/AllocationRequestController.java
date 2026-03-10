@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -26,34 +27,42 @@ public class AllocationRequestController {
      * @return trả dữ liệu về trang allocation_request_list
      */
     @GetMapping("/list")
-    public String showList(Model model) {
-        // Lấy toàn bộ dang sách yêu cầu cấp phát
-        List<AllocationRequest> list =
-                allocationRequestService.getAllAllocationRequest(2);
+    public String showList(
+            @RequestParam(required = false, name = "search") String search,
+            @RequestParam(required = false, name = "status") String status,
+            @RequestParam(required = false, name = "priority") String priority,
+            @RequestParam(required = false, name = "fromDate") String fromDate,
+            @RequestParam(required = false, name = "toDate") String toDate,
+            Model model) {
 
-        model.addAttribute("requests", list);
+        Integer departmentId = 2;
+
+        LocalDate from = null;
+
+        LocalDate to = null;
+
+        if (fromDate != null && !fromDate.isEmpty()) {
+            from = LocalDate.parse(fromDate);
+        }
+
+        if (toDate != null && !toDate.isEmpty()) {
+            to = LocalDate.parse(toDate);
+        }
+
+        List<AllocationRequest> requests = allocationRequestService.search(departmentId, search, status,
+                priority, from, to);
+
+
+        model.addAttribute("requests", requests);
+        // Giữ nguyên giá trị filter trên form
+        model.addAttribute("search", search);
+        model.addAttribute("status", status);
+        model.addAttribute("priority", priority);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
 
         return "allocation/allocation_request_list";
     }
-
-
-    @GetMapping("/detail/{id}")
-    public String viewDetail(
-            @PathVariable("id") Integer id,
-            Model model) {
-
-        // Lấy detail request theo id
-        AllocationRequestResponse dto = allocationRequestService.getRequestById(id);
-
-        model.addAttribute("requestDto", dto);
-
-        // readonly mode
-        model.addAttribute("canEdit", false);
-
-        return "allocation/allocation_request_form";
-
-    }
-
 
     /**
      * Hiển thị trang thêm yêu cầu
@@ -108,6 +117,22 @@ public class AllocationRequestController {
 
     }
 
+    @GetMapping("/detail/{id}")
+    public String showDetailForm(
+            @PathVariable("id") Integer id,
+            Model model) {
+        // Lấy request cần update
+        AllocationRequestResponse dto =
+                allocationRequestService.getRequestById(id);
+
+        model.addAttribute("requestDto", dto);
+
+        model.addAttribute("canEdit", false );
+
+        return "allocation/allocation_request_form";
+
+    }
+
     @PostMapping("/update/{id}")
     public String updateRequest(
             @PathVariable("id") Integer id,
@@ -142,7 +167,6 @@ public class AllocationRequestController {
             RedirectAttributes redirectAttributes) {
 
         try {
-
             allocationRequestService.deleteRequest(id);
 
             redirectAttributes.addFlashAttribute(
@@ -160,6 +184,68 @@ public class AllocationRequestController {
 
         return "redirect:/department/allocation-request/list";
     }
+
+
+    /*
+    @GetMapping("/list")
+    public String showList(
+            @RequestParam(required = false, name = "search") String search,
+            @RequestParam(required = false, name = "status") String status,
+            @RequestParam(required = false, name = "priority") String priority,
+            @RequestParam(required = false, name = "fromDate") String fromDate,
+            @RequestParam(required = false, name = "toDate") String toDate,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            Model model) {
+
+        int size = 5;
+        int offset = page * size;
+
+        Integer departmentId = 2;
+
+        LocalDate from = null;
+        LocalDate to = null;
+
+        if (fromDate != null && !fromDate.isEmpty()) {
+            from = LocalDate.parse(fromDate);
+        }
+
+        if (toDate != null && !toDate.isEmpty()) {
+            to = LocalDate.parse(toDate);
+        }
+
+        List<AllocationRequest> requests = allocationRequestService.search(departmentId, search, status, priority,
+                        from, to, offset, size);
+
+        int total = allocationRequestService.countFiltered(departmentId, search, status, priority,
+                        from, to);
+
+        int totalPages = (int) Math.ceil((double) total / size);
+
+        model.addAttribute("requests", requests);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+
+        return "allocation/allocation_request_list";
+    }
+
+
+    @GetMapping("/detail/{id}")
+    public String viewDetail(
+            @PathVariable("id") Integer id,
+            Model model) {
+
+        // Lấy detail request theo id
+        AllocationRequestResponse dto = allocationRequestService.getRequestById(id);
+
+        model.addAttribute("requestDto", dto);
+
+        // readonly mode
+        model.addAttribute("canEdit", false);
+
+        return "allocation/allocation_request_form";
+
+    }
+*/
 
 
 }

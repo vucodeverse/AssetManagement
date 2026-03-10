@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -18,13 +17,18 @@ public class AllocationRequestResponse {
     private Integer requestedDepartmentId;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate neededByDate;
+    private String requesterName;
+    private String requestedDepartmentName;
     private String priority;
     private String requestReason;
     private String status;
 
     private Integer amApprovedBy;
+    private String amApprovedName;
     private LocalDateTime amApprovedAt;
     private String reasonReject;
+
+    private LocalDateTime createdAt;
 
     private List<AllocationRequestDetailResponse> details;
 }

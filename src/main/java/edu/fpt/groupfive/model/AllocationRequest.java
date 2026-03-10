@@ -1,6 +1,5 @@
 package edu.fpt.groupfive.model;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +20,10 @@ public class AllocationRequest {
     private Integer requestedDepartmentId;
 
     private LocalDateTime requestDate;
+
+    private String requesterName;
+
+    private String requestedDepartmentName;
 
     private String status;
 

@@ -3,15 +3,16 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.dao.AllocationReqDao;
 import edu.fpt.groupfive.dao.AllocationReqDetailDao;
 import edu.fpt.groupfive.dto.request.AllocationRequestCreateRequest;
-import edu.fpt.groupfive.dto.request.AllocationRequestDetailRequest;
 import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
 import edu.fpt.groupfive.mapper.AllocationRequestMapper;
 import edu.fpt.groupfive.model.AllocationRequest;
 import edu.fpt.groupfive.model.AllocationRequestDetail;
 import edu.fpt.groupfive.service.AllocationRequestService;
+import edu.fpt.groupfive.dao.UserDAO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,12 +23,12 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
     private final AllocationReqDao allocationReqDao;
     private final AllocationReqDetailDao allocationReqDetailDao;
     private final AllocationRequestMapper allocationRequestMapper;
+    private final UserDAO userDao;
 
     @Override
     public List<AllocationRequest> getAllAllocationRequest(Integer departmentId) {
         return allocationReqDao.findAll(departmentId);
     }
-
 
     @Override
     public AllocationRequestResponse getRequestById(Integer id) {
@@ -39,6 +40,14 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
         }
 
         AllocationRequestResponse response = allocationRequestMapper.toResponse(req);
+
+        if (response.getAmApprovedBy() != null) {
+            userDao.findById(response.getAmApprovedBy()).ifPresent(u -> {
+                String fullName = (u.getFirstName() != null ? u.getFirstName() : "") + " " +
+                        (u.getLastName() != null ? u.getLastName() : "");
+                response.setAmApprovedName(fullName.trim());
+            });
+        }
 
         List<AllocationRequestDetail> details = allocationReqDetailDao.findByRequestId(id);
 
@@ -119,6 +128,25 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
     @Override
     public void updateStatus(Integer id, String status, Integer amApprovedBy, String reasonReject) {
         allocationReqDao.updateStatus(id, status, amApprovedBy, reasonReject);
+    }
+
+    @Override
+    public List<AllocationRequest> search(Integer departmentId, String requestId,
+            String status, String priority, LocalDate fromDate,
+            LocalDate toDate/* int offset, int size */) {
+        return allocationReqDao.search(departmentId, requestId, status, priority, fromDate,
+                toDate/* offset, size */);
+    }
+
+    @Override
+    public int countAll(Integer departmentId) {
+        return allocationReqDao.countAll(departmentId);
+    }
+
+    @Override
+    public int countFiltered(Integer departmentId, String requestId, String status,
+            String priority, LocalDate fromDate, LocalDate toDate) {
+        return allocationReqDao.countInFilter(departmentId, requestId, status, priority, fromDate, toDate);
     }
 
 }
