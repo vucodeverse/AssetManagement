@@ -39,6 +39,15 @@
         </table>
 
         <p style="margin-top: 20px;">
+            <span th:if="${ticket.status.name() == 'INBOX'}">
+                <a th:href="@{'/wh/' + ${userId} + '/tickets/' + ${ticket.id} + '/mapping'}">
+                    <button type="button"
+                        style="padding:10px; background-color:#4CAF50; color:white; border:none; cursor:pointer;">
+                        Chuyển sang màn hình quét/chọn tài sản
+                    </button>
+                </a>
+                <br /><br />
+            </span>
             <a th:href="@{'/wh/' + ${userId} + '/tickets'}">Quay lại danh sách</a>
         </p>
 
