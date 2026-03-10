@@ -112,6 +112,7 @@
                     <th>Tên Tài Sản</th>
                     <th>Thuộc Loại</th>
                     <th>Map Vào Dòng ID</th>
+                    <th>Hành Động</th>
                 </tr>
             </thead>
             <tbody>
@@ -120,9 +121,21 @@
                     <td th:text="${a.assetName}"></td>
                     <td th:text="${a.assetTypeName}"></td>
                     <td th:text="${a.detailId}"></td>
+                    <td>
+                        <form th:if="${mappingData.ticket.status.name() == 'INBOX'}"
+                            th:action="@{'/wh/' + ${userId} + '/tickets/' + ${ticketId} + '/mapping/remove'}"
+                            method="post"
+                            onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài sản này khỏi phiếu?');"
+                            style="display:inline;">
+                            <input type="hidden" name="detailId" th:value="${a.detailId}" />
+                            <input type="hidden" name="assetId" th:value="${a.assetId}" />
+                            <button type="submit"
+                                style="color: red; cursor: pointer; border: none; background: none; text-decoration: underline;">Xóa</button>
+                        </form>
+                    </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(mappingData.mappedAssets)}">
-                    <td colspan="4" style="text-align:center;">Chưa quét tài sản nào.</td>
+                    <td colspan="5" style="text-align:center;">Chưa quét tài sản nào.</td>
                 </tr>
             </tbody>
         </table>

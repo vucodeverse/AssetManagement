@@ -16,6 +16,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.fpt.groupfive.service.warehouse.TicketMappingService;
+import edu.fpt.groupfive.service.warehouse.WarehouseService;
+
 @Controller
 @RequestMapping("/wh/{userId}/tickets")
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class InventoryTicketController {
     private final InventoryTicketService ticketService;
     private final WarehouseService warehouseService;
     private final AssetTypeService assetTypeService;
+    private final TicketMappingService ticketMappingService;
 
     @GetMapping
     public String list(@PathVariable("userId") Integer userId, Model model, RedirectAttributes redirectAttributes) {
@@ -49,6 +53,12 @@ public class InventoryTicketController {
         }
 
         List<TicketDetail> details = ticketService.getDetailsByTicketId(id);
+
+        try {
+            model.addAttribute("mappingData", ticketMappingService.getMappingDetails(id));
+        } catch (Exception e) {
+            // Ignore if mapping data cannot be fetched
+        }
 
         model.addAttribute("ticket", ticket);
         model.addAttribute("details", details);

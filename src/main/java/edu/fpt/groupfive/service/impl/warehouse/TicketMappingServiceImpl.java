@@ -114,7 +114,17 @@ public class TicketMappingServiceImpl implements TicketMappingService {
             zoneDAO.batchDecreaseCapacityByTicketId(ticketId);
             assetLocationDAO.deleteByTicketId(ticketId);
         }
+        ticket.setStatus(HandleStatus.COMPLETED);
+        inventoryTicketDAO.updateStatus(ticketId, HandleStatus.COMPLETED);
+    }
 
-        inventoryTicketDAO.updateStatus(ticketId, HandleStatus.COMPLETE);
+    @Override
+    @Transactional
+    public void removeScannedAsset(Integer ticketId, Integer detailId, Integer assetId) {
+        InventoryTicket ticket = inventoryTicketDAO.findById(ticketId);
+        if (ticket == null || ticket.getStatus() != HandleStatus.INBOX) {
+            throw new RuntimeException("Phiếu không hợp lệ hoặc không ở trạng thái INBOX.");
+        }
+        ticketAssetMappingDAO.deleteMapping(detailId, assetId);
     }
 }

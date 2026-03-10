@@ -44,12 +44,12 @@ public class TicketAssetMappingDAOImpl implements TicketAssetMappingDAO {
         @Override
         public java.util.List<edu.fpt.groupfive.dto.warehouse.response.TicketMappedAssetDto> getMappedAssetsByTicketId(
                         Integer ticketId) {
-                String sql = "SELECT m.detail_id, m.asset_id, a.asset_type_id, a.asset_name, at.name as asset_type_name "
+                String sql = "SELECT m.detail_id, m.asset_id, a.asset_type_id, a.asset_name, at.type_name as asset_type_name "
                                 +
                                 "FROM wh_ticket_asset_mapping m " +
                                 "JOIN wh_ticket_detail td ON m.detail_id = td.id " +
                                 "JOIN asset a ON m.asset_id = a.asset_id " +
-                                "JOIN asset_type at ON a.asset_type_id = at.id " +
+                                "JOIN asset_type at ON a.asset_type_id = at.asset_type_id " +
                                 "WHERE td.ticket_id = ?";
 
                 return jdbcTemplate.query(sql, (rs, rowNum) -> {
@@ -66,11 +66,12 @@ public class TicketAssetMappingDAOImpl implements TicketAssetMappingDAO {
         @Override
         public java.util.List<edu.fpt.groupfive.dto.warehouse.response.TicketDetailMappingDto> getDetailMappingsByTicketId(
                         Integer ticketId) {
-                String sql = "SELECT td.id as detail_id, at.id as asset_type_id, at.name as asset_type_name, " +
+                String sql = "SELECT td.id as detail_id, at.asset_type_id as asset_type_id, at.type_name as asset_type_name, "
+                                +
                                 "td.quantity as quantity_requested, ISNULL(m.mapped_qty, 0) as quantity_mapped, td.note "
                                 +
                                 "FROM wh_ticket_detail td " +
-                                "JOIN asset_type at ON td.asset_type_id = at.id " +
+                                "JOIN asset_type at ON td.asset_type_id = at.asset_type_id " +
                                 "LEFT JOIN ( " +
                                 "    SELECT detail_id, COUNT(asset_id) as mapped_qty " +
                                 "    FROM wh_ticket_asset_mapping " +
@@ -88,5 +89,11 @@ public class TicketAssetMappingDAOImpl implements TicketAssetMappingDAO {
                         dto.setNote(rs.getString("note"));
                         return dto;
                 }, ticketId);
+        }
+
+        @Override
+        public void deleteMapping(Integer detailId, Integer assetId) {
+                String sql = "DELETE FROM wh_ticket_asset_mapping WHERE detail_id = ? AND asset_id = ?";
+                jdbcTemplate.update(sql, detailId, assetId);
         }
 }

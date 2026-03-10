@@ -21,4 +21,9 @@ public interface TicketMappingService {
      * Validates mapping completeness and triggers Core Flow (Allocation).
      */
     void validateAndSubmitTicket(Integer ticketId);
+
+    /**
+     * Removes a mapped physical asset from the ticket detail.
+     */
+    void removeScannedAsset(Integer ticketId, Integer detailId, Integer assetId);
 }

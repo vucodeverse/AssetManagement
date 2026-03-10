@@ -45,6 +45,21 @@ public class TicketMappingController {
         return "redirect:/wh/" + userId + "/tickets/" + ticketId + "/mapping";
     }
 
+    @PostMapping("/remove")
+    public String removeScannedAsset(@PathVariable("userId") Integer userId,
+            @PathVariable("ticketId") Integer ticketId,
+            @RequestParam("detailId") Integer detailId,
+            @RequestParam("assetId") Integer assetId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            ticketMappingService.removeScannedAsset(ticketId, detailId, assetId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa tài sản khỏi phiếu.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/wh/" + userId + "/tickets/" + ticketId + "/mapping";
+    }
+
     @PostMapping("/submit")
     public String submitTicket(@PathVariable("userId") Integer userId,
             @PathVariable("ticketId") Integer ticketId,
