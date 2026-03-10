@@ -4,6 +4,7 @@ import edu.fpt.groupfive.model.warehouse.ActiveStatus;
 import edu.fpt.groupfive.model.warehouse.Zone;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ZoneDAO {
 
@@ -18,4 +19,8 @@ public interface ZoneDAO {
     Zone update(Zone zone);
 
     void updateStatus(Integer id, ActiveStatus status);
+
+    void batchDecreaseCapacityByTicketId(Integer ticketId);
+
+    void batchIncreaseCapacity(Map<Integer, Integer> zoneCapacityIncrements);
 }

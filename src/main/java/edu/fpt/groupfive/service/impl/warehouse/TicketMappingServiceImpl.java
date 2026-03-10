@@ -4,6 +4,8 @@ import edu.fpt.groupfive.model.warehouse.HandleStatus;
 import edu.fpt.groupfive.dao.AssetDAO;
 import edu.fpt.groupfive.dao.warehouse.InventoryTicketDAO;
 import edu.fpt.groupfive.dao.warehouse.TicketAssetMappingDAO;
+import edu.fpt.groupfive.dao.warehouse.AssetLocationDAO;
+import edu.fpt.groupfive.dao.warehouse.ZoneDAO;
 import edu.fpt.groupfive.dto.warehouse.response.TicketDetailMappingDto;
 import edu.fpt.groupfive.dto.warehouse.response.TicketMappedAssetDto;
 import edu.fpt.groupfive.dto.warehouse.response.TicketMappingResponseDto;
@@ -11,6 +13,7 @@ import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.warehouse.InventoryTicket;
 import edu.fpt.groupfive.model.warehouse.TicketAssetMapping;
 import edu.fpt.groupfive.service.warehouse.TicketMappingService;
+import edu.fpt.groupfive.service.warehouse.ZoneAllocationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,9 @@ public class TicketMappingServiceImpl implements TicketMappingService {
     private final InventoryTicketDAO inventoryTicketDAO;
     private final TicketAssetMappingDAO ticketAssetMappingDAO;
     private final AssetDAO assetDAO;
+    private final ZoneAllocationService zoneAllocationService;
+    private final ZoneDAO zoneDAO;
+    private final AssetLocationDAO assetLocationDAO;
 
     @Override
     public TicketMappingResponseDto getMappingDetails(Integer ticketId) {
@@ -101,8 +107,13 @@ public class TicketMappingServiceImpl implements TicketMappingService {
             throw new RuntimeException("Phiếu chưa được map đủ tài sản yêu cầu. Vui lòng quét thêm tài sản.");
         }
 
-        // TODO: Call ZoneAllocationService here for IN / OUT allocation logic
-        // For now we just safely complete the ticket visually
+        // Zone Allocation & Updates based on Ticket Type
+        if ("IN".equals(ticket.getTicketType())) {
+            zoneAllocationService.allocateAssetsForTicket(ticketId);
+        } else if ("OUT".equals(ticket.getTicketType())) {
+            zoneDAO.batchDecreaseCapacityByTicketId(ticketId);
+            assetLocationDAO.deleteByTicketId(ticketId);
+        }
 
         inventoryTicketDAO.updateStatus(ticketId, HandleStatus.COMPLETE);
     }

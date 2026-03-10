@@ -12,6 +12,7 @@ import lombok.Setter;
 public class TicketMappedAssetDto {
     private Integer detailId;
     private Integer assetId;
+    private Integer assetTypeId;
     private String assetName;
     private String assetTypeName;
 }

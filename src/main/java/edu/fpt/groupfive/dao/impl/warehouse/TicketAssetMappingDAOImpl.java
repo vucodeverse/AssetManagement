@@ -44,7 +44,8 @@ public class TicketAssetMappingDAOImpl implements TicketAssetMappingDAO {
         @Override
         public java.util.List<edu.fpt.groupfive.dto.warehouse.response.TicketMappedAssetDto> getMappedAssetsByTicketId(
                         Integer ticketId) {
-                String sql = "SELECT m.detail_id, m.asset_id, a.asset_name, at.name as asset_type_name " +
+                String sql = "SELECT m.detail_id, m.asset_id, a.asset_type_id, a.asset_name, at.name as asset_type_name "
+                                +
                                 "FROM wh_ticket_asset_mapping m " +
                                 "JOIN wh_ticket_detail td ON m.detail_id = td.id " +
                                 "JOIN asset a ON m.asset_id = a.asset_id " +
@@ -55,6 +56,7 @@ public class TicketAssetMappingDAOImpl implements TicketAssetMappingDAO {
                         edu.fpt.groupfive.dto.warehouse.response.TicketMappedAssetDto dto = new edu.fpt.groupfive.dto.warehouse.response.TicketMappedAssetDto();
                         dto.setDetailId(rs.getInt("detail_id"));
                         dto.setAssetId(rs.getInt("asset_id"));
+                        dto.setAssetTypeId(rs.getInt("asset_type_id"));
                         dto.setAssetName(rs.getString("asset_name"));
                         dto.setAssetTypeName(rs.getString("asset_type_name"));
                         return dto;

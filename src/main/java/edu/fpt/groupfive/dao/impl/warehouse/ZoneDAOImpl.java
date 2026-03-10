@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -98,5 +99,32 @@ public class ZoneDAOImpl implements ZoneDAO {
     public void updateStatus(Integer id, ActiveStatus status) {
         String sql = "UPDATE wh_zones SET status = ? WHERE id = ?";
         jdbcTemplate.update(sql, status.name(), id);
+    }
+
+    @Override
+    public void batchDecreaseCapacityByTicketId(Integer ticketId) {
+        // Find how many assets are removed from each zone
+        String sql = "UPDATE wh_zones " +
+                "SET current_capacity = current_capacity - m.qty_to_remove " +
+                "FROM wh_zones z " +
+                "JOIN ( " +
+                "    SELECT al.zone_id, COUNT(tam.asset_id) as qty_to_remove " +
+                "    FROM wh_ticket_asset_mapping tam " +
+                "    JOIN wh_ticket_detail td ON tam.detail_id = td.id " +
+                "    JOIN wh_asset_location al ON tam.asset_id = al.asset_id " +
+                "    WHERE td.ticket_id = ? " +
+                "    GROUP BY al.zone_id " +
+                ") m ON z.id = m.zone_id";
+        jdbcTemplate.update(sql, ticketId);
+    }
+
+    @Override
+    public void batchIncreaseCapacity(Map<Integer, Integer> zoneCapacityIncrements) {
+        String sql = "UPDATE wh_zones SET current_capacity = current_capacity + ? WHERE id = ?";
+        List<Object[]> batchArgs = zoneCapacityIncrements.entrySet().stream()
+                .map(entry -> new Object[] { entry.getValue(), entry.getKey() })
+                .toList();
+
+        jdbcTemplate.batchUpdate(sql, batchArgs);
     }
 }
