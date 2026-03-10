@@ -417,7 +417,7 @@ CREATE TABLE wh_ticket_asset_mapping (
 
     asset_id     INT NOT NULL REFERENCES asset(id),
 
-    qc_report_id INT NOT NULL REFERENCES qc_report(id),
+    qc_report_id INT REFERENCES qc_report(id),
 
     updated_at   DATETIME2 DEFAULT SYSDATETIME(),
 
