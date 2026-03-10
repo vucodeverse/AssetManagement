@@ -10,6 +10,7 @@ import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.model.Users;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
         List<Users> getAllUsers();
@@ -47,4 +48,5 @@ public interface UserService {
 
         Map<Integer, String> getUserIdToUsernameMap();
 
+    Map<Integer, String> getAllWarehouseStaffName();
 }

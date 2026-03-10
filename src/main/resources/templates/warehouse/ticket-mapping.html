@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/manager-layout}">
+
+<head>
+    <title>Quét Tài Sản Cho Phiếu</title>
+    <style>
+        .progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-bar {
+            height: 24px;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 24px;
+            color: white;
+            transition: width 0.4s ease-in-out;
+        }
+
+        .scan-box {
+            padding: 20px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .scan-input {
+            padding: 10px;
+            font-size: 18px;
+            width: 250px;
+        }
+
+        .btn-submit {
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+
+        <h1>QUÉT MÃ TÀI SẢN VẬT LÝ - PHIẾU #<span th:text="${mappingData.ticket.id}"></span></h1>
+
+        <div th:if="${successMessage}">
+            <p th:text="${successMessage}" style="color:green; font-weight: bold;"></p>
+        </div>
+        <div th:if="${errorMessage}">
+            <p th:text="${errorMessage}" style="color:red; font-weight: bold;"></p>
+        </div>
+
+        <div>
+            <p><strong>Loại Phiếu:</strong> <span th:text="${mappingData.ticket.ticketType}"></span></p>
+            <p><strong>Trạng Thái:</strong> <span th:text="${mappingData.ticket.status}"></span></p>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" th:style="'width: ' + ${mappingData.progressPercentage} + '%'"
+                th:text="${mappingData.progressPercentage} + '% (Đã quét ' + ${mappingData.totalMapped} + '/' + ${mappingData.totalRequested} + ')'">
+            </div>
+        </div>
+
+        <div th:if="${mappingData.ticket.status.name() == 'INBOX'}" class="scan-box">
+            <form th:action="@{'/wh/' + ${userId} + '/tickets/' + ${ticketId} + '/mapping/scan'}" method="post">
+                <label for="scannedAssetId"><strong>👉 Quét mã tài sản (Asset ID): </strong></label>
+                <input type="number" id="scannedAssetId" name="scannedAssetId" class="scan-input" required autofocus
+                    placeholder="Nhập ID từ máy quét..." />
+                <button type="submit" style="padding: 10px;">Ghi Nhận</button>
+            </form>
+        </div>
+
+        <h3>Chi Tiết Yêu Cầu & Tiến Độ:</h3>
+        <table border="1" cellpadding="6" cellspacing="0" style="margin-bottom: 20px; width: 100%;">
+            <thead style="background-color: #f8f9fa;">
+                <tr>
+                    <th>Dòng ID</th>
+                    <th>Loại Tài Sản</th>
+                    <th>Cần / Đã Quét</th>
+                    <th>Trạng Thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="d : ${mappingData.details}">
+                    <td th:text="${d.detailId}"></td>
+                    <td th:text="${d.assetTypeName}"></td>
+                    <td th:text="${d.quantityMapped} + ' / ' + ${d.quantityRequested}"></td>
+                    <td>
+                        <span th:if="${d.quantityMapped >= d.quantityRequested}" style="color: green;">✔ Đủ</span>
+                        <span th:if="${d.quantityMapped < d.quantityRequested}" style="color: orange;">Đang chờ</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Tài Sản Vật Lý Đã Map Vào Phiếu:</h3>
+        <table border="1" cellpadding="6" cellspacing="0" style="width: 100%;">
+            <thead style="background-color: #f8f9fa;">
+                <tr>
+                    <th>ID Tài Sản</th>
+                    <th>Tên Tài Sản</th>
+                    <th>Thuộc Loại</th>
+                    <th>Map Vào Dòng ID</th>
+                    <th>Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="a : ${mappingData.mappedAssets}">
+                    <td th:text="${a.assetId}"></td>
+                    <td th:text="${a.assetName}"></td>
+                    <td th:text="${a.assetTypeName}"></td>
+                    <td th:text="${a.detailId}"></td>
+                    <td>
+                        <form th:if="${mappingData.ticket.status.name() == 'INBOX'}"
+                            th:action="@{'/wh/' + ${userId} + '/tickets/' + ${ticketId} + '/mapping/remove'}"
+                            method="post"
+                            onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài sản này khỏi phiếu?');"
+                            style="display:inline;">
+                            <input type="hidden" name="detailId" th:value="${a.detailId}" />
+                            <input type="hidden" name="assetId" th:value="${a.assetId}" />
+                            <button type="submit"
+                                style="color: red; cursor: pointer; border: none; background: none; text-decoration: underline;">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(mappingData.mappedAssets)}">
+                    <td colspan="5" style="text-align:center;">Chưa quét tài sản nào.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- BẤM CHỐT PHIẾU (SUBMIT) -->
+        <hr style="margin: 30px 0;">
+        <div style="text-align: center;" th:if="${mappingData.ticket.status.name() == 'INBOX'}">
+            <p style="color: #666; font-size: 14px;">Quá trình quét tài sản có thể làm dở, thoát ra và tiếp tục sau. Chỉ
+                khi hoàn thành bạn mới nhấn chốt phiếu.</p>
+            <form th:action="@{'/wh/' + ${userId} + '/tickets/' + ${ticketId} + '/mapping/submit'}" method="post">
+                <button type="submit" class="btn-submit">✅ CHỐT VÀ XỬ LÝ PHIẾU (HOÀN THÀNH)</button>
+            </form>
+        </div>
+
+        <p style="margin-top: 20px;">
+            <a th:href="@{'/wh/' + ${userId} + '/tickets/' + ${ticketId}}">Quay lại chi tiết</a> |
+            <a th:href="@{'/wh/' + ${userId} + '/tickets'}">Về danh sách phiếu</a>
+        </p>
+
+    </th:block>
+</body>
+
+</html>

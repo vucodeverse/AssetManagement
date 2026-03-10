@@ -188,4 +188,18 @@ public class UserServiceImpl implements UserService {
         return userMap;
     }
 
+    @Override
+    public Map<Integer, String> getAllWarehouseStaffName() {
+        Map<Integer, String> staffMap = new HashMap<>();
+        List<Users> allUsers = userDAO.findAll();
+        for (Users user : allUsers) {
+            if (user.getRole() == Role.WAREHOUSE_STAFF || user.getRole() == Role.ASSET_MANAGER) {
+                String fullName = user.getFirstName() + " " + user.getLastName()
+                        + " (" + user.getUsername() + ")";
+                staffMap.put(user.getUserId(), fullName);
+            }
+        }
+        return staffMap;
+    }
+
 }

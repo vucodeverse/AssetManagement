@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/manager-layout}">
+
+<head>
+    <title th:text="${mode == 'create' ? 'Thêm Phiếu Mới' : 'Sửa Phiếu'}"></title>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+
+        <h1 th:text="${mode == 'create' ? 'THÊM PHIẾU KHO MỚI' : 'CHỈNH SỬA PHIẾU KHO #' + ticketId}"></h1>
+
+        <div th:if="${errorMessage}">
+            <p th:text="${errorMessage}" style="color:red;"></p>
+        </div>
+
+        <form th:action="@{'/wh/' + ${userId} + '/tickets/add'}" th:object="${form}" method="post">
+
+            <p>
+                <label>Loại Phiếu:</label>
+                <select th:field="*{ticketType}">
+                    <option value="IN">Nhập Kho (IN)</option>
+                    <option value="OUT">Xuất Kho (OUT)</option>
+                </select>
+            </p>
+
+            <h3>Chi tiết tài sản yêu cầu (Mock 3 loại)</h3>
+            <table border="1" cellpadding="6" cellspacing="0" id="detailsTable">
+                <thead>
+                    <tr>
+                        <th>Loại Tài Sản</th>
+                        <th>Số Lượng</th>
+                        <th>Ghi Chú</th>
+                    </tr>
+                </thead>
+                <!-- Dòng 1 -->
+                <tbody>
+                    <tr>
+                        <td>
+                            <select name="details[0].assetTypeId" required>
+                                <option value="">-- Chọn loại tài sản --</option>
+                                <option th:each="type : ${assetTypes}" th:value="${type.typeId}"
+                                    th:text="${type.typeName}">
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" min="0" name="details[0].quantity" value="0" />
+                        </td>
+                        <td>
+                            <input type="text" name="details[0].note" />
+                        </td>
+                    </tr>
+
+                    <!-- Dòng 2 -->
+                    <tr>
+                        <td>
+                            <select name="details[1].assetTypeId">
+                                <option value="">-- Chọn loại tài sản --</option>
+                                <option th:each="type : ${assetTypes}" th:value="${type.typeId}"
+                                    th:text="${type.typeName}">
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" min="0" name="details[1].quantity" value="0" />
+                        </td>
+                        <td>
+                            <input type="text" name="details[1].note" />
+                        </td>
+                    </tr>
+
+                    <!-- Dòng 3 -->
+                    <tr>
+                        <td>
+                            <select name="details[2].assetTypeId">
+                                <option value="">-- Chọn loại tài sản --</option>
+                                <option th:each="type : ${assetTypes}" th:value="${type.typeId}"
+                                    th:text="${type.typeName}">
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" min="0" name="details[2].quantity" value="0" />
+                        </td>
+                        <td>
+                            <input type="text" name="details[2].note" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <br /><br />
+            <button type="submit">Tạo Phiếu</button>
+            <a th:href="@{'/wh/' + ${userId} + '/tickets'}">Hủy</a>
+        </form>
+
+    </th:block>
+</body>
+
+</html>
