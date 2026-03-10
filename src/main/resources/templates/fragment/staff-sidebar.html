@@ -17,19 +17,18 @@
 
             <!-- YÊU CẦU MUA SẮM -->
             <a class="nav-item" th:href="@{/purchases}"
-                th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                th:classappend="${activeMenu}=='approval' and ${activeSub}=='pr' ? ' active' : ''">
                 <i class="fas fa-shopping-cart"></i> Purchases
             </a>
 
             <!-- BÁO GIÁ -->
             <a class="nav-item" th:href="@{/quotations}"
-                th:classappend="${activeMenu}=='quotation' ? ' active' : ''">
+                th:classappend="${activeMenu}=='approval' and ${activeSub}=='qt' ? ' active' : ''">
                 <i class="fas fa-file-invoice"></i> Quotations
             </a>
 
             <!-- ĐƠN HÀNG MUA SẮM -->
-            <a class="nav-item" th:href="@{/purchase-orders}"
-                th:classappend="${activeMenu}=='po' ? ' active' : ''">
+            <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
                 <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
             </a>
         </nav>

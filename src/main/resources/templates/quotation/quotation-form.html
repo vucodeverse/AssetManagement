@@ -31,14 +31,6 @@
                          </div>
                     </header>
 
-                    <div th:if="${#fields.hasAnyErrors()}"
-                         style="background-color: #fee2e2; color: #991b1b; padding: 12px; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ef4444;">
-                         <strong>Please correct the following errors:</strong>
-                         <ul style="margin: 8px 0 0 20px;">
-                              <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
-                         </ul>
-                    </div>
-
                     <div class="form-section-card">
                          <div class="grid-fields">
                               <div class="field-group">
@@ -112,34 +104,62 @@
                                         <td class="td-item-qty">
                                              <input type="number" class="input-table qty-input"
                                                   th:field="*{quotationDetailCreateRequests[__${stat.index}__].quantity}">
+
+                                             <div class="error-msg"
+                                                     th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].quantity')}"
+                                                     th:errors="*{quotationDetailCreateRequests[__${stat.index}__].quantity}">
+                                             </div>
                                         </td>
 
                                         <td>
                                              <input type="text" class="input-table" placeholder="Detail notes..."
                                                   th:field="*{quotationDetailCreateRequests[__${stat.index}__].quotationDetailNote}">
+                                             <div class="error-msg" th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].quotationDetailNote')}"
+                                                  th:errors="*{quotationDetailCreateRequests[__${stat.index}__].quotationDetailNote}">
+
+                                             </div>
                                         </td>
 
                                         <td>
                                              <input type="number" class="input-table"
                                                   th:field="*{quotationDetailCreateRequests[__${stat.index}__].warrantyMonths}">
+                                             <div class="error-msg" th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].warrantyMonths')}"
+                                                  th:errors="*{quotationDetailCreateRequests[__${stat.index}__].warrantyMonths}">
+
+                                             </div>
                                         </td>
 
                                         <td>
-                                             <div style="display: flex; align-items: center;">
-                                                  <span style="margin-right: 8px; color: #999;">$</span>
-                                                  <input type="number" step="1" class="input-table price-input"
-                                                       th:field="*{quotationDetailCreateRequests[__${stat.index}__].price}">
+                                             <div style="display: flex; flex-direction: column;">
+                                                  <div style="display: flex; align-items: center;">
+                                                       <span style="margin-right: 8px; color: #999;">$</span>
+                                                       <input type="number" step="0.01" class="input-table price-input"
+                                                            th:field="*{quotationDetailCreateRequests[__${stat.index}__].price}">                                                  </div>
+                                                  <div class="error-msg"
+                                                          th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].price')}"
+                                                            th:errors="*{quotationDetailCreateRequests[__${stat.index}__].price}">
+                                                  </div>
                                              </div>
                                         </td>
 
                                         <td>
                                              <input type="number" step="0.1" class="input-table tax-input"
                                                   th:field="*{quotationDetailCreateRequests[__${stat.index}__].taxRate}">
+                                             <div class="error-msg" th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].taxRate')}"
+                                                  th:errors="*{quotationDetailCreateRequests[__${stat.index}__].taxRate}">
+
+                                             </div>
                                         </td>
 
                                         <td>
                                              <input type="number" step="0.1" class="input-table disc-input"
                                                   th:field="*{quotationDetailCreateRequests[__${stat.index}__].discountRate}">
+
+                                             <div class="error-msg"
+                                                     th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].discountRate')}"
+                                             th:errors="*{quotationDetailCreateRequests[__${stat.index}__].discountRate}">
+
+                                             </div>
                                         </td>
 
                                         <td>

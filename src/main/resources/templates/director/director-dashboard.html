@@ -13,105 +13,107 @@
 <body>
     <th:block layout:fragment="content">
         <!-- Main Content -->
-        <header class="dashboard-header">
-            <div class="header-left">
-                <h1>DASHBOARD OVERVIEW</h1>
-                <p>Monitor your procurement operations and approval tasks.</p>
-            </div>
-            <div class="top-actions">
-                <select class="fy-select">
-                    <option>FY 2024</option>
-                </select>
-                <i class="far fa-bell icon-btn"></i>
-                <i class="fas fa-cog icon-btn"></i>
-            </div>
-        </header>
+        <div class="director-dashboard-wrapper">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>DASHBOARD OVERVIEW</h1>
+                    <p>Monitor your procurement operations and approval tasks.</p>
+                </div>
+                <div class="top-actions">
+                    <select class="fy-select">
+                        <option>FY 2024</option>
+                    </select>
+                    <i class="far fa-bell icon-btn"></i>
+                    <i class="fas fa-cog icon-btn"></i>
+                </div>
+            </header>
 
-        <!-- Content Grid -->
-        <div class="dashboard-grid">
-            <!-- Recent PRs -->
-            <div class="data-card">
-                <div class="card-header">
-                    <h2>RECENT PURCHASE REQUESTS</h2>
-                    <a th:href="@{/purchases}" class="view-all">VIEW ALL</a>
+            <!-- Content Grid -->
+            <div class="dashboard-grid">
+                <!-- Recent PRs -->
+                <div class="data-card">
+                    <div class="card-header">
+                        <h2>RECENT PURCHASE REQUESTS</h2>
+                        <a th:href="@{/purchases}" class="view-all">VIEW ALL</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="dashboard-table" id="purchaseDB">
+                            <thead>
+                                <tr>
+                                    <th>PR ID</th>
+                                    <th>STATUS</th>
+                                    <th>CREATOR</th>
+                                    <th>NEEDED DATE</th>
+                                    <th>PRIORITY</th>
+                                    <th>CREATED AT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="clickable-row" th:each="p : ${dashboard.recentPRs}"
+                                    th:onclick="|window.location.href='@{/purchases/{id}(id=${p.purchaseId})}'|">
+                                    <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
+                                    <td>
+                                        <span th:if="${p.status != null}" class="badge"
+                                            th:classappend="'badge-' + ${p.status.name()}" th:text="${p.status}"></span>
+                                        <span th:if="${p.status == null}">—</span>
+                                    </td>
+                                    <td th:text="${p.creatorName ?: '—'}"></td>
+                                    <td>
+                                        <span th:if="${p.neededByDate != null}"
+                                            th:text="${#temporals.format(p.neededByDate,'dd-MM-yyyy')}"></span>
+                                        <span th:if="${p.neededByDate == null}">—</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${p.priority != null}" class="pill"
+                                            th:classappend="'pill-' + ${p.priority}" th:text="${p.priority}"></span>
+                                        <span th:if="${p.priority == null}">—</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${p.createdAt != null}"
+                                            th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></span>
+                                        <span th:if="${p.createdAt == null}">—</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="dashboard-table" id="purchaseDB">
-                        <thead>
-                            <tr>
-                                <th>PR ID</th>
-                                <th>STATUS</th>
-                                <th>CREATOR</th>
-                                <th>NEEDED DATE</th>
-                                <th>PRIORITY</th>
-                                <th>CREATED AT</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="clickable-row" th:each="p : ${dashboard.recentPRs}"
-                                th:onclick="|window.location.href='@{/purchases/{id}(id=${p.purchaseId})}'|">
-                                <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
-                                <td>
-                                    <span th:if="${p.status != null}" class="badge"
-                                        th:classappend="'badge-' + ${p.status.name()}" th:text="${p.status}"></span>
-                                    <span th:if="${p.status == null}">—</span>
-                                </td>
-                                <td th:text="${p.creatorName ?: '—'}"></td>
-                                <td>
-                                    <span th:if="${p.neededByDate != null}"
-                                        th:text="${#temporals.format(p.neededByDate,'dd-MM-yyyy')}"></span>
-                                    <span th:if="${p.neededByDate == null}">—</span>
-                                </td>
-                                <td>
-                                    <span th:if="${p.priority != null}" class="pill"
-                                        th:classappend="'pill-' + ${p.priority}" th:text="${p.priority}"></span>
-                                    <span th:if="${p.priority == null}">—</span>
-                                </td>
-                                <td>
-                                    <span th:if="${p.createdAt != null}"
-                                        th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></span>
-                                    <span th:if="${p.createdAt == null}">—</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
-            <!-- Recent Quotations -->
-            <div class="data-card">
-                <div class="card-header">
-                    <h2>RECENT QUOTATIONS</h2>
-                    <a th:href="@{/quotations}" class="view-all">VIEW ALL</a>
-                </div>
-                <div class="table-responsive">
-                    <table class="dashboard-table" id="quotationDB">
-                        <thead>
-                            <tr>
-                                <th>QUO ID</th>
-                                <th>SUPPLIER</th>
-                                <th>PR REF</th>
-                                <th>TOTAL AMOUNT</th>
-                                <th>STATUS</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="clickable-row" th:each="quo : ${dashboard.recentQuotations}"
-                                th:onclick="|window.location.href='@{/quotations/{id}(id=${quo.quotationId})}'|">
-                                <td class="item-id" th:text="${'QUO-' + quo.quotationId}">QUO-123</td>
-                                <td th:text="${quo.supplierName}">Supplier Name</td>
-                                <td th:text="${'PR-' + quo.purchaseId}">PR-045</td>
-                                <td class="item-id"
-                                    th:text="${'$' + #numbers.formatDecimal(quo.totalAmount, 1, 'COMMA', 2, 'POINT')}">
-                                    $4,500.00</td>
-                                <td><span class="status-badge"
-                                        th:classappend="${quo.quotationStatus.name().toLowerCase()}"
-                                        th:text="${quo.quotationStatus}">PENDING</span></td>
-                                <td style="text-align: right;"><i class="fas fa-chevron-right arrow-icon"></i></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Recent Quotations -->
+                <div class="data-card">
+                    <div class="card-header">
+                        <h2>RECENT QUOTATIONS</h2>
+                        <a th:href="@{/quotations}" class="view-all">VIEW ALL</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="dashboard-table" id="quotationDB">
+                            <thead>
+                                <tr>
+                                    <th>QUO ID</th>
+                                    <th>SUPPLIER</th>
+                                    <th>PR REF</th>
+                                    <th>TOTAL AMOUNT</th>
+                                    <th>STATUS</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="clickable-row" th:each="quo : ${dashboard.recentQuotations}"
+                                    th:onclick="|window.location.href='@{/quotations/{id}(id=${quo.quotationId})}'|">
+                                    <td class="item-id" th:text="${'QUO-' + quo.quotationId}">QUO-123</td>
+                                    <td th:text="${quo.supplierName}">Supplier Name</td>
+                                    <td th:text="${'PR-' + quo.purchaseId}">PR-045</td>
+                                    <td class="item-id"
+                                        th:text="${'$' + #numbers.formatDecimal(quo.totalAmount, 1, 'COMMA', 2, 'POINT')}">
+                                        $4,500.00</td>
+                                    <td><span class="status-badge"
+                                            th:classappend="${quo.quotationStatus.name().toLowerCase()}"
+                                            th:text="${quo.quotationStatus}">PENDING</span></td>
+                                    <td style="text-align: right;"><i class="fas fa-chevron-right arrow-icon"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

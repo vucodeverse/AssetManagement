@@ -144,8 +144,8 @@ public class QuotationServiceImpl implements QuotationService {
         // check quotation có tồn tịa hay ko
         Quotation q = quotationDAO.findById(id)
                 .orElseThrow(() -> new InvalidDataException("Quotation not found"));
-        if(QuotationStatus.DRAFT.equals(q.getQuotationStatus().name())) {
-            throw new InvalidDataException("Báo giá này không thể cập nhật");
+        if (q.getQuotationStatus() != QuotationStatus.DRAFT) {
+            throw new InvalidDataException("Chỉ có báo giá nháp mới có thể cập nhật");
         }
 
         // lấy ra list detail theo quotation id

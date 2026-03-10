@@ -156,7 +156,7 @@ public class QuotationDAOImpl implements QuotationDAO {
     @Override
     public Optional<Quotation> findById(Integer quotationId) {
 
-        String sql = "select * from quotation where quotation_id = ? and status <> 'CANCLLED'";
+        String sql = "select * from quotation where quotation_id = ? and status <> 'DELETED'";
 
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -171,9 +171,9 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
                 quotation
-                        .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                        .setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime().toLocalDate() : null);
                 quotation
-                        .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                        .setUpdatedAt(rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime().toLocalDate() : null);
                 quotation.setRejectedReason(rs.getString("reject_reason"));
 
                 return Optional.of(quotation);
@@ -207,9 +207,9 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
                 quotation
-                        .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                        .setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime().toLocalDate() : null);
                 quotation
-                        .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                        .setUpdatedAt(rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime().toLocalDate() : null);
                 quotations.add(quotation);
             }
 
@@ -239,9 +239,9 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
                 quotation
-                        .setCreatedAt(rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null);
+                        .setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime().toLocalDate() : null);
                 quotation
-                        .setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                        .setUpdatedAt(rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime().toLocalDate() : null);
                 quotation.setRejectedReason(rs.getString("reject_reason"));
 
                 return Optional.of(quotation);

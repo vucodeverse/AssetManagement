@@ -212,12 +212,12 @@ public class QuotationController {
     private void prepareQuotationFormModel(Model model, Integer purchaseId) {
         model.addAttribute("purchaseId", purchaseId);
         model.addAttribute("suppliers", supplierService.getAllSupplier());
-        model.addAttribute("activeMenu", "purchase");
+        model.addAttribute("activeMenu", "approval");
     }
 
     // set navbar
     private void prepareQuotationMenu(Model model) {
-        model.addAttribute("activeMenu", "quotation");
+        model.addAttribute("activeMenu", "approval");
         model.addAttribute("activeSub", "qt");
     }
 

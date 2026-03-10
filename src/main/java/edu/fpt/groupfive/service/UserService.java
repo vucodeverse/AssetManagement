@@ -18,7 +18,6 @@ public interface UserService {
 
         Integer getUserIdByUsername(String username);
 
-        String findNameById(Integer userId);
 
         void createUser(UserCreateRequest request);
 

@@ -162,11 +162,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String findNameById(Integer userId) {
-        return userDAO.findFullNameById(userId);
-    }
-
-    @Override
     public boolean existsByUsername(String username) {
         return userDAO.existsByUsername(username);
     }

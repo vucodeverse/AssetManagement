@@ -38,8 +38,8 @@ body {
 
 .top-bar h1 {
     font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-weight: 900;
+    letter-spacing: .2px;
     margin: 0;
     color: #111;
     text-transform: uppercase;
@@ -104,7 +104,7 @@ body {
 }
 
 .filter-group label {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     color: #b5b5b5;
     letter-spacing: 0.8px;
@@ -117,7 +117,7 @@ body {
     padding: 8px 16px;
     border: 1px solid #f0f0f0;
     border-radius: 8px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     background: #fff;
     outline: none;
@@ -132,7 +132,7 @@ body {
 }
 
 .to-text {
-    font-size: 9px;
+    font-size: 11px;
     color: #d1d1d1;
     font-weight: 800;
     text-transform: uppercase;
@@ -140,7 +140,7 @@ body {
 }
 
 .btn-reset-filters {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     color: #222;
     text-decoration: none;
@@ -180,11 +180,11 @@ body {
 .data-table thead th {
     text-align: left;
     padding: 15px 15px;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     color: #b5b5b5;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: .14em;
     border-bottom: 2px solid #f8f8f8;
 }
 
@@ -209,8 +209,8 @@ body {
 /* Badges */
 .badge {
     padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 9px;
+    border-radius: 6px;
+    font-size: 10px;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 0.4px;
@@ -243,8 +243,8 @@ body {
     color: #fff;
     border: none;
     padding: 9px 18px;
-    font-size: 9px;
-    font-weight: 800;
+    font-size: 10px;
+    font-weight: 900;
     border-radius: 4px;
     cursor: pointer;
     letter-spacing: 0.6px;
@@ -259,16 +259,27 @@ body {
 
 /* DataTables Global Adjustments */
 .dataTables_wrapper .dataTables_info {
-    padding: 30px 0;
-    font-size: 9px;
-    font-weight: 800;
-    color: #c0c0c0;
+    font-size: 11px !important;
+    letter-spacing: .08em;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    color: var(--muted2, #9ca3af) !important;
+    font-weight: 700;
+    padding-top: 24px !important;
+    padding-bottom: 8px !important;
+    float: left;
 }
 
 .dataTables_wrapper .dataTables_paginate {
-    padding: 20px 0;
+    padding-top: 20px !important;
+    padding-bottom: 8px !important;
+    float: right;
+}
+
+/* Clearfix for the container holding info and paginate */
+.dataTables_wrapper::after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
@@ -280,17 +291,32 @@ body {
     color: #0f172a !important;
     font-weight: 700 !important;
     font-size: 11px !important;
+    min-width: auto !important;
+    height: auto !important;
+    line-height: normal !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: #000 !important;
+    background: var(--text, #111827) !important;
     color: #fff !important;
-    border-color: #000 !important;
+    border-color: var(--text, #111827) !important;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
-    background: #f8f8f8 !important;
-    color: #000 !important;
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #f3f4f6 !important;
+    color: var(--text, #111827) !important;
+    border-color: var(--border, #e5e7eb) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--text, #111827) !important;
+    color: #fff !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    opacity: .35 !important;
+    cursor: default !important;
 }
 
 /* Sorting Indicators */

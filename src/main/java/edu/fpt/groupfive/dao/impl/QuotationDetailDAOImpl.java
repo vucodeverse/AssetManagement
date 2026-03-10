@@ -151,8 +151,8 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
     @Override
     public List<QuotationDetail> findByQuotationId(Integer quotationId) {
 
-        String sql = "select * from quotation_detail join dbo.quotation on quotation_detail.quotation_id = quotation" +
-                ".quotation_id where quotation_detail.quotation_id = ? and quotation.status != 'CANCELLED' ";
+        String sql = "select qd.* from quotation_detail qd join dbo.quotation q on qd.quotation_id = q" +
+                ".quotation_id where qd.quotation_id = ? and q.status != 'CANCELLED' ";
 
         List<QuotationDetail> quotationDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
@@ -180,7 +180,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 quotationDetails.add(q);
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Chèn dữ liệu thất bại",e);
+            throw new DataAccessException("Lấy danh sách chi tiết báo giá thất bại", e);
         }
         return quotationDetails;
     }

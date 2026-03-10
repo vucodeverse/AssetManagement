@@ -1,3 +1,6 @@
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 :root {
     --panel: #ffffff;
     --text: #111827;
@@ -11,6 +14,10 @@
 
 * {
     box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* ───── MAIN CONTENT ───── */
@@ -163,6 +170,12 @@
     color: var(--text);
     white-space: nowrap;
     margin-top: 2px;
+}
+
+.badge-status.badge-REJECTED {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fca5a5;
 }
 
 @media (max-width: 980px) {

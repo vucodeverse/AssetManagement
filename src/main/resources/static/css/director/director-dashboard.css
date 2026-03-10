@@ -1,4 +1,5 @@
 /* Dashboards specific styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 /* Black & White theme overrides (scoped to this page via this CSS file) */
 .dashboard-header,
@@ -13,7 +14,22 @@
     --muted2: #9ca3af;
     --border: #e5e7eb;
     --panel: #ffffff;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Page wrapper for centering like purchase-list */
+.director-dashboard-wrapper {
+    max-width: var(--page-max);
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0;
 }
 
 /* Header Area */
@@ -25,7 +41,7 @@
 }
 
 .header-left h1 {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 900;
     color: var(--text);
     letter-spacing: -0.5px;
@@ -169,8 +185,13 @@
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 24px;
+    padding: 14px 24px;
     box-shadow: var(--shadow);
+    max-width: 1120px;
+    /* Increased horizontal width */
+    margin: 0 auto;
+    /* Keep it centered */
+    width: 100%;
 }
 
 .card-header {
@@ -212,23 +233,33 @@
 .dashboard-table {
     width: 100%;
     border-collapse: collapse;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .dashboard-table th {
     text-align: left;
     font-size: 11px;
-    font-weight: 900;
+    font-weight: 800;
+    /* Less bold */
     color: var(--muted2);
-    padding: 12px 10px;
-    border-bottom: 2px solid var(--border);
+    padding: 16px 14px;
+    border-bottom: 1px solid var(--border);
+    /* Lighter border */
     text-transform: uppercase;
+    letter-spacing: .14em;
+    /* Match purchase-list */
 }
 
 .dashboard-table td {
-    padding: 16px 10px;
-    border-bottom: 1px solid #f3f4f6;
+    padding: 22px 14px;
+    border-bottom: 1px solid var(--border2);
     font-size: 13px;
     color: var(--text);
+    vertical-align: middle;
+}
+
+.dashboard-table tbody tr:hover {
+    background: #f8fafc;
 }
 
 .item-id {
@@ -246,7 +277,7 @@
 
 /* Badges & Tags (B/W) */
 .status-badge {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 900;
     padding: 4px 10px;
     border-radius: 4px;
@@ -257,7 +288,7 @@
 }
 
 .prio-tag {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 900;
     padding: 3px 8px;
     border-radius: 4px;
@@ -350,4 +381,66 @@
     background: #fff;
     color: #6b7280;
     border: 1px solid var(--border);
+}
+
+/* Pagination Styles (Matching purchase-list) */
+.dataTables_info {
+    font-size: 11px !important;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted2) !important;
+    font-weight: 700;
+    padding-top: 24px !important;
+    padding-bottom: 8px !important;
+    float: left;
+}
+
+.dataTables_paginate {
+    padding-top: 20px !important;
+    padding-bottom: 8px !important;
+    float: right;
+}
+
+/* Clearfix for the container holding info and paginate */
+.dataTables_wrapper::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.dataTables_paginate .paginate_button {
+    padding: 0.2rem 0.5rem !important;
+    margin: 0 0.1rem !important;
+    background: #f1f5f9 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    min-width: auto !important;
+    height: auto !important;
+    line-height: normal !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.dataTables_paginate .paginate_button.current {
+    background: var(--text) !important;
+    color: #fff !important;
+    border-color: var(--text) !important;
+}
+
+.dataTables_paginate .paginate_button:hover {
+    background: #f3f4f6 !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+}
+
+.dataTables_paginate .paginate_button.current:hover {
+    background: var(--text) !important;
+    color: #fff !important;
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    opacity: .35 !important;
+    cursor: default !important;
 }
