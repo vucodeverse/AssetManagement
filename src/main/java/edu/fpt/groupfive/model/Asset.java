@@ -18,18 +18,17 @@ public class Asset {
     private Integer assetId;
     private String assetName;
     private String serialNumber;
-    private AssetStatus currentStatus;
-    private BigDecimal originalCost;
-    private LocalDate warrantyStartDate;
-    private LocalDate warrantyEndDate;
-    private LocalDate acquisitionDate;
     private Integer assetTypeId;
     private  Integer purchaseOrderDetailId;
-
+    private AssetStatus currentStatus;
+    private BigDecimal originalCost;
     private Integer departmentId;
-    private Integer goodsReceiptId;
-
+    private LocalDate acquisitionDate;
     private LocalDate inServiceDate;
+    private LocalDate warrantyStartDate;
+    private LocalDate warrantyEndDate;
 
     private String assetTypeName;
+
+
 }

@@ -706,7 +706,6 @@ CREATE TABLE asset (
                        serial_number       NVARCHAR(100) NULL,
                        asset_type_id       INT NOT NULL,
                        purchase_order_detail_id INT NULL,
-                       goods_receipt_id    INT NULL,
                        current_status      NVARCHAR(40) NOT NULL,
                        original_cost       NUMERIC(19, 2) NULL,
                        department_id       INT NULL,
@@ -718,13 +717,8 @@ CREATE TABLE asset (
 
                        CONSTRAINT FK_AST_Type
                            FOREIGN KEY (asset_type_id) REFERENCES asset_type(asset_type_id),
-
-                       CONSTRAINT FK_AST_GR
-                           FOREIGN KEY (goods_receipt_id) REFERENCES goods_receipt(goods_receipt_id),
-
                        CONSTRAINT FK_AST_POD
                            FOREIGN KEY (purchase_order_detail_id) REFERENCES purchase_order_details(purchase_order_detail_id),
-
                        CONSTRAINT FK_AST_Department
                            FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );

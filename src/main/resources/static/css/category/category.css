@@ -26,6 +26,9 @@ body {
     letter-spacing: 0.05em;
 }
 
+.pagination a{
+    text-decoration: none;
+}
 /* Content wrapper (đẩy nội dung chính) */
 .content-wrapper {
     padding: 2rem;

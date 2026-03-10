@@ -5,9 +5,11 @@ import edu.fpt.groupfive.dto.request.AssetCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetUpdateRequest;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetResponse;
+import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.OrderService;
+import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -25,13 +29,33 @@ public class AssetController {
 
     private final AssetService assetService;
     private final AssetTypeService assetTypeService;
-private  final OrderService orderService;
+    private final OrderService orderService;
+
 
     @GetMapping
-    public String list(Model model) {
-        List<AssetResponse> assets = assetService.getAll();
-        model.addAttribute("assets", assets);
+    public String list(
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "status", required = false) AssetStatus status,
+            @RequestParam(name = "fromDate", required = false) LocalDate fromDate,
+            @RequestParam(name = "toDate", required = false) LocalDate toDate,
+            @RequestParam(name = "direction", required = false) String direction,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            Model model) {
+
+        var result= assetService.searchAssets(keyword,status,fromDate,toDate,direction,page);
+
+        model.addAttribute("assets", result.getContent());
+       model.addAttribute("page", result);
+
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("direction", direction);
+
         model.addAttribute("activeMenu", "asset");
+
+
         return "manager/asset/asset-list";
     }
 
@@ -45,9 +69,11 @@ private  final OrderService orderService;
             return "manager/asset/asset-detail";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
-            return list(model);
+            return "redirect:/manager/assets";
         }
     }
+
+
 
 
     @GetMapping("/create")
@@ -61,7 +87,6 @@ private  final OrderService orderService;
         model.addAttribute("activeMenu", "asset");
         return "manager/asset/asset-form";
     }
-
 
 
     @PostMapping("/create")
@@ -125,7 +150,7 @@ private  final OrderService orderService;
 
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
-            return list(model);
+            return "redirect:/manager/assets";
         }
     }
 

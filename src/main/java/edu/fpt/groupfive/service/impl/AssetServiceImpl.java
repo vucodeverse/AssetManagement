@@ -7,6 +7,7 @@ import edu.fpt.groupfive.dto.request.AssetCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetUpdateRequest;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetResponse;
+import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.mapper.AssetMapper;
 import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.AssetType;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -26,6 +28,7 @@ public class AssetServiceImpl implements AssetService {
     private final AssetDAO assetDAO;
     private final AssetTypeDAO assetTypeDAO;
     private final AssetMapper assetMapper;
+    private static final int PAGE_SIZE = 5;
 
     // get all
     @Override
@@ -44,7 +47,6 @@ public class AssetServiceImpl implements AssetService {
 
         return assetMapper.toAssetResponse(asset);
     }
-
 
 
     // create
@@ -170,6 +172,37 @@ public class AssetServiceImpl implements AssetService {
                         new InvalidDataException("Không tìm thấy tài sản với id = " + id));
     }
 
+
+    @Override
+    public PageResponse<AssetResponse> searchAssets(
+            String keyword,
+            AssetStatus status,
+            LocalDate fromDate,
+            LocalDate toDate,
+            String direction,
+            int page
+    ) {
+
+        if (page < 1) {
+            page = 1;
+        }
+
+        int offset = (page - 1) * PAGE_SIZE;
+
+        var assets = assetDAO.searchAssets(keyword, status, fromDate, toDate, direction, offset, PAGE_SIZE);
+
+        int total = assetDAO.countAssets(
+                keyword,
+                status,
+                fromDate, toDate
+        );
+
+        int totalPages = (int) Math.ceil((double) total / PAGE_SIZE);
+
+        var responses = assetMapper.toAssetResponseList(assets);
+
+        return new PageResponse<>(responses, page, PAGE_SIZE, total, totalPages);
+    }
 
     // validate
 

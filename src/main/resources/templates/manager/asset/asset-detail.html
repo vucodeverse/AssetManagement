@@ -2,7 +2,7 @@
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{/layout/manager-layout}">
+      layout:decorate="~{layout/manager-layout}">
 
 <head>
     <th:block layout:fragment="extra-css">
@@ -50,8 +50,7 @@
                     <div class="form-group">
                         <label>Giá trị ban đầu (VNĐ)</label>
                         <div class="form-control-view"
-                             th:text="${#numbers.formatDecimal(asset.originalCost, 0, 0, 'COMMA')} + ' ₫'">
-                        </div>
+                             th:text="${#numbers.formatDecimal(asset.originalCost,0,'COMMA',0,'POINT')} + ' ₫'">                        </div>
                     </div>
 
                     <div class="form-group">
@@ -85,39 +84,44 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Ngày phân bổ</label>
-                        <div class="form-control-view"
-                             th:text="${asset.allocationDate != null ? asset.allocationDate : 'Chưa phân bổ'}">
-                        </div>
-                    </div>
-
+                    <!--                    <div class="form-group">-->
+                    <!--                        <label>Ngày phân bổ</label>-->
+                    <!--                        <div class="form-control-view"-->
+                    <!--                             th:text="${asset.allocationDate != null ? asset.allocationDate : 'Chưa phân bổ'}">-->
+                    <!--                        </div>-->
+                    <!--                    </div>-->
                 </div>
             </div>
 
-            <!-- Vị trí kho -->
+            <!-- thông tin đơn mua-->
             <div class="form-section">
-                <div class="form-section-title">Vị trí lưu trữ</div>
+                <div class="form-section-title">Đơn mua</div>
 
                 <div class="form-grid">
 
                     <div class="form-group">
-                        <label>Kho</label>
-                        <div class="form-control-view" th:text="${asset.warehouseName}"></div>
-                    </div>
+                        <label>Mã đơn hàng</label>
+                        <div class="form-control-view"
+                             th:text="${asset.purchaseOrderId}">
+                        </div>
 
-                    <div class="form-group">
-                        <label>Rack</label>
-                        <div class="form-control-view" th:text="${asset.rackName}"></div>
-                    </div>
+                        <label>Nhà cung cấp</label>
+                        <div class="form-control-view"
+                             th:text="${asset.supplierName}">
+                        </div>
 
-                    <div class="form-group">
-                        <label>Kệ</label>
-                        <div class="form-control-view" th:text="${asset.shelfName}"></div>
+                        <label>Ngày đặt hàng</label>
+                        <div class="form-control-view"
+                             th:text="${asset.orderDate}">
+                        </div>
+
+
                     </div>
 
                 </div>
             </div>
+
+
 
             <!-- button -->
             <div class="form-actions">
