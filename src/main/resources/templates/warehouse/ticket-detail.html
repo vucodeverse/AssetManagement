@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/manager-layout}">
+
+<head>
+    <title>Chi Tiết Phiếu Kho</title>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+
+        <h1>CHI TIẾT PHIẾU KHO #<span th:text="${ticket.id}"></span></h1>
+
+        <div>
+            <p><strong>Loại Phiếu:</strong> <span th:text="${ticket.ticketType}"></span></p>
+            <p><strong>Trạng Thái:</strong> <span th:text="${ticket.status}"></span></p>
+            <p><strong>Ngày Tạo:</strong> <span
+                    th:text="${#temporals.format(ticket.createdAt, 'dd-MM-yyyy HH:mm')}"></span></p>
+            <p th:if="${ticket.completedAt != null}"><strong>Ngày Hoàn Thành:</strong> <span
+                    th:text="${#temporals.format(ticket.completedAt, 'dd-MM-yyyy HH:mm')}"></span></p>
+        </div>
+
+        <h3>Danh Sách Chi Tiết Tài Sản</h3>
+        <table border="1" cellpadding="6" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Loại Tài Sản</th>
+                    <th>Số Lượng Yêu Cầu</th>
+                    <th>Ghi Chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="d : ${details}">
+                    <td th:text="${assetTypeMap[d.assetTypeId]}"></td>
+                    <td th:text="${d.quantity}"></td>
+                    <td th:text="${d.note}"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p style="margin-top: 20px;">
+            <a th:href="@{'/wh/' + ${userId} + '/tickets'}">Quay lại danh sách</a>
+        </p>
+
+    </th:block>
+</body>
+
+</html>
