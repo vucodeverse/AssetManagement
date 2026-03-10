@@ -26,7 +26,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public DashboardMetricsDto getDashboardData(Integer managerUserId) {
-        Warehouse warehouse = warehouseDAO.findByManagerUserId(managerUserId);
+        Warehouse warehouse = warehouseDAO.getByManager(managerUserId);
         if (warehouse == null) {
             throw new RuntimeException("Bạn chưa được phân bổ quản lý kho nào.");
         }
