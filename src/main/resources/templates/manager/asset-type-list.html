@@ -169,8 +169,6 @@
                     [[${totalPages}]]
                 </span>
 
-                <div class="pagination" th:if="${totalPages > 0}">
-                    <span>Trang [[${currentPage}]] / [[${totalPages}]]</span>
                     <div class="pagination-controls">
                         <a th:if="${currentPage > 1}"
                            th:href="@{/manager/asset-types(page=${currentPage-1}, keyword=${keyword}, categoryId=${categoryId}, typeClass=${typeClass}, depreciationMethod=${depreciationMethod}, direction=${direction})}"
@@ -186,7 +184,7 @@
                            th:href="@{/manager/asset-types(page=${currentPage+1}, keyword=${keyword}, categoryId=${categoryId}, typeClass=${typeClass}, depreciationMethod=${depreciationMethod}, direction=${direction})}"
                            class="pagination-btn">Tiếp</a>
                     </div>
-                </div>
+
 
             </div>
 
