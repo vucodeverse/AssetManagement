@@ -81,6 +81,21 @@
                                 placeholder="Internal remarks or delivery instructions..."></textarea>
                         </div>
 
+                        <div class="form-item full-width">
+                            <label>Warehouse Name</label>
+                            <th:block th:if="*{warehouseName != null and warehouseName != ''}">
+                                <input type="text" th:field="*{warehouseName}" readonly>
+                            </th:block>
+                            <th:block th:unless="*{warehouseName != null and warehouseName != ''}">
+                                <select th:field="*{warehouseName}">
+                                    <option value="">-- Select Warehouse --</option>
+                                    <th:block th:each="name : ${wh}">
+                                        <option th:value="${name}" th:text="${name}"></option>
+                                    </th:block>
+                                </select>
+                            </th:block>
+                        </div>
+
                     </div>
                 </div>
 

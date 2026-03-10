@@ -58,6 +58,20 @@ public class WarehouseDAOImpl implements WarehouseDAO {
     }
 
     @Override
+    public List<String> getWarehousesName() {
+        String sql = "select w.name from wh_warehouses w ";
+
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+
+    @Override
+    public Integer getByName(String name) {
+
+        String sql  = "select w.id from wh_warehouses w where w.name = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, name);
+    }
+
+    @Override
     public Warehouse create(Warehouse warehouse) {
         String sql = "INSERT INTO wh_warehouses (name, address, manager_user_id, status) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();

@@ -6,6 +6,7 @@ import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.SupplierService;
+import edu.fpt.groupfive.service.warehouse.impl.WarehouseService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
@@ -31,6 +32,7 @@ public class OrderController {
     private final OrderService orderService;
     private final SupplierService supplierService;
     private final OrderCalculationUtil orderCalculationUtil;
+    private final WarehouseService warehouseService;
 
 
     @ModelAttribute
@@ -57,6 +59,8 @@ public class OrderController {
         } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
         }
+
+        model.addAttribute("wh", warehouseService.getNameWh());
         return VIEW_ORDER_FORM;
     }
 
@@ -91,6 +95,7 @@ public class OrderController {
 
         try {
             Integer orderId = orderService.createOrder(quotationId, request);
+
             return "redirect:/purchase-orders/" + orderId;
         } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());

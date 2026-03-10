@@ -3,6 +3,8 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.common.OrderStatus;
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.dao.*;
+import edu.fpt.groupfive.dao.warehouse.InventoryTicketDAO;
+import edu.fpt.groupfive.dao.warehouse.WarehouseDAO;
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
@@ -11,9 +13,15 @@ import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.mapper.OrderDetailMapper;
 import edu.fpt.groupfive.mapper.OrderMapper;
 import edu.fpt.groupfive.model.*;
+import edu.fpt.groupfive.model.warehouse.HandleStatus;
+import edu.fpt.groupfive.model.warehouse.InventoryTicket;
+import edu.fpt.groupfive.model.warehouse.TicketDetail;
+import edu.fpt.groupfive.model.warehouse.TicketType;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.SupplierService;
+import edu.fpt.groupfive.service.warehouse.InventoryTicketService;
+import edu.fpt.groupfive.service.warehouse.impl.WarehouseService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
@@ -40,6 +48,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderCalculationUtil orderCalculationUtil;
     private final RangeAmount rangeAmount;
     private final SupplierService supplierService;
+    private final WarehouseDAO warehouseDAO;
+    private final InventoryTicketService  inventoryTicketService;
 
     // kiểm tra order hợp lệ hay ko
     @Override
@@ -51,8 +61,12 @@ public class OrderServiceImpl implements OrderService {
 
         // lấy ra list quotation detiail
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
+        String whName = null;
+        if(orderDAO.getWhIdFromPr(quotation.getPurchaseId()) != null){
+             whName = warehouseDAO.getById(orderDAO.getWhIdFromPr(quotation.getPurchaseId())).getName();
+        }
 
-        // lấy ra assettpe
+        // lấy ra assettype
         Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
 
         // map quotation detial sang purchase orderdetail
@@ -72,6 +86,7 @@ public class OrderServiceImpl implements OrderService {
                 .totalAmount(quotation.getTotalAmount())
                 .supplierId(quotation.getSupplierId())
                 .quotationId(quotationId)
+                .warehouseName(whName)
                 .purchaseOrderDetailCreateRequests(purchaseOrderDetailCreateRequests)
                 .build();
     }
@@ -115,12 +130,15 @@ public class OrderServiceImpl implements OrderService {
         Map<Integer, PurchaseDetail> prDetailMap = prDetails.stream()
                 .collect(Collectors.toMap(PurchaseDetail::getId, pd -> pd));
 
+        Integer whId = warehouseDAO.getByName(purchaseOrderCreateRequest.getWarehouseName());
+
         // tạo order
         Order order = new Order();
         order.setQuotationId(quotationId);
         order.setPurchaseRequestId(quotation.getPurchaseId());
         order.setOrderStatus(OrderStatus.PENDING);
         order.setOrderNote(purchaseOrderCreateRequest.getOrderNote());
+        order.setWarehouseId(whId);
         order.setSupplierId(quotation.getSupplierId());
 
         // tính lại tổng tiền
@@ -178,6 +196,22 @@ public class OrderServiceImpl implements OrderService {
             throw new InvalidDataException("Tạo purchase order thất bại");
         }
 
+        // Logic tạo Inventory Ticket sau khi PO được tạo thành công
+        InventoryTicket ticket = new InventoryTicket();
+        ticket.setWarehouseId(order.getWarehouseId());
+        ticket.setTicketType(TicketType.IN);
+        ticket.setStatus(HandleStatus.PENDING);
+
+        List<TicketDetail> ticketDetails = new ArrayList<>();
+        for(OrderDetail od : orderDetails) {
+            TicketDetail td = new TicketDetail();
+            td.setAssetTypeId(od.getAssetTypeId());
+            td.setQuantity(od.getQuantity());
+            td.setNote("From Purchase Order #" + orderId);
+            ticketDetails.add(td);
+        }
+
+        inventoryTicketService.createTicket(ticket, ticketDetails);
         return orderId;
     }
 

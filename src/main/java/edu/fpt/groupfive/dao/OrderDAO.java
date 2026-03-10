@@ -10,7 +10,6 @@ import java.util.Optional;
 public interface OrderDAO {
     Integer insert(Order order);
 
-
     Map<Integer, Integer> getOrderedQtyByPurchaseDetail(List<Integer> purchaseDetailIds);
 
     List<Object[]> searchAndFilter(PurchaseOrderSearchCriteria criteria);
@@ -22,4 +21,7 @@ public interface OrderDAO {
     java.math.BigDecimal sumTotalAmount();
 
     List<Order> findRecent();
+
+    Integer getWhIdFromPr(Integer purchaseId);
+
 }

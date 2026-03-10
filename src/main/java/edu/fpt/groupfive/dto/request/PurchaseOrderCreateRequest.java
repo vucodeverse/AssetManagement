@@ -15,6 +15,7 @@ public class PurchaseOrderCreateRequest {
     private Integer supplierId;
     private String orderNote;
     private BigDecimal totalAmount;
+    private String warehouseName;
 
     @Builder.Default
     private List<PurchaseOrderDetailCreateRequest> purchaseOrderDetailCreateRequests = new ArrayList<>();

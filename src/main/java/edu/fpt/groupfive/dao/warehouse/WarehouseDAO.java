@@ -17,4 +17,8 @@ public interface WarehouseDAO {
     Warehouse getById(Integer id);
 
     Warehouse getByManager(Integer userId);
+
+    List<String> getWarehousesName();
+
+    Integer getByName(String name);
 }

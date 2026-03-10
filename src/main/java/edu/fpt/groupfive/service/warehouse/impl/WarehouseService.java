@@ -49,4 +49,8 @@ public class WarehouseService {
         Warehouse warehouse = warehouseDAO.getByManager(userId);
         return warehouseMapper.toResp(warehouse);
     }
+
+    public List<String> getNameWh(){
+        return warehouseDAO.getWarehousesName();
+    }
 }
