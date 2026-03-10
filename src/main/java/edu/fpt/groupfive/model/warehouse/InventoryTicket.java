@@ -1,24 +1,20 @@
 package edu.fpt.groupfive.model.warehouse;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class InventoryTicket {
     private Integer id;
     private Integer warehouseId;
-    private String ticketType; // IN, OUT
-    private String ticketRef; // ALLOCATION, RETURN, TRANSFER
-    private String status; // PENDING, PROCESSING, COMPLETED, CANCELLED
-    private Integer createdBy;
+    private TicketType ticketType; //IN, OUT
+    private HandleStatus status; // INBOX, PENDING, COMPLETED, CANCELLED
+    private Integer handleBy;
     private LocalDateTime createdAt;
     private LocalDateTime completedAt;
-    private String note;
 }

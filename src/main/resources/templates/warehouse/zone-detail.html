@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/manager-layout}">
+
+<head>
+    <title>Chi tiết Khu vực lưu trữ</title>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+
+        <h1>CHI TIẾT KHU VỰC LƯU TRỮ</h1>
+
+        <!-- Thông tin zone -->
+        <table border="1" cellpadding="6" cellspacing="0">
+            <tr>
+                <th>ID</th>
+                <td th:text="${zone.id}"></td>
+            </tr>
+            <tr>
+                <th>Tên khu vực</th>
+                <td th:text="${zone.name}"></td>
+            </tr>
+            <tr>
+                <th>Kho hàng</th>
+                <td th:text="${zone.warehouseName}"></td>
+            </tr>
+            <tr>
+                <th>Loại tài sản</th>
+                <td th:text="${zone.assignedAssetTypeName} ?: 'Tất cả loại tài sản'"></td>
+            </tr>
+            <tr>
+                <th>Sức chứa tối đa</th>
+                <td th:text="${zone.maxCapacity}"></td>
+            </tr>
+            <tr>
+                <th>Sức chứa hiện tại</th>
+                <td th:text="${zone.currentCapacity}"></td>
+            </tr>
+            <tr>
+                <th>Sức chứa còn trống</th>
+                <td th:text="${zone.freeCapacity}"></td>
+            </tr>
+            <tr>
+                <th>Trạng thái</th>
+                <td th:text="${zone.status}"></td>
+            </tr>
+        </table>
+
+        <br />
+
+        <!-- Thanh mức lấp đầy -->
+        <p>
+            <strong>Mức lấp đầy: </strong>
+            <span th:text="${zone.maxCapacity > 0}
+            ? ${#numbers.formatDecimal(zone.currentCapacity * 100.0 / zone.maxCapacity, 1, 1)} + '%'
+            : '0%'"></span>
+        </p>
+
+        <br />
+
+        <!-- Nút điều hướng -->
+        <a th:href="@{'/wh/' + ${userId} + '/zones/' + ${zone.id} + '/edit'}">Chỉnh sửa</a>
+        |
+        <form th:if="${zone.active}" th:action="@{'/wh/' + ${userId} + '/zones/' + ${zone.id} + '/deactive'}"
+            method="post" style="display:inline;" onsubmit="return confirm('Vô hiệu hóa khu vực này?')">
+            <button type="submit">Vô hiệu hóa</button>
+        </form>
+        <form th:unless="${zone.active}" th:action="@{'/wh/' + ${userId} + '/zones/' + ${zone.id} + '/active'}"
+            method="post" style="display:inline;" onsubmit="return confirm('Kích hoạt khu vực này?')">
+            <button type="submit">Kích hoạt</button>
+        </form>
+        |
+        <a href="/warehouses">Xem danh sách kho</a>
+        |
+        <a th:href="@{'/wh/' + ${userId} + '/zones'}">Quay lại danh sách</a>
+
+    </th:block>
+</body>
+
+</html>

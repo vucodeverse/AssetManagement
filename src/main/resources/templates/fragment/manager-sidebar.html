@@ -1,57 +1,57 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <body>
 
-<aside th:fragment="sidebar(activeMenu, activeSub)" class="sidebar">
-    <div class="sidebar-logo">
-        <i class="fas fa-cube"></i> <span>QUẢN TRỊ</span>
-    </div>
-
-    <nav class="sidebar-nav">
-        <a th:href="@{/manager/dashboard}" th:classappend="${activeMenu == 'dashboard'} ? 'active' : ''"
-           class="nav-item">
-            <i class="fas fa-th-large"></i> TỔNG QUAN
-        </a>
-        <a th:href="@{/manager/assets}" th:classappend="${activeMenu == 'asset'} ? 'active' : ''"
-           class="nav-item">
-            <i class="fas fa-box"></i> TÀI SẢN
-        </a>
-        <a th:href="@{/manager/asset-types}" th:classappend="${activeMenu == 'asset-type'} ? 'active' : ''"
-           class="nav-item">
-            <i class="fas fa-tags"></i> LOẠI TÀI SẢN
-        </a>
-        <a th:href="@{/manager/categories}" th:classappend="${activeMenu == 'category'} ? 'active' : ''"
-           class="nav-item">
-            <i class="fas fa-list"></i> DANH MỤC TÀI SẢN
-        </a>
-
-
-        <!-- Thêm menu khác -->
-        <a th:href="@{/manager/requests}" class="nav-item">
-            <i class="fas fa-file-invoice"></i> YÊU CẦU CẤP PHÁT
-        </a>
-
-        <!-- Thêm menu khác -->
-        <a th:href="@{/manager/purchases}" class="nav-item">
-            <i class="fas fa-file-invoice"></i> YÊU CẦU MUA SẮM
-        </a>
-
-        <a th:href="@{/manager/reports}" class="nav-item">
-            <i class="fas fa-chart-bar"></i> BÁO CÁO
-        </a>
-    </nav>
-
-<!--    khối thông tin-->
-    <div class="sidebar-user">
-        <div class="user-avatar">A</div>
-        <div class="user-info">
-            <span class="user-name">Administrator</span>
-            <span class="user-role">Asset Manager</span>
-            <a href="#" class="logout-link">ĐĂNG XUẤT</a>
-
+    <aside th:fragment="sidebar(activeMenu, activeSub)" class="sidebar">
+        <div class="sidebar-logo">
+            <i class="fas fa-cube"></i> <span>QUẢN TRỊ</span>
         </div>
-    </div>
-</aside>
+
+        <nav class="sidebar-nav">
+            <a th:href="@{/manager/dashboard}" th:classappend="${activeMenu == 'dashboard'} ? 'active' : ''"
+                class="nav-item">
+                <i class="fas fa-th-large"></i> TỔNG QUAN
+            </a>
+            <a th:href="@{/manager/assets}" th:classappend="${activeMenu == 'asset'} ? 'active' : ''" class="nav-item">
+                <i class="fas fa-box"></i> TÀI SẢN
+            </a>
+            <a th:href="@{/manager/asset-types}" th:classappend="${activeMenu == 'asset-type'} ? 'active' : ''"
+                class="nav-item">
+                <i class="fas fa-tags"></i> LOẠI TÀI SẢN
+            </a>
+            <a th:href="@{/manager/categories}" th:classappend="${activeMenu == 'category'} ? 'active' : ''"
+                class="nav-item">
+                <i class="fas fa-list"></i> DANH MỤC TÀI SẢN
+            </a>
+
+
+            <!-- Thêm menu khác -->
+            <a th:href="@{/manager/requests}" class="nav-item">
+                <i class="fas fa-file-invoice"></i> YÊU CẦU CẤP PHÁT
+            </a>
+
+            <!-- Thêm menu khác -->
+            <a th:href="@{/manager/purchases}" class="nav-item">
+                <i class="fas fa-file-invoice"></i> YÊU CẦU MUA SẮM
+            </a>
+
+            <a th:href="@{/manager/reports}" class="nav-item">
+                <i class="fas fa-chart-bar"></i> BÁO CÁO
+            </a>
+        </nav>
+
+        <!--    khối thông tin-->
+        <div class="sidebar-user">
+            <div class="user-avatar">A</div>
+            <div class="user-info">
+                <span class="user-name">Administrator</span>
+                <span class="user-role">Asset Manager</span>
+                <a href="#" class="logout-link">ĐĂNG XUẤT</a>
+            </div>
+        </div>
+    </aside>
 
 </body>
+
 </html>

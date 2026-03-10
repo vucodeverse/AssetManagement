@@ -1,16 +1,21 @@
 package edu.fpt.groupfive.dao.warehouse;
 
+import edu.fpt.groupfive.model.warehouse.ActiveStatus;
 import edu.fpt.groupfive.model.warehouse.Zone;
+
 import java.util.List;
 
 public interface ZoneDAO {
-    Zone findById(Integer id);
+
+    List<Zone> findAll();
 
     List<Zone> findByWarehouseId(Integer warehouseId);
 
-    int insert(Zone zone);
+    Zone findById(Integer id);
 
-    int update(Zone zone);
+    Zone create(Zone zone);
 
-    int updateCapacity(Integer id, Integer currentCapacity);
+    Zone update(Zone zone);
+
+    void updateStatus(Integer id, ActiveStatus status);
 }

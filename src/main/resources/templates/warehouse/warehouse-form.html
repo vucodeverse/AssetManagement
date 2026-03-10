@@ -1,56 +1,72 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/manager-layout}">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Form Quản Lý Kho</title>
+    <title th:text="${mode == 'update'} ? 'Cập nhật Kho hàng' : 'Thêm mới Kho hàng'">Form Kho hàng</title>
 </head>
 
 <body>
-    <h1 th:text="${warehouse == null ? 'Tạo Kho Mới' : 'Cập Nhật Kho'}"></h1>
-    <a href="/warehouse/warehouses/list">Quay Lại Danh Sách</a>
-    <hr />
+    <th:block layout:fragment="content">
 
-    <form
-        th:action="@{${warehouse == null ? '/warehouse/warehouses/create' : '/warehouse/warehouses/edit/' + warehouse.id}}"
-        method="post">
+        <h1 th:text="${mode == 'update'} ? 'CẬP NHẬT KHO HÀNG' : 'THÊM MỚI KHO HÀNG'">Form kho</h1>
 
-        <div th:if="${warehouse != null}">
-            <label>ID Kho:</label>
-            <input type="number" name="id" th:value="${warehouse.id}" readonly />
-            <br /><br />
+        <!-- Lỗi chung -->
+        <div th:if="${errorMessage}">
+            <p th:text="${errorMessage}" style="color:red;"></p>
         </div>
 
-        <div>
-            <label>Tên Kho:</label>
-            <input type="text" name="name" th:value="${warehouse != null ? warehouse.name : ''}" required />
-        </div>
-        <br />
+        <form th:action="${mode == 'create'} ? @{/warehouses/add} : @{'/warehouses/' + ${warehouseId} + '/edit'}"
+            th:object="${warehouse}" method="post">
 
-        <div>
-            <label>Địa Chỉ:</label>
-            <input type="text" name="address" th:value="${warehouse != null ? warehouse.address : ''}" required />
-        </div>
-        <br />
+            <!-- ID (chỉ hiển thị ở mode update) -->
+            <div th:if="${mode == 'update'}">
+                <label>ID Kho:</label>
+                <input type="text" th:value="${warehouseId}" readonly />
+            </div>
 
-        <div>
-            <label>ID Quản Lý Kho (User ID):</label>
-            <input type="number" name="managerUserId" th:value="${warehouse != null ? warehouse.managerUserId : ''}"
-                required />
-        </div>
-        <br />
+            <!-- Tên kho -->
+            <div>
+                <label for="name">Tên kho <span style="color:red;">*</span></label><br />
+                <input type="text" id="name" th:field="*{name}" placeholder="Nhập tên kho" />
+                <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color:red;"></span>
+            </div>
 
-        <div th:if="${warehouse != null}">
-            <label>Trạng Thái:</label>
-            <select name="status">
-                <option value="ACTIVE" th:selected="${warehouse.status == 'ACTIVE'}">Mở Cửa (ACTIVE)</option>
-                <option value="INACTIVE" th:selected="${warehouse.status == 'INACTIVE'}">Đóng Cửa (INACTIVE)</option>
-            </select>
-            <br /><br />
-        </div>
+            <br />
 
-        <button type="submit" th:text="${warehouse == null ? 'Tạo Mới' : 'Lưu Thay Đổi'}"></button>
-    </form>
+            <!-- Địa chỉ -->
+            <div>
+                <label for="address">Địa chỉ <span style="color:red;">*</span></label><br />
+                <textarea id="address" th:field="*{address}" rows="3" cols="40"
+                    placeholder="Nhập địa chỉ kho"></textarea>
+                <span th:if="${#fields.hasErrors('address')}" th:errors="*{address}" style="color:red;"></span>
+            </div>
+
+            <br />
+
+            <!-- Người quản lý -->
+            <div>
+                <label for="managerUserId">Người quản lý <span style="color:red;">*</span></label><br />
+                <select id="managerUserId" th:field="*{managerUserId}">
+                    <option value="">-- Chọn người quản lý --</option>
+                    <option th:each="entry : ${staffUsers}" th:value="${entry.key}" th:text="${entry.value}">
+                    </option>
+                </select>
+                <span th:if="${#fields.hasErrors('managerUserId')}" th:errors="*{managerUserId}"
+                    style="color:red;"></span>
+            </div>
+
+            <br />
+
+            <!-- Nút hành động -->
+            <div>
+                <button type="submit" th:text="${mode == 'update'} ? 'Cập nhật' : 'Thêm mới'">Lưu</button>
+                <a href="/warehouses">Hủy</a>
+            </div>
+
+        </form>
+
+    </th:block>
 </body>
 
 </html>

@@ -1,51 +1,76 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/manager-layout}">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Danh Sách Zones</title>
+    <title>Danh sách Khu vực lưu trữ</title>
 </head>
 
 <body>
-    <h1>Danh Sách Khu Vực (Zone) - Trong Kho ID: <span th:text="${warehouseId}"></span></h1>
-    <a th:href="@{/warehouse/warehouses/list}">Trở Về Danh Sách Kho</a> |
-    <a th:href="@{/wh/{id}(id=${warehouseId})}">Trở Về Dashboard</a>
-    <hr />
+    <th:block layout:fragment="content">
 
-    <h2>Thêm Zone Mới</h2>
-    <form th:action="@{/warehouse/zones/create}" method="post">
-        <input type="hidden" name="warehouseId" th:value="${warehouseId}" />
-        <label>Tên Zone:</label> <input type="text" name="name" required /> <br />
-        <label>Chuyên Môn Hóa (Loại Asset ID - Bỏ trống nếu không Fix):</label> <input type="number"
-            name="assignedAssetTypeId" /> <br />
-        <label>Sức Chứa Lớn Nhất (Capacity):</label> <input type="number" name="maxCapacity" required value="100" />
-        <br />
-        <button type="submit">Tạo Mới</button>
-    </form>
+        <h1>QUẢN LÝ KHU VỰC LƯU TRỮ (ZONE)</h1>
 
-    <hr />
-    <h2>Các Zone Hiện Tại</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Zone ID</th>
-                <th>Tên Zone</th>
-                <th>Loại Asset Yêu Cầu</th>
-                <th>Tình Trạng Chứa</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="z : ${zones}">
-                <td th:text="${z.id}"></td>
-                <td th:text="${z.name}"></td>
-                <td th:text="${z.assignedAssetTypeId != null ? z.assignedAssetTypeId : 'Tự Do (All)'}"></td>
-                <td><span th:text="${z.currentCapacity}"></span> / <span th:text="${z.maxCapacity}"></span></td>
-            </tr>
-            <tr th:if="${zones.empty}">
-                <td colspan="4">Không có Zone nào được cấu hình trong kho này.</td>
-            </tr>
-        </tbody>
-    </table>
+        <!-- Thông báo -->
+        <div th:if="${successMessage}">
+            <p th:text="${successMessage}" style="color:green;"></p>
+        </div>
+        <div th:if="${errorMessage}">
+            <p th:text="${errorMessage}" style="color:red;"></p>
+        </div>
+
+        <!-- Nút thêm mới -->
+        <p>
+            <a th:href="@{'/wh/' + ${userId} + '/zones/add'}">+ Thêm khu vực mới</a>
+        </p>
+
+        <!-- Bảng danh sách -->
+        <table border="1" cellpadding="6" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên khu vực</th>
+                    <th>Loại tài sản</th>
+                    <th>Sức chứa hiện tại</th>
+                    <th>Sức chứa tối đa</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="z : ${zones}">
+                    <td th:text="${z.id}"></td>
+                    <td th:text="${z.name}"></td>
+                    <td th:text="${z.assignedAssetTypeName} ?: 'Tất cả loại'"></td>
+                    <td th:text="${z.currentCapacity}"></td>
+                    <td th:text="${z.maxCapacity}"></td>
+                    <td th:text="${z.status}"></td>
+                    <td>
+                        <!-- Chi tiết -->
+                        <a th:href="@{'/wh/' + ${userId} + '/zones/' + ${z.id}}">Chi tiết</a>
+                        |
+                        <!-- Sửa -->
+                        <a th:href="@{'/wh/' + ${userId} + '/zones/' + ${z.id} + '/edit'}">Sửa</a>
+                        |
+                        <!-- Đổi trạng thái -->
+                        <form th:if="${z.active}" th:action="@{'/wh/' + ${userId} + '/zones/' + ${z.id} + '/deactive'}"
+                            method="post" style="display:inline;" onsubmit="return confirm('Vô hiệu hóa khu vực này?')">
+                            <button type="submit">Vô hiệu hóa</button>
+                        </form>
+                        <form th:unless="${z.active}"
+                            th:action="@{'/wh/' + ${userId} + '/zones/' + ${z.id} + '/active'}" method="post"
+                            style="display:inline;" onsubmit="return confirm('Kích hoạt khu vực này?')">
+                            <button type="submit">Kích hoạt</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(zones)}">
+                    <td colspan="7" style="text-align:center;">Chưa có khu vực lưu trữ nào</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </th:block>
 </body>
 
 </html>

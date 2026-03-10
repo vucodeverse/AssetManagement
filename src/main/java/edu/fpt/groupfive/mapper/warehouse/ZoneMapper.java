@@ -1,35 +1,20 @@
 package edu.fpt.groupfive.mapper.warehouse;
 
-import edu.fpt.groupfive.dto.warehouse.ZoneResponse;
+import edu.fpt.groupfive.dto.warehouse.request.ZoneRequestDto;
+import edu.fpt.groupfive.dto.warehouse.response.ZoneResponseDto;
 import edu.fpt.groupfive.model.warehouse.Zone;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@Component
-public class ZoneMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface ZoneMapper {
 
-    public ZoneResponse toResponse(Zone zone) {
-        if (zone == null)
-            return null;
-        return ZoneResponse.builder()
-                .id(zone.getId())
-                .warehouseId(zone.getWarehouseId())
-                .name(zone.getName())
-                .assignedAssetTypeId(zone.getAssignedAssetTypeId())
-                .maxCapacity(zone.getMaxCapacity())
-                .currentCapacity(zone.getCurrentCapacity())
-                .build();
-    }
+    Zone toEntity(ZoneRequestDto dto);
 
-    public List<ZoneResponse> toResponseList(List<Zone> zones) {
-        if (zones == null)
-            return new ArrayList<>();
-        List<ZoneResponse> list = new ArrayList<>();
-        for (Zone zone : zones) {
-            list.add(toResponse(zone));
-        }
-        return list;
-    }
+    ZoneResponseDto toResp(Zone entity);
+
+    List<ZoneResponseDto> toListResp(List<Zone> zones);
 }

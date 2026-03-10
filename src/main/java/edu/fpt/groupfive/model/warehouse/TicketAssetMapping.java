@@ -1,16 +1,16 @@
 package edu.fpt.groupfive.model.warehouse;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@Builder
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class TicketAssetMapping {
-    private Integer id;
     private Integer detailId;
     private Integer assetId;
+    private Integer qcReportId;
+    private LocalDateTime updatedAt;
 }
