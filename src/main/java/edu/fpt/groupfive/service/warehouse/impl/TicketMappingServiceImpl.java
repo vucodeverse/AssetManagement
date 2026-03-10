@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.service.impl.warehouse;
+package edu.fpt.groupfive.service.warehouse.impl;
 
 import edu.fpt.groupfive.model.warehouse.HandleStatus;
 import edu.fpt.groupfive.dao.AssetDAO;

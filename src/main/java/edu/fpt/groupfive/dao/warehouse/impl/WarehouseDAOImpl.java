@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.dao.impl.warehouse;
+package edu.fpt.groupfive.dao.warehouse.impl;
 
 import edu.fpt.groupfive.dao.warehouse.WarehouseDAO;
 import edu.fpt.groupfive.model.warehouse.ActiveStatus;

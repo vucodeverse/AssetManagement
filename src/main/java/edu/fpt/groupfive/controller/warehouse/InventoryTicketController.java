@@ -6,7 +6,7 @@ import edu.fpt.groupfive.model.warehouse.InventoryTicket;
 import edu.fpt.groupfive.model.warehouse.TicketDetail;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.warehouse.InventoryTicketService;
-import edu.fpt.groupfive.service.warehouse.WarehouseService;
+import edu.fpt.groupfive.service.warehouse.impl.WarehouseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import edu.fpt.groupfive.service.warehouse.TicketMappingService;
-import edu.fpt.groupfive.service.warehouse.WarehouseService;
 
 @Controller
 @RequestMapping("/wh/{userId}/tickets")

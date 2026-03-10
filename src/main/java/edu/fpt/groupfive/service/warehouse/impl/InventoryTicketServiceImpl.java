@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.service.impl.warehouse;
+package edu.fpt.groupfive.service.warehouse.impl;
 
 import edu.fpt.groupfive.dao.warehouse.InventoryTicketDAO;
 import edu.fpt.groupfive.dao.warehouse.TicketDetailDAO;
