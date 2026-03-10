@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("/wh/{userId}")
+@RequestMapping("/wh")
 @RequiredArgsConstructor
 public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @GetMapping
+    @GetMapping("/{userId}")
     public String dashboard(@PathVariable("userId") Integer userId, Model model,
             RedirectAttributes redirectAttributes) {
         try {
