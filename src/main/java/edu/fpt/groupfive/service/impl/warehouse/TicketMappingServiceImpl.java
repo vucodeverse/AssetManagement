@@ -114,8 +114,8 @@ public class TicketMappingServiceImpl implements TicketMappingService {
             zoneDAO.batchDecreaseCapacityByTicketId(ticketId);
             assetLocationDAO.deleteByTicketId(ticketId);
         }
-        ticket.setStatus(HandleStatus.COMPLETED);
-        inventoryTicketDAO.updateStatus(ticketId, HandleStatus.COMPLETED);
+        ticket.setStatus(HandleStatus.COMPLETE);
+        inventoryTicketDAO.updateStatus(ticketId, HandleStatus.COMPLETE);
     }
 
     @Override
