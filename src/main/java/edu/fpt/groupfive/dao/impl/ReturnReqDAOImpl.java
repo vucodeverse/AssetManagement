@@ -20,7 +20,7 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
     @Override
     public Integer insert(ReturnRequest request) {
         String query = """
-                INSERT INTO allocation_request
+                INSERT INTO return_request
                 (requester_id, requested_department_id,
                  request_date, reason, status)
                 VALUES (?, ?, ?, ?, ?)

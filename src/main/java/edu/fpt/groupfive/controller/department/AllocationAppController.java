@@ -28,6 +28,17 @@ public class AllocationAppController {
     @PostMapping("/approve/{id}")
     public String approveRequest(@PathVariable("id") Integer id) {
 
+        /*
+         try {
+            allocationRequestService.updateStatus(id, "APPROVED", 6, null); // 6 là id AM mẫu
+            redirectAttributes.addFlashAttribute("message", "Duyệt yêu cầu thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/asset-manager/allocation-request/listbyAssetMgr";
+    }
+         */
+
         allocationRequestService.updateStatus(
                 id,
                 "APPROVED",
@@ -39,7 +50,17 @@ public class AllocationAppController {
 
     @PostMapping("/reject/{id}")
     public String rejectRequest(@PathVariable("id") Integer id,
-            @RequestParam("reasonReject") String reasonReject) {
+                                @RequestParam("reasonReject") String reasonReject) {
+
+        /*
+        try {
+            allocationRequestService.updateStatus(id, "REJECTED", 6, reasonReject);
+            redirectAttributes.addFlashAttribute("message", "Đã từ chối yêu cầu!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/asset-manager/allocation-request/listbyAssetMgr";
+         */
 
         allocationRequestService.updateStatus(
                 id,

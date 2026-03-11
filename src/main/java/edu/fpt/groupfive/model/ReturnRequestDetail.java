@@ -11,6 +11,6 @@ import lombok.*;
 public class ReturnRequestDetail {
     private Integer requestDetailId;
     private Integer requestId;
-    private Integer assetTypeId;
+    private Integer assetId;
     private String note;
 }

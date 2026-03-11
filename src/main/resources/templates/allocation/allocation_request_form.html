@@ -49,7 +49,9 @@
                             <option value="HIGH">Cao</option>
                         </select>
 
-                        <input type="hidden" th:if="${canEdit != null && !canEdit}" name="priority"
+                        <input type="hidden"
+                               th:if="${canEdit != null && !canEdit}"
+                               name="priority"
                             th:value="*{priority}" />
                     </div>
 
@@ -63,21 +65,24 @@
                     </div>
 
                     <!-- created date -->
-                    <div class="form-group" th:if="${requestDto.createdAt != null}">
+                    <div class="form-group"
+                         th:if="${requestDto.requestId != null && !canEdit}">
                         <label>NGÀY TẠO</label>
                         <input type="text" readonly
                             th:value="${#temporals.format(requestDto.createdAt, 'dd-MM-yyyy HH:mm')}" />
                     </div>
 
                     <!-- approver by am -->
-                    <div class="form-group" th:if="${requestDto.amApprovedBy != null}">
+                    <div class="form-group"
+                         th:if="${requestDto.requestId != null && requestDto.amApprovedBy != null && !canEdit}">
                         <label>NGƯỜI DUYỆT</label>
                         <input type="text" readonly style="background-color: #f7f9fa; border: 1px solid #dfe3e8;"
                             th:value="${requestDto.amApprovedBy}" />
                     </div>
 
                     <!-- approved date -->
-                    <div class="form-group" th:if="${requestDto.amApprovedAt != null}">
+                    <div class="form-group"
+                         th:if="${requestDto.requestId != null && requestDto.amApprovedAt != null && !canEdit}">
                         <label>NGÀY DUYỆT</label>
                         <input type="text" readonly style="background-color: #f7f9fa; border: 1px solid #dfe3e8;"
                             th:value="${#temporals.format(requestDto.amApprovedAt, 'dd-MM-yyyy HH:mm')}" />
@@ -85,7 +90,7 @@
 
                     <!-- reject reason -->
                     <div class="form-group full-width"
-                         th:if="${requestDto.reasonReject != null}">
+                         th:if="${requestDto.requestId != null && requestDto.reasonReject != null && !canEdit}">
                         <label>LÝ DO TỪ CHỐI</label>
                         <input type="text" readonly
                             style="background-color: #fce4e4; border: 1px solid #f5c6cb; color: #721c24;"

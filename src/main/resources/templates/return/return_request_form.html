@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Tạo yêu cầu trả</title>
+
+    <link rel="stylesheet" th:href="@{/css/allocation/allocation-request-form.css}">
+</head>
+
+<body>
+
+<div class="pr-container">
+
+    <!-- HEADER -->
+    <header class="pr-header">
+        <h1>Tạo yêu cầu trả tài sản</h1>
+    </header>
+
+
+    <!-- FORM -->
+    <form th:action="@{/department/return-request/save}"
+          th:object="${requestDto}"
+          method="post">
+
+
+        <!-- ================= THÔNG TIN CHUNG ================= -->
+        <section class="form-section">
+
+            <div class="section-title">THÔNG TIN CHUNG</div>
+
+            <div class="form-grid">
+
+                <!-- reason -->
+                <div class="form-group full-width">
+                    <label>LÝ DO TRẢ TÀI SẢN</label>
+
+                    <input type="text"
+                           th:field="*{requestReason}"
+                           placeholder="VD: Thiết bị hỏng"
+                           required/>
+                </div>
+
+            </div>
+
+            <!-- hidden data -->
+            <input type="hidden" name="requesterId" value="1"/>
+            <input type="hidden" name="requestedDepartmentId" value="2"/>
+
+        </section>
+
+
+        <!-- ================= DANH SÁCH TÀI SẢN ================= -->
+        <section class="form-section">
+
+            <div class="section-title">DANH SÁCH TÀI SẢN</div>
+
+            <div class="table-container">
+
+                <table class="pr-table" id="itemTable">
+
+                    <thead>
+                    <tr>
+                        <th>TÀI SẢN</th>
+                        <th>GHI CHÚ</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <tr class="item-row">
+
+                        <!-- asset -->
+                        <td>
+                            <select name="details[0].assetId"
+                                    class="table-input"
+                                    required>
+                                <option value="" hidden>-- Chọn tài sản --</option>
+
+                                <option value="1">
+                                    Laptop Dell Latitude 5440
+                                </option>
+
+                                <option value="2">
+                                    Máy in HP LaserJet Pro
+                                </option>
+
+                                <option value="3">
+                                    iPhone 14
+                                </option>
+
+                                <option value="4">
+                                    Dell UltraSharp U2723QE
+                                </option>
+
+                            </select>
+                        </td>
+
+
+                        <!-- note -->
+                        <td>
+                            <input type="text"
+                                   name="details[0].note"
+                                   class="table-input"
+                                   placeholder="Ghi chú"/>
+                        </td>
+
+
+                        <!-- remove -->
+                        <td>
+                            <button type="button"
+                                    class="btn-remove"
+                                    onclick="removeRow(this)">
+                                ×
+                            </button>
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+
+                <button type="button"
+                        class="btn-add-row"
+                        onclick="addRow()">
+
+                    + Thêm dòng
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= FOOTER ================= -->
+        <footer class="pr-footer">
+
+            <div class="footer-left">
+
+                <a th:href="@{/department/return-request/list}"
+                   class="btn btn-back-custom">
+
+                    <- Quay lại
+
+                </a>
+
+            </div>
+
+
+            <div class="footer-right">
+
+                <button type="reset"
+                        class="btn btn-reset-custom">
+
+                    Nhập lại
+
+                </button>
+
+
+                <button type="submit"
+                        class="btn btn-submit-custom">
+
+                    Gửi yêu cầu
+
+                </button>
+
+            </div>
+
+        </footer>
+
+    </form>
+
+</div>
+
+
+<script>
+
+    function addRow() {
+
+        const tbody = document.querySelector("#itemTable tbody");
+
+        const rowCount = tbody.rows.length;
+
+        const template = tbody.querySelector("tr");
+
+        const newRow = template.cloneNode(true);
+
+        newRow.querySelectorAll("select, input").forEach((input) => {
+
+            if (input.name.includes("assetId"))
+                input.name = `details[${rowCount}].assetId`;
+
+            if (input.name.includes("note"))
+                input.name = `details[${rowCount}].note`;
+
+            if (input.tagName === "SELECT")
+                input.selectedIndex = 0;
+
+            if (input.type === "text")
+                input.value = "";
+
+        });
+
+        tbody.appendChild(newRow);
+    }
+
+
+    function reIndex() {
+
+        const rows = document.querySelectorAll("#itemTable tbody tr");
+
+        rows.forEach((row, index) => {
+
+            row.querySelectorAll("select, input").forEach(input => {
+
+                if (input.name.includes("assetId"))
+                    input.name = `details[${index}].assetId`;
+
+                if (input.name.includes("note"))
+                    input.name = `details[${index}].note`;
+
+            });
+
+        });
+
+    }
+
+
+    function removeRow(btn) {
+
+        const tbody = document.querySelector("#itemTable tbody");
+
+        if (tbody.rows.length > 1) {
+
+            btn.closest("tr").remove();
+
+            reIndex();
+
+        }
+
+    }
+
+</script>
+
+</body>
+</html>

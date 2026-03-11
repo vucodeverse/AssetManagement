@@ -17,6 +17,7 @@ public class AllocationRequestResponse {
     private Integer requestedDepartmentId;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate neededByDate;
+    //fix sau
     private String requesterName;
     private String requestedDepartmentName;
     private String priority;

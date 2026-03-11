@@ -29,7 +29,7 @@ public class ReturnReqDetailDAOImpl implements ReturnReqDetailDAO {
             for (ReturnRequestDetail detail : details) {
                 // ID lấy từ bảng cha vừa insert
                 ps.setInt(1, requestId);
-                ps.setInt(2, detail.getAssetTypeId());
+                ps.setInt(2, detail.getAssetId());
                 ps.setString(3, detail.getNote());
 
                 // Thêm vào hàng đợi xử lý

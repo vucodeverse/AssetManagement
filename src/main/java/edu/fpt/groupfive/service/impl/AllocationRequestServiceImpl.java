@@ -41,13 +41,13 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
 
         AllocationRequestResponse response = allocationRequestMapper.toResponse(req);
 
-        if (response.getAmApprovedBy() != null) {
-            userDao.findById(response.getAmApprovedBy()).ifPresent(u -> {
-                String fullName = (u.getFirstName() != null ? u.getFirstName() : "") + " " +
-                        (u.getLastName() != null ? u.getLastName() : "");
-                response.setAmApprovedName(fullName.trim());
-            });
-        }
+//        if (response.getAmApprovedBy() != null) {
+//            userDao.findById(response.getAmApprovedBy()).ifPresent(u -> {
+//                String fullName = (u.getFirstName() != null ? u.getFirstName() : "") + " " +
+//                        (u.getLastName() != null ? u.getLastName() : "");
+//                response.setAmApprovedName(fullName.trim());
+//            });
+//        }
 
         List<AllocationRequestDetail> details = allocationReqDetailDao.findByRequestId(id);
 
@@ -117,6 +117,7 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
         if (req == null) {
             throw new RuntimeException("Yêu cầu không tồn tại!");
         }
+
         if (!"PENDING_AM".equals(req.getStatus())) {
             throw new RuntimeException("Chỉ được xóa khi ở trạng thái PENDING_AM!");
         }
@@ -127,6 +128,21 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
 
     @Override
     public void updateStatus(Integer id, String status, Integer amApprovedBy, String reasonReject) {
+
+        // 1. Kiểm tra xem request có tồn tại không
+        AllocationRequest req = allocationReqDao.findById(id);
+
+        if (req == null) {
+            throw new RuntimeException("Yêu cầu cấp phát không tồn tại!");
+        }
+
+        // 2. Kiểm tra trạng thái hiện tại. Nếu KHÔNG PHẢI là "PENDING_AM" (nghĩa là đã APPROVED hoặc REJECTED rồi)
+        // thì ném ra lỗi, block không cho cập nhật nữa
+        if (!"PENDING_AM".equals(req.getStatus())) {
+            throw new RuntimeException("Yêu cầu này đã được xử lý (Chấp nhận/Từ chối) " +
+                    "trước đó, không thể thay đổi trạng thái!");
+        }
+
         allocationReqDao.updateStatus(id, status, amApprovedBy, reasonReject);
     }
 
