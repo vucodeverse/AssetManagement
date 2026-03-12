@@ -18,6 +18,12 @@
 
     <!-- header-->
     <header class="page-header">
+
+<!--        error msg-->
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
+
         <h1 class="page-title">DANH SÁCH TÀI SẢN</h1>
 
         <a th:href="@{/manager/assets/create}" class="btn-add">
@@ -32,7 +38,7 @@
             <label>Tìm kiếm</label>
             <input type="text"
                    name="keyword"
-                   placeholder="Tên hoặc Serial"
+                   placeholder="Tên tài sản"
                    th:value="${keyword}">
         </div>
 
@@ -98,7 +104,6 @@
             <tr>
                 <th>Mã tài sản</th>
                 <th>Tên tài sản</th>
-                <th>Serial</th>
                 <th>Loại</th>
                 <th>Trạng thái</th>
                 <th>Giá</th>
@@ -114,8 +119,6 @@
                 <td th:text="${asset.assetId}"></td>
 
                 <td th:text="${asset.assetName}"></td>
-
-                <td th:text="${asset.serialNumber}"></td>
 
                 <td th:text="${asset.assetTypeName}"></td>
 

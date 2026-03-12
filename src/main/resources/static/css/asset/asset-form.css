@@ -63,3 +63,17 @@
     border:none;
     cursor:pointer;
 }
+.error{
+    color:red;
+    font-size:13px;
+    margin-top:4px;
+    display:block;
+}
+
+.error-message{
+    background:#ffe5e5;
+    color:#d60000;
+    padding:10px;
+    border-radius:6px;
+    margin-bottom:15px;
+}

@@ -17,7 +17,6 @@ public class Asset {
 
     private Integer assetId;
     private String assetName;
-    private String serialNumber;
     private Integer assetTypeId;
     private  Integer purchaseOrderDetailId;
     private AssetStatus currentStatus;

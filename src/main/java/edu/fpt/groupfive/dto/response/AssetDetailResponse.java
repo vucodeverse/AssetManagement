@@ -15,7 +15,6 @@ public class AssetDetailResponse {
 
     private Integer assetId;
     private String assetName;
-    private String serialNumber;
     private Integer assetTypeId;
     private Integer purchaseOrderDetailId;
     private AssetStatus currentStatus;

@@ -60,26 +60,6 @@ public class AssetServiceImpl implements AssetService {
             throw new InvalidDataException("Số lượng phải >= 1");
         }
 
-        String serial = request.getSerialNumber();
-        if (serial != null) {
-            serial = serial.trim();
-            if (serial.isEmpty()) {
-                serial = null;
-            }
-        }
-//nếu nhập nhiều ts thì ko cho nhập serial
-        if (quantity > 1 && serial != null) {
-            throw new InvalidDataException(
-                    "Không thể nhập cùng serial cho nhiều tài sản"
-            );
-        }
-
-//nếu tạo 1 ts v có serial thì phải check trùng serial
-        if (quantity == 1 && serial != null) {
-            if (assetDAO.existsBySerial(serial)) {
-                throw new InvalidDataException("Serial đã tồn tại");
-            }
-        }
 
         //  Validate assetType
         AssetType type = assetTypeDAO.findById(request.getAssetTypeId());
@@ -99,13 +79,10 @@ public class AssetServiceImpl implements AssetService {
 
 
         for (int i = 0; i < quantity; i++) {
-
             Asset asset = assetMapper.toAsset(request);
-            asset.setSerialNumber(serial);
             assetDAO.insert(asset);
 
         }
-
     }
 
     // update
@@ -117,14 +94,8 @@ public class AssetServiceImpl implements AssetService {
                 .orElseThrow(() ->
                         new InvalidDataException("Không tìm thấy tài sản với id = " + id));
 
-        // Nếu đổi serial → check trùng
-        if (request.getSerialNumber() != null &&
-                !request.getSerialNumber().equals(existing.getSerialNumber())) {
 
-            if (assetDAO.existsBySerial(request.getSerialNumber())) {
-                throw new InvalidDataException("Serial number đã tồn tại");
-            }
-        }
+
 
         // Validate assetType nếu có đổi
         if (request.getAssetTypeId() != null) {

@@ -27,7 +27,6 @@ public class AssetDAOImpl implements AssetDAO {
         String sql = """
                     INSERT INTO asset
                     (asset_name,
-                     serial_number,
                      purchase_order_detail_id,
                      current_status,
                      warranty_start_date,
@@ -35,24 +34,23 @@ public class AssetDAOImpl implements AssetDAO {
                      original_cost,
                      asset_type_id,
                      acquisition_date)
-                    VALUES (?,?,?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?,?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, asset.getAssetName());
-            ps.setString(2, asset.getSerialNumber());
-            ps.setInt(3, asset.getPurchaseOrderDetailId());
-            ps.setString(4, asset.getCurrentStatus().name());
+            ps.setInt(2, asset.getPurchaseOrderDetailId());
+            ps.setString(3, asset.getCurrentStatus().name());
 
-            setDate(ps, 5, asset.getWarrantyStartDate());
-            setDate(ps, 6, asset.getWarrantyEndDate());
+            setDate(ps, 4, asset.getWarrantyStartDate());
+            setDate(ps, 5, asset.getWarrantyEndDate());
 
-            setBigDecimal(ps, 7, asset.getOriginalCost());
+            setBigDecimal(ps, 6, asset.getOriginalCost());
 
-            ps.setInt(8, asset.getAssetTypeId());
+            ps.setInt(7, asset.getAssetTypeId());
 
-            setDate(ps, 9, asset.getAcquisitionDate());
+            setDate(ps, 8, asset.getAcquisitionDate());
 
             ps.executeUpdate();
 
@@ -67,7 +65,6 @@ public class AssetDAOImpl implements AssetDAO {
         String sql = """
                     UPDATE asset
                     SET asset_name = ?,
-                        serial_number = ?,
                         purchase_order_detail_id=?,
                         warranty_start_date = ?,
                         warranty_end_date = ?,
@@ -82,18 +79,17 @@ public class AssetDAOImpl implements AssetDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, asset.getAssetName());
-            ps.setString(2, asset.getSerialNumber());
-            ps.setInt(3, asset.getPurchaseOrderDetailId());
+            ps.setInt(2, asset.getPurchaseOrderDetailId());
 
-            setDate(ps, 4, asset.getWarrantyStartDate());
-            setDate(ps, 5, asset.getWarrantyEndDate());
-            setBigDecimal(ps, 6, asset.getOriginalCost());
+            setDate(ps, 3, asset.getWarrantyStartDate());
+            setDate(ps, 4, asset.getWarrantyEndDate());
+            setBigDecimal(ps, 5, asset.getOriginalCost());
 
-            ps.setInt(7, asset.getAssetTypeId());
-            ps.setString(8, asset.getCurrentStatus().name());
-            setDate(ps, 9, asset.getAcquisitionDate());
+            ps.setInt(6, asset.getAssetTypeId());
+            ps.setString(7, asset.getCurrentStatus().name());
+            setDate(ps, 8, asset.getAcquisitionDate());
 
-            ps.setInt(10, asset.getAssetId());
+            ps.setInt(9, asset.getAssetId());
 
             ps.executeUpdate();
 
@@ -178,21 +174,7 @@ public class AssetDAOImpl implements AssetDAO {
         return list;
     }
 
-    @Override
-    public boolean existsBySerial(String serialNumber) {
 
-        String sql = "SELECT 1 FROM asset WHERE serial_number = ?";
-
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, serialNumber);
-            return ps.executeQuery().next();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Kiểm tra mã serial tài sản thất bại", e);
-        }
-    }
 
     @Override
     public Optional<AssetDetailResponse> findDetailById(Integer id) {
@@ -234,7 +216,7 @@ public class AssetDAOImpl implements AssetDAO {
                     AssetDetailResponse dto = new AssetDetailResponse();
                     dto.setAssetId(rs.getInt("asset_id"));
                     dto.setAssetName(rs.getString("asset_name"));
-                    dto.setSerialNumber(rs.getString("serial_number"));
+
                     dto.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
                     dto.setOriginalCost(rs.getBigDecimal("original_cost"));
 
@@ -275,7 +257,7 @@ public class AssetDAOImpl implements AssetDAO {
         """);
 
         if(keyword!=null &&!keyword.isBlank()){
-            sql.append(" and ( a.asset_name like ? or a.serial_number like ? )");
+            sql.append(" and a.asset_name like ? ");
         }
         if(status!=null){
             sql.append(" and a.current_status = ? ");
@@ -315,7 +297,6 @@ public class AssetDAOImpl implements AssetDAO {
            int index=1;
 
            if(keyword !=null && !keyword.isBlank()){
-               ps.setString(index++, "%" +keyword +"%");
                ps.setString(index++, "%" +keyword +"%");
            }
 
@@ -357,10 +338,7 @@ public class AssetDAOImpl implements AssetDAO {
         """);
 
         if (keyword != null && !keyword.isBlank()) {
-            sql.append("""
-                    AND (a.asset_name LIKE ?
-                    OR a.serial_number LIKE ?)
-                    """);
+            sql.append(" AND a.asset_name LIKE ? ");
         }
 
         if (status != null) {
@@ -381,7 +359,6 @@ public class AssetDAOImpl implements AssetDAO {
             int index = 1;
 
             if (keyword != null && !keyword.isBlank()) {
-                ps.setString(index++, "%" + keyword + "%");
                 ps.setString(index++, "%" + keyword + "%");
             }
 
@@ -417,7 +394,6 @@ public class AssetDAOImpl implements AssetDAO {
 
         asset.setAssetId(rs.getInt("asset_id"));
         asset.setAssetName(rs.getString("asset_name"));
-        asset.setSerialNumber(rs.getString("serial_number"));
         asset.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
         asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
 

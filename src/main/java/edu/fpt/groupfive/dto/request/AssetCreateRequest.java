@@ -18,10 +18,9 @@ public class AssetCreateRequest {
     @NotBlank(message = "Không được để trống tên tài sản")
     private String assetName;
 
-    @Min(1)
+    @Min(value = 1, message = "Số lượng phải >= 1")
     private Integer quantity;
 
-    private String serialNumber;
 
     private Integer purchaseOrderDetailId;
 
@@ -29,6 +28,7 @@ public class AssetCreateRequest {
     private Integer assetTypeId;
 
     @NotNull(message = "Không được để trống nguyên giá")
+    @Min(value = 1000, message = "Nguyên giá tối thiểu 1000")
     private BigDecimal originalCost;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -37,6 +37,7 @@ public class AssetCreateRequest {
     private LocalDate warrantyEndDate;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate acquisitionDate;
+
     @NotNull(message = "Không được để trống trạng thái tài sản")
     private AssetStatus currentStatus;
 }

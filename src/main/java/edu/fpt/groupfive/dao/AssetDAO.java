@@ -20,7 +20,6 @@ public interface AssetDAO {
 
     List<Asset> findAll();
 
-    boolean existsBySerial(String serialNumber);
 
     Optional<AssetDetailResponse> findDetailById(Integer id);
     List<Asset> searchAssets(

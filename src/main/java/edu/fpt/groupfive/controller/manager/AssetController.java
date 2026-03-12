@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,10 +43,10 @@ public class AssetController {
             @RequestParam(name = "page", defaultValue = "1") int page,
             Model model) {
 
-        var result= assetService.searchAssets(keyword,status,fromDate,toDate,direction,page);
+        var result = assetService.searchAssets(keyword, status, fromDate, toDate, direction, page);
 
         model.addAttribute("assets", result.getContent());
-       model.addAttribute("page", result);
+        model.addAttribute("page", result);
 
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
@@ -61,19 +62,18 @@ public class AssetController {
 
 
     @GetMapping("detail/{id}")
-    public String detail(@PathVariable("id") Integer id, Model model) {
+    public String detail(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
         try {
+
             AssetDetailResponse asset = assetService.getDetailById(id);
             model.addAttribute("asset", asset);
             model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-detail";
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
+        } catch (InvalidDataException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/manager/assets";
         }
     }
-
-
 
 
     @GetMapping("/create")
@@ -123,16 +123,16 @@ public class AssetController {
 
     //edit form
     @GetMapping("/edit/{id}")
-    public String showEdit(@PathVariable("id") Integer id, Model model) {
+    public String showEdit(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
 
         try {
             AssetResponse asset = assetService.getById(id);
 
             AssetUpdateRequest request = new AssetUpdateRequest();
+
             request.setAssetId(asset.getAssetId());
             request.setAssetName(asset.getAssetName());
             request.setPurchaseOrderDetailId(asset.getPurchaseOrderDetailId());
-            request.setSerialNumber(asset.getSerialNumber());
             request.setWarrantyStartDate(asset.getWarrantyStartDate());
             request.setCurrentStatus(AssetStatus.valueOf(asset.getCurrentStatus()));
             request.setWarrantyEndDate(asset.getWarrantyEndDate());
@@ -148,8 +148,8 @@ public class AssetController {
             model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-form";
 
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
+        } catch (InvalidDataException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/manager/assets";
         }
     }
@@ -175,23 +175,32 @@ public class AssetController {
         try {
             request.setAssetId(id);
             assetService.update(id, request);
-        } catch (Exception e) {
+            return "redirect:/manager/assets";
+        } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("assetTypes", assetTypeService.getAll());
             model.addAttribute("orders", orderService.getAllOrderDetails());
             model.addAttribute("statuses", AssetStatus.values());
             model.addAttribute("isEdit", true);
             model.addAttribute("activeMenu", "asset");
+
             return "manager/asset/asset-form";
         }
-
-        return "redirect:/manager/assets";
     }
 
 
     @PostMapping("/delete/{id}")
-    public String delete(@PathVariable("id") Integer id) {
-        assetService.delete(id);
+    public String delete(@PathVariable("id") Integer id,
+                         RedirectAttributes redirectAttributes) {
+
+        try{
+            assetService.delete(id);
+        } catch (InvalidDataException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+
+        }
         return "redirect:/manager/assets";
     }
+
+
 }
