@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{/layout/manager-layout}">
+    layout:decorate="~{/layout/warehouse-layout}">
 
 <head>
     <title>Tổng Quan Kho Hệ Thống</title>
@@ -150,19 +150,19 @@
             <div class="stat-card">
                 <h3>Khu Vực Lưu Trữ (Zone)</h3>
                 <p class="value" th:text="${metrics.activeZones} + ' / ' + ${metrics.totalZones}"></p>
-                <div style="font-size: 12px; color: #888; mt-2">Zone đang hoạt động / Tổng số</div>
+                <div style="font-size: 12px; color: #888; margin-top: 8px;">Zone đang hoạt động / Tổng số</div>
             </div>
 
             <div class="stat-card success">
                 <h3>Không Gian Lưu Trữ (Tài Sản)</h3>
                 <p class="value" th:text="${metrics.usedCapacity} + ' / ' + ${metrics.totalCapacity}"></p>
-                <div style="font-size: 12px; color: #888; mt-2">Đã dùng / Sức chứa tối đa</div>
+                <div style="font-size: 12px; color: #888; margin-top: 8px;">Đã dùng / Sức chứa tối đa</div>
             </div>
 
             <div class="stat-card warning">
                 <h3>Phiếu Cần Xử Lý</h3>
                 <p class="value" th:text="${metrics.pendingTicketsCount}"></p>
-                <div style="font-size: 12px; color: #888; mt-2">Phiếu mới nhận hoặc đang chờ</div>
+                <div style="font-size: 12px; color: #888; margin-top: 8px;">Phiếu mới nhận hoặc đang chờ</div>
             </div>
         </div>
 

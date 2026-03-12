@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{/layout/manager-layout}">
+    layout:decorate="~{/layout/warehouse-layout}">
 
 <head>
     <title>Chi Tiết Phiếu Kho</title>
@@ -50,7 +50,7 @@
             </thead>
             <tbody>
                 <tr th:each="d : ${details}">
-                    <td th:text="${assetTypeMap[d.assetTypeId]}"></td>
+                    <td th:text="${d.assetTypeName}"></td>
                     <td th:text="${d.quantity}"></td>
                     <td th:text="${d.note}"></td>
                 </tr>
