@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <aside th:fragment="sidebar(activeMenu, userId)" class="sidebar">
+        <div class="sidebar-logo">
+            <i class="fas fa-warehouse"></i> <span>Quản Lý Kho</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a th:href="@{'/wh/' + ${userId}}" th:classappend="${activeMenu == 'dashboard'} ? 'active' : ''"
+                class="nav-item">
+                <i class="fas fa-th-large"></i> TỔNG QUAN
+            </a>
+
+            <a th:href="@{'/wh/' + ${userId} + '/zones'}" th:classappend="${activeMenu == 'zone'} ? 'active' : ''"
+                class="nav-item">
+                <i class="fas fa-layer-group"></i> QUẢN LÝ KHU VỰC
+            </a>
+
+            <a th:href="@{'/wh/' + ${userId} + '/tickets'}" th:classappend="${activeMenu == 'ticket'} ? 'active' : ''"
+                class="nav-item">
+                <i class="fas fa-file-invoice"></i> PHIẾU NHẬP/XUẤT
+            </a>
+
+            <div style="margin-top: 2rem; padding: 0 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                <a th:href="@{/manager/dashboard}" class="nav-item">
+                    <i class="fas fa-arrow-left"></i> VỀ QUẢN TRỊ CHÍNH
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" th:text="${#strings.substring(session.user?.fullName ?: 'W', 0, 1)}">W</div>
+            <div class="user-info">
+                <span class="user-name" th:text="${session.user?.fullName ?: 'Thủ Kho'}">Thủ Kho</span>
+                <span class="user-role">Quản lý kho hàng</span>
+                <a th:href="@{/logout}" class="logout-link">ĐĂNG XUẤT</a>
+            </div>
+        </div>
+    </aside>
+</body>
+
+</html>
