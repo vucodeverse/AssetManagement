@@ -41,13 +41,6 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
 
         AllocationRequestResponse response = allocationRequestMapper.toResponse(req);
 
-//        if (response.getAmApprovedBy() != null) {
-//            userDao.findById(response.getAmApprovedBy()).ifPresent(u -> {
-//                String fullName = (u.getFirstName() != null ? u.getFirstName() : "") + " " +
-//                        (u.getLastName() != null ? u.getLastName() : "");
-//                response.setAmApprovedName(fullName.trim());
-//            });
-//        }
 
         List<AllocationRequestDetail> details = allocationReqDetailDao.findByRequestId(id);
 
@@ -82,6 +75,7 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
 
     @Override
     public void updateRequest(Integer id, AllocationRequestCreateRequest dto) {
+
         AllocationRequest req = allocationReqDao.findById(id);
 
         if (req == null) {

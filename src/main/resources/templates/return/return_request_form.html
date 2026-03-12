@@ -22,9 +22,9 @@
 
 
     <!-- FORM -->
-    <form th:action="@{/department/return-request/save}"
-          th:object="${requestDto}"
-          method="post">
+    <form th:action="@{${requestDto.requestId != null
+            ? '/department/return-request/update/' + requestDto.requestId
+            : '/department/return-request/save'}}" th:object="${requestDto}" method="post">
 
 
         <!-- ================= THÔNG TIN CHUNG ================= -->
@@ -55,6 +55,9 @@
 
         <!-- ================= DANH SÁCH TÀI SẢN ================= -->
         <section class="form-section">
+
+            <input type="hidden"
+                   th:field="*{requestId}">
 
             <div class="section-title">DANH SÁCH TÀI SẢN</div>
 
@@ -92,6 +95,7 @@
                                    class="chkAsset"
                                    th:value="${a.assetId}"
                                    th:if="${canEdit}"
+                                   th:checked="${requestDto.requestId != null}"
                                    onchange="toggleRow(this)">
                         </td>
 
@@ -167,6 +171,8 @@
         rows.forEach(row => {
 
             const chk = row.querySelector(".chkAsset");
+
+            if (!chk) return;
 
             if (chk.checked) {
 

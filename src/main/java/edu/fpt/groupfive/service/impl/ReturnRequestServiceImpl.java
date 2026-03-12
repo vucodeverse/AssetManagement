@@ -59,6 +59,21 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
 
     @Override
     public void updateRequest(Integer id, ReturnRequestCreateRequest dto) {
+        ReturnRequest returnRequest = returnReqDAO.findById(id);
 
+        returnRequest.setRequestReason(dto.getRequestReason());
+
+        returnReqDAO.update(returnRequest);
+
+        returnReqDetailDAO.deleteByRequestId(id);
+
+        List<ReturnRequestDetail> details = returnRequestMapper
+                .toListReturnRequestDetail(dto.getDetails());
+
+        for (ReturnRequestDetail x : details) {
+            x.setRequestId(id);
+        }
+
+        returnReqDetailDAO.insertBatch(id, details);
     }
 }

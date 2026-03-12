@@ -86,7 +86,7 @@ public class ReturnRequestController {
 
         model.addAttribute("canEdit", true);
 
-        return "allocation/allocation_request_form";
+        return "return/return_request_form";
 
     }
 
@@ -105,7 +105,7 @@ public class ReturnRequestController {
                     "Cập nhật thành công!"
             );
 
-            return "redirect:/department/allocation-request/list";
+            return "redirect:/department/return-request/list";
 
         } catch (Exception e) {
 
@@ -114,7 +114,7 @@ public class ReturnRequestController {
                     e.getMessage()
             );
 
-            return "redirect:/department/allocation-request/edit/" + id;
+            return "redirect:/department/return-request/edit/" + id;
         }
     }
 }
