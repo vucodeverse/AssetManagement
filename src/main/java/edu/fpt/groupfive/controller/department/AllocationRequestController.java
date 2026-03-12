@@ -4,6 +4,7 @@ import edu.fpt.groupfive.dto.request.AllocationRequestCreateRequest;
 import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
 import edu.fpt.groupfive.model.AllocationRequest;
 import edu.fpt.groupfive.service.AllocationRequestService;
+import edu.fpt.groupfive.service.AssetTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,7 +18,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/department/allocation-request")
 public class AllocationRequestController {
+
     private final AllocationRequestService allocationRequestService;
+    private final AssetTypeService assetTypeService;
 
 
     /**
@@ -75,6 +78,8 @@ public class AllocationRequestController {
 
         model.addAttribute("requestDto", new AllocationRequestCreateRequest());
 
+        model.addAttribute("assetType", assetTypeService.getAll());
+
         model.addAttribute("canEdit", true);
 
         return "allocation/allocation_request_form";
@@ -111,6 +116,8 @@ public class AllocationRequestController {
 
         model.addAttribute("requestDto", dto);
 
+        model.addAttribute("assetType", assetTypeService.getAll());
+
         model.addAttribute("canEdit", true);
 
         return "allocation/allocation_request_form";
@@ -126,6 +133,8 @@ public class AllocationRequestController {
                 allocationRequestService.getRequestById(id);
 
         model.addAttribute("requestDto", dto);
+
+        model.addAttribute("assetType", assetTypeService.getAll());
 
         model.addAttribute("canEdit", false );
 
