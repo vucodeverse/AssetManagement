@@ -5,6 +5,7 @@ import edu.fpt.groupfive.dao.ReturnReqDetailDAO;
 import edu.fpt.groupfive.dao.impl.ReturnReqDAOImpl;
 import edu.fpt.groupfive.dto.request.ReturnRequestCreateRequest;
 import edu.fpt.groupfive.dto.request.ReturnRequestDetailRequest;
+import edu.fpt.groupfive.dto.response.ReturnRequestRespnse;
 import edu.fpt.groupfive.mapper.ReturnRequestMapper;
 import edu.fpt.groupfive.model.AllocationRequestDetail;
 import edu.fpt.groupfive.model.ReturnRequest;
@@ -25,13 +26,13 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
     private final ReturnRequestMapper returnRequestMapper;
 
     @Override
-    public List<ReturnRequest> getAllRequest(Integer departmentId) {
-        return returnReqDAO.findAll(departmentId);
+    public List<ReturnRequestRespnse> getAllRequest(Integer departmentId) {
+        return returnRequestMapper.toResponseList(returnReqDAO.findAll(departmentId));
     }
 
     @Override
-    public ReturnRequest getRequestById(Integer id) {
-        return returnReqDAO.findById(id);
+    public ReturnRequestRespnse getRequestById(Integer id) {
+        return  returnRequestMapper.toRespnse(returnReqDAO.findById(id));
     }
 
     @Override
@@ -54,5 +55,10 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
         }
 
         returnReqDetailDAO.insertBatch(generatedId, details);
+    }
+
+    @Override
+    public void updateRequest(Integer id, ReturnRequestCreateRequest dto) {
+
     }
 }

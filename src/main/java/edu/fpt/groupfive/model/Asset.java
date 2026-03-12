@@ -29,5 +29,7 @@ public class Asset {
 
     private String assetTypeName;
 
+    // Thêm cho truy vấn trả tài sản
+    private String note;
 
 }

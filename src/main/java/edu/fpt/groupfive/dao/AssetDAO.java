@@ -22,6 +22,8 @@ public interface AssetDAO {
 
     List<Asset> findAllByDepartmentId(Integer departmentId);
 
+    List<Asset> findByReturnRequestId(Integer requestId);
+
     Optional<AssetDetailResponse> findDetailById(Integer id);
     List<Asset> searchAssets(
             String keyword,

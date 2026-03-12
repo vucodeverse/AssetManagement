@@ -27,5 +27,7 @@ public class AssetResponse {
     private String assetTypeName;
     private LocalDate acquisitionDate;
 
+    private String note;
+
 
 }

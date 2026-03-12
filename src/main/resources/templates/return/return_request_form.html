@@ -14,7 +14,10 @@
 
     <!-- HEADER -->
     <header class="pr-header">
-        <h1>Tạo yêu cầu trả tài sản</h1>
+        <h1 th:text="${requestDto.requestId != null
+                ? (canEdit ? 'Sửa yêu cầu trả tài sản' : 'Chi tiết yêu cầu trả tài sản')
+                : 'Tạo yêu cầu trả tài sản'}">
+        </h1>
     </header>
 
 
@@ -30,14 +33,14 @@
             <div class="section-title">THÔNG TIN CHUNG</div>
 
             <div class="form-grid">
-
                 <!-- reason -->
                 <div class="form-group full-width">
                     <label>LÝ DO TRẢ TÀI SẢN</label>
 
                     <input type="text"
                            th:field="*{requestReason}"
-                           placeholder="VD: Thiết bị hỏng"
+                           th:readonly="${canEdit != null && !canEdit}"
+                           placeholder="VD: Thiết bị hỏng, nhân viên nghỉ việc"
                            required/>
                 </div>
 
@@ -79,6 +82,8 @@
                         <!-- note -->
                         <td>
                             <input type="text"
+                                   th:readonly="${canEdit != null && !canEdit}"
+                                   th:value="${a.note}"
                                    class="noteInput table-input">
                         </td>
                         <!-- tick -->
@@ -86,6 +91,7 @@
                             <input type="checkbox"
                                    class="chkAsset"
                                    th:value="${a.assetId}"
+                                   th:if="${canEdit}"
                                    onchange="toggleRow(this)">
                         </td>
 
@@ -105,34 +111,24 @@
         <footer class="pr-footer">
 
             <div class="footer-left">
-
                 <a th:href="@{/department/return-request/list}"
                    class="btn btn-back-custom">
-
                     <- Quay lại
-
                 </a>
-
             </div>
 
-
             <div class="footer-right">
-
                 <button type="reset"
+                        th:if="${canEdit}"
                         class="btn btn-reset-custom">
-
                     Nhập lại
-
                 </button>
-
 
                 <button type="submit"
+                        th:if="${canEdit}"
                         class="btn btn-submit-custom">
-
                     Gửi yêu cầu
-
                 </button>
-
             </div>
 
         </footer>

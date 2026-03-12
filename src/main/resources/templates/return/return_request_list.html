@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Quản lý yêu câu cấp phát</title>
+    <title>Quản lý yêu cầu trả</title>
 
     <!-- link CSS -->
     <link rel="stylesheet" th:href="@{/css/allocation/allocation-request-list.css}">
@@ -22,7 +22,7 @@
 <body>
 <div class="purchase-content-wrapper">
 
-    <form method="get" th:action="@{/department/allocation-request/list}">
+    <form method="get" th:action="@{/department/return-request/list}">
 
         <header class="top-bar">
 
@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <a th:href="@{/department/allocation-request/create}" class="btn-add">
+            <a th:href="@{/department/return-request/create}" class="btn-add">
                 <i class="fas fa-plus"></i>
                 Tạo yêu cầu
             </a>

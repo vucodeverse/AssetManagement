@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.controller.returnreq;
 
 import edu.fpt.groupfive.dto.request.ReturnRequestCreateRequest;
-import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
+import edu.fpt.groupfive.dto.response.ReturnRequestRespnse;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.ReturnRequestService;
 import lombok.RequiredArgsConstructor;
@@ -28,16 +28,16 @@ public class ReturnRequestController {
     public String showDetailForm(
             @PathVariable("id") Integer id,
             Model model) {
-        // Lấy request cần tìm
+         //Lấy request cần tìm
+        ReturnRequestRespnse respnse = returnRequestService.getRequestById(id);
 
+        model.addAttribute("requestDto", respnse);
 
-//        model.addAttribute("requestDto", dto);
-//
-//        model.addAttribute("assetType", assetTypeService.getAll());
-//
-//        model.addAttribute("canEdit", false );
+        model.addAttribute("assets", assetService.getAllByReturnRequestId(id));
 
-        return "allocation/allocation_request_form";
+        model.addAttribute("canEdit", false );
+
+        return "return/return_request_form";
 
     }
 
@@ -65,11 +65,56 @@ public class ReturnRequestController {
 
             redirectAttributes.addFlashAttribute("message", "Gửi yêu cầu thành công!");
 
-            return "redirect:/department/allocation-request/list";
+            return "redirect:/department/return_request_form/list";
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống: " + e.getMessage());
             return "redirect:/department/return_request_form/create";
+        }
+    }
+
+    @GetMapping("/edit/{id}")
+    public String showEditForm(
+            @PathVariable("id") Integer id,
+            Model model) {
+        // Lấy request cần update
+        ReturnRequestRespnse dto = returnRequestService.getRequestById(id);
+
+        model.addAttribute("requestDto", dto);
+
+        model.addAttribute("assets", assetService.getAllByReturnRequestId(id));
+
+        model.addAttribute("canEdit", true);
+
+        return "allocation/allocation_request_form";
+
+    }
+
+    @PostMapping("/update/{id}")
+    public String updateRequest(
+            @PathVariable("id") Integer id,
+            @ModelAttribute ReturnRequestCreateRequest dto,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+
+            returnRequestService.updateRequest(id, dto);
+
+            redirectAttributes.addFlashAttribute(
+                    "message",
+                    "Cập nhật thành công!"
+            );
+
+            return "redirect:/department/allocation-request/list";
+
+        } catch (Exception e) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    e.getMessage()
+            );
+
+            return "redirect:/department/allocation-request/edit/" + id;
         }
     }
 }

@@ -208,6 +208,58 @@ public class AssetDAOImpl implements AssetDAO {
     }
 
 
+    private Asset mapResultSet2(ResultSet rs) throws SQLException {
+
+        Asset asset = new Asset();
+
+        asset.setAssetId(rs.getInt("asset_id"));
+        asset.setAssetName(rs.getString("asset_name"));
+        asset.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
+        asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
+
+        asset.setOriginalCost(rs.getBigDecimal("original_cost"));
+        asset.setAssetTypeId(rs.getInt("asset_type_id"));
+        asset.setAssetTypeName(rs.getString("type_name"));
+        asset.setWarrantyStartDate(toLocalDate(rs.getDate("warranty_start_date")));
+        asset.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
+        asset.setAcquisitionDate(toLocalDate(rs.getDate("acquisition_date")));
+        asset.setNote(rs.getString("note"));
+
+        return asset;
+    }
+
+
+    @Override
+    public List<Asset> findByReturnRequestId(Integer requestId) {
+        String sql = """
+                SELECT a.*, t.type_name, d.note
+                FROM return_request_detail d
+                JOIN asset a
+                    ON a.asset_id = d.asset_id
+                LEFT JOIN asset_type t
+                    ON t.asset_type_id = a.asset_type_id
+                WHERE d.request_id = ?
+                """;
+
+        List<Asset> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, requestId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapResultSet2(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+
     @Override
     public Optional<AssetDetailResponse> findDetailById(Integer id) {
 

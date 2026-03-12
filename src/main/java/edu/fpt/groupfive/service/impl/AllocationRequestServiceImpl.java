@@ -96,10 +96,13 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
         req.setPriority(dto.getPriority());
         req.setNeededByDate(dto.getNeededByDate());
 
+        // Cập nhật allocation request
         allocationReqDao.update(req);
 
+        // Xóa request detail nếu có
         allocationReqDetailDao.deleteByRequestId(id);
 
+        // Duyệt allocation detail
         List<AllocationRequestDetail> details = allocationRequestMapper
                 .toListAllocationRequestDetail(dto.getDetails());
 
@@ -107,6 +110,7 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
             x.setRequestId(id);
         }
 
+        // Cập nhật
         allocationReqDetailDao.insertBatch(id, details);
     }
 
