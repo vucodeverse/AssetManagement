@@ -45,7 +45,8 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         purchase.setPriority(Priority.valueOf(rs.getString("priority").trim().toUpperCase()));
 
         // sửa thành LocalDateTime
-        purchase.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        purchase.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
 
         purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
         Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -53,8 +54,8 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             purchase.setApprovedAt(approvedAt.toLocalDateTime());
         }
         purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
-        LocalDateTime updatedAt = rs.getTimestamp("updated_at").toLocalDateTime(); // cần sửa
-        purchase.setUpdatedAt(updatedAt != null ?  updatedAt : null); // ???
+        Timestamp updatedAtTs = rs.getTimestamp("updated_at");
+        purchase.setUpdatedAt(updatedAtTs != null ? updatedAtTs.toLocalDateTime() : null);
         return purchase;
     }
 

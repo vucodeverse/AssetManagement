@@ -139,7 +139,7 @@ public class UserDAOImpl implements UserDAO {
             ps.setString(5, users.getEmail());
             ps.setString(6, users.getStatus());
             ps.setString(7, users.getRole().name());
-            ps.setTimestamp(8, Timestamp.valueOf(users.getUpdatedDate()));
+            ps.setTimestamp(8, users.getUpdatedDate() != null ? Timestamp.valueOf(users.getUpdatedDate()) : null);
             ps.setInt(9, users.getDepartmentId());
             ps.setInt(10, users.getUserId());
 

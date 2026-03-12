@@ -105,7 +105,7 @@
                             </td>
                             <td>
                                 <span th:if="${p.createdAt != null}"
-                                    th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></span>
+                                    th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy HH:mm')}"></span>
                                 <span th:if="${p.createdAt == null}">—</span>
                             </td>
 

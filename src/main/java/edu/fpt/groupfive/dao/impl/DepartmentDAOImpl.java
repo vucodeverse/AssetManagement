@@ -61,7 +61,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         ) {
             ps.setString(1, department.getDepartmentName());
             ps.setString(2, department.getDescription());
-            ps.setTimestamp(3, Timestamp.valueOf(department.getUpdatedDate()));
+            ps.setTimestamp(3, department.getUpdatedDate() != null ? Timestamp.valueOf(department.getUpdatedDate()) : null);
             ps.setString(4, department.getStatus());
             ps.setObject(5, department.getManagerId());
             ps.setInt(6, department.getDepartmentId());

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,10 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         request.setRequestId(rs.getInt("request_id"));
         request.setRequesterId(rs.getInt("requester_id"));
         request.setRequestedDepartmentId(rs.getInt("requested_department_id"));
-        //request.setCreatedAt(rs.getTimestamp("request_date").toLocalDateTime());
+        
+        Timestamp requestDate = rs.getTimestamp("request_date");
+        if (requestDate != null) request.setRequestDate(requestDate.toLocalDateTime());
+        
         Date neededDate = rs.getDate("needed_by_date");
         if (neededDate != null) request.setNeededByDate(neededDate.toLocalDate());
         request.setPriority(rs.getString("priority"));
@@ -69,8 +73,8 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         String query = """
                 INSERT INTO allocation_request
                 (requester_id, requested_department_id, request_date,
-                 needed_by_date, priority, reason, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                 needed_by_date, priority, reason, status, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection connection = databaseConfig.getConnection();
@@ -79,11 +83,13 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         ) {
             ps.setInt(1, request.getRequesterId());
             ps.setInt(2, request.getRequestedDepartmentId());
-            ps.setTimestamp(3, Timestamp.valueOf(request.getRequestDate()));
+            ps.setTimestamp(3, request.getRequestDate() != null ? Timestamp.valueOf(request.getRequestDate()) : Timestamp.valueOf(LocalDateTime.now()));
             ps.setObject(4, request.getNeededByDate());
             ps.setString(5, request.getPriority());
             ps.setString(6, request.getRequestReason());
             ps.setString(7, request.getStatus());
+            ps.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setTimestamp(9, Timestamp.valueOf(LocalDateTime.now()));
 
             ps.executeUpdate();
 
@@ -101,6 +107,4 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
             throw new RuntimeException(e);
         }
     }
-
-
 }

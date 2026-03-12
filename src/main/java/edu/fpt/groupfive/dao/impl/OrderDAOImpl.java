@@ -9,14 +9,11 @@ import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
+import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,18 +38,18 @@ public class OrderDAOImpl implements OrderDAO {
 
             try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-                ps.setDate(1, order.getCreatedAt() != null ? Date.valueOf(order.getCreatedAt())
-                        : Date.valueOf(LocalDate.now()));
+                ps.setTimestamp(1, order.getCreatedAt() != null ? Timestamp.valueOf(order.getCreatedAt())
+                        : Timestamp.valueOf(LocalDateTime.now()));
                 ps.setBigDecimal(2, order.getTotalAmount());
                 ps.setString(3, order.getOrderNote());
                 ps.setString(4, order.getOrderStatus() != null ? order.getOrderStatus().toString()
                         : OrderStatus.PENDING.toString());
-                ps.setDate(5, Date.valueOf(LocalDate.now()));
+                ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
                 ps.setObject(6, order.getPurchaseRequestId());
                 ps.setObject(7, order.getSupplierId());
                 ps.setObject(8, order.getQuotationId());
                 ps.setObject(9, order.getApprovedBy());
-                ps.setDate(10, Date.valueOf(LocalDate.now()));
+                ps.setTimestamp(10, Timestamp.valueOf(LocalDateTime.now()));
                 ps.setObject(11, order.getUpdatedBy());
                 ps.setObject(12, order.getWarehouseId());
 
@@ -197,13 +194,14 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getDate("order_date").toLocalDate()
-                        : (rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null));
+                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
+                        : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
                 order.setPurchaseRequestId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() :
+                        null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
                 order.setWarehouseId(rs.getObject("warehouse_id") != null ? rs.getInt("warehouse_id") : null);
 
@@ -236,13 +234,14 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getDate("order_date").toLocalDate()
-                        : (rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null));
+                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
+                        : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
                 order.setPurchaseRequestId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() :
+                        null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
                 order.setWarehouseId(rs.getObject("warehouse_id") != null ? rs.getInt("warehouse_id") : null);
 
@@ -302,13 +301,14 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getDate("order_date").toLocalDate()
-                        : (rs.getDate("created_at") != null ? rs.getDate("created_at").toLocalDate() : null));
+                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
+                        : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
                 order.setPurchaseRequestId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getDate("updated_at").toLocalDate() : null);
+                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() :
+                        null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
                 order.setWarehouseId(rs.getObject("warehouse_id") != null ? rs.getInt("warehouse_id") : null);
                 orders.add(order);
