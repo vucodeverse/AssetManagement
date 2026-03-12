@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/manager-layout}">
+
+<head>
+    <title>Asset List</title>
+
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet"
+              th:href="@{/css/asset/asset-list.css}">
+    </th:block>
+</head>
+
+<body>
+
+<div layout:fragment="content" class="page-container">
+
+    <div class="page-header">
+        <h2>Danh sách tài sản</h2>
+
+        <a th:href="@{/manager/assets/create}" class="btn-add">
+            Thêm
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="asset-table">
+            <thead>
+            <tr>
+                <th>Mã TS</th>
+                <th>Serial</th>
+                <th>Loại</th>
+                <th>Trạng thái</th>
+                <th>Giá</th>
+                <th>Ngày mua</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="asset : ${assets}">
+                <td th:text="${asset.assetId}"></td>
+                <td th:text="${asset.serialNumber}"></td>
+                <td th:text="${asset.assetTypeName}"></td>
+                <td th:text="${asset.currentStatus}"></td>
+                <td th:text="${#numbers.formatDecimal(asset.originalCost, 0, 'COMMA', 0, 'POINT')}"></td>
+                <td th:text="${asset.acquisitionDate}"></td>
+
+                <td class="action-buttons">
+                    <a th:href="@{/manager/assets/edit/{id}(id=${asset.assetId})}">
+                        ✏
+                    </a>
+
+                    <form th:action="@{/manager/assets/delete/{id}(id=${asset.assetId})}"
+                          method="post"
+                          style="display:inline">
+                        <button type="submit">🗑</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>
