@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
@@ -9,16 +9,19 @@
         </div>
 
         <nav class="sidebar-nav">
-            <!-- BẢNG ĐIỀU KHIỀN -->
-            <a class="nav-item" th:href="@{/director/dashboard}"
-                th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
-                <i class="fas fa-th-large"></i> TRANG CHỦ
-            </a>
-
-            <!-- TRUNG TÂM PHÊ DUYỆT -->
+            <!-- PHẦN QUẢN TRỊ -->
             <div class="nav-group">
+                <div class="nav-group-title">Hệ thống</div>
+                <a class="nav-item" th:href="@{/director/dashboard}"
+                    th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
+                    <i class="fas fa-th-large"></i> TRANG CHỦ
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Phê duyệt</div>
                 <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='approval' ? ' active' : ''">
-                    <i class="fas fa-check-circle"></i> TRUNG TÂM PHÊ DUYỆT
+                    <i class="fas fa-shield-check"></i> PHÊ DUYỆT
                 </a>
 
                 <div class="sub-nav" th:if="${activeMenu}=='approval'">
@@ -30,24 +33,23 @@
                         Báo Giá
                     </a>
                 </div>
+
+                <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                    <i class="fas fa-file-invoice-dollar"></i> ĐƠN ĐẶT HÀNG
+                </a>
             </div>
-
-            <!-- ĐƠN HÀNG MUA SẮM -->
-            <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
-                <i class="fas fa-file-invoice-dollar"></i> Đơn Đặt Hàng
-            </a>
-
-            <a class="nav-item" th:href="@{/logout}">
-                <i class="fas fa-sign-out-alt"></i> ĐĂNG XUẤT
-            </a>
         </nav>
 
         <div class="sidebar-user">
-            <!-- Bạn có thể binding name và role thật vào đây -->
-            <div class="user-avatar">DR</div>
+            <div class="user-avatar" th:text="${userInitials} ?: 'DR'">DR</div>
             <div class="user-info">
-                <span class="user-name">Giám Đốc</span>
-                <span class="user-role">Quản Lý</span>
+                <span class="user-name" th:text="${userName} ?: 'Giám Đốc'">Giám Đốc</span>
+                <span class="user-role" th:text="${userRole} ?: 'Quản Lý'">Quản Lý</span>
+            </div>
+            <div class="user-actions">
+                <a th:href="@{/logout}" class="action-btn logout-btn" title="Đăng xuất">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
             </div>
         </div>
     </aside>

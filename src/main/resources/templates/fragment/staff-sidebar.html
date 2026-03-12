@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
@@ -9,28 +9,31 @@
         </div>
 
         <nav class="sidebar-nav">
-            <!-- BẢNG ĐIỀU KHIỀN -->
-            <a class="nav-item" th:href="@{/purchase-staff/dashboard}"
-                th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
-                <i class="fas fa-th-large"></i> TRANG CHỦ
-            </a>
+            <!-- PHẦN ĐIỀU HƯỚNG -->
+            <div class="nav-group">
+                <div class="nav-group-title">Chính</div>
+                <a class="nav-item" th:href="@{/purchase-staff/dashboard}"
+                    th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
+                    <i class="fas fa-th-large"></i> TRANG CHỦ
+                </a>
+            </div>
 
-            <!-- YÊU CẦU MUA SẮM -->
-            <a class="nav-item" th:href="@{/purchases}"
-                th:classappend="${activeMenu}=='approval' and ${activeSub}=='pr' ? ' active' : ''">
-                <i class="fas fa-shopping-cart"></i> YÊU CẦU MUA SẮM
-            </a>
+            <div class="nav-group">
+                <div class="nav-group-title">Mua sắm</div>
+                <a class="nav-item" th:href="@{/purchases}"
+                    th:classappend="${activeMenu}=='approval' and ${activeSub}=='pr' ? ' active' : ''">
+                    <i class="fas fa-shopping-cart"></i> YÊU CẦU MUA SẮM
+                </a>
 
-            <!-- BÁO GIÁ -->
-            <a class="nav-item" th:href="@{/quotations}"
-                th:classappend="${activeMenu}=='approval' and ${activeSub}=='qt' ? ' active' : ''">
-                <i class="fas fa-file-invoice"></i> BÁO GIÁ
-            </a>
+                <a class="nav-item" th:href="@{/quotations}"
+                    th:classappend="${activeMenu}=='approval' and ${activeSub}=='qt' ? ' active' : ''">
+                    <i class="fas fa-file-invoice"></i> BÁO GIÁ
+                </a>
 
-            <!-- ĐƠN HÀNG MUA SẮM -->
-            <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
-                <i class="fas fa-file-invoice-dollar"></i> ĐƠN ĐẶT HÀNG
-            </a>
+                <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                    <i class="fas fa-file-invoice-dollar"></i> ĐƠN ĐẶT HÀNG
+                </a>
+            </div>
         </nav>
 
         <div class="sidebar-user">
@@ -39,7 +42,11 @@
                 <span class="user-name" th:text="${userName} ?: 'Nhân Viên'">Nhân Viên</span>
                 <span class="user-role" th:text="${userRole} ?: 'Nhân Viên Mua Sắm'">Nhân Viên Mua Sắm</span>
             </div>
-            <i class="fas fa-cog user-settings"></i>
+            <div class="user-actions">
+                <a th:href="@{/logout}" class="action-btn logout-btn" title="Đăng xuất">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
         </div>
     </aside>
 
