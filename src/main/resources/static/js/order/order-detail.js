@@ -12,7 +12,8 @@ $(document).ready(function () {
                     previous: "‹",
                     next: "›"
                 },
-                info: "Showing _START_ to _END_ of _TOTAL_ items"
+                info: "Hiển thị từ _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                emptyTable: "Không có dữ liệu."
             }
         });
     }

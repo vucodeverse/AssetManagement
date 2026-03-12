@@ -3,7 +3,7 @@
   layout:decorate="~{layout/main-layout}">
 
 <head>
-  <title>Purchase Orders | PROCUREX</title>
+  <title>Đơn Đặt Hàng | PROCUREX</title>
   <th:block layout:fragment="extra-css">
     <link rel="stylesheet" th:href="@{/css/order/order-from-purchase.css}">
   </th:block>
@@ -13,16 +13,10 @@
   <div layout:fragment="content">
     <div class="po-list-wrapper">
 
-      <!-- Thanh điều hướng (Breadcrumb) -->
-      <div class="breadcrumb">
-        <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a> / <span class="active">PURCHASE ORDERS</span>
-      </div>
-
-      <!-- Tiêu đề trang -->
       <div class="page-header">
         <div>
-          <h1>Purchase Orders</h1>
-          <p>Grouped by Purchase Request</p>
+          <h1>Đơn Đặt Hàng</h1>
+          <p>Nhóm theo Yêu cầu mua sắm</p>
         </div>
       </div>
 
@@ -33,33 +27,30 @@
           <div class="search-wrap">
             <i class="fas fa-search"></i>
             <input type="text" id="keyword" name="keyword" th:value="${criteria.keyword}"
-              placeholder="Search by PO ID or Supplier name...">
+              placeholder="Tìm kiếm theo mã ĐH hoặc tên Nhà cung cấp...">
           </div>
 
           <!-- Các bộ lọc -->
           <div class="filter-bar">
             <!-- Trạng thái -->
             <select id="statusFilter" name="status" class="filter-select">
-              <option value="">All Statuses</option>
-              <option value="PENDING" th:selected="${criteria.status == 'PENDING'}">Pending</option>
-              <option value="ACTIVE" th:selected="${criteria.status == 'ACTIVE'}">Active</option>
-              <option value="SHIPPED" th:selected="${criteria.status == 'SHIPPED'}">Shipped</option>
-              <option value="PROCESSING" th:selected="${criteria.status == 'PROCESSING'}">Processing</option>
-              <option value="APPROVED" th:selected="${criteria.status == 'APPROVED'}">Approved</option>
-              <option value="CANCELLED" th:selected="${criteria.status == 'CANCELLED'}">Cancelled</option>
+              <option value="">Tất cả trạng thái</option>
+              <option value="PENDING" th:selected="${criteria.status == 'PENDING'}">Đang chờ</option>
+              <option value="COMPLETED" th:selected="${criteria.status == 'COMPLETED'}">Đã hoàn thành</option>
+              <option value="CANCELLED" th:selected="${criteria.status == 'CANCELLED'}">Đã bị hủy</option>
             </select>
 
             <!-- Date From -->
             <input type="date" id="dateFrom" name="dateFrom" class="filter-select" th:value="${criteria.dateFrom}"
-              placeholder="From date">
+              placeholder="Từ ngày">
 
             <!-- Date To -->
             <input type="date" id="dateTo" name="dateTo" class="filter-select" th:value="${criteria.dateTo}"
-              placeholder="To date">
+              placeholder="Đến ngày">
 
             <!-- Supplier -->
             <select id="supplierFilter" name="supplierName" class="filter-select">
-              <option value="">All Suppliers</option>
+              <option value="">Tất cả nhà cung cấp</option>
               <option th:each="s : ${suppliers}" th:value="${s.supplierName}" th:text="${s.supplierName}"
                 th:selected="${criteria.supplierName == s.supplierName}">
               </option>
@@ -67,14 +58,14 @@
 
             <!-- Amount Range -->
             <select id="amountRange" name="amountRange" class="filter-select">
-              <option value="">Any Amount</option>
+              <option value="">Tất cả số tiền</option>
               <option value="0-5000" th:selected="${criteria.amountRange == '0-5000'}">$0 – $5,000</option>
               <option value="5000-20000" th:selected="${criteria.amountRange == '5000-20000'}">$5,000 – $20,000</option>
               <option value="20000+" th:selected="${criteria.amountRange == '20000+'}">$20,000+</option>
             </select>
 
             <button type="button" id="btnClearFilter" class="btn-clear-filter">
-              <i class="fas fa-times"></i> Clear Filters
+              <i class="fas fa-times"></i> Xóa bộ lọc
             </button>
           </div>
         </div>
@@ -85,13 +76,13 @@
         <table class="data-table" id="purchaseOrdersTable" style="width: 100%;">
           <thead>
             <tr>
-              <th>PO ID</th>
-              <th>CREATED AT</th>
-              <th>SUPPLIER NAME</th>
-              <th>TOTAL AMOUNT</th>
-              <th>NOTE</th>
-              <th>STATUS</th>
-              <th>PR ID</th>
+              <th>MÃ ĐH</th>
+              <th>NGÀY TẠO</th>
+              <th>NHÀ CUNG CẤP</th>
+              <th>TỔNG SỐ TIỀN</th>
+              <th>GHI CHÚ</th>
+              <th>TRẠNG THÁI</th>
+              <th>MÃ YC</th>
             </tr>
           </thead>
           <tbody>
@@ -105,7 +96,8 @@
               </td>
               <td class="td-note" th:text="${po.note}">Note</td>
               <td>
-                <span class="status-tag" th:classappend="${po.status}" th:text="${po.status}">STATUS</span>
+                <span class="status-tag" th:classappend="${po.status}"
+                  th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(po.status).description}">STATUS</span>
               </td>
               <td th:text="'PR-' + ${po.purchaseId}">PR-001</td>
             </tr>

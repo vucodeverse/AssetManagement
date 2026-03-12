@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -90,7 +91,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // nếu là draft thì update thời gian sửa
         if (QuotationStatus.DRAFT.equals(quotationStatus)) {
-            q.setUpdatedAt(LocalDate.now());
+            q.setUpdatedAt(LocalDateTime.now());
         }
 
         // map ngược lại
@@ -130,7 +131,7 @@ public class QuotationServiceImpl implements QuotationService {
             return quotationCreateRequest.getQuotationId();
         } else {
             q.setQuotationStatus(quotationStatus);
-            q.setCreatedAt(LocalDate.now());
+            q.setCreatedAt(LocalDateTime.now());
 
             return quotationDAO.insert(q);
         }

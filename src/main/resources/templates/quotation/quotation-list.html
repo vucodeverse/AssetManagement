@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quotations Management</title>
+    <title>Quản Lý Báo Giá</title>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" th:href="@{/css/quotation/quotation-list.css}">
     </th:block>
@@ -15,14 +15,13 @@
     <th:block layout:fragment="content">
         <div class="quotation-content-wrapper">
 
-            <form id="filterForm" method="get" th:action="@{/quotations/search}"
-                th:object="${searchForQuotation}">
+            <form id="filterForm" method="get" th:action="@{/quotations/search}" th:object="${searchForQuotation}">
                 <header class="top-bar">
-                    <h1>QUOTATIONS</h1>
+                    <h1>BÁO GIÁ</h1>
                     <div class="top-actions">
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" th:field="*{keyword}" placeholder="Search by PR ID...">
+                            <input type="text" th:field="*{keyword}" placeholder="Tìm kiếm theo mã YC...">
                         </div>
                         <i class="far fa-bell icon-btn"></i>
                         <i class="fas fa-cog icon-btn"></i>
@@ -32,17 +31,17 @@
                 <!-- Phần bộ lọc -->
                 <section class="filters-bar">
                     <div class="filter-group">
-                        <label>PRIORITY:</label>
+                        <label>ĐỘ ƯU TIÊN:</label>
                         <select id="priorityFilter" th:field="*{priority}">
-                            <option value="">All Priorities</option>
-                            <option th:each="pi : ${priorities}" th:value="${pi}" th:text="${pi}">
+                            <option value="">Tất cả</option>
+                            <option th:each="pi : ${priorities}" th:value="${pi}" th:text="${pi.description}">
                             </option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label>AMOUNT:</label>
+                        <label>SỐ TIỀN:</label>
                         <select id="amountRange" th:field="*{amountRange}">
-                            <option value="">Any Range</option>
+                            <option value="">Tất cả</option>
                             <option value="0-5000">0 - 5,000</option>
                             <option value="5000-10000">5,000 - 10,000</option>
                             <option value="10000-20000">10,000 - 20,000</option>
@@ -50,9 +49,9 @@
                         </select>
                     </div>
                     <div class="filter-group dates" style="position: relative;">
-                        <label>DATES:</label>
+                        <label>NGÀY:</label>
                         <input type="date" th:field="*{from}">
-                        <span class="to-text">to</span>
+                        <span class="to-text">đến</span>
                         <input type="date" th:field="*{to}">
                         <div th:if="${#fields.hasErrors('from')}" th:errors="*{from}"
                             style="position: absolute; bottom: -18px; left: 60px; color: red; font-size: 11px; white-space: nowrap;">
@@ -63,7 +62,7 @@
                     </div>
                     <div class="filter-actions">
                         <a class="btn-reset-filters" th:href="@{/quotations}">
-                            <i class="fas fa-undo-alt"></i> RESET FILTERS
+                            <i class="fas fa-undo-alt"></i> ĐẶT LẠI
                         </a>
                     </div>
                 </section>
@@ -74,13 +73,13 @@
                 <table class="data-table" id="quotation-table">
                     <thead>
                         <tr>
-                            <th>PR ID </th>
-                            <th>NEEDED BY DATE</th>
-                            <th>Number of Quotations </th>
-                            <th>EST. AMOUNT </th>
+                            <th>MÃ YC</th>
+                            <th>NGÀY CẦN</th>
+                            <th>Số báo giá</th>
+                            <th>TỔNG DỰ KIẾN</th>
 
-                            <th>PRIORITY </th>
-                            <th>ACTIONS</th>
+                            <th>ĐỘ ƯU TIÊN</th>
+                            <th>THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -94,12 +93,11 @@
                             </td>
                             <td>
                                 <span th:class="'badge ' + ${#strings.toLowerCase(q.priority)}"
-                                    th:text="${q.priority}"></span>
+                                    th:text="${T(edu.fpt.groupfive.common.Priority).valueOf(q.priority).description}"></span>
                             </td>
                             <td>
-                                <form th:action="@{/quotations/of-purchase/{id}(id=${q.purchaseId})}"
-                                    th:method="get">
-                                    <button type="submit" class="btn-review">REVIEW ALL</button>
+                                <form th:action="@{/quotations/of-purchase/{id}(id=${q.purchaseId})}" th:method="get">
+                                    <button type="submit" class="btn-review">XEM TẤT CẢ</button>
                                 </form>
                             </td>
                         </tr>

@@ -45,6 +45,31 @@
     margin-bottom: 48px;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-back {
+    cursor: pointer;
+    font-size: 16px;
+    color: #000;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: .15s ease;
+}
+
+.btn-back:hover {
+    background: #e2e8f0;
+}
+
 .content-header h1 {
     font-size: 24px;
     font-weight: 800;

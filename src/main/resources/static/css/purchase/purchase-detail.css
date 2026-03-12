@@ -45,15 +45,23 @@ body {
     gap: 14px;
 }
 
-.back-icon {
+.btn-back {
     cursor: pointer;
-    font-size: 18px;
+    font-size: 16px;
     color: var(--text);
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: .15s ease;
 }
 
-.back-icon:hover {
-    opacity: .6;
+.btn-back:hover {
+    background: #e2e8f0;
 }
 
 .top-bar h1 {
@@ -284,6 +292,21 @@ body {
 .q-actions {
     display: flex;
     gap: 10px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.manager-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.manager-actions form {
+    margin: 0;
 }
 
 .btn-view-quotes,

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Repository
@@ -44,7 +45,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         purchase.setPriority(Priority.valueOf(rs.getString("priority").trim().toUpperCase()));
 
         // sửa thành LocalDateTime
-        purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
+        purchase.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
 
         purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
         Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
@@ -52,8 +53,8 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             purchase.setApprovedAt(approvedAt.toLocalDateTime());
         }
         purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
-        Date updatedAt = rs.getDate("updated_at"); // cần sửa
-        purchase.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDate() : null); // ???
+        LocalDateTime updatedAt = rs.getTimestamp("updated_at").toLocalDateTime(); // cần sửa
+        purchase.setUpdatedAt(updatedAt != null ?  updatedAt : null); // ???
         return purchase;
     }
 
@@ -80,10 +81,10 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 preparedStatement.setString(5, purchase.getPriority().name());
                 preparedStatement.setObject(6, purchase.getApprovedByDirector());
                 preparedStatement.setString(7, purchase.getRejectReason());
-                preparedStatement.setTimestamp(8, Timestamp.valueOf(purchase.getCreatedAt().atStartOfDay()));
+                preparedStatement.setTimestamp(8, Timestamp.valueOf(purchase.getCreatedAt()));
                 preparedStatement.setTimestamp(9,
                         purchase.getUpdatedAt() != null
-                                ? Timestamp.valueOf(purchase.getUpdatedAt().atStartOfDay())
+                                ? Timestamp.valueOf(purchase.getUpdatedAt())
                                 : null);
                 preparedStatement.setString(10, purchase.getReason());
                 preparedStatement.setTimestamp(11,
@@ -181,10 +182,10 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 }
 
                 purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
-                purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
-                Date updatedAt = rs.getDate("updated_at");
+                purchase.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                LocalDateTime updatedAt = rs.getTimestamp("updated_at").toLocalDateTime();
                 purchase.setUpdatedAt(
-                        updatedAt != null ? updatedAt.toLocalDate() : null);
+                        updatedAt != null ? updatedAt : null);
 
                 purchase.setPurchaseDetails(
                         purchaseDetailDAO.findByPurchaseRequestId(purchaseId));
@@ -436,7 +437,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 ps.setString(5, purchase.getRejectReason());
                 ps.setTimestamp(6,
                         purchase.getUpdatedAt() != null
-                                ? Timestamp.valueOf(purchase.getUpdatedAt().atStartOfDay())
+                                ? Timestamp.valueOf(purchase.getUpdatedAt())
                                 : null);
                 ps.setString(7, purchase.getReason());
                 ps.setInt(8, purchase.getId());

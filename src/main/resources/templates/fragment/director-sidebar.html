@@ -12,37 +12,33 @@
             <!-- BẢNG ĐIỀU KHIỀN -->
             <a class="nav-item" th:href="@{/director/dashboard}"
                 th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
-                <i class="fas fa-th-large"></i> Dashboard
+                <i class="fas fa-th-large"></i> TRANG CHỦ
             </a>
 
             <!-- TRUNG TÂM PHÊ DUYỆT -->
             <div class="nav-group">
-                <a class="nav-item" th:href="@{/purchases}"
-                    th:classappend="${activeMenu}=='approval' ? ' active' : ''">
-                    <i class="fas fa-check-circle"></i> Approval Center
+                <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                    <i class="fas fa-check-circle"></i> TRUNG TÂM PHÊ DUYỆT
                 </a>
 
                 <div class="sub-nav" th:if="${activeMenu}=='approval'">
-                    <a class="sub-item" th:href="@{/purchases}"
-                        th:classappend="${activeSub}=='pr' ? ' active' : ''">
-                        Purchase Requests
+                    <a class="sub-item" th:href="@{/purchases}" th:classappend="${activeSub}=='pr' ? ' active' : ''">
+                        Yêu Cầu Mua Sắm
                     </a>
 
-                    <a class="sub-item" th:href="@{/quotations}"
-                        th:classappend="${activeSub}=='qt' ? ' active' : ''">
-                        Quotations
+                    <a class="sub-item" th:href="@{/quotations}" th:classappend="${activeSub}=='qt' ? ' active' : ''">
+                        Báo Giá
                     </a>
                 </div>
             </div>
 
             <!-- ĐƠN HÀNG MUA SẮM -->
-            <a class="nav-item" th:href="@{/purchase-orders}"
-                th:classappend="${activeMenu}=='po' ? ' active' : ''">
-                <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
+            <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                <i class="fas fa-file-invoice-dollar"></i> Đơn Đặt Hàng
             </a>
 
             <a class="nav-item" th:href="@{/logout}">
-                <i class="fas fa-sign-out-alt"></i> Logout
+                <i class="fas fa-sign-out-alt"></i> ĐĂNG XUẤT
             </a>
         </nav>
 
@@ -50,8 +46,8 @@
             <!-- Bạn có thể binding name và role thật vào đây -->
             <div class="user-avatar">DR</div>
             <div class="user-info">
-                <span class="user-name">Director</span>
-                <span class="user-role">Management</span>
+                <span class="user-name">Giám Đốc</span>
+                <span class="user-role">Quản Lý</span>
             </div>
         </div>
     </aside>

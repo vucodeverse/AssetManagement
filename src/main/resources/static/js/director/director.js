@@ -13,7 +13,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 order: [[5, "desc"]],
                 language: {
                     paginate: { previous: "<", next: ">" },
-                    info: "SHOWING _START_ TO _END_ OF _TOTAL_ PURCHASE REQUESTS"
+                    info: "HIỂN THỊ TỪ _START_ ĐẾN _END_ TRONG TỔNG SỐ _TOTAL_ YÊU CẦU MUA SẮM",
+                    emptyTable: "Không có yêu cầu mua sắm nào."
                 }
             })
         } catch (e) {
@@ -32,7 +33,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 order: [[0, "desc"]],
                 language: {
                     paginate: { previous: "<", next: ">" },
-                    info: "SHOWING _START_ TO _END_ OF _TOTAL_ QUOTATIONS"
+                    info: "HIỂN THỊ TỪ _START_ ĐẾN _END_ TRONG TỔNG SỐ _TOTAL_ BÁO GIÁ",
+                    emptyTable: "Không có báo giá nào."
                 }
             })
         } catch (e) {

@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Overview - Procurex</title>
+    <title>Tổng Quan Hệ Thống - Procurex</title>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" th:href="@{/css/director/director-dashboard.css}">
     </th:block>
@@ -16,8 +16,8 @@
         <div class="director-dashboard-wrapper">
             <header class="dashboard-header">
                 <div class="header-left">
-                    <h1>DASHBOARD OVERVIEW</h1>
-                    <p>Monitor your procurement operations and approval tasks.</p>
+                    <h1>TỔNG QUAN HỆ THỐNG</h1>
+                    <p>Theo dõi hoạt động mua sắm và các nhiệm vụ phê duyệt của bạn.</p>
                 </div>
                 <div class="top-actions">
                     <select class="fy-select">
@@ -33,19 +33,19 @@
                 <!-- Recent PRs -->
                 <div class="data-card">
                     <div class="card-header">
-                        <h2>RECENT PURCHASE REQUESTS</h2>
-                        <a th:href="@{/purchases}" class="view-all">VIEW ALL</a>
+                        <h2>YÊU CẦU MUA SẮM GẦN ĐÂY</h2>
+                        <a th:href="@{/purchases}" class="view-all">XEM TẤT CẢ</a>
                     </div>
                     <div class="table-responsive">
                         <table class="dashboard-table" id="purchaseDB">
                             <thead>
                                 <tr>
-                                    <th>PR ID</th>
-                                    <th>STATUS</th>
-                                    <th>CREATOR</th>
-                                    <th>NEEDED DATE</th>
-                                    <th>PRIORITY</th>
-                                    <th>CREATED AT</th>
+                                    <th>MÃ YC</th>
+                                    <th>TRẠNG THÁI</th>
+                                    <th>NGƯỜI TẠO</th>
+                                    <th>NGÀY CẦN</th>
+                                    <th>ĐỘ ƯU TIÊN</th>
+                                    <th>NGÀY TẠO</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -54,7 +54,8 @@
                                     <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
                                     <td>
                                         <span th:if="${p.status != null}" class="badge"
-                                            th:classappend="'badge-' + ${p.status.name()}" th:text="${p.status}"></span>
+                                            th:classappend="'badge-' + ${p.status.name()}"
+                                            th:text="${p.status.description}"></span>
                                         <span th:if="${p.status == null}">—</span>
                                     </td>
                                     <td th:text="${p.creatorName ?: '—'}"></td>
@@ -65,7 +66,8 @@
                                     </td>
                                     <td>
                                         <span th:if="${p.priority != null}" class="pill"
-                                            th:classappend="'pill-' + ${p.priority}" th:text="${p.priority}"></span>
+                                            th:classappend="'pill-' + ${p.priority}"
+                                            th:text="${T(edu.fpt.groupfive.common.Priority).valueOf(p.priority).description}"></span>
                                         <span th:if="${p.priority == null}">—</span>
                                     </td>
                                     <td>
@@ -82,18 +84,18 @@
                 <!-- Recent Quotations -->
                 <div class="data-card">
                     <div class="card-header">
-                        <h2>RECENT QUOTATIONS</h2>
-                        <a th:href="@{/quotations}" class="view-all">VIEW ALL</a>
+                        <h2>BÁO GIÁ GẦN ĐÂY</h2>
+                        <a th:href="@{/quotations}" class="view-all">XEM TẤT CẢ</a>
                     </div>
                     <div class="table-responsive">
                         <table class="dashboard-table" id="quotationDB">
                             <thead>
                                 <tr>
-                                    <th>QUO ID</th>
-                                    <th>SUPPLIER</th>
-                                    <th>PR REF</th>
-                                    <th>TOTAL AMOUNT</th>
-                                    <th>STATUS</th>
+                                    <th>MÃ BÁO GIÁ</th>
+                                    <th>NHÀ CUNG CẤP</th>
+                                    <th>THAM CHIẾU YC</th>
+                                    <th>TỔNG SỐ TIỀN</th>
+                                    <th>TRẠNG THÁI</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -108,7 +110,7 @@
                                         $4,500.00</td>
                                     <td><span class="status-badge"
                                             th:classappend="${quo.quotationStatus.name().toLowerCase()}"
-                                            th:text="${quo.quotationStatus}">PENDING</span></td>
+                                            th:text="${quo.quotationStatus.description}">PENDING</span></td>
                                     <td style="text-align: right;"><i class="fas fa-chevron-right arrow-icon"></i></td>
                                 </tr>
                             </tbody>

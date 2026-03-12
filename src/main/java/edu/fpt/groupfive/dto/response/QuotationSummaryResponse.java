@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -17,7 +18,7 @@ public class QuotationSummaryResponse {
     private Integer numberOfQuotation;
     private BigDecimal estPrice;
     private String  priority;
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
 }
 

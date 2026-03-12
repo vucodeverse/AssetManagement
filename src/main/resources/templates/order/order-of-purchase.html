@@ -3,7 +3,7 @@
   xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
 
 <head>
-  <title th:text="'PO Detail #' + ${order.orderId} + ' | PROCUREX'">PO Detail | PROCUREX</title>
+  <title th:text="'Chi Tiết ĐH #' + ${order.orderId} + ' | PROCUREX'">Chi Tiết ĐH | PROCUREX</title>
   <th:block layout:fragment="extra-css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,15 +18,13 @@
 <body>
   <div layout:fragment="content">
     <div class="po-detail-wrapper">
-      <!-- Thanh điều hướng (Breadcrumb) -->
-      <div class="breadcrumb">
-        DASHBOARD / <a th:href="@{/purchase-orders}">PURCHASE ORDERS</a> /
-        <span class="active" th:text="'PO-' + ${order.orderId}">PO-1</span>
-      </div>
 
       <header class="content-header">
         <div class="header-left">
-          <h1>PURCHASE ORDER DETAILS</h1>
+          <a class="btn-back" th:href="@{/purchase-orders}">
+            <i class="fas fa-arrow-left"></i>
+          </a>
+          <h1>CHI TIẾT ĐƠN ĐẶT HÀNG</h1>
         </div>
       </header>
 
@@ -38,19 +36,20 @@
         <!-- Thông tin tiêu đề -->
         <div class="header-info">
           <div class="info-item">
-            <label>PURCHASE ORDER ID</label>
+            <label>MÃ ĐƠN ĐẶT HÀNG</label>
             <p class="val-bold" th:text="'PO-' + ${order.orderId}">PO-2024-00892</p>
           </div>
           <div class="info-item">
-            <label>SUPPLIER VENDOR</label>
+            <label>NHÀ CUNG CẤP</label>
             <p class="val-bold">
               <span th:text="${order.supplierName}">Global Tech Solutions Inc.</span>
             </p>
           </div>
           <div class="info-item">
-            <label>CURRENT STATUS</label>
+            <label>TRẠNG THÁI HIỆN TẠI</label>
             <div>
-              <span class="status-badge" th:classappend="${order.status}" th:text="${order.status}">PENDING
+              <span class="status-badge" th:classappend="${order.status}"
+                th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(order.status).description}">PENDING
                 REVIEW</span>
             </div>
           </div>
@@ -60,10 +59,10 @@
         <div sec:authorize="hasAuthority('PURCHASE_STAFF')" class="delivery-update-box">
           <form th:action="@{/purchase-orders/{id}/update-delivery-date(id=${order.orderId})}" method="post"
             style="display:flex; align-items:center; gap:16px;">
-            <label>SET DELIVERY DATE:</label>
+            <label>CẬP NHẬT NGÀY GIAO HÀNG:</label>
             <input type="date" name="deliveryDate" class="delivery-input" required
               th:value="${order.items[0].deliveryDate}">
-            <button type="submit" class="btn-update-date">UPDATE DATE</button>
+            <button type="submit" class="btn-update-date">CẬP NHẬT</button>
           </form>
         </div>
 
@@ -71,18 +70,18 @@
 
         <!-- Bảng danh sách mặt hàng -->
         <section class="items-section">
-          <h2 class="section-title">LINE ITEM DETAILS</h2>
+          <h2 class="section-title">CHI TIẾT MẶT HÀNG</h2>
           <div class="details-table-wrap">
             <table id="lineItemsTable" class="details-table">
               <thead>
                 <tr>
-                  <th>LINE ID</th>
-                  <th>ASSET TYPE NAME</th>
-                  <th>QUANTITY</th>
-                  <th>PRICE</th>
-                  <th>TAX (%)</th>
-                  <th>DISCOUNT (%)</th>
-                  <th>DELIVERY DATE</th>
+                  <th>MÃ MẶT HÀNG</th>
+                  <th>LOẠI TÀI SẢN</th>
+                  <th>SỐ LƯỢNG</th>
+                  <th>ĐƠN GIÁ</th>
+                  <th>THUẾ (%)</th>
+                  <th>CHIẾT KHẤU (%)</th>
+                  <th>NGÀY GIAO HÀNG</th>
                 </tr>
               </thead>
               <tbody>
@@ -98,7 +97,7 @@
                     th:text="${item.discountRate != null ? #numbers.formatDecimal(item.discountRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
                     2.5%</td>
                   <td class="italic-note"
-                    th:text="${item.deliveryDate != null ? #temporals.format(item.deliveryDate, 'dd-MM-yyyy') : 'PENDING'}">
+                    th:text="${item.deliveryDate != null ? #temporals.format(item.deliveryDate, 'dd-MM-yyyy') : '---'}">
                     15-01-2024</td>
                 </tr>
 
@@ -110,26 +109,26 @@
         <!-- Khu vực tổng kết cuối trang -->
         <div class="footer-summary">
           <div class="terms-box">
-            <label>GENERAL TERMS</label>
-            <p>NET 30 PAYMENT TERMS APPLY FROM DATE OF DELIVERY. ALL ITEMS SUBJECT TO STANDARD PROCUREMENT QUALITY AUDIT
-              UPON ARRIVAL.</p>
+            <label>ĐIỀU KHOẢN CHUNG</label>
+            <p>ĐIỀU KHOẢN THANH TOÁN NET 30 ÁP DỤNG TỪ NGÀY GIAO HÀNG. TẤT CẢ CÁC MẶT HÀNG PHẢI VƯỢT QUA KIỂM TRA CHẤT
+              LƯỢNG MUA SẮM TIÊU CHUẨN KHI NHẬN HÀNG.</p>
           </div>
           <div class="total-summary">
             <div class="summary-line">
-              <span>Subtotal</span>
+              <span>Tạm tính</span>
               <span th:text="'$' + ${#numbers.formatDecimal(order.subtotal, 1, 'COMMA', 2, 'POINT')}">$19,270.00</span>
             </div>
             <div class="summary-line">
-              <span>Total Discount</span>
+              <span>Tổng chiết khấu</span>
               <span class="discount-val"
                 th:text="'-$' + ${#numbers.formatDecimal(order.totalDiscount, 1, 'COMMA', 2, 'POINT')}">-$624.50</span>
             </div>
             <div class="summary-line">
-              <span>Tax Est.</span>
+              <span>Thuế dự kiến</span>
               <span th:text="'$' + ${#numbers.formatDecimal(order.totalTax, 1, 'COMMA', 2, 'POINT')}">$1,491.64</span>
             </div>
             <div class="grand-total-row">
-              <span>GRAND TOTAL</span>
+              <span>TỔNG CỘNG</span>
               <span class="grand-total"
                 th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">$20,137.14</span>
             </div>

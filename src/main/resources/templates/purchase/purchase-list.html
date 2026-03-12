@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Request Management - Procurex</title>
+    <title>Quản Lý Yêu Cầu Mua Sắm - Procurex</title>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" th:href="@{/css/purchase/purchase-list.css}">
     </th:block>
@@ -20,17 +20,17 @@
             <form id="filterForm" method="get" th:action="@{/purchases/search}" th:object="${searchAndFilter}">
 
                 <header class="top-bar">
-                    <h1>PURCHASE REQUEST MANAGEMENT</h1>
+                    <h1>QUẢN LÝ YÊU CẦU MUA SẮM</h1>
                     <div class="top-actions">
                         <div sec:authorize="hasAuthority('ASSET_MANAGER')">
                             <a th:href="@{/purchases/create}" class="btn-create"
                                 style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#1e293b; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:13px;">
-                                <i class="fas fa-plus"></i> Create Purchase Request
+                                <i class="fas fa-plus"></i> Tạo Yêu Cầu Mua Sắm
                             </a>
                         </div>
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Search by PR ID..." th:field="*{keyword}">
+                            <input type="text" placeholder="Tìm kiếm theo mã YC..." th:field="*{keyword}">
                         </div>
                     </div>
                 </header>
@@ -39,22 +39,22 @@
                     <div class="filter-group">
 
                         <select id="statusFilter" th:field="*{status}">
-                            <option value="">Status: All</option>
-                            <option th:each="s : ${status}" th:value="${s}" th:text="${s}">
+                            <option value="">Trạng thái: Tất cả</option>
+                            <option th:each="s : ${status}" th:value="${s}" th:text="${s.description}">
                             </option>
                         </select>
 
                         <select id="priorityFilter" th:field="*{priority}">
-                            <option value="">Priority: All</option>
-                            <option th:each="pi : ${priorities}" th:value="${pi}" th:text="${pi}">
+                            <option value="">Độ ưu tiên: Tất cả</option>
+                            <option th:each="pi : ${priorities}" th:value="${pi}" th:text="${pi.description}">
                             </option>
                         </select>
 
                         <input type="date" th:field="*{from}">
                         <input type="date" th:field="*{to}">
 
-                        <button type="submit">APPLY</button>
-                        <a class="btn-reset" th:href="@{/purchases}">RESET</a>
+                        <button type="submit">ÁP DỤNG</button>
+                        <a class="btn-reset" th:href="@{/purchases}">ĐẶT LẠI</a>
                     </div>
                 </section>
             </form>
@@ -71,13 +71,13 @@
                 <table class="data-table" id="purchaseTO">
                     <thead>
                         <tr>
-                            <th>PR ID </th>
-                            <th>STATUS </th>
-                            <th>CREATOR </th>
-                            <th>NEEDED DATE</th>
-                            <th>PRIORITY </th>
-                            <th>CREATED AT </th>
-                            <th>ACTIONS</th>
+                            <th>MÃ YC</th>
+                            <th>TRẠNG THÁI</th>
+                            <th>NGƯỜI TẠO</th>
+                            <th>NGÀY CẦN</th>
+                            <th>ĐỘ ƯU TIÊN</th>
+                            <th>NGÀY TẠO</th>
+                            <th>THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,7 +87,8 @@
                             <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
                             <td>
                                 <span th:if="${p.status != null}" class="badge"
-                                    th:classappend="'badge-' + ${p.status.name()}" th:text="${p.status}"></span>
+                                    th:classappend="'badge-' + ${p.status.name()}"
+                                    th:text="${p.status.description}"></span>
                                 <span th:if="${p.status == null}">—</span>
                             </td>
                             <td th:text="${p.creatorName ?: '—'}"></td>
@@ -98,7 +99,8 @@
                             </td>
                             <td>
                                 <span th:if="${p.priority != null}" class="pill"
-                                    th:classappend="'pill-' + ${p.priority}" th:text="${p.priority}"></span>
+                                    th:classappend="'pill-' + ${p.priority}"
+                                    th:text="${T(edu.fpt.groupfive.common.Priority).valueOf(p.priority).description}"></span>
                                 <span th:if="${p.priority == null}">—</span>
                             </td>
                             <td>
@@ -118,14 +120,13 @@
                                     && p.status.name() != 'DRAFT'}">
 
                                             <button type="submit" name="action" value="a" class="btn-approve">
-                                                APPROVE
+                                                DUYỆT
                                             </button>
 
-                                            <button type="button" class="btn-reject" 
-                                                th:data-id="${p.purchaseId}"
+                                            <button type="button" class="btn-reject" th:data-id="${p.purchaseId}"
                                                 th:data-action="@{/purchases/{id}/actions(id=${p.purchaseId})}"
                                                 onclick="openRejectModal(this)">
-                                                REJECT
+                                                TỪ CHỐI
                                             </button>
 
                                         </div>
@@ -135,7 +136,7 @@
                                         <button type="submit"
                                             th:if="${p.status != null && (p.status.name() == 'DRAFT' || p.status.name() == 'PENDING')}"
                                             class="btn-reject" name="action" value="d">
-                                            DELETE
+                                            XÓA
                                         </button>
                                     </div>
 
@@ -145,7 +146,7 @@
                                     <a th:if="${p.status != null && p.status.name() == 'DRAFT'}"
                                         th:href="@{/purchases/{id}/edit(id=${p.purchaseId})}" class="btn-approve"
                                         onclick="event.stopPropagation();">
-                                        UPDATE
+                                        CẬP NHẬT
                                     </a>
                                 </div>
 
@@ -162,7 +163,7 @@
                 <div class="modal">
                     <div class="modal-header">
                         <h3 class="modal-title">
-                            Reject Reason
+                            Lý do từ chối
                         </h3>
 
                         <button type="button" class="modal-close" onclick="closeRejectModal()">✕</button>
@@ -171,16 +172,16 @@
                     <form method="post" id="rejectForm" th:action="@{/purchases/0/actions}">
 
                         <div class="modal-body">
-                            <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
+                            <textarea name="reasonReject" placeholder="Nhập lý do từ chối..." required></textarea>
                         </div>
 
                         <div class="modal-actions">
                             <button type="submit" class="btn-submit" name="action" value="r">
-                                Submit
+                                Xác nhận
                             </button>
 
                             <button type="button" class="btn-cancel" onclick="closeRejectModal()">
-                                Cancel
+                                Hủy
                             </button>
                         </div>
 

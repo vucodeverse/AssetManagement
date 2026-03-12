@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -50,11 +51,11 @@ public class PurchaseServiceImpl implements PurchaseService {
         if (purchaseCreateRequest.getPurchaseId() != null) {
             purchaseId = purchaseCreateRequest.getPurchaseId();
             purchase.setId(purchaseId);
-            purchase.setUpdatedAt(LocalDate.now());
+            purchase.setUpdatedAt(LocalDateTime.now());
             purchaseDAO.update(purchase);
         } else {
             purchase.setCreatedByUser(userId);
-            purchase.setCreatedAt(LocalDate.now());
+            purchase.setCreatedAt(LocalDateTime.now());
             purchaseId = purchaseDAO.insert(purchase);
         }
 

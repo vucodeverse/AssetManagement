@@ -33,7 +33,8 @@ $(document).ready(function () {
             ],
             language: {
                 paginate: { previous: "<", next: ">" },
-                info: "SHOWING _START_ TO _END_ OF _TOTAL_ PURCHASE ORDERS"
+                info: "HIỂN THỊ TỪ _START_ ĐẾN _END_ TRONG TỔNG SỐ _TOTAL_ ĐƠN ĐẶT HÀNG",
+                emptyTable: "Không có đơn đặt hàng nào."
             }
         });
     }

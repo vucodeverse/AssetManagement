@@ -5,6 +5,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -15,7 +16,7 @@ import java.util.List;
 public class PurchaseOrderResponse {
     protected Integer orderId;
     protected Integer purchaseId;
-    protected LocalDate createdAt;
+    protected LocalDateTime createdAt;
     protected String supplierName;
     protected BigDecimal totalAmount;
     protected String note;

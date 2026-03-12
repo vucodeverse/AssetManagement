@@ -1,9 +1,6 @@
 package edu.fpt.groupfive.dto.request;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -19,6 +16,8 @@ public class QuotationDetailCreateRequest {
     @NotNull(message = "Số lượng không được để trống")
     @Min(value = 1, message = "Số lượng không được nhỏ hơn 1")
     private Integer quantity;
+
+    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
     private String quotationDetailNote;
 
     @NotNull(message = "Thời gian bảo hành không được để trống")
@@ -39,5 +38,6 @@ public class QuotationDetailCreateRequest {
     @NotNull(message = "Tên của sản phẩm không được để trống")
     private String assetTypeName;
 
+    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
     private String specificationRequirement;
 }

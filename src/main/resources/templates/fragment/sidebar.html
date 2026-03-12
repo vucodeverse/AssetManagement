@@ -13,41 +13,41 @@
             <!--th:classappend = Thymeleaf attribute để thêm class vào class đã có sẵn-->
             <a class="nav-item" th:href="@{/director/dashboard}"
                 th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
-                <i class="fas fa-th-large"></i> Dashboard
+                <i class="fas fa-th-large"></i> TRANG CHỦ
             </a>
 
             <!-- YÊU CẦU MUA SẮM -->
             <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='purchase' ? ' active' : ''">
-                <i class="fas fa-shopping-cart"></i> Purchases
+                <i class="fas fa-shopping-cart"></i> YÊU CẦU MUA SẮM
             </a>
 
 
 
             <!-- BÁO GIÁ -->
             <a class="nav-item" th:href="@{/quotations}" th:classappend="${activeMenu}=='quotation' ? ' active' : ''">
-                <i class="fas fa-file-invoice"></i> Quotations
+                <i class="fas fa-file-invoice"></i> BÁO GIÁ
             </a>
 
             <!-- TRUNG TÂM PHÊ DUYỆT -->
             <div class="nav-group">
                 <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='approval' ? ' active' : ''">
-                    <i class="fas fa-check-circle"></i> Approval Center
+                    <i class="fas fa-check-circle"></i> TRUNG TÂM PHÊ DUYỆT
                 </a>
 
                 <div class="sub-nav" th:if="${activeMenu}=='approval'">
                     <a class="sub-item" th:href="@{/purchases}" th:classappend="${activeSub}=='pr' ? ' active' : ''">
-                        Purchase Requests
+                        Yêu Cầu Mua Sắm
                     </a>
 
                     <a class="sub-item" th:href="@{/quotations}" th:classappend="${activeSub}=='qt' ? ' active' : ''">
-                        Quotations
+                        Báo Giá
                     </a>
                 </div>
             </div>
 
             <!-- ĐƠN HÀNG MUA SẮM -->
             <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
-                <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
+                <i class="fas fa-file-invoice-dollar"></i> ĐƠN ĐẶT HÀNG
             </a>
         </nav>
 
@@ -55,7 +55,7 @@
             <div class="user-avatar" th:text="${userInitials} ?: 'MT'">MT</div>
             <div class="user-info">
                 <span class="user-name" th:text="${userName} ?: 'Marcus Thorne'">Marcus Thorne</span>
-                <span class="user-role" th:text="${userRole} ?: 'Director'">Director</span>
+                <span class="user-role" th:text="${userRole} ?: 'Giám Đốc'">Giám Đốc</span>
             </div>
         </div>
     </aside>

@@ -2,9 +2,7 @@ package edu.fpt.groupfive.dto.request;
 
 import edu.fpt.groupfive.common.Priority;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -20,6 +18,8 @@ import java.util.List;
 public class PurchaseRequestCreateRequest {
     private Integer purchaseId;
 
+    @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
+    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
     private String purchaseNote;
 
     @NotNull(message = "Ngày cần cấp Không được để trống")
@@ -28,6 +28,8 @@ public class PurchaseRequestCreateRequest {
     private LocalDate neededByDate;
 
     @NotBlank(message = "Lý do Không được để trống")
+    @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
+    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
     private String reason;
 
     @NotNull(message = "Độ ưu tiên Không được để trống")

@@ -12,32 +12,32 @@
             <!-- BẢNG ĐIỀU KHIỀN -->
             <a class="nav-item" th:href="@{/purchase-staff/dashboard}"
                 th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
-                <i class="fas fa-th-large"></i> Dashboard
+                <i class="fas fa-th-large"></i> TRANG CHỦ
             </a>
 
             <!-- YÊU CẦU MUA SẮM -->
             <a class="nav-item" th:href="@{/purchases}"
                 th:classappend="${activeMenu}=='approval' and ${activeSub}=='pr' ? ' active' : ''">
-                <i class="fas fa-shopping-cart"></i> Purchases
+                <i class="fas fa-shopping-cart"></i> YÊU CẦU MUA SẮM
             </a>
 
             <!-- BÁO GIÁ -->
             <a class="nav-item" th:href="@{/quotations}"
                 th:classappend="${activeMenu}=='approval' and ${activeSub}=='qt' ? ' active' : ''">
-                <i class="fas fa-file-invoice"></i> Quotations
+                <i class="fas fa-file-invoice"></i> BÁO GIÁ
             </a>
 
             <!-- ĐƠN HÀNG MUA SẮM -->
             <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
-                <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
+                <i class="fas fa-file-invoice-dollar"></i> ĐƠN ĐẶT HÀNG
             </a>
         </nav>
 
         <div class="sidebar-user">
             <div class="user-avatar" th:text="${userInitials} ?: 'SM'">SM</div>
             <div class="user-info">
-                <span class="user-name" th:text="${userName} ?: 'Staff Member'">Staff Member</span>
-                <span class="user-role" th:text="${userRole} ?: 'Senior Procurement'">Senior Procurement</span>
+                <span class="user-name" th:text="${userName} ?: 'Nhân Viên'">Nhân Viên</span>
+                <span class="user-role" th:text="${userRole} ?: 'Nhân Viên Mua Sắm'">Nhân Viên Mua Sắm</span>
             </div>
             <i class="fas fa-cog user-settings"></i>
         </div>

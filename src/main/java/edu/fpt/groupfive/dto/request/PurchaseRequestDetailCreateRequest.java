@@ -1,8 +1,6 @@
 package edu.fpt.groupfive.dto.request;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -19,8 +17,12 @@ public class PurchaseRequestDetailCreateRequest {
     private Integer quantity;
 
     @NotBlank(message = "Đặc tả Không được để trống")
+    @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
+    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
     private String specificationRequirement;
 
+    @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
+    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
     private String purchaseDetailNote;
 
     @NotNull(message = "Loại tài sản không được để trống")

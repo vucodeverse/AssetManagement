@@ -4,6 +4,7 @@ import edu.fpt.groupfive.common.Request;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Setter
@@ -17,7 +18,7 @@ public class PurchaseRequestResponse {
     private String creatorName;
     private LocalDate neededByDate;
     private String priority;
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
     private List<PurchaseRequestDetailResponse> purchaseDetails;
     private Integer quotationCount;
     private String rejectReason;

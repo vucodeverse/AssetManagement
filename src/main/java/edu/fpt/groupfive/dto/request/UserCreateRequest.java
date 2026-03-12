@@ -4,34 +4,33 @@ import edu.fpt.groupfive.common.Role;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class UserCreateRequest {
-    @NotBlank(message = "Username is required")
+    @NotBlank(message = "Tên đăng nhập là bắt buộc")
     private String username;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 2, message = "Password must be at least {min} characters")
+    @NotBlank(message = "Mật khẩu là bắt buộc")
+    @Size(min = 2, message = "Mật khẩu phải có ít nhất {min} ký tự")
     private String password;
 
-    @NotBlank(message = "First name is required")
+    @NotBlank(message = "Tên là bắt buộc")
     private String firstName;
 
-    @NotBlank(message = "Last name is required")
+    @NotBlank(message = "Họ là bắt buộc")
     private String lastName;
 
-    @Email(message = "Invalid email format")
+    @Email(message = "Định dạng email không hợp lệ")
     private String email;
 
     private String phoneNumber;
 
-    @NotNull(message = "Role is required")
+    @NotNull(message = "Vai trò là bắt buộc")
     private Role role;
 
-    @NotNull(message = "Department is required")
+    @NotNull(message = "Phòng ban là bắt buộc")
     private Integer departmentId;
 
 }

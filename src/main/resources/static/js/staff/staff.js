@@ -14,8 +14,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 order: [[1, "asc"]],
                 language: {
                     paginate: { previous: "<", next: ">" },
-                    info: "SHOWING _START_ TO _END_ OF _TOTAL_ REQUESTS",
-                    emptyTable: "No pending purchase requests."
+                    info: "HIỂN THỊ TỪ _START_ ĐẾN _END_ TRONG TỔNG SỐ _TOTAL_ YÊU CẦU",
+                    emptyTable: "Không có yêu cầu mua sắm đang chờ xử lý."
                 }
             })
         } catch (e) {
@@ -34,8 +34,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 order: [[1, "asc"]],
                 language: {
                     paginate: { previous: "<", next: ">" },
-                    info: "SHOWING _START_ TO _END_ OF _TOTAL_ QUOTATIONS",
-                    emptyTable: "No quotations yet."
+                    info: "HIỂN THỊ TỪ _START_ ĐẾN _END_ TRONG TỔNG SỐ _TOTAL_ BÁO GIÁ",
+                    emptyTable: "Chưa có báo giá nào."
                 }
             })
         } catch (e) {
@@ -54,8 +54,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 order: [[0, "desc"]],
                 language: {
                     paginate: { previous: "<", next: ">" },
-                    info: "SHOWING _START_ TO _END_ OF _TOTAL_ ORDERS",
-                    emptyTable: "No active purchase orders."
+                    info: "HIỂN THỊ TỪ _START_ ĐẾN _END_ TRONG TỔNG SỐ _TOTAL_ ĐƠN ĐẶT HÀNG",
+                    emptyTable: "Không có đơn đặt hàng nào đang hoạt động."
                 }
             })
         } catch (e) {
