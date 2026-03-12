@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lỗi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .error-container {
+            background: #fff;
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .error-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #c62828;
+            margin-bottom: 12px;
+        }
+
+        .error-message {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-back {
+            background: #e8eaf6;
+            color: #3949ab;
+        }
+
+        .btn-back:hover {
+            background: #c5cae9;
+        }
+
+        .btn-home {
+            background: #3949ab;
+            color: #fff;
+        }
+
+        .btn-home:hover {
+            background: #283593;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h1 class="error-title">Đã xảy ra lỗi</h1>
+        <p class="error-message" th:text="${errorMessage}">Đã xảy ra lỗi hệ thống.</p>
+        <div class="error-actions">
+            <button class="btn btn-back" onclick="history.back()">← Quay lại</button>
+            <a class="btn btn-home" th:href="@{/}">Về trang chủ</a>
+        </div>
+    </div>
+</body>
+
+</html>

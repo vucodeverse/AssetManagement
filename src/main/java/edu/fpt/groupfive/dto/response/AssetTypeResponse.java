@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dto.response;
 
+import lombok.Builder;
 import edu.fpt.groupfive.common.AssetTypeClass;
 import edu.fpt.groupfive.common.DepreciationMethod;
 
@@ -11,6 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Builder
 @Setter
 public class AssetTypeResponse {
     private Integer typeId;

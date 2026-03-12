@@ -38,8 +38,16 @@ build/
 ### Mac OS ###
 .DS_Store
 /.idea/
+/target/
+/.smarttomcat/
+/tomcat.8080/
+/.target/
+/.cursor/
 
 
 /out/
-.smarttomcat/ 
-.smarttomcat/ 
+.cursor
+
+### Local docs ###
+docs/
+db-change-notes.md

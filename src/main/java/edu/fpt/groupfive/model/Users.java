@@ -5,8 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 @Getter
 @Setter
 public class Users {
@@ -34,4 +33,8 @@ public class Users {
 
     //Foreign key of table Department
     private Integer departmentId;
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }

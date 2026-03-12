@@ -163,7 +163,8 @@
                 <td th:text="${x.email}"></td>
 <!--                Status-->
                 <td>
-                    <span th:classappend="${x.status == 'ACTIVE' ? 'badge badge-success' : 'badge badge-secondary'}"
+                    <span th:classappend="${x.status == 'ACTIVE' ?
+                    'badge badge-success' : 'badge badge-secondary'}"
                           th:text="${x.status}">
                     </span>
                 </td>

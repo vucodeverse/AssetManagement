@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm Tầng Mới</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: #fff; color: #000; padding: 40px; }
+        .container { max-width: 560px; margin: 0 auto; }
+        .breadcrumb { font-size: 12px; color: #888; margin-bottom: 20px; }
+        .breadcrumb a { color: #888; text-decoration: none; }
+        .breadcrumb a:hover { color: #000; }
+        h1 { font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #000; padding-bottom: 16px; margin-bottom: 32px; }
+        .form-group { margin-bottom: 24px; }
+        label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; color: #666; }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%; padding: 12px; border: 1px solid #000; font-size: 14px;
+            font-family: 'Inter', sans-serif; background-color: #fff; resize: vertical;
+        }
+        input:focus, textarea:focus { outline: none; border-width: 2px; padding: 11px; }
+        .hint { font-size: 11px; color: #888; margin-top: 6px; }
+        .error-message { color: #000; font-size: 12px; font-weight: 600; margin-top: 8px; display: block; border-left: 2px solid #000; padding-left: 8px; }
+        .form-actions { display: flex; gap: 12px; margin-top: 40px; }
+        .btn { padding: 12px 24px; font-size: 13px; font-weight: 600; text-transform: uppercase; cursor: pointer; border: 1px solid #000; text-decoration: none; text-align: center; }
+        .btn-submit { background-color: #000; color: #fff; flex: 1; }
+        .btn-cancel { background-color: #fff; color: #000; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="breadcrumb">
+        <a href="/wh/warehouses">Kho hàng</a> /
+        <a th:href="@{/wh/warehouses/{id}/racks(id=${whId})}" th:text="${rack.warehouseName}"></a> /
+        <a th:href="@{/wh/warehouses/{whId}/racks/{rackId}/shelves(whId=${whId},rackId=${rack.id})}"
+           th:text="${rack.name}"></a> / Thêm tầng
+    </div>
+    <h1>Thêm Tầng Mới</h1>
+
+    <form th:action="@{/wh/warehouses/{whId}/racks/{rackId}/shelves/add(whId=${whId},rackId=${rack.id})}"
+          th:object="${shelf}" method="post">
+        <div class="form-group">
+            <label for="name">Tên Tầng</label>
+            <input type="text" id="name" th:field="*{name}" placeholder="VD: Tầng 1, Tầng A..."/>
+            <span class="error-message" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="maxCapacity">Sức Chứa Tối Đa</label>
+            <input type="number" id="maxCapacity" th:field="*{maxCapacity}" min="1" placeholder="VD: 50"/>
+            <div class="hint">Số lượng tài sản tối đa có thể lưu trên tầng này.</div>
+            <span class="error-message" th:if="${#fields.hasErrors('maxCapacity')}" th:errors="*{maxCapacity}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Mô Tả (tùy chọn)</label>
+            <textarea id="description" th:field="*{description}" rows="3" placeholder="Ghi chú về tầng kệ..."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/wh/warehouses/{whId}/racks/{rackId}/shelves(whId=${whId},rackId=${rack.id})}" class="btn btn-cancel">Hủy</a>
+            <button type="submit" class="btn btn-submit">Xác Nhận Thêm</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

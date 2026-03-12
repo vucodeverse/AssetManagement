@@ -13,9 +13,8 @@ import java.time.LocalDate;
 public class AssetResponse {
 
     private Integer assetId;
-
-    private String serialNumber;
-
+    private String assetName;
+    private  Integer purchaseOrderDetailId;
     private String currentStatus;
 
     private LocalDate warrantyStartDate;
@@ -25,8 +24,8 @@ public class AssetResponse {
     private BigDecimal originalCost;
 
     private Integer assetTypeId;
-
-    private LocalDate acquisitionDate;
     private String assetTypeName;
+    private LocalDate acquisitionDate;
+
 
 }
