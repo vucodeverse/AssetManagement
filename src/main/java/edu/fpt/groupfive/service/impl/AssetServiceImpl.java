@@ -48,6 +48,12 @@ public class AssetServiceImpl implements AssetService {
         return assetMapper.toAssetResponse(asset);
     }
 
+    @Override
+    public List<AssetResponse> getAllByDepartmentId(Integer departmentId) {
+        List<Asset> assets = assetDAO.findAllByDepartmentId(departmentId);
+        return assetMapper.toAssetResponseList(assets);
+    }
+
 
     // create
     @Override

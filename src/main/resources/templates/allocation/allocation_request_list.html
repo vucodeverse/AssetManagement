@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Allocation Request Management</title>
+    <title>Quản lý yêu câu cấp phát</title>
 
     <!-- link CSS -->
     <link rel="stylesheet" th:href="@{/css/allocation/allocation-request-list.css}">
@@ -51,16 +51,16 @@
                         <option value="">Trạng thái: Tất cả</option>
 
                         <option value="PENDING_AM"
-                                th:selected="${status == 'PENDING_AM'}">PENDING_AM
+                                th:selected="${status == 'PENDING_AM'}">ĐANG CHỜ
                         </option>
                         <option value="APPROVED"
-                                th:selected="${status == 'APPROVED'}">APPROVED
+                                th:selected="${status == 'APPROVED'}">DUYỆT
                         </option>
                         <option value="REJECTED"
-                                th:selected="${status == 'REJECTED'}">REJECTED
+                                th:selected="${status == 'REJECTED'}">TỪ CHỐI
                         </option>
                         <option value="COMPLETED"
-                                th:selected="${status == 'COMPLETED'}">COMPLETED
+                                th:selected="${status == 'COMPLETED'}">HOÀN THÀNH
                         </option>
                     </select>
 
@@ -68,13 +68,13 @@
                         <option value="">Ưu tiên: Tất cả</option>
 
                         <option value="HIGH"
-                                th:selected="${priority == 'HIGH'}">HIGH
+                                th:selected="${priority == 'HIGH'}">CAO
                         </option>
                         <option value="MEDIUM"
-                                th:selected="${priority == 'MEDIUM'}">MEDIUM
+                                th:selected="${priority == 'MEDIUM'}">TRUNG BÌNH
                         </option>
                         <option value="LOW"
-                                th:selected="${priority == 'LOW'}">LOW
+                                th:selected="${priority == 'LOW'}">THẤP
                         </option>
                     </select>
 

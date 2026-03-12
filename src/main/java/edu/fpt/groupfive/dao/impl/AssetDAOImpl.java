@@ -174,13 +174,45 @@ public class AssetDAOImpl implements AssetDAO {
         return list;
     }
 
+    @Override
+    public List<Asset> findAllByDepartmentId(Integer departmentId) {
+        String sql = """
+                SELECT a.*, t.type_name
+                  FROM asset a
+                        LEFT JOIN asset_type t
+                                ON a.asset_type_id = t.asset_type_id
+                        LEFT JOIN return_request_detail d
+                                ON d.asset_id = a.asset_id
+                        LEFT JOIN return_request r
+                                ON r.request_id = d.request_id
+                        AND r.status = 'PENDING_AM'
+                WHERE a.department_id = ?
+                        AND r.request_id IS NULL
+                """;
+        List<Asset> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, departmentId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapResultSet(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
 
 
     @Override
     public Optional<AssetDetailResponse> findDetailById(Integer id) {
 
         String sql = """
-                SELECT 
+                SELECT
                     a.*,
                     t.type_name,
                     d.department_name,
@@ -246,20 +278,21 @@ public class AssetDAOImpl implements AssetDAO {
     }
 
     @Override
-    public List<Asset> searchAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate, String direction, int offset, int pageSize) {
+    public List<Asset> searchAssets(String keyword, AssetStatus status, LocalDate fromDate,
+                                    LocalDate toDate, String direction, int offset, int pageSize) {
 
         StringBuilder sql = new StringBuilder("""
-        SELECT a.*, t.type_name
-        FROM asset a
-        LEFT JOIN asset_type t
-            ON a.asset_type_id = t.asset_type_id
-        WHERE 1=1
-        """);
+                SELECT a.*, t.type_name
+                FROM asset a
+                LEFT JOIN asset_type t
+                    ON a.asset_type_id = t.asset_type_id
+                WHERE 1=1
+                """);
 
-        if(keyword!=null &&!keyword.isBlank()){
+        if (keyword != null && !keyword.isBlank()) {
             sql.append(" and a.asset_name like ? ");
         }
-        if(status!=null){
+        if (status != null) {
             sql.append(" and a.current_status = ? ");
         }
 
@@ -284,58 +317,56 @@ public class AssetDAOImpl implements AssetDAO {
             }
 
         } else {
-
             sql.append(" order by a.asset_id ");
-
         }
 
-       sql.append(" offset ? rows fetch next ? rows only ");
-       List<Asset> assets= new ArrayList<>();
-       try(Connection conn = databaseConfig.getConnection();
-       PreparedStatement ps=conn.prepareStatement(sql.toString())){
+        sql.append(" offset ? rows fetch next ? rows only ");
+        List<Asset> assets = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
-           int index=1;
+            int index = 1;
 
-           if(keyword !=null && !keyword.isBlank()){
-               ps.setString(index++, "%" +keyword +"%");
-           }
+            if (keyword != null && !keyword.isBlank()) {
+                ps.setString(index++, "%" + keyword + "%");
+            }
 
-           if(status!=null){
-               ps.setString(index++, status.name());
-           }
+            if (status != null) {
+                ps.setString(index++, status.name());
+            }
 
-           if (fromDate != null) {
-               ps.setDate(index++, Date.valueOf(fromDate));
-           }
+            if (fromDate != null) {
+                ps.setDate(index++, Date.valueOf(fromDate));
+            }
 
-           if (toDate != null) {
-               ps.setDate(index++, Date.valueOf(toDate));
-           }
+            if (toDate != null) {
+                ps.setDate(index++, Date.valueOf(toDate));
+            }
 
-           ps.setInt(index++, offset);
-           ps.setInt(index, pageSize);
+            ps.setInt(index++, offset);
+            ps.setInt(index, pageSize);
 
-           ResultSet rs=ps.executeQuery();
-           while(rs.next()){
-               Asset asset= mapResultSet(rs);
-               assets.add(asset);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Asset asset = mapResultSet(rs);
+                assets.add(asset);
 
-           }
+            }
 
-       } catch (Exception e) {
-           throw new RuntimeException(e);
-       }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return assets;
     }
 
     @Override
-    public int countAssets(String keyword, AssetStatus status,  LocalDate fromDate, LocalDate toDate) {
+    public int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate) {
 
         StringBuilder sql = new StringBuilder("""
-        SELECT COUNT(*)
-        FROM asset a
-        WHERE 1=1
-        """);
+                SELECT COUNT(*)
+                FROM asset a
+                WHERE 1=1
+                """);
 
         if (keyword != null && !keyword.isBlank()) {
             sql.append(" AND a.asset_name LIKE ? ");
@@ -428,12 +459,6 @@ public class AssetDAOImpl implements AssetDAO {
     private java.time.LocalDate toLocalDate(Date date) {
         return date != null ? date.toLocalDate() : null;
     }
-
-
-
-
-
-
 
 
 }

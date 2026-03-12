@@ -4,98 +4,6 @@
 -- =============================================
 -- 1. NHÓM TỔ CHỨC & NGƯỜI DÙNG
 -- =============================================
-/*
-UPDATE users
-SET role = 'ROLE_ADMIN'
-WHERE user_id = 10;
-
-SELECT * FROM departments
-SELECT * FROM users u JOIN departments d ON u.department_id = d.department_id
-
-SELECT 1 FROM Departments WHERE department_name = 'Information Technology Department'
-
-UPDATE Users SET status = 'INACTIVE', updated_date = GETDATE() WHERE user_id = 7;
-
-SELECT 1 FROM Users WHERE email = '0123456789'
-*/
-
-/*
-INSERT INTO departments (department_name, manager_user_id, status, description)
-VALUES 
-('IT Department', NULL, 'ACTIVE', 'Phòng Công nghệ thông tin'),
-('HR Department', NULL, 'ACTIVE', 'Phòng Nhân sự'),
-('Finance Department', NULL, 'ACTIVE', 'Phòng Tài chính - Kế toán'),
-('Marketing Department', NULL, 'ACTIVE', 'Phòng Marketing'),
-('Operations Department', NULL, 'ACTIVE', 'Phòng Vận hành'),
-('Administration Department', NULL, 'ACTIVE', 'Phòng Hành chính');
-
-INSERT INTO users 
-(username, password_hash, first_name, last_name, phone_number, email, status, role, department_id)
-VALUES 
-
-('manager_it', 
- '$2a$10$fakeHashForManager123', 
- 'Nguyen', 'An', 
- '0911111111', 
- 'manager.it@example.com', 
- 'ACTIVE', 'MANAGER', 1),
-
-('staff_it1', 
- '$2a$10$fakeHashForStaff123', 
- 'Tran', 'Binh', 
- '0922222222', 
- 'staff1.it@example.com', 
- 'ACTIVE', 'STAFF', 1),
-
-('staff_hr1', 
- '$2a$10$fakeHashForStaff123', 
- 'Le', 'Chi', 
- '0933333333', 
- 'staff1.hr@example.com', 
- 'ACTIVE', 'STAFF', 2),
-
-('manager_hr', 
- '$2a$10$fakeHashForManager123', 
- 'Pham', 'Dung', 
- '0944444444', 
- 'manager.hr@example.com', 
- 'ACTIVE', 'MANAGER', 2),
-
-('staff_finance', 
- '$2a$10$fakeHashForStaff123', 
- 'Hoang', 'Mai', 
- '0955555555', 
- 'staff.finance@example.com', 
- 'ACTIVE', 'STAFF', 3),
-
-('manager_marketing', 
- '$2a$10$fakeHashForManager123', 
- 'Nguyen', 'Linh', 
- '0966666666', 
- 'manager.marketing@example.com', 
- 'ACTIVE', 'MANAGER', 4),
-
-('staff_marketing', 
- '$2a$10$fakeHashForStaff123', 
- 'Do', 'Thanh', 
- '0977777777', 
- 'staff.marketing@example.com', 
- 'ACTIVE', 'STAFF', 4),
-
-('staff_operations', 
- '$2a$10$fakeHashForStaff123', 
- 'Bui', 'Nam', 
- '0988888888', 
- 'staff.operations@example.com', 
- 'ACTIVE', 'STAFF', 5),
-
-('staff_admin', 
- '$2a$10$fakeHashForStaff123', 
- 'Vu', 'Hoa', 
- '0999999999', 
- 'staff.admin@example.com', 
- 'ACTIVE', 'STAFF', 6);
-*/
 
 
 CREATE TABLE departments (
@@ -400,7 +308,6 @@ CREATE TABLE return_request (
     status                  NVARCHAR(40) NOT NULL,
     wh_confirmed_by          INT NULL,
     wh_confirmed_at          DATETIME2(0) NULL,
-    reason_reject           NVARCHAR(255) NULL,
     created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
     updated_at              DATETIME2(0) NULL,
     PRIMARY KEY (request_id),
@@ -426,3 +333,6 @@ CREATE TABLE return_request_detail (
 	CONSTRAINT FK_return_req_detail_asset
 	FOREIGN KEY (asset_id) REFERENCES asset(asset_id)
 );
+
+
+SELECT * FROM asset_type

@@ -18,7 +18,7 @@ public class AllocationAppController {
     @GetMapping("/listbyAssetMgr")
     public String showList2(Model model) {
         // Lấy toàn bộ dang sách yêu cầu cấp phát
-        List<AllocationRequest> list = allocationRequestService.getAllAllocationRequest(2);
+        List<AllocationRequest> list = allocationRequestService.getAllAllocationRequest(1);
 
         model.addAttribute("requests", list);
 

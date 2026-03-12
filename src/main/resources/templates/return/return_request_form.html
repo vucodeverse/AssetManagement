@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>Tạo yêu cầu trả</title>
 
     <link rel="stylesheet" th:href="@{/css/allocation/allocation-request-form.css}">
@@ -45,7 +45,7 @@
 
             <!-- hidden data -->
             <input type="hidden" name="requesterId" value="1"/>
-            <input type="hidden" name="requestedDepartmentId" value="2"/>
+            <input type="hidden" name="requestedDepartmentId" value="1"/>
 
         </section>
 
@@ -57,62 +57,36 @@
 
             <div class="table-container">
 
-                <table class="pr-table" id="itemTable">
+                <table class="pr-table" id="assetTable">
 
                     <thead>
                     <tr>
-                        <th>TÀI SẢN</th>
-                        <th>GHI CHÚ</th>
-                        <th></th>
+                        <th>ID</th>
+                        <th>Tên tài sản</th>
+                        <th>Ghi chú</th>
+                        <th>Chọn</th>
                     </tr>
                     </thead>
 
                     <tbody>
 
-                    <tr class="item-row">
+                    <tr th:each="a,stat : ${assets}">
 
-                        <!-- asset -->
-                        <td>
-                            <select name="details[0].assetId"
-                                    class="table-input"
-                                    required>
-                                <option value="" hidden>-- Chọn tài sản --</option>
-
-                                <option value="1">
-                                    Laptop Dell Latitude 5440
-                                </option>
-
-                                <option value="2">
-                                    Máy in HP LaserJet Pro
-                                </option>
-
-                                <option value="3">
-                                    iPhone 14
-                                </option>
-
-                                <option value="4">
-                                    Dell UltraSharp U2723QE
-                                </option>
-
-                            </select>
-                        </td>
-
-
+                        <!-- id -->
+                        <td th:text="${a.assetId}"></td>
+                        <!-- name -->
+                        <td th:text="${a.assetTypeName}"></td>
                         <!-- note -->
                         <td>
                             <input type="text"
-                                   name="details[0].note"
-                                   class="table-input"
-                                   placeholder="Ghi chú"/>
+                                   class="noteInput table-input">
                         </td>
-
-                        <!-- remove -->
+                        <!-- tick -->
                         <td>
-                            <button type="button"
-                                    class="btn-remove"
-                                    onclick="removeRow(this)">
-                                ×
-                            </button>
+                            <input type="checkbox"
+                                   class="chkAsset"
+                                   th:value="${a.assetId}"
+                                   onchange="toggleRow(this)">
                         </td>
 
                     </tr>
@@ -121,17 +95,11 @@
 
                 </table>
 
-
-                <button type="button"
-                        class="btn-add-row"
-                        onclick="addRow()">
-                    + Thêm dòng
-                </button>
-
             </div>
 
         </section>
 
+        <div id="detailsContainer"></div>
 
         <!-- ================= FOOTER ================= -->
         <footer class="pr-footer">
@@ -176,72 +144,62 @@
 
 <script>
 
-    function addRow() {
+    function toggleRow(chk) {
 
-        const tbody = document.querySelector("#itemTable tbody");
+        const row = chk.closest("tr");
 
-        const rowCount = tbody.rows.length;
+        const noteInput = row.querySelector(".noteInput");
 
-        const template = tbody.querySelector("tr");
+        // noteInput.disabled = !chk.checked;
+        noteInput.readOnly = !chk.checked;
 
-        const newRow = template.cloneNode(true);
+        buildDetails();
 
-        newRow.querySelectorAll("select, input").forEach((input) => {
+    }
 
-            if (input.name.includes("assetId"))
-                input.name = `details[${rowCount}].assetId`;
 
-            if (input.name.includes("note"))
-                input.name = `details[${rowCount}].note`;
+    function buildDetails() {
 
-            if (input.tagName === "SELECT")
-                input.selectedIndex = 0;
+        const container = document.getElementById("detailsContainer");
 
-            if (input.type === "text")
-                input.value = "";
+        container.innerHTML = "";
 
+        const rows = document.querySelectorAll("#assetTable tbody tr");
+
+        let index = 0;
+
+        rows.forEach(row => {
+
+            const chk = row.querySelector(".chkAsset");
+
+            if (chk.checked) {
+
+                const assetId = chk.value;
+
+                const note = row.querySelector(".noteInput").value;
+
+                container.innerHTML += `
+                <input type="hidden"
+                       name="details[${index}].assetId"
+                       value="${assetId}">
+
+                <input type="hidden"
+                       name="details[${index}].note"
+                       value="${note}">
+            `;
+                index++;
+            }
         });
 
-        tbody.appendChild(newRow);
     }
 
 
-    function reIndex() {
+    document.querySelector("form").addEventListener("submit", function () {
 
-        const rows = document.querySelectorAll("#itemTable tbody tr");
+        buildDetails();
 
-        rows.forEach((row, index) => {
-
-            row.querySelectorAll("select, input").forEach(input => {
-
-                if (input.name.includes("assetId"))
-                    input.name = `details[${index}].assetId`;
-
-                if (input.name.includes("note"))
-                    input.name = `details[${index}].note`;
-
-            });
-
-        });
-
-    }
-
-
-    function removeRow(btn) {
-
-        const tbody = document.querySelector("#itemTable tbody");
-
-        if (tbody.rows.length > 1) {
-
-            btn.closest("tr").remove();
-
-            reIndex();
-
-        }
-
-    }
+    });
 
 </script>
-
 </body>
 </html>

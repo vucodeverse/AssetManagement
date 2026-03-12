@@ -38,7 +38,7 @@ public class AllocationRequestController {
             @RequestParam(required = false, name = "toDate") String toDate,
             Model model) {
 
-        Integer departmentId = 2;
+        Integer departmentId = 1;
 
         LocalDate from = null;
 

@@ -28,8 +28,8 @@ public class WarehouseController {
     private final RackService rackService;
 
     private void loadFormData(Model model) {
-        Map<Integer, String> warehouseStaffs = userService.getAllWarehouseStaffName();
-        model.addAttribute("warehouseStaffs", warehouseStaffs);
+//        Map<Integer, String> warehouseStaffs = userService.getAllWarehouseStaffName();
+//        model.addAttribute("warehouseStaffs", warehouseStaffs);
     }
 
     @GetMapping(path = "/add")

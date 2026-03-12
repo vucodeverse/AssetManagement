@@ -25,6 +25,16 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
     private final ReturnRequestMapper returnRequestMapper;
 
     @Override
+    public List<ReturnRequest> getAllRequest(Integer departmentId) {
+        return returnReqDAO.findAll(departmentId);
+    }
+
+    @Override
+    public ReturnRequest getRequestById(Integer id) {
+        return returnReqDAO.findById(id);
+    }
+
+    @Override
     public void createRequest(ReturnRequestCreateRequest dto) {
         // Map dữ liệu dto vào model
         ReturnRequest returnRequest = returnRequestMapper.toReturnRequest(dto);

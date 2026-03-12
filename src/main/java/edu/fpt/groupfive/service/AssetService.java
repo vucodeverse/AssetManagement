@@ -16,6 +16,8 @@ public interface AssetService {
 
     AssetResponse getById(Integer id);
 
+    List<AssetResponse> getAllByDepartmentId (Integer departmentId);
+
     void create(AssetCreateRequest request);
 
     void update(Integer id, AssetUpdateRequest request);

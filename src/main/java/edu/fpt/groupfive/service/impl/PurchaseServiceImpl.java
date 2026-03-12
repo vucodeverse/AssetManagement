@@ -65,7 +65,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     public PurchaseRequestResponse findById(Integer id) {
 
-        Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
+        Map<Integer, String> userMap = null;
         Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
 
         return purchaseDAO.findById(id)
@@ -98,7 +98,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     public List<PurchaseRequestResponse> findAllPurchases() {
 
         // lấy ra tất user
-        Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
+        Map<Integer, String> userMap = null;
 
         return purchaseDAO.findAll().stream().map(p -> {
             PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(p);
@@ -119,7 +119,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         }
 
         // lấy ra user
-        Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
+        Map<Integer, String> userMap = null;
 
         // Chuyển đổi sang PurchaseRequestResponse để hiển thị trên giao diện
         return purchaseDAO.getPurchaseByFilter(p).stream()

@@ -20,6 +20,7 @@ public interface AssetDAO {
 
     List<Asset> findAll();
 
+    List<Asset> findAllByDepartmentId(Integer departmentId);
 
     Optional<AssetDetailResponse> findDetailById(Integer id);
     List<Asset> searchAssets(

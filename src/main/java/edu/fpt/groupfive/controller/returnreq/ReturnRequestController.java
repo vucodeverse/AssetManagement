@@ -1,14 +1,13 @@
 package edu.fpt.groupfive.controller.returnreq;
 
 import edu.fpt.groupfive.dto.request.ReturnRequestCreateRequest;
+import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
+import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.ReturnRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -17,10 +16,37 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ReturnRequestController {
 
     private final ReturnRequestService returnRequestService;
+    private final AssetService assetService;
+
+    @GetMapping("/list")
+    public String showList(Model model) {
+        model.addAttribute("requests", returnRequestService.getAllRequest(1));
+        return "return/return_request_list";
+    }
+
+    @GetMapping("/detail/{id}")
+    public String showDetailForm(
+            @PathVariable("id") Integer id,
+            Model model) {
+        // Lấy request cần tìm
+
+
+//        model.addAttribute("requestDto", dto);
+//
+//        model.addAttribute("assetType", assetTypeService.getAll());
+//
+//        model.addAttribute("canEdit", false );
+
+        return "allocation/allocation_request_form";
+
+    }
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
+
         model.addAttribute("requestDto", new ReturnRequestCreateRequest());
+
+        model.addAttribute("assets", assetService.getAllByDepartmentId(1));
 
         model.addAttribute("canEdit", true);
 
@@ -43,7 +69,7 @@ public class ReturnRequestController {
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống: " + e.getMessage());
-            return "redirect:/department/allocation-request/create";
+            return "redirect:/department/return_request_form/create";
         }
     }
 }
