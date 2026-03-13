@@ -53,9 +53,6 @@
                     <option value="PENDING_AM"
                             th:selected="${status == 'PENDING_AM'}">ĐANG CHỜ
                     </option>
-                    <option value="APPROVED"
-                            th:selected="${status == 'APPROVED'}">DUYỆT
-                    </option>
                     <option value="COMPLETED"
                             th:selected="${status == 'COMPLETED'}">HOÀN THÀNH
                     </option>
@@ -74,7 +71,7 @@
                 </button>
 
                 <a class="btn-reset" th:href="@{/department/return-request/list}">
-                    RESET
+                    KHỞI ĐỘNG
                 </a>
             </div>
         </section>

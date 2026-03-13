@@ -11,4 +11,5 @@ public interface ReturnRequestService {
     ReturnRequestRespnse getRequestById (Integer id);
     void createRequest(ReturnRequestCreateRequest dto);
     void updateRequest(Integer id, ReturnRequestCreateRequest dto);
+    void deleteRequest(Integer id);
 }

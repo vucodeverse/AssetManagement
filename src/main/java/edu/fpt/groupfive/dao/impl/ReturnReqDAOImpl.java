@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -174,5 +175,10 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<ReturnRequest> search(Integer departmentId, String requestId, LocalDate fromDate, LocalDate toDate) {
+        return List.of();
     }
 }

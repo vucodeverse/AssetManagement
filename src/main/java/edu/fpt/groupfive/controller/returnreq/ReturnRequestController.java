@@ -65,11 +65,11 @@ public class ReturnRequestController {
 
             redirectAttributes.addFlashAttribute("message", "Gửi yêu cầu thành công!");
 
-            return "redirect:/department/return_request_form/list";
+            return "redirect:/department/return-request/list";
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống: " + e.getMessage());
-            return "redirect:/department/return_request_form/create";
+            return "redirect:/department/return-request/create";
         }
     }
 
@@ -117,4 +117,30 @@ public class ReturnRequestController {
             return "redirect:/department/return-request/edit/" + id;
         }
     }
+
+    @PostMapping("/delete/{id}")
+    public String deleteRequest(
+            @PathVariable("id") Integer id,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            returnRequestService.deleteRequest(id);
+
+            redirectAttributes.addFlashAttribute(
+                    "message",
+                    "Xóa thành công!"
+            );
+
+        } catch (Exception e) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    e.getMessage()
+            );
+        }
+
+        return "redirect:/department/return-request/list";
+    }
+
+
 }

@@ -2,6 +2,7 @@ package edu.fpt.groupfive.dao;
 
 import edu.fpt.groupfive.model.ReturnRequest;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ReturnReqDAO {
@@ -10,4 +11,5 @@ public interface ReturnReqDAO {
     Integer insert(ReturnRequest request);
     void update(ReturnRequest request);
     void delete(Integer id);
+    List<ReturnRequest> search(Integer departmentId, String requestId, LocalDate fromDate, LocalDate toDate);
 }

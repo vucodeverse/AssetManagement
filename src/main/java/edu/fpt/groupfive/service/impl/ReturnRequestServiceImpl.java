@@ -61,6 +61,14 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
     public void updateRequest(Integer id, ReturnRequestCreateRequest dto) {
         ReturnRequest returnRequest = returnReqDAO.findById(id);
 
+        if (returnRequest == null) {
+            throw new RuntimeException("Yêu cầu không tồn tại!");
+        }
+
+        if (!"PENDING_AM".equals(returnRequest.getStatus())) {
+            throw new RuntimeException("Chỉ được sửa khi ở trạng thái PENDING_AM!");
+        }
+
         returnRequest.setRequestReason(dto.getRequestReason());
 
         returnReqDAO.update(returnRequest);
@@ -75,5 +83,21 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
         }
 
         returnReqDetailDAO.insertBatch(id, details);
+    }
+
+    @Override
+    public void deleteRequest(Integer id) {
+        ReturnRequest returnRequest = returnReqDAO.findById(id);
+
+        if (returnRequest == null) {
+            throw new RuntimeException("Yêu cầu không tồn tại!");
+        }
+
+        if (!"PENDING_AM".equals(returnRequest.getStatus())) {
+            throw new RuntimeException("Chỉ được xóa khi ở trạng thái PENDING_AM!");
+        }
+
+        returnReqDetailDAO.deleteByRequestId(id);
+        returnReqDAO.delete(id);
     }
 }
