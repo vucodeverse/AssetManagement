@@ -41,15 +41,16 @@ CREATE TABLE category (
 
 CREATE TABLE supplier (
   supplier_id INT IDENTITY NOT NULL,
-  supplier_name VARCHAR(255) NOT NULL,
-  phone_number NVARCHAR(255) NOT NULL,
+  supplier_name NVARCHAR(255) NOT NULL,
+  phone_number NVARCHAR(255) NULL,
   email VARCHAR(255) NOT NULL,
   address VARCHAR(255) NOT NULL,
-  supplier_code VARCHAR(255) NULL,
+  supplier_code VARCHAR(255) NOT NULL UNIQUE,
   tax_code VARCHAR(255) NULL UNIQUE,
-  status VARCHAR(255) NOT NULL,
-  created_date DATE NOT NULL,
-  updated_date DATE NULL,
+  status VARCHAR(20) NOT NULL
+      CHECK (status IN ('ACTIVE', 'INACTIVE')) DEFAULT 'ACTIVE',
+  created_date DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+  updated_date DATETIME2 NULL,
   PRIMARY KEY (supplier_id)
 );
 
