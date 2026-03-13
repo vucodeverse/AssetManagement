@@ -42,7 +42,7 @@ public class AllocationAppController {
         allocationRequestService.updateStatus(
                 id,
                 "APPROVED",
-                6, // id AM (sau này lấy từ session)
+                2, // id AM (sau này lấy từ session)
                 null);
 
         return "redirect:/asset-manager/allocation-request/listbyAssetMgr";
@@ -65,7 +65,7 @@ public class AllocationAppController {
         allocationRequestService.updateStatus(
                 id,
                 "REJECTED",
-                6, // id AM
+                2, // id AM
                 reasonReject); // sau này có thể cho nhập reason
 
         return "redirect:/asset-manager/allocation-request/listbyAssetMgr";

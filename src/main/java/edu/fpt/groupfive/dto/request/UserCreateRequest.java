@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dto.request;
 
 import edu.fpt.groupfive.common.Role;
+import edu.fpt.groupfive.common.UserStatus;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -27,6 +28,8 @@ public class UserCreateRequest {
     private String email;
 
     private String phoneNumber;
+
+    private UserStatus status;
 
     @NotNull(message = "Role is required")
     private Role role;

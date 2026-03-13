@@ -6,7 +6,6 @@
     <meta charset="UTF-8">
     <title>Quản lý người dùng</title>
 
-    ```
     <link rel="stylesheet"
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
@@ -46,7 +45,7 @@
     </h3>
 
     <!-- ===== FORM ===== -->
-    <form th:action="${isEditMode} ? @{/admin/update} : @{/admin/add}"
+    <form th:action="${isEditMode} ? @{/admin/update} : @{/admin/create}"
           th:object="${user}"
           method="post">
 
