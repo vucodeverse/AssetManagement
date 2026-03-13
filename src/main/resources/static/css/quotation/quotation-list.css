@@ -327,3 +327,25 @@ table.dataTable thead .sorting_desc:after {
     margin-left: 5px;
     opacity: 0.5;
 }
+
+.filter-group.dates {
+    position: relative;
+}
+
+.date-error-from {
+    position: absolute;
+    bottom: -18px;
+    left: 60px;
+    color: red;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.date-error-to {
+    position: absolute;
+    bottom: -18px;
+    right: 0;
+    color: red;
+    font-size: 11px;
+    white-space: nowrap;
+}

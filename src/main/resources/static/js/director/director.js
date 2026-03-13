@@ -41,4 +41,12 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error(e);
         }
     }
+
+    // Generic clickable row handler
+    document.addEventListener('click', function(e) {
+        const row = e.target.closest('.clickable-row[data-href]');
+        if (row) {
+            window.location.href = row.getAttribute('data-href');
+        }
+    });
 });

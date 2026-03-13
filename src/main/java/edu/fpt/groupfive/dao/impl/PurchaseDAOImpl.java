@@ -53,7 +53,6 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         if (approvedAt != null) {
             purchase.setApprovedAt(approvedAt.toLocalDateTime());
         }
-        purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
         Timestamp updatedAtTs = rs.getTimestamp("updated_at");
         purchase.setUpdatedAt(updatedAtTs != null ? updatedAtTs.toLocalDateTime() : null);
         return purchase;
@@ -65,8 +64,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
         String sql = "insert into purchase_request (status, note, creator_id, needed_by_date, priority, " +
                 "approved_by_director_id,reject_reason, created_at, updated_at, request_reason, " +
-                "approved_by_director_at," +
-                "purchase_staff_user_id) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+                "approved_by_director_at) values (?,?,?,?,?,?,?,?,?,?,?)";
 
         try (Connection connection = databaseConfig.getConnection()) {
 
@@ -92,7 +90,6 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                         purchase.getApprovedAt() != null
                                 ? Timestamp.valueOf(purchase.getApprovedAt())
                                 : null);
-                preparedStatement.setObject(12, purchase.getPurchaseStaffId());
 
                 preparedStatement.executeUpdate();
 
@@ -181,8 +178,6 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 if (approvedAt != null) {
                     purchase.setApprovedAt(approvedAt.toLocalDateTime());
                 }
-
-                purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
                 purchase.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 LocalDateTime updatedAt = rs.getTimestamp("updated_at").toLocalDateTime();
                 purchase.setUpdatedAt(

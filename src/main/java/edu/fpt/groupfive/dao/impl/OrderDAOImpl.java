@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.*;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,7 +44,7 @@ public class OrderDAOImpl implements OrderDAO {
                 ps.setString(4, order.getOrderStatus() != null ? order.getOrderStatus().toString()
                         : OrderStatus.PENDING.toString());
                 ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-                ps.setObject(6, order.getPurchaseRequestId());
+                ps.setObject(6, order.getPurchaseId());
                 ps.setObject(7, order.getSupplierId());
                 ps.setObject(8, order.getQuotationId());
                 ps.setObject(9, order.getApprovedBy());
@@ -196,7 +195,7 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
                 order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
                         : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
-                order.setPurchaseRequestId(rs.getInt("purchase_request_id"));
+                order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
@@ -236,7 +235,7 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
                 order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
                         : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
-                order.setPurchaseRequestId(rs.getInt("purchase_request_id"));
+                order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
@@ -303,7 +302,7 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
                 order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
                         : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
-                order.setPurchaseRequestId(rs.getInt("purchase_request_id"));
+                order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);

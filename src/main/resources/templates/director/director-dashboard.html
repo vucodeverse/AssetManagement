@@ -50,7 +50,7 @@
                             </thead>
                             <tbody>
                                 <tr class="clickable-row" th:each="p : ${dashboard.recentPRs}"
-                                    th:onclick="|window.location.href='@{/purchases/{id}(id=${p.purchaseId})}'|">
+                                    th:data-href="@{/purchases/{id}(id=${p.purchaseId})}">
                                     <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
                                     <td>
                                         <span th:if="${p.status != null}" class="badge"
@@ -101,7 +101,7 @@
                             </thead>
                             <tbody>
                                 <tr class="clickable-row" th:each="quo : ${dashboard.recentQuotations}"
-                                    th:onclick="|window.location.href='@{/quotations/{id}(id=${quo.quotationId})}'|">
+                                    th:data-href="@{/quotations/{id}(id=${quo.quotationId})}">
                                     <td class="item-id" th:text="${'QUO-' + quo.quotationId}">QUO-123</td>
                                     <td th:text="${quo.supplierName}">Supplier Name</td>
                                     <td th:text="${'PR-' + quo.purchaseId}">PR-045</td>

@@ -3,7 +3,6 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.common.OrderStatus;
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.dao.*;
-import edu.fpt.groupfive.dao.warehouse.InventoryTicketDAO;
 import edu.fpt.groupfive.dao.warehouse.WarehouseDAO;
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
@@ -21,12 +20,10 @@ import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.service.warehouse.InventoryTicketService;
-import edu.fpt.groupfive.service.warehouse.impl.WarehouseService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -50,6 +47,7 @@ public class OrderServiceImpl implements OrderService {
     private final SupplierService supplierService;
     private final WarehouseDAO warehouseDAO;
     private final InventoryTicketService  inventoryTicketService;
+    private final UserDAO userDAO;
 
     // kiểm tra order hợp lệ hay ko
     @Override
@@ -93,7 +91,10 @@ public class OrderServiceImpl implements OrderService {
 
     // tạo order
     @Override
-    public Integer createOrder(Integer quotationId, PurchaseOrderCreateRequest purchaseOrderCreateRequest) {
+    public Integer createOrder(Integer quotationId, PurchaseOrderCreateRequest purchaseOrderCreateRequest,
+                               String username) {
+
+
 
         // ktra tồn tại
         Quotation quotation = quotationDAO.findById(quotationId)
@@ -135,11 +136,12 @@ public class OrderServiceImpl implements OrderService {
         // tạo order
         Order order = new Order();
         order.setQuotationId(quotationId);
-        order.setPurchaseRequestId(quotation.getPurchaseId());
+        order.setPurchaseId(quotation.getPurchaseId());
         order.setOrderStatus(OrderStatus.PENDING);
         order.setOrderNote(purchaseOrderCreateRequest.getOrderNote());
         order.setWarehouseId(whId);
         order.setSupplierId(quotation.getSupplierId());
+        order.setApprovedBy(userDAO.findUserIdByUsername(username));
 
         // tính lại tổng tiền
         orderCalculationUtil.recalculateTotal(purchaseOrderCreateRequest);
@@ -196,7 +198,7 @@ public class OrderServiceImpl implements OrderService {
             throw new InvalidDataException("Tạo purchase order thất bại");
         }
 
-        // Logic tạo Inventory Ticket sau khi PO được tạo thành công
+        //  sau khi PO được tạo thành công
         InventoryTicket ticket = new InventoryTicket();
         ticket.setWarehouseId(order.getWarehouseId());
         ticket.setTicketType(TicketType.IN);
@@ -207,7 +209,7 @@ public class OrderServiceImpl implements OrderService {
             TicketDetail td = new TicketDetail();
             td.setAssetTypeId(od.getAssetTypeId());
             td.setQuantity(od.getQuantity());
-            td.setNote("From Purchase Order #" + orderId);
+            td.setNote(od.getOrderDetailNote());
             ticketDetails.add(td);
         }
 
@@ -278,7 +280,7 @@ public class OrderServiceImpl implements OrderService {
 
         PurchaseOrderResponse response = orderMapper.toPurchaseOrderResponse(order);
         response.setSupplierName(map.getOrDefault(order.getSupplierId(), "N/A"));
-        response.setItems(items);
+        response.setOrderDetails(items);
         response.setSubtotal(calculated[0]);
         response.setTotalDiscount(calculated[1]);
         response.setTotalTax(calculated[2]);

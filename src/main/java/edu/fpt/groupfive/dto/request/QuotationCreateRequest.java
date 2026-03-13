@@ -19,7 +19,7 @@ public class QuotationCreateRequest {
     @NotNull(message = "Purchase id không được để trống")
     private Integer purchaseId;
 
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String quotationNote;
 
     @NotNull(message = "Vui lòng chọn nhà cung cấp")

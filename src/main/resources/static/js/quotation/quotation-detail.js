@@ -1,5 +1,4 @@
 $(document).ready(function () {
-    if (!$('#quotationDetailTable').length) return;
 
     $('#quotationDetailTable').DataTable({
         pageLength: 5,
@@ -21,22 +20,15 @@ $(document).ready(function () {
 function openRejectModal(e, btn) {
     if (e) e.stopPropagation();
 
-    const modal = document.getElementById('rejectModal');
-    const form = document.getElementById('rejectForm');
+    const action = $(btn).data("action");
 
-    if (form && btn) form.action = btn.dataset.action;
-    if (form) form.querySelector('textarea[name="reason"]').value = '';
-    if (modal) modal.style.display = 'block';
+    $('#rejectForm').attr("action", action);
+    $('#rejectModal textarea').val("");
+    $('#rejectModal').css("display", "block");
 }
 
 function closeRejectModal() {
-    const modal = document.getElementById('rejectModal');
-    if (modal) modal.style.display = 'none';
+    $('#rejectModal').css("display", "none");
+
 }
 
-window.onclick = function (event) {
-    const modal = document.getElementById('rejectModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
-    }
-}

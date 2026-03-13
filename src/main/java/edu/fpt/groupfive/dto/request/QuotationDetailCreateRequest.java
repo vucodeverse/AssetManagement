@@ -17,7 +17,7 @@ public class QuotationDetailCreateRequest {
     @Min(value = 1, message = "Số lượng không được nhỏ hơn 1")
     private Integer quantity;
 
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String quotationDetailNote;
 
     @NotNull(message = "Thời gian bảo hành không được để trống")
@@ -38,6 +38,6 @@ public class QuotationDetailCreateRequest {
     @NotNull(message = "Tên của sản phẩm không được để trống")
     private String assetTypeName;
 
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String specificationRequirement;
 }

@@ -24,28 +24,25 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    const filters = ["statusFilter", "priorityFilter", "from", "to"];
-    filters.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("change", function () {
-                const form = document.getElementById("filterForm");
-                if (form) form.submit();
-            });
-        }
+
+    $('#statusFilter, #priorityFilter, #from, #to').change(function (){
+        $('#filterForm').submit();
     });
+
 });
 
-function openRejectModal(btn) {
-    const action = btn.dataset.action;
-    const modal = document.getElementById("rejectModal");
-    const form = document.getElementById("rejectForm");
+function openRejectModal(e,btn) {
+    if(e) e.stopPropagation();
 
-    form.action = action;
-    form.querySelector("textarea").value = "";
-    modal.style.display = "flex";
+    const action = $(btn).data("action"); // biến DOM btn thành object jquery và lấy giá trị ở data-action của html
+
+
+    $('#rejectForm').attr("action", action); // attr dùng để đọc hoặc thay đổi attribute
+    $("#rejectForm textarea").val(""); // xóa nội dung textarea
+    $('#rejectModal').css("display", "flex"); // css cho form
+
 }
 
 function closeRejectModal() {
-    document.getElementById("rejectModal").style.display = "none";
+    $('#rejectModal').css("display", "none")
 }

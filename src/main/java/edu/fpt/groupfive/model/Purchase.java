@@ -22,7 +22,6 @@ public class Purchase extends AbstractEntity<Integer>{
     private Priority priority;
     private Integer approvedByDirector;
     private LocalDateTime approvedAt;
-    private Integer purchaseStaffId;
     private List<PurchaseDetail> purchaseDetails;
     private List<Quotation> quotations;
 }

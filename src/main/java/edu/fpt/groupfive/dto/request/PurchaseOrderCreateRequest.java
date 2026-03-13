@@ -20,7 +20,7 @@ public class PurchaseOrderCreateRequest {
     private Integer supplierId;
 
     @Size(max = 255, message = "Không được quá 255 kí tự")
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String orderNote;
     private BigDecimal totalAmount;
 

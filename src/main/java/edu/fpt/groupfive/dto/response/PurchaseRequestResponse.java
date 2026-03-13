@@ -3,6 +3,7 @@ package edu.fpt.groupfive.dto.response;
 import edu.fpt.groupfive.common.Request;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,4 +23,5 @@ public class PurchaseRequestResponse {
     private List<PurchaseRequestDetailResponse> purchaseDetails;
     private Integer quotationCount;
     private String rejectReason;
+    private BigDecimal totalAmount;
 }

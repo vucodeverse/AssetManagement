@@ -4,8 +4,8 @@
 <body>
 
     <aside class="sidebar" th:fragment="sidebar(activeMenu, activeSub)">
-        <div class="sidebar-logo" th:onclick="|window.location.href='@{/home}'|" style="cursor: pointer;">
-            <i class="fas fa-cube"></i> <span>PROCUREX</span>
+        <div class="sidebar-logo" th:onclick="|window.location.href='@{/director/dashboard}'|" style="cursor: pointer;">
+            <i class="fas fa-cube"></i> <span>Quản Lí</span>
         </div>
 
         <nav class="sidebar-nav">
@@ -19,7 +19,7 @@
             </div>
 
             <div class="nav-group">
-                <div class="nav-group-title">Phê duyệt</div>
+                <div class="nav-group-title">Yêu Cầu</div>
                 <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='approval' ? ' active' : ''">
                     <i class="fas fa-shield-check"></i> PHÊ DUYỆT
                 </a>

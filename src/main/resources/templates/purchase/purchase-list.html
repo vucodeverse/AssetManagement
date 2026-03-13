@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
 <!--~{}: link -->
@@ -23,8 +23,7 @@
                     <h1>QUẢN LÝ YÊU CẦU MUA SẮM</h1>
                     <div class="top-actions">
                         <div sec:authorize="hasAuthority('ASSET_MANAGER')">
-                            <a th:href="@{/purchases/create}" class="btn-create"
-                                style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#1e293b; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:13px;">
+                            <a th:href="@{/purchases/create}" class="btn-create">
                                 <i class="fas fa-plus"></i> Tạo Yêu Cầu Mua Sắm
                             </a>
                         </div>
@@ -125,7 +124,7 @@
 
                                             <button type="button" class="btn-reject" th:data-id="${p.purchaseId}"
                                                 th:data-action="@{/purchases/{id}/actions(id=${p.purchaseId})}"
-                                                onclick="openRejectModal(this)">
+                                                onclick="openRejectModal(event,this)">
                                                 TỪ CHỐI
                                             </button>
 

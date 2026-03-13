@@ -5,16 +5,15 @@ import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.OrderDAO;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.QuotationDAO;
-import edu.fpt.groupfive.dto.response.DashboardDTO;
-import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
-import edu.fpt.groupfive.dto.response.QuotationResponse;
-import edu.fpt.groupfive.dto.response.StaffDashboardDTO;
+import edu.fpt.groupfive.dto.response.*;
 import edu.fpt.groupfive.mapper.OrderMapper;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.dao.SupplierDAO;
 import edu.fpt.groupfive.model.Supplier;
+import edu.fpt.groupfive.service.SupplierService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +28,7 @@ public class DashboardServiceImpl implements DashboardService {
         private final OrderDAO orderDAO;
         private final SupplierDAO supplierDAO;
         private final UserServiceImpl userService;
+        private final SupplierService supplierService;
 
         private final PurchaseMapper purchaseMapper;
         private final OrderMapper orderMapper;
@@ -77,13 +77,22 @@ public class DashboardServiceImpl implements DashboardService {
         // db của pstaff
         @Override
         public StaffDashboardDTO getStaffDashboardData() {
+
+            Map<Integer, String> mapSupplier = supplierService.getSupplierIdToNameMap();
+            Map<Integer, String> mapUser = userService.getUserIdToUsernameMap();
+
                 return StaffDashboardDTO.builder()
                                 .approvedPRs(purchaseDAO.findAll().stream().filter(p -> Request.APPROVED.equals(p.getStatus()))
                                                 .map(purchaseMapper::toPurchaseResponse)
                                                 .toList())
                                 .recentQuotations(fetchRecentQuotations(QuotationStatus.DRAFT))
                                 .activeOrders(orderDAO.findRecent().stream()
-                                                .map(orderMapper::toPurchaseOrderResponse)
+                                                .map(o ->{
+                                                    PurchaseOrderResponse or = orderMapper.toPurchaseOrderResponse(o);
+                                                    or.setSupplierName(mapSupplier.getOrDefault(o.getSupplierId(), "N/A"));
+                                                    or.setApprovedByName(mapUser.getOrDefault(o.getSupplierId(), "N/A"));
+                                                    return or;
+                                                })
                                                 .toList())
                                 .build();
         }

@@ -1,37 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout/main-layout}">
 
 <head>
     <meta charset="UTF-8">
-    <title>Purchase Staff Dashboard - PROCUREOS</title>
+    <title>Bảng điều khiển Nhân viên Mua sắm - ProcureOS</title>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" th:href="@{/css/staff/staff-dashboard.css}">
-        <style>
-            .dataTables_wrapper .dataTables_paginate .paginate_button {
-                padding: 0.2rem 0.5rem;
-                margin: 0 0.1rem;
-                background: #f1f5f9;
-                border: none;
-                border-radius: 4px;
-                color: #0f172a !important;
-                font-weight: 700;
-                font-size: 11px;
-            }
-
-            .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-                background: #000 !important;
-                color: #fff !important;
-            }
-
-            .dataTables_wrapper .dataTables_info {
-                font-size: 11px;
-                color: var(--muted);
-                font-weight: 600;
-                text-transform: uppercase;
-                margin-top: 10px;
-            }
-        </style>
     </th:block>
 </head>
 
@@ -41,12 +16,12 @@
             <!-- Header section -->
             <header class="dashboard-header">
                 <div class="header-left">
-                    <h1>PURCHASE STAFF DASHBOARD</h1>
-                    <p>Manage quotations and track active purchase orders.</p>
+                    <h1>BẢNG ĐIỀU KHIỂN NHÂN VIÊN MUA SẮM</h1>
+                    <p>Quản lý báo giá và theo dõi đơn đặt hàng đang hoạt động.</p>
                 </div>
                 <div class="top-actions">
-                    <i class="far fa-bell icon-btn" style="padding: 10px; cursor: pointer;"></i>
-                    <i class="fas fa-cog icon-btn" style="padding: 10px; cursor: pointer;"></i>
+                    <i class="far fa-bell icon-btn header-icon-btn"></i>
+                    <i class="fas fa-cog icon-btn header-icon-btn"></i>
                 </div>
             </header>
 
@@ -56,17 +31,17 @@
                 <section class="dash-card">
                     <div class="card-header">
                         <div style="display: flex; align-items: center;">
-                            <h2>Purchase Requests Awaiting Quotation</h2>
+                            <h2>Yêu cầu mua sắm đang chờ báo giá</h2>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="pr-table" id="staff-pr-table">
                             <thead>
                                 <tr>
-                                    <th>REQUEST DETAILS</th>
-                                    <th>DEADLINE</th>
-                                    <th>PRIORITY</th>
-                                    <th>ACTION</th>
+                                    <th>CHI TIẾT YÊU CẦU</th>
+                                    <th>HẠN CHÓT</th>
+                                    <th>ĐỘ ƯU TIÊN</th>
+                                    <th>THAO TÁC</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -74,9 +49,6 @@
                                     <td>
                                         <div class="pr-info">
                                             <strong th:text="'#PR-' + ${pr.getPurchaseId}">#PR-2024-001</strong>
-                                            <span
-                                                th:text="${pr.creatorName != null ? 'Requested by ' + pr.creatorName : 'Requested by Unknown'}">Requested
-                                                by Alex Rivera</span>
                                         </div>
                                     </td>
                                     <td>
@@ -85,13 +57,12 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="status-badge" th:classappend="${pr.priority.toLowerCase()}"
-                                            style="background: #f1f5f9; color: #000; font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: 800;"
+                                        <span class="status-badge priority-pill" th:classappend="${pr.priority.toLowerCase()}"
                                             th:text="${T(edu.fpt.groupfive.common.Priority).valueOf(pr.priority).description}">URGENT</span>
                                     </td>
                                     <td>
                                         <a th:href="@{/quotations/create/{id}(id=${pr.getPurchaseId})}"
-                                            class="btn-create-quote">CREATE QUOTE</a>
+                                            class="btn-create-quote">TẠO BÁO GIÁ</a>
                                     </td>
                                 </tr>
                             </tbody>
@@ -102,39 +73,30 @@
                 <!-- Right: My Quotations -->
                 <section class="dash-card">
                     <div class="card-header">
-                        <h2>My Quotations</h2>
-                        <a th:href="@{/quotations}" class="view-all"
-                            style="font-size: 12px; font-weight: 700; color: var(--muted2); text-decoration: none;">View
-                            All</a>
+                        <h2>Báo giá của tôi</h2>
+                        <a th:href="@{/quotations}" class="view-all">Xem tất cả</a>
                     </div>
                     <div class="table-responsive">
-                        <table class="pr-table" id="staff-quo-table" style="width: 100%; border-collapse: collapse;">
-                            <thead style="display: none;">
+                        <table class="pr-table quo-table-body" id="staff-quo-table">
+                            <thead class="quo-table-header">
                                 <tr>
-                                    <th>Quotation Detail</th>
-                                    <th style="text-align: right;">Status</th>
+                                    <th>Chi tiết báo giá</th>
+                                    <th class="text-right">Trạng thái</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="quo : ${dashboard.recentQuotations}">
-                                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--border);">
-                                        <div class="quo-details"
-                                            style="display: flex; flex-direction: column; gap: 4px;">
-                                            <a th:href="@{/quotations/{id}(id=${quo.quotationId})}"
-                                                style="text-decoration: none; color: inherit;">
-                                                <strong th:text="'#QTN-' + ${quo.quotationId}"
-                                                    style="font-size: 13px; font-weight: 700;">#QTN-9901</strong>
+                                    <td class="quo-cell">
+                                        <div class="quo-details quo-stack">
+                                            <a th:href="@{/quotations/{id}(id=${quo.quotationId})}" class="quo-id-link">
+                                                <strong th:text="'#QTN-' + ${quo.quotationId}">#QTN-9901</strong>
                                             </a>
-                                            <span th:text="${quo.supplierName}"
-                                                style="font-size: 11px; color: var(--muted); font-weight: 500;">Global
-                                                Logistics</span>
+                                            <span th:text="${quo.supplierName}" class="quo-supplier-name">Global Logistics</span>
                                         </div>
                                     </td>
-                                    <td
-                                        style="padding: 12px 16px; border-bottom: 1px solid var(--border); text-align: right;">
-                                        <div class="status-label" th:text="${quo.quotationStatus.description}"
-                                            th:classappend="${quo.quotationStatus.name().toLowerCase()}"
-                                            style="font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: inline-block;">
+                                    <td class="quo-cell text-right">
+                                        <div class="status-label quo-status-pill" th:text="${quo.quotationStatus.description}"
+                                            th:classappend="${quo.quotationStatus.name().toLowerCase()}">
                                             DRAFT</div>
                                     </td>
                                 </tr>
@@ -145,27 +107,27 @@
             </div>
 
             <!-- Bottom: PO Monitoring -->
-            <section class="dash-card" style="width: 100%;">
+            <section class="dash-card w-full">
                 <div class="card-header">
-                    <h2>Active Purchase Orders Monitoring</h2>
+                    <h2>Theo dõi đơn đặt hàng đang hoạt động</h2>
                     <div class="nav-arrows">
                         <!-- Navigation arrows as placeholder per image 2 -->
-                        <i class="fas fa-chevron-left" style="padding: 5px; color: #cbd5e1; cursor: pointer;"></i>
-                        <i class="fas fa-chevron-right" style="padding: 5px; color: #cbd5e1; cursor: pointer;"></i>
+                        <i class="fas fa-chevron-left nav-arrow"></i>
+                        <i class="fas fa-chevron-right nav-arrow"></i>
                     </div>
                 </div>
                 <div class="table-responsive">
                     <table class="po-full-table" id="staff-po-table">
                         <thead>
                             <tr>
-                                <th>PO ID</th>
-                                <th>CREATED AT</th>
-                                <th>SUPPLIER NAME</th>
-                                <th>TOTAL AMOUNT</th>
-                                <th>NOTE</th>
-                                <th>STATUS</th>
-                                <th>APPROVED BY</th>
-                                <th style="text-align: right;">QUICK ACTIONS</th>
+                                <th>MÃ ĐH</th>
+                                <th>NGÀY TẠO</th>
+                                <th>NHÀ CUNG CẤP</th>
+                                <th>TỔNG GIÁ TIỀN</th>
+                                <th>GHI CHÚ</th>
+                                <th>TRẠNG THÁI</th>
+                                <th>NGƯỜI DUYỆT</th>
+                                <th class="text-right">THAO TÁC NHANH</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -176,11 +138,10 @@
                                 <td th:text="${#temporals.format(po.createdAt, 'MMM dd, yyyy')}">Oct 10, 2024</td>
                                 <td th:text="${po.supplierName}">Northern Energy</td>
                                 <td th:text="${#numbers.formatCurrency(po.totalAmount)}">$1,200.00</td>
-                                <td th:text="${po.note}">Standard order</td>
+                                <td th:text="${po.getOrderNote}">Standard order</td>
                                 <td>
-                                    <span class="status-badge" th:classappend="${po.status.toLowerCase()}"
-                                        style="background: #000; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800;"
-                                        th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(po.status).description}">SHIPPED</span>
+                                    <span class="status-badge po-status-badge" th:classappend="${po.getOrderStatus.toLowerCase()}"
+                                        th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(po.getOrderStatus).description}">SHIPPED</span>
                                 </td>
                                 <td th:text="${po.approvedByName}">John Doe</td>
                                 <td>

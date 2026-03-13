@@ -17,6 +17,7 @@ import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -85,11 +86,16 @@ public class PurchaseServiceImpl implements PurchaseService {
                                     .build())
                             .toList();
 
+                    // tính total amount
+                    BigDecimal totalAmount = p.getPurchaseDetails().stream().map(pd ->
+                         pd.getEstimatePrice().multiply(new BigDecimal(pd.getQuantity()))).reduce(BigDecimal.ZERO, BigDecimal::add);
+
                     // map snag purchase response
                     PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(p);
                     resp.setCreatorName(userMap.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"));
                     resp.setPurchaseDetails(details);
                     resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()));
+                    resp.setTotalAmount(totalAmount);
                     return resp;
                 })
                 .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại: " + id));

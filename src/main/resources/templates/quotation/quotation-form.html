@@ -3,7 +3,7 @@
      layout:decorate="~{layout/main-layout}">
 
 <head>
-     <title>Tạo Báo Giá Nhà Cung Cấp | PROCUREX</title>
+     <title>Tạo Báo Giá Nhà Cung Cấp</title>
      <th:block layout:fragment="extra-css">
           <link rel="preconnect" href="https://fonts.googleapis.com">
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,24 +177,6 @@
                                    </tr>
                               </tbody>
                          </table>
-
-                         <!-- Khu vực tổng kết -->
-                         <div class="summary-container">
-                              <div class="summary-box">
-                                   <div class="summary-row">
-                                        <span>TẠM TÍNH:</span>
-                                        <span id="subtotalDisplay">$ 0.00</span>
-                                   </div>
-                                   <div class="summary-row">
-                                        <span>TỔNG THUẾ:</span>
-                                        <span id="taxDisplay">$ 0.00</span>
-                                   </div>
-                                   <div class="summary-row grand-total">
-                                        <span>TỔNG CỘNG:</span>
-                                        <span id="grandTotalDisplay">$ 0.00</span>
-                                   </div>
-                              </div>
-                         </div>
                     </div>
 
                     <div class="form-footer-actions">
@@ -216,10 +198,6 @@
           </div>
      </div>
 
-     <th:block layout:fragment="extra-js">
-          <script th:src="@{/js/quotation/quotation-form.js}"></script>
-
-     </th:block>
 </body>
 
 </html>

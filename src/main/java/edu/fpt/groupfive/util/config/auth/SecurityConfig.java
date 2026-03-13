@@ -28,7 +28,7 @@ public class SecurityConfig {
         private boolean securityEnable;
 
         // các url dc truy cập tự do
-        private final String[] WHITE_LIST = { "/auth/login", "/static/css/**" };
+        private final String[] WHITE_LIST = { "/auth/login", "/static/**" };
 
         @Bean
         public PasswordEncoder passwordEncoder() {

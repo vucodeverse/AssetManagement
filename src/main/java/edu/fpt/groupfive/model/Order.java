@@ -1,7 +1,6 @@
 package edu.fpt.groupfive.model;
 
 import edu.fpt.groupfive.common.OrderStatus;
-import edu.fpt.groupfive.common.Request;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +13,7 @@ public class Order extends AbstractEntity<Integer>{
     private BigDecimal totalAmount;
     private OrderStatus orderStatus;
     private String orderNote;
-    private Integer purchaseRequestId;
+    private Integer purchaseId;
     private Integer supplierId;
     private Integer quotationId;
     private Integer approvedBy;

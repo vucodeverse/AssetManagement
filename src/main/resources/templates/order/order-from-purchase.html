@@ -94,10 +94,10 @@
               <td th:text="${po.supplierName}">Supplier</td>
               <td class="td-amount" th:text="${#numbers.formatDecimal(po.totalAmount, 1, 'COMMA', 2, 'POINT')}">$0.00
               </td>
-              <td class="td-note" th:text="${po.note}">Note</td>
+              <td class="td-note" th:text="${po.getOrderNote}">Note</td>
               <td>
-                <span class="status-tag" th:classappend="${po.status}"
-                  th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(po.status).description}">STATUS</span>
+                <span class="status-tag" th:classappend="${po.getOrderStatus}"
+                  th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(po.getOrderStatus).description}">STATUS</span>
               </td>
               <td th:text="'PR-' + ${po.purchaseId}">PR-001</td>
             </tr>

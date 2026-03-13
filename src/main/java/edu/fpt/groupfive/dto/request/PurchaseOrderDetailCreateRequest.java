@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -33,7 +32,7 @@ public class PurchaseOrderDetailCreateRequest {
     private Integer assetTypeId;
     private Integer quotationDetailId;
 
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String orderDetailNote;
 
     @Min(value = 0, message = "Giảm giá không đượcc <0")

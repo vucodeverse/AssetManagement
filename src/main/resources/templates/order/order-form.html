@@ -181,18 +181,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Tóm tắt tài chính -->
-                    <div class="financial-summary">
-                        <div class="total-line">
-                            <span>TOTAL AMOUNT</span>
-                            <span id="grandTotalDisplay" th:text="${orderCreateRequest.totalAmount != null ?
-                                              '$' + #numbers.formatDecimal(orderCreateRequest.totalAmount, 1, 'COMMA', 0, 'POINT')
-                                              : '$0'}">
-                                $0
-                            </span>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Các nút điều hướng cuối -->

@@ -46,6 +46,12 @@
                             </button>
                         </form>
                     </div>
+
+                    <div class="manager-actions" sec:authorize="hasAuthority('PURCHASE_STAFF')"
+                         th:if="${purchase.status.name() == 'APPROVED'}">
+                        <a th:href="@{/quotations/create/{id}(id=${purchase.purchaseId})}"
+                           class="btn-create-quote">TẠO BÁO GIÁ</a>
+                    </div>
                     <div th:if="${purchase.status.name() == 'PENDING'}" style="display: flex; gap: 12px;"
                         sec:authorize="hasAuthority('DIRECTOR')">
                         <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
@@ -58,6 +64,7 @@
                         </button>
                     </div>
                 </div>
+
             </header>
 
             <!-- Nội dung chi tiết yêu cầu mua sắm -->
@@ -142,13 +149,10 @@
 
                 <!-- Tóm tắt tài chính -->
                 <div class="summary-area">
-                    <div class="summary-line">
-                        <span>TỔNG DỰ KIẾN</span>
-                        <strong id="subtotal">0</strong>
-                    </div>
                     <div class="summary-line total">
-                        <span>TỔNG YÊU CẦU MUA SẮM</span>
-                        <strong id="total">0</strong>
+                        <span>TỔNG YÊU CẦU MUA SẮM </span>
+                        <strong th:text="${#numbers.formatDecimal(purchase.totalAmount,0, 'COMMA', 2, 'POINT')}">0
+                        </strong>
                     </div>
                     <!-- Phần tóm tắt báo giá liên quan -->
                     <div class="quotations-summary-section" th:if="${purchase.status.name() == 'APPROVED'}">
@@ -163,10 +167,6 @@
                                 <a th:href="@{/quotations/of-purchase/{id}(id=${purchase.purchaseId})}"
                                     class="btn-outline">
                                     <i class="fas fa-file-invoice"></i> Xem tất cả
-                                </a>
-                                <a th:href="@{/quotations/create/{id}(id=${purchase.purchaseId})}" class="btn-solid"
-                                    th:if="${purchase.status.name() == 'PENDING'}">
-                                    <i class="fas fa-plus"></i> Thêm báo giá mới
                                 </a>
                             </div>
                         </div>

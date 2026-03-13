@@ -9,7 +9,7 @@ import java.util.List;
 public interface OrderService {
     PurchaseOrderCreateRequest checkFormCreateOrder(Integer quotationId);
 
-    Integer createOrder(Integer quotationId, PurchaseOrderCreateRequest orderCreateRequest);
+    Integer createOrder(Integer quotationId, PurchaseOrderCreateRequest orderCreateRequest, String username);
 
     List<PurchaseOrderResponse> getPurchaseOrders(PurchaseOrderSearchCriteria criteria);
 

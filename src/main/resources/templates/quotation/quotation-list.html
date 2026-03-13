@@ -1,6 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/main-layout}" xmlns:sec="http://www.w3.org/1999/xhtml">
+    layout:decorate="~{layout/main-layout}" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <meta charset="UTF-8">
@@ -48,16 +48,16 @@
                             <option value="20000+">20,000+</option>
                         </select>
                     </div>
-                    <div class="filter-group dates" style="position: relative;">
+                    <div class="filter-group dates">
                         <label>NGÀY:</label>
-                        <input type="date" th:field="*{from}">
+                        <input type="date" th:field="*{from}" id="from">
                         <span class="to-text">đến</span>
-                        <input type="date" th:field="*{to}">
+                        <input type="date" th:field="*{to}" id="to">
                         <div th:if="${#fields.hasErrors('from')}" th:errors="*{from}"
-                            style="position: absolute; bottom: -18px; left: 60px; color: red; font-size: 11px; white-space: nowrap;">
+                            class="date-error-from">
                         </div>
                         <div th:if="${#fields.hasErrors('to')}" th:errors="*{to}"
-                            style="position: absolute; bottom: -18px; right: 0; color: red; font-size: 11px; white-space: nowrap;">
+                            class="date-error-to">
                         </div>
                     </div>
                     <div class="filter-actions">

@@ -18,11 +18,11 @@ public class PurchaseRequestDetailCreateRequest {
 
     @NotBlank(message = "Đặc tả Không được để trống")
     @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String specificationRequirement;
 
     @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String purchaseDetailNote;
 
     @NotNull(message = "Loại tài sản không được để trống")

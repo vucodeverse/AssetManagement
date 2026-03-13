@@ -4,7 +4,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,11 +18,11 @@ public class PurchaseOrderResponse {
     protected LocalDateTime createdAt;
     protected String supplierName;
     protected BigDecimal totalAmount;
-    protected String note;
-    protected String status;
+    protected String orderNote;
+    protected String orderStatus;
     protected String approvedByName;
 
-    private List<PurchaseOrderDetailResponse> items;
+    private List<PurchaseOrderDetailResponse> orderDetails;
     private BigDecimal subtotal;
     private BigDecimal totalDiscount;
     private BigDecimal totalTax;

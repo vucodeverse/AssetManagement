@@ -48,8 +48,8 @@
           <div class="info-item">
             <label>TRẠNG THÁI HIỆN TẠI</label>
             <div>
-              <span class="status-badge" th:classappend="${order.status}"
-                th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(order.status).description}">PENDING
+              <span class="status-badge" th:classappend="${order.getOrderStatus}"
+                th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(order.getOrderStatus).description}">PENDING
                 REVIEW</span>
             </div>
           </div>
@@ -61,7 +61,7 @@
             style="display:flex; align-items:center; gap:16px;">
             <label>CẬP NHẬT NGÀY GIAO HÀNG:</label>
             <input type="date" name="deliveryDate" class="delivery-input" required
-              th:value="${order.items[0].deliveryDate}">
+              th:value="${order.getOrderDetails[0].deliveryDate}">
             <button type="submit" class="btn-update-date">CẬP NHẬT</button>
           </form>
         </div>
@@ -85,7 +85,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr th:each="item : ${order.items}">
+                <tr th:each="item : ${order.getOrderDetails}">
                   <td class="td-id" th:text="'#IT-' + ${item.id}">#IT-001</td>
                   <td class="td-bold" th:text="${item.assetTypeName}">MacBook Pro 14" M3</td>
                   <td th:text="${#numbers.formatInteger(item.quantity, 2)}">05</td>

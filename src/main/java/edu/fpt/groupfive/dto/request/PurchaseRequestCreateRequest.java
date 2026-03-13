@@ -19,7 +19,7 @@ public class PurchaseRequestCreateRequest {
     private Integer purchaseId;
 
     @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String purchaseNote;
 
     @NotNull(message = "Ngày cần cấp Không được để trống")
@@ -29,7 +29,7 @@ public class PurchaseRequestCreateRequest {
 
     @NotBlank(message = "Lý do Không được để trống")
     @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String reason;
 
     @NotNull(message = "Độ ưu tiên Không được để trống")

@@ -13,10 +13,5 @@ public interface OrderMapper {
     Order toOrder(PurchaseOrderCreateRequest orderCreateRequest);
 
     @Mapping(target = "orderId", source = "id")
-    @Mapping(target = "purchaseId", source = "purchaseRequestId")
-    @Mapping(target = "totalAmount", source = "totalAmount")
-    @Mapping(target = "note", source = "orderNote")
-    @Mapping(target = "items", source = "orderDetails")
-    @Mapping(target = "status", expression = "java(order.getOrderStatus() != null ? order.getOrderStatus().name() : null)")
     PurchaseOrderResponse toPurchaseOrderResponse(Order order);
 }
