@@ -14,6 +14,7 @@ import edu.fpt.groupfive.service.ReturnRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -99,5 +100,10 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
 
         returnReqDetailDAO.deleteByRequestId(id);
         returnReqDAO.delete(id);
+    }
+
+    @Override
+    public List<ReturnRequestRespnse> searchRequest(Integer departmentId, String requestId, LocalDate fromDate, LocalDate toDate) {
+        return returnRequestMapper.toResponseList(returnReqDAO.search(departmentId, requestId, fromDate, toDate));
     }
 }

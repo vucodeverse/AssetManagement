@@ -5,7 +5,6 @@ import edu.fpt.groupfive.common.UserStatus;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

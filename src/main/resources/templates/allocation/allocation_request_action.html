@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Confirm Allocation Request Management</title>
+    <title>Xử lý yêu cầu cấp phát</title>
 
     <!-- link CSS -->
     <link rel="stylesheet" th:href="@{/css/allocation/allocation-request-list.css}">
@@ -37,29 +37,29 @@
                 <div class="filter-group">
                     <select>
                         <option value="">Trạng thái: Tất cả</option>
-                        <option value="PENDING_AM">PENDING_AM</option>
-                        <option value="APPROVED">APPROVED</option>
-                        <option value="REJECTED">REJECTED</option>
-                        <option value="COMPLETED">COMPLETED</option>
+                        <option value="PENDING_AM">ĐANG CHỜ</option>
+                        <option value="APPROVED">ĐÃ DUYỆT</option>
+                        <option value="REJECTED">TỪ CHỐI</option>
+                        <option value="COMPLETED">HOÀN THÀNH</option>
 
                     </select>
 
                     <select>
                         <option value="">Ưu tiên: Tất cả</option>
-                        <option value="HIGH">HIGH</option>
-                        <option value="MEDIUM">MEDIUM</option>
-                        <option value="LOW">LOW</option>
+                        <option value="HIGH">CAO</option>
+                        <option value="MEDIUM">TRUNG BÌNH</option>
+                        <option value="LOW">THẤP</option>
                     </select>
 
                     <input type="date">
                     <input type="date">
 
                     <button type="submit">
-                        APPLY
+                        ÁP DỤNG
                     </button>
 
                     <a class="btn-reset" th:href="@{/asset-manager/allocation-request/list}">
-                        RESET
+                        CHẠY LẠI
                     </a>
                 </div>
             </section>
@@ -77,6 +77,7 @@
                         <th>ID yêu cầu</th>
                         <th>Trạng thái</th>
                         <th>Người tạo</th>
+                        <th>Phòng ban</th>
                         <th>Ngày cần nhận</th>
                         <th>Độ ưu tiên</th>
                         <th>Ngày khởi tạo</th>
@@ -101,7 +102,11 @@
                         </td>
 
                         <!-- REQUESTER -->
-                        <td th:text="${x.requesterId}">
+                        <td th:text="${x.userName}">
+                        </td>
+
+                        <!-- DEPARTMENT -->
+                        <td th:text="${x.requestedDepartmentName}">
                         </td>
 
                         <!-- NEEDED DATE -->

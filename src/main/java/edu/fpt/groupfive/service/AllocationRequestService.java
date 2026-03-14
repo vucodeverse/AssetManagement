@@ -25,9 +25,4 @@ public interface AllocationRequestService {
             LocalDate fromDate, LocalDate toDate/*int offset, int size*/
     );
 
-    int countAll(Integer departmentId);
-
-    int countFiltered(Integer departmentId, String requestId, String status,
-            String priority, LocalDate fromDate, LocalDate toDate
-    );
 }

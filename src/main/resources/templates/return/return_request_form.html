@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8"/>
-    <title>Tạo yêu cầu trả</title>
+    <title>Yêu cầu trả tài sản</title>
 
     <link rel="stylesheet" th:href="@{/css/allocation/allocation-request-form.css}">
 </head>
@@ -86,8 +86,7 @@
                         <td>
                             <input type="text"
                                    th:readonly="${canEdit != null && !canEdit}"
-                                   th:value="${a.note}"
-                                   class="noteInput table-input">
+                                   th:value="${a.note}">
                         </td>
                         <!-- tick -->
                         <td>

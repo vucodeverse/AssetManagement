@@ -10,6 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/department/return-request")
@@ -19,8 +22,30 @@ public class ReturnRequestController {
     private final AssetService assetService;
 
     @GetMapping("/list")
-    public String showList(Model model) {
-        model.addAttribute("requests", returnRequestService.getAllRequest(1));
+    public String showList(@RequestParam(required = false, name = "search") String search,
+                           @RequestParam(required = false, name = "fromDate") String fromDate,
+                           @RequestParam(required = false, name = "toDate") String toDate,
+                           Model model) {
+
+        LocalDate from = null;
+
+        LocalDate to = null;
+
+        if (fromDate != null && !fromDate.isEmpty()) {
+            from = LocalDate.parse(fromDate);
+        }
+
+        if (toDate != null && !toDate.isEmpty()) {
+            to = LocalDate.parse(toDate);
+        }
+
+        List<ReturnRequestRespnse> list = returnRequestService.searchRequest(1, search, from, to);
+
+        model.addAttribute("requests", list);
+        model.addAttribute("search", search);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+
         return "return/return_request_list";
     }
 
@@ -28,14 +53,14 @@ public class ReturnRequestController {
     public String showDetailForm(
             @PathVariable("id") Integer id,
             Model model) {
-         //Lấy request cần tìm
+        //Lấy request cần tìm
         ReturnRequestRespnse respnse = returnRequestService.getRequestById(id);
 
         model.addAttribute("requestDto", respnse);
 
         model.addAttribute("assets", assetService.getAllByReturnRequestId(id));
 
-        model.addAttribute("canEdit", false );
+        model.addAttribute("canEdit", false);
 
         return "return/return_request_form";
 

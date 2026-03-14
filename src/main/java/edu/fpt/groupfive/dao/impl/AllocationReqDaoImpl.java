@@ -17,6 +17,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
 
     private final DatabaseConfig databaseConfig;
 
+    //Hàm map resultset dữ liệu
     private AllocationRequest mapRowToRequest(ResultSet rs) throws Exception {
         AllocationRequest request = new AllocationRequest();
         request.setRequestId(rs.getInt("request_id"));
@@ -49,21 +50,39 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
 
         request.setRejectReason(rs.getString("reason_reject"));
 
+        // Map thêm để hỗ trợ hiển thị tên
+        request.setUserName(rs.getString("full_name"));
+        request.setRequestedDepartmentName(rs.getString("department_name"));
+
         return request;
     }
 
+
+
+    /**
+     * Hàm tìm kiếm tất cả yêu cầu cấp phát trong phòng ban
+     *
+     * @param departmentId lấy id của phòng ban
+     * @return trả về danh sách yêu cầu cấp phát
+     */
     @Override
     public List<AllocationRequest> findAll(Integer departmentId) {
         String query = """
-                SELECT * FROM allocation_request
-                         WHERE requested_department_id = ?
-                         ORDER BY request_id ASC
+                SELECT a.*,
+                       u.first_name + ' ' + u.last_name AS full_name,
+                       d.department_name
+                FROM allocation_request a
+                         JOIN users u on u.user_id = a.requester_id
+                         JOIN departments d ON u.department_id = d.department_id
+                WHERE requested_department_id = ?
+                ORDER BY request_id ASC
                 """;
 
         List<AllocationRequest> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
                 PreparedStatement ps = conn.prepareStatement(query)) {
+
             ps.setInt(1, departmentId);
             ResultSet rs = ps.executeQuery();
 
@@ -78,14 +97,29 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         return list;
     }
 
+
+
+    /**
+     * Tìm kiếm 1 yêu cầu cấp phát theo id
+     *
+     * @param id lấy id của yêu cầu
+     * @return trả về yêu cầu cấp phát
+     */
     @Override
     public AllocationRequest findById(Integer id) {
         String query = """
-                SELECT * FROM allocation_request
-                         WHERE request_id = ?
+                 SELECT a.*,
+                        u.first_name + ' ' + u.last_name AS full_name,
+                        d.department_name
+                 FROM allocation_request a
+                          LEFT JOIN users u on u.user_id = a.am_approved_by
+                          LEFT JOIN departments d ON u.department_id = d.department_id
+                 WHERE request_id = ?
+                 ORDER BY request_id ASC
                 """;
         try (Connection conn = databaseConfig.getConnection();
                 PreparedStatement ps = conn.prepareStatement(query)) {
+
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
 
@@ -98,6 +132,13 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         return null;
     }
 
+
+    /**
+     * Thêm yêu cầu cấp phát
+     *
+     * @param request đối tượng cấu phát
+     * @return đối tượng cấp phát
+     */
     @Override
     public Integer insert(AllocationRequest request) {
         String query = """
@@ -208,8 +249,12 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
             String priority, LocalDate fromDate, LocalDate toDate
     /* int offset, int size */) {
         StringBuilder query = new StringBuilder("""
-                    SELECT *
-                    FROM allocation_request
+                    SELECT a.*,
+                       u.first_name + ' ' + u.last_name AS full_name,
+                       d.department_name
+                    FROM allocation_request a
+                             JOIN users u on u.user_id = a.requester_id
+                             JOIN departments d ON u.department_id = d.department_id
                     WHERE requested_department_id = ?
                 """);
 
@@ -222,7 +267,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         }
 
         if (status != null && !status.isEmpty()) {
-            query.append(" AND status = ?");
+            query.append(" AND a.status = ?");
             params.add(status);
         }
 
@@ -241,13 +286,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
             params.add(toDate);
         }
 
-        // query.append("""
-        // ORDER BY request_id ASC
-        // OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
-        // """);
-        //
-        // params.add(offset);
-        // params.add(size);
+        query.append(" ORDER BY request_id ASC");
 
         List<AllocationRequest> list = new ArrayList<>();
 
@@ -271,86 +310,4 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         return list;
     }
 
-    @Override
-    public int countInFilter(Integer departmentId, String requestId, String status,
-            String priority, LocalDate fromDate, LocalDate toDate) {
-        StringBuilder query = new StringBuilder("""
-                    SELECT COUNT(*)
-                    FROM allocation_request
-                    WHERE requested_department_id = ?
-                """);
-
-        List<Object> params = new ArrayList<>();
-        params.add(departmentId);
-
-        if (requestId != null && !requestId.trim().isEmpty()) {
-            query.append(" AND request_id = ?");
-            params.add(Integer.parseInt(requestId.trim()));
-        }
-
-        if (status != null && !status.isEmpty()) {
-            query.append(" AND status = ?");
-            params.add(status);
-        }
-
-        if (priority != null && !priority.isEmpty()) {
-            query.append(" AND priority = ?");
-            params.add(priority);
-        }
-
-        if (fromDate != null) {
-            query.append(" AND request_date >= ?");
-            params.add(fromDate);
-        }
-
-        if (toDate != null) {
-            query.append(" AND request_date <= ?");
-            params.add(toDate);
-        }
-
-        try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(query.toString())) {
-
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
-
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return 0;
-
-    }
-
-    @Override
-    public int countAll(Integer departmentId) {
-        String query = """
-                SELECT COUNT(*) FROM allocation_request
-                WHERE requested_department_id = ?
-                """;
-
-        try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(query)) {
-
-            ps.setInt(1, departmentId);
-
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-
-            return 0;
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

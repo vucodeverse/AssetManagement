@@ -24,9 +24,4 @@ public interface AllocationReqDao {
                                    String priority, LocalDate fromDate, LocalDate toDate /*int offset, int size*/
     );
 
-    int countInFilter(Integer departmentId, String requestId, String status,
-            String priority, LocalDate fromDate, LocalDate toDate
-    );
-
-    int countAll(Integer departmentId);
 }

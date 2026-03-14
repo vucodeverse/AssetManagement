@@ -179,6 +179,49 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
 
     @Override
     public List<ReturnRequest> search(Integer departmentId, String requestId, LocalDate fromDate, LocalDate toDate) {
-        return List.of();
+        StringBuilder query = new StringBuilder("""
+                SELECT * FROM
+                return_request
+                WHERE requested_department_id = ?
+                """);
+
+        List<Object> params = new ArrayList<>();
+        params.add(departmentId);
+
+        if (requestId != null && !requestId.trim().isEmpty()) {
+            query.append(" AND request_id = ?");
+            params.add(Integer.parseInt(requestId));
+        }
+
+        if (fromDate != null) {
+            query.append(" AND request_date >= ?");
+            params.add(fromDate);
+        }
+
+        if (toDate != null) {
+            query.append(" AND request_date <= ?");
+            params.add(toDate);
+        }
+
+        List<ReturnRequest> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapRowToRequest(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
     }
 }

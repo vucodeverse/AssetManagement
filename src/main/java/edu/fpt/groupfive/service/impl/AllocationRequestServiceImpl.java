@@ -127,14 +127,14 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
     @Override
     public void updateStatus(Integer id, String status, Integer amApprovedBy, String reasonReject) {
 
-        // 1. Kiểm tra xem request có tồn tại không
+        // Kiểm tra xem request có tồn tại không
         AllocationRequest req = allocationReqDao.findById(id);
 
         if (req == null) {
             throw new RuntimeException("Yêu cầu cấp phát không tồn tại!");
         }
 
-        // 2. Kiểm tra trạng thái hiện tại. Nếu KHÔNG PHẢI là "PENDING_AM" (nghĩa là đã APPROVED hoặc REJECTED rồi)
+        // Kiểm tra trạng thái hiện tại. Nếu KHÔNG PHẢI là "PENDING_AM" (nghĩa là đã APPROVED hoặc REJECTED rồi)
         // thì ném ra lỗi, block không cho cập nhật nữa
         if (!"PENDING_AM".equals(req.getStatus())) {
             throw new RuntimeException("Yêu cầu này đã được xử lý (Chấp nhận/Từ chối) " +
@@ -152,15 +152,5 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
                 toDate/* offset, size */);
     }
 
-    @Override
-    public int countAll(Integer departmentId) {
-        return allocationReqDao.countAll(departmentId);
-    }
-
-    @Override
-    public int countFiltered(Integer departmentId, String requestId, String status,
-            String priority, LocalDate fromDate, LocalDate toDate) {
-        return allocationReqDao.countInFilter(departmentId, requestId, status, priority, fromDate, toDate);
-    }
 
 }
