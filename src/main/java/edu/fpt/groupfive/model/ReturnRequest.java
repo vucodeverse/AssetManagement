@@ -28,4 +28,8 @@ public class ReturnRequest {
     private LocalDateTime createdAt;
 
     private LocalDateTime updateAt;
+
+    // Attribute bổ trợ
+    private String fullName;
+    private String departmentName;
 }

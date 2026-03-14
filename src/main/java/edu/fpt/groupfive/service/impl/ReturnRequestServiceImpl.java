@@ -103,7 +103,8 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
     }
 
     @Override
-    public List<ReturnRequestRespnse> searchRequest(Integer departmentId, String requestId, LocalDate fromDate, LocalDate toDate) {
-        return returnRequestMapper.toResponseList(returnReqDAO.search(departmentId, requestId, fromDate, toDate));
+    public List<ReturnRequestRespnse> searchRequest(Integer departmentId, String requestId,
+                                                    String status, LocalDate fromDate, LocalDate toDate) {
+        return returnRequestMapper.toResponseList(returnReqDAO.search(departmentId, requestId, status, fromDate, toDate));
     }
 }

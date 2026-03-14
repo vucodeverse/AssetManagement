@@ -22,7 +22,19 @@ public class ReturnRequestController {
     private final AssetService assetService;
 
     @GetMapping("/list")
-    public String showList(@RequestParam(required = false, name = "search") String search,
+    public String showList(Model model) {
+        int departmentId = 1;
+
+        List<ReturnRequestRespnse> list = returnRequestService.getAllRequest(departmentId);
+
+        model.addAttribute("requests", list);
+
+        return "return/return_request_list";
+    }
+
+    @GetMapping("/search")
+    public String searchAction(@RequestParam(required = false, name = "keyword") String keyword,
+                           @RequestParam(required = false, name = "status") String status,
                            @RequestParam(required = false, name = "fromDate") String fromDate,
                            @RequestParam(required = false, name = "toDate") String toDate,
                            Model model) {
@@ -39,10 +51,12 @@ public class ReturnRequestController {
             to = LocalDate.parse(toDate);
         }
 
-        List<ReturnRequestRespnse> list = returnRequestService.searchRequest(1, search, from, to);
+        List<ReturnRequestRespnse> list = returnRequestService
+                .searchRequest(1, keyword, status, from, to);
 
         model.addAttribute("requests", list);
-        model.addAttribute("search", search);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
 
@@ -106,6 +120,8 @@ public class ReturnRequestController {
         ReturnRequestRespnse dto = returnRequestService.getRequestById(id);
 
         model.addAttribute("requestDto", dto);
+
+        model.addAttribute("assetNew", assetService.getAllByDepartmentId(1));
 
         model.addAttribute("assets", assetService.getAllByReturnRequestId(id));
 

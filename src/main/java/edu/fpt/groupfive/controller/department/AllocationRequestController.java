@@ -44,7 +44,7 @@ public class AllocationRequestController {
      */
     @GetMapping("/search")
     public String searchAllocation(
-            @RequestParam(required = false, name = "search") String search,
+            @RequestParam(required = false, name = "keyword") String keyword,
             @RequestParam(required = false, name = "status") String status,
             @RequestParam(required = false, name = "priority") String priority,
             @RequestParam(required = false, name = "fromDate") String fromDate,
@@ -65,13 +65,13 @@ public class AllocationRequestController {
             to = LocalDate.parse(toDate);
         }
 
-        List<AllocationRequest> requests = allocationRequestService.search(departmentId, search, status,
+        List<AllocationRequest> requests = allocationRequestService.search(departmentId, keyword, status,
                 priority, from, to);
 
 
         model.addAttribute("requests", requests);
         // Giữ nguyên giá trị filter trên form
-        model.addAttribute("search", search);
+        model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
         model.addAttribute("priority", priority);
         model.addAttribute("fromDate", fromDate);

@@ -13,5 +13,6 @@ public interface ReturnRequestService {
     void createRequest(ReturnRequestCreateRequest dto);
     void updateRequest(Integer id, ReturnRequestCreateRequest dto);
     void deleteRequest(Integer id);
-    List<ReturnRequestRespnse> searchRequest(Integer departmentId, String requestId, LocalDate fromDate, LocalDate toDate);
+    List<ReturnRequestRespnse> searchRequest(Integer departmentId, String requestId,
+                                             String status, LocalDate fromDate, LocalDate toDate);
 }

@@ -19,28 +19,29 @@
 
 <body>
 <div class="purchase-content-wrapper">
-
-    <header class="top-bar">
-
-        <h1>Danh sách yêu cầu cấp phát</h1>
-
-        <div class="top-actions">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text"
-                       th:value="${search}"
-                       placeholder="Tìm kiếm...">
-            </div>
-        </div>
-
-        <a th:href="@{/department/allocation-request/create}" class="btn-add">
-            <i class="fas fa-plus"></i>
-            Tạo yêu cầu
-        </a>
-
-    </header>
-
     <form method="get" th:action="@{/department/allocation-request/search}">
+
+        <header class="top-bar">
+
+            <h1>Danh sách yêu cầu cấp phát</h1>
+
+            <div class="top-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="Tìm kiếm...">
+                </div>
+            </div>
+
+            <a th:href="@{/department/allocation-request/create}" class="btn-add">
+                <i class="fas fa-plus"></i>
+                Tạo yêu cầu
+            </a>
+
+        </header>
+
         <!-- FILTER BAR -->
         <section class="filters-bar">
 
@@ -85,11 +86,11 @@
 
 
                 <button type="submit">
-                    APPLY
+                    ÁP DỤNG
                 </button>
 
                 <a class="btn-reset" th:href="@{/department/allocation-request/list}">
-                    RESET
+                    KHÔI PHỤC
                 </a>
             </div>
         </section>

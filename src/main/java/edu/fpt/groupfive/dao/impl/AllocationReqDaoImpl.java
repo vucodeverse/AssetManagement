@@ -245,7 +245,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
     }
 
     @Override
-    public List<AllocationRequest> search(Integer departmentId, String requestId, String status,
+    public List<AllocationRequest> search(Integer departmentId, String keyword, String status,
             String priority, LocalDate fromDate, LocalDate toDate
     /* int offset, int size */) {
         StringBuilder query = new StringBuilder("""
@@ -261,9 +261,11 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         List<Object> params = new ArrayList<>();
         params.add(departmentId);
 
-        if (requestId != null && !requestId.trim().isEmpty()) {
-            query.append(" AND request_id = ?");
-            params.add(Integer.parseInt(requestId.trim()));
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query.append(" AND (a.request_id  LIKE ? OR (u.first_name + ' ' + u.last_name) LIKE ?)");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
         }
 
         if (status != null && !status.isEmpty()) {

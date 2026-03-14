@@ -22,4 +22,8 @@ public class ReturnRequestRespnse {
 
     private LocalDateTime createdAt;
     private List<ReturnRequestDetailResponse> details;
+
+    // Attribute bổ trợ
+    private String fullName;
+    private String departmentName;
 }

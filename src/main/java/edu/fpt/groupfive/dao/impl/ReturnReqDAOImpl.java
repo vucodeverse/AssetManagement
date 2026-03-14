@@ -45,6 +45,8 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
             request.setWhApprovedDate(approvedAt.toLocalDateTime());
         }
 
+        request.setFullName(rs.getString("full_name"));
+
 
         return request;
     }
@@ -52,9 +54,13 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
     @Override
     public List<ReturnRequest> findAll(Integer departmentId) {
         String query = """
-                SELECT * FROM return_request
-                WHERE requested_department_id = ?
-                         ORDER BY request_id ASC
+                SELECT
+                     r.*,
+                     u.first_name + ' ' + u.last_name AS full_name
+                 FROM return_request r
+                     JOIN dbo.users u on u.user_id = r.requester_id
+                 WHERE requested_department_id = ?
+                 ORDER BY request_id ASC
                 """;
 
         List<ReturnRequest> list = new ArrayList<>();
@@ -79,7 +85,11 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
     @Override
     public ReturnRequest findById(Integer id) {
         String query = """
-                SELECT * FROM return_request
+                SELECT 
+                    r.*,
+                    u.first_name + ' ' + u.last_name AS full_name
+                FROM return_request r
+                     JOIN dbo.users u on u.user_id = r.requester_id
                 WHERE request_id = ?
                 """;
 
@@ -178,19 +188,30 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
     }
 
     @Override
-    public List<ReturnRequest> search(Integer departmentId, String requestId, LocalDate fromDate, LocalDate toDate) {
+    public List<ReturnRequest> search(Integer departmentId, String keyword,
+                                      String status, LocalDate fromDate, LocalDate toDate) {
         StringBuilder query = new StringBuilder("""
-                SELECT * FROM
-                return_request
-                WHERE requested_department_id = ?
+                SELECT
+                     r.*,
+                     u.first_name + ' ' + u.last_name AS full_name
+                 FROM return_request r
+                     JOIN dbo.users u on u.user_id = r.requester_id
+                 WHERE requested_department_id = ?
                 """);
 
         List<Object> params = new ArrayList<>();
         params.add(departmentId);
 
-        if (requestId != null && !requestId.trim().isEmpty()) {
-            query.append(" AND request_id = ?");
-            params.add(Integer.parseInt(requestId));
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query.append(" AND (r.request_id  LIKE ? OR (u.first_name + ' ' + u.last_name) LIKE ?)");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+        }
+
+        if (status != null && !status.trim().isEmpty()) {
+            query.append(" AND r.status = ?");
+            params.add(status);
         }
 
         if (fromDate != null) {
@@ -202,6 +223,8 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
             query.append(" AND request_date <= ?");
             params.add(toDate);
         }
+
+        query.append(" ORDER BY request_id ASC");
 
         List<ReturnRequest> list = new ArrayList<>();
 

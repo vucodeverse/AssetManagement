@@ -127,51 +127,9 @@
                         <th>GHI CHÚ</th>
                         <th></th>
                     </tr>
+
                     </thead>
-
                     <tbody>
-
-                    <!--------------------------------- CREATE MODE --------------------------------->
-                    <tr class="item-row"
-                        th:if="${requestDto.details == null || requestDto.details.isEmpty()}">
-                        <!-- Asset type -->
-                        <td>
-                            <select name="details[0].assetTypeId" class="table-input" required>
-                                <option value="" hidden>-- Chọn loại --</option>
-                                <option th:each="at : ${assetType}"
-                                        th:value="${at.typeId}"
-                                        th:text="${at.typeName}">
-
-                                </option>
-                            </select>
-                            <!-- ERROR -->
-                            <div class="text-danger"
-                                 th:if="${#fields.hasErrors('details[0].assetTypeId')}"
-                                 th:errors="*{details[0].assetTypeId}">
-                            </div>
-                        </td>
-
-                        <!-- Quantity -->
-                        <td>
-                            <input type="number" name="details[0].requestedQuantity"
-                                   value="1" min="1"
-                                   class="table-input"/>
-                            <!-- ERROR -->
-                            <div class="text-danger"
-                                 th:if="${#fields.hasErrors('details[0].requestedQuantity')}"
-                                 th:errors="*{details[0].requestedQuantity}">
-                            </div>
-                        </td>
-
-                        <!-- Note -->
-                        <td><input type="text" name="details[0].note" class="table-input"/></td>
-
-                        <!-- Nút buttom -->
-                        <td><button type="button" class="btn-remove" onclick="removeRow(this)"> ×
-                            </button>
-                        </td>
-                    </tr>
-
 
                     <!--------------------------------- EDIT MODE --------------------------------->
                     <tr class="item-row"
@@ -228,13 +186,59 @@
                             </button>
                         </td>
                     </tr>
+
+
+                    <!--------------------------------- CREATE MODE --------------------------------->
+                    <tr class="item-row"
+                        th:if="${requestDto.details == null || requestDto.details.isEmpty()}">
+                        <!-- Asset type -->
+                        <td>
+                            <select name="details[0].assetTypeId" class="table-input" required>
+                                <option value="" hidden>-- Chọn loại --</option>
+                                <option th:each="at : ${assetType}"
+                                        th:value="${at.typeId}"
+                                        th:text="${at.typeName}">
+
+                                </option>
+                            </select>
+                            <!-- ERROR -->
+                            <div class="text-danger"
+                                 th:if="${#fields.hasErrors('details[0].assetTypeId')}"
+                                 th:errors="*{details[0].assetTypeId}">
+                            </div>
+                        </td>
+
+                        <!-- Quantity -->
+                        <td>
+                            <input type="number" name="details[0].requestedQuantity"
+                                   value="1" min="1"
+                                   class="table-input"/>
+                            <!-- ERROR -->
+                            <div class="text-danger"
+                                 th:if="${#fields.hasErrors('details[0].requestedQuantity')}"
+                                 th:errors="*{details[0].requestedQuantity}">
+                            </div>
+                        </td>
+
+                        <!-- Note -->
+                        <td><input type="text" name="details[0].note" class="table-input"/></td>
+
+                        <!-- Nút buttom -->
+                        <td><button type="button" class="btn-remove" onclick="removeRow(this)"> ×
+                        </button>
+                        </td>
+                    </tr>
+
+
                     </tbody>
                 </table>
+
                 <!-- Thêm ô detail mới -->
                 <button type="button" class="btn-add-row" onclick="addRow()"
                         th:if="${canEdit == null || canEdit}">
                     + Thêm dòng
                 </button>
+
             </div>
         </section>
 

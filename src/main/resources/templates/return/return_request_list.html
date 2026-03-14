@@ -22,8 +22,7 @@
 <body>
 <div class="purchase-content-wrapper">
 
-    <form method="get" th:action="@{/department/return-request/list}">
-
+    <form method="get" th:action="@{/department/return-request/search}">
         <header class="top-bar">
 
             <h1>Danh sách yêu cầu trả</h1>
@@ -32,7 +31,8 @@
                 <div class="search-box">
                     <i class="fas fa-search"></i>
                     <input type="text"
-                           th:value="${search}"
+                           name="keyword"
+                           th:value="${keyword}"
                            placeholder="Tìm kiếm...">
                 </div>
             </div>
@@ -107,7 +107,7 @@
                 </td>
 
                 <!-- REQUESTER -->
-                <td th:text="${x.requesterId}">
+                <td th:text="${x.fullName}">
                 </td>
 
                 <!-- CREATED AT -->
