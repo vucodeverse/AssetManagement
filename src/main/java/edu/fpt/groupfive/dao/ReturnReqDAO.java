@@ -13,4 +13,5 @@ public interface ReturnReqDAO {
     void delete(Integer id);
     List<ReturnRequest> search(Integer departmentId, String keyword,
                                String status, LocalDate fromDate, LocalDate toDate);
+    public void updateStatus(Integer id, String status, Integer whApprovedBy);
 }

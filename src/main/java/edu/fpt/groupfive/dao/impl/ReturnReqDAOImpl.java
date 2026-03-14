@@ -247,4 +247,28 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
 
         return list;
     }
+
+    @Override
+    public void updateStatus(Integer id, String status, Integer whApprovedBy) {
+        String query = """
+                UPDATE allocation_request
+                SET status = ?,
+                    wh_confirmed_by = ?,
+                    wh_confirmed_at = CURRENT_TIMESTAMP,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE request_id = ?
+                """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, status);
+            ps.setInt(2, whApprovedBy);
+            ps.setInt(3, id);
+
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
