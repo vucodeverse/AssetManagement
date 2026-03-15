@@ -85,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
 
     // kiểm tra order hợp lệ hay ko
     @Override
-    public PurchaseOrderCreateRequest checkFormCreateOrder(Integer quotationId) {
+    public PurchaseOrderCreateRequest preparePurchaseOrderForm(Integer quotationId) {
 
         // check quotation có đang tồn tịaij hay ko
         Quotation quotation = quotationDAO.findById(quotationId)
@@ -126,8 +126,8 @@ public class OrderServiceImpl implements OrderService {
 
     // tạo order
     @Override
-    public Integer createOrder(Integer quotationId, PurchaseOrderCreateRequest purchaseOrderCreateRequest,
-            String username) {
+    public Integer createPurchaseOrder(Integer quotationId, PurchaseOrderCreateRequest purchaseOrderCreateRequest,
+                                       String username) {
 
         // ktra tồn tại
         Quotation quotation = quotationDAO.findById(quotationId)
@@ -157,7 +157,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(QuotationDetail::getPurchaseDetailId).toList();
 
         // Lấy số lượng đã đặt của từng dòng prd
-        Map<Integer, Integer> orderedQtyByPrDetail = orderDAO.getOrderedQtyByPurchaseDetail(prDetailIds);
+        Map<Integer, Integer> orderedQtyByPrDetail = orderDAO.getOrderedQuantityByPurchaseDetailId(prDetailIds);
 
         // Lấy thông tin prd gốc để biết số lượng yêu cầu ban đầu
         List<PurchaseDetail> prDetails = purchaseDetailDAO.findByPurchaseRequestId(quotation.getPurchaseId());
@@ -220,7 +220,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 8. Update quotation status to APPROVED
-        quotationDAO.updateStatusReject(quotationId, QuotationStatus.APPROVED, null);
+        quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED, null);
         order.setOrderDetails(orderDetails);
 
         // insert
@@ -250,7 +250,7 @@ public class OrderServiceImpl implements OrderService {
 
     // lấy ra toàn bộ po và pr id tương ứng
     @Override
-    public List<PurchaseOrderResponse> getPurchaseOrders(PurchaseOrderSearchCriteria criteria) {
+    public List<PurchaseOrderResponse> searchPurchaseOrders(PurchaseOrderSearchCriteria criteria) {
 
         // set mặc điịnh min max
         criteria.setMinAmount(null);
@@ -267,7 +267,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        List<Object[]> results = orderDAO.searchAndFilter(criteria);
+        List<Object[]> results = orderDAO.search(criteria);
         List<PurchaseOrderResponse> list = new ArrayList<>();
 
         // map từng row sang po response
@@ -284,7 +284,7 @@ public class OrderServiceImpl implements OrderService {
 
     // lấy ra toàn bộ po detail
     @Override
-    public PurchaseOrderResponse getOrderDetail(Integer orderId) {
+    public PurchaseOrderResponse getPurchaseOrderById(Integer orderId) {
         Order order = orderDAO.findById(orderId)
                 .orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
 
@@ -304,7 +304,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
 
         // tính toán các loại giá cho order detail đó
-        BigDecimal[] calculated = orderCalculationUtil.calculatePoDetail(poDetails);
+        BigDecimal[] calculated = orderCalculationUtil. calculatePoDetail(poDetails);
 
         PurchaseOrderResponse response = orderMapper.toPurchaseOrderResponse(order);
         response.setSupplierName(map.getOrDefault(order.getSupplierId(), notFoundFallbackMsg));

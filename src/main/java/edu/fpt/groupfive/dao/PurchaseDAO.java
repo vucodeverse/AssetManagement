@@ -18,12 +18,12 @@ public interface PurchaseDAO {
 
     List<Purchase> findAll();
 
-    List<Purchase> getPurchaseByFilter(PurchaseRequestSearchCriteria purchaseRequestSearchCriteria);
+    List<Purchase> search(PurchaseRequestSearchCriteria purchaseRequestSearchCriteria);
 
-    void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject, Integer userId);
+    void updateStatus(Request request, Integer purchaseId, String reasonReject, Integer userId);
 
     void update(Purchase purchase);
 
-    Map<Integer, Object[]> findQuotaSummaryByFilter(QuotationSearchCriteria s);
+    Map<Integer, Object[]> searchQuotationSummary(QuotationSearchCriteria s);
 
 }

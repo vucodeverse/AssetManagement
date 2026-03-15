@@ -123,7 +123,7 @@ public class QuotationDAOImpl implements QuotationDAO {
 
     // update khi reject
     @Override
-    public void updateStatusReject(Integer quotationId, QuotationStatus status, String rejectedReason) {
+    public void updateStatus(Integer quotationId, QuotationStatus status, String rejectedReason) {
         String sql = "update quotation set status = ?, reject_reason = ?, updated_at = ? WHERE quotation_id =" +
                 " ?";
 
@@ -230,7 +230,7 @@ public class QuotationDAOImpl implements QuotationDAO {
 
     // tìm theo quotationId
     @Override
-    public Optional<Quotation> findResponseById(Integer quotationId) {
+    public Optional<Quotation> findWithDetailsById(Integer quotationId) {
         String sql = "SELECT q.*, s.supplier_name " +
                 "FROM quotation q " +
                 "JOIN supplier s ON q.supplier_id = s.supplier_id " +
@@ -292,7 +292,7 @@ public class QuotationDAOImpl implements QuotationDAO {
 
     // saerch và filter cho màn quotation of purchase
     @Override
-    public List<Quotation> searchAndFilterQuotationOfPurchase(QuotationSearchCriteria criteria) {
+    public List<Quotation> searchByPurchaseId(QuotationSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder(
                 "select q.* from quotation q " +
                         "join supplier s on q.supplier_id = s.supplier_id " +

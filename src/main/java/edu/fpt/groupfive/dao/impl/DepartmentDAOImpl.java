@@ -93,7 +93,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
     }
 
 //    @Override
-//    public Optional<Department> findById(Integer departmentId) {
+//    public Optional<Department> getPurchaseRequestById(Integer departmentId) {
 //        String query = """
 //                SELECT * FROM Departments
 //                WHERE department_id = ? AND status = 'ACTIVE'

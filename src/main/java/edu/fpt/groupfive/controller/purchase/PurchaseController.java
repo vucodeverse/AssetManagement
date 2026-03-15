@@ -52,7 +52,7 @@ public class PurchaseController {
     // hiển thị danh sách purchase request
     @GetMapping("")
     public String showPurchases(Model model) {
-        model.addAttribute("purchases", purchaseService.findAllPurchases());
+        model.addAttribute("purchases", purchaseService.getPurchaseRequests());
         prepareFilter(model);
         return URL_PURCHASE_LIST;
     }
@@ -65,7 +65,7 @@ public class PurchaseController {
         List<PurchaseRequestResponse> purchaseRequestResponses = List.of();
 
         try {
-            purchaseRequestResponses = purchaseService.searchAndFilter(criteria);
+            purchaseRequestResponses = purchaseService.searchPurchaseRequests(criteria);
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
         }
@@ -95,7 +95,7 @@ public class PurchaseController {
     public String showEditPurchaseForm(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
 
         try {
-            PurchaseRequestCreateRequest p = purchaseService.loadDraftForEdit(id);
+            PurchaseRequestCreateRequest p = purchaseService.preparePurchaseRequestForm(id);
              model.addAttribute("purchaseCreateRequest", p);
          prepareFormModel(model);
             return URL_PURCHASE_FORM;
@@ -109,7 +109,7 @@ public class PurchaseController {
     // hiển thị chi tiết purchase request
     @GetMapping("/{purchaseId}")
     public String showPurchaseDetail(@PathVariable("purchaseId") Integer purchaseId, Model model) {
-        model.addAttribute("purchase", purchaseService.findById(purchaseId));
+        model.addAttribute("purchase", purchaseService.getPurchaseRequestById(purchaseId));
         setNavbar(model);
         return "purchase/purchase-detail";
     }
@@ -122,7 +122,7 @@ public class PurchaseController {
                                RedirectAttributes redirectAttributes) {
 
         try{
-        purchaseService.actionsWithPurchase(id, actions, reasonReject, getCurrentUserId());
+        purchaseService.processPurchaseRequestAction(id, actions, reasonReject, getCurrentUserId());
         redirectAttributes.addFlashAttribute("message", messageActions);
         }catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

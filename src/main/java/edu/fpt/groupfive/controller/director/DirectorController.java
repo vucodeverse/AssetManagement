@@ -44,7 +44,7 @@ public class DirectorController {
     public String showPurchases(Model model) {
         model.addAttribute("activeMenu", "approval");
         model.addAttribute("activeSub", "pr");
-        model.addAttribute("purchases", purchaseService.findAllPurchases());
+        model.addAttribute("purchases", purchaseService.getPurchaseRequests());
         model.addAttribute("priorities", Priority.values());
         model.addAttribute("status", Request.values());
         return "purchase/purchase-list";

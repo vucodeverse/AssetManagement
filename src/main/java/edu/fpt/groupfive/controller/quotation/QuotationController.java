@@ -7,7 +7,6 @@ import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.dto.response.QuotationSummaryResponse;
 import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.QuotationService;
-import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
@@ -25,7 +24,7 @@ import java.util.List;
 @RequestMapping("/quotations")
 public class QuotationController {
 
-    private static final String URL_PURCHASE_OF_DETAIL = "quotation/quotation-of-purchase";
+    private static final String URL_QUO_OF_PURCHASE = "quotation/quotation-of-purchase";
     private static final String URL_QUOTATION_LIST = "quotation/quotation-list";
     private static final String URL_QUOTATION_FORM = "quotation/quotation-form";
 
@@ -42,7 +41,7 @@ public class QuotationController {
         try {
 
         // map purchase detail sang quotation detail
-        List<QuotationDetailCreateRequest> details = quotationService.mapPurchaseToQuotation(purchaseId);
+        List<QuotationDetailCreateRequest> details = quotationService.prepareQuotationForm(purchaseId);
         quotationCreateRequest.setQuotationDetailCreateRequests(details);
         model.addAttribute("quotationCreateRequest", quotationCreateRequest);
         prepareQuotationFormModel(model, purchaseId);
@@ -58,7 +57,7 @@ public class QuotationController {
     @GetMapping("/{quotationId}/edit")
     public String showEditQuotationForm(@PathVariable("quotationId") Integer quotationId, Model model) {
 
-        QuotationCreateRequest request = quotationService.getQuotationRequestById(quotationId);
+        QuotationCreateRequest request = quotationService.prepareQuotationUpdateForm(quotationId);
 
         model.addAttribute("quotationCreateRequest", request);
         prepareQuotationFormModel(model, request.getPurchaseId());
@@ -118,38 +117,43 @@ public class QuotationController {
 
     // xử lí các actions
     @PostMapping("/{id}/actions")
-    public String formActions(@PathVariable("id") Integer id,
-            @RequestParam("action") String action,
-            @RequestParam(value = "reason", required = false) String reason,
-            RedirectAttributes redirectAttributes) {
+    public String processActions(@PathVariable("id") Integer id,
+                                 @RequestParam("action") String action,
+                                 @RequestParam(value = "reason", required = false) String reason,
+                                 RedirectAttributes redirectAttributes) {
 
+        // lấy ra purchase id của quotation.
         int purchaseId = quotationService.getQuotationById(id).getPurchaseId();
-        quotationService.actionWithQuota(id, action, reason);
+        try {
+            quotationService.processQuotationAction(id, action, reason);
+            redirectAttributes.addFlashAttribute("message", "Thay đổi báo giá thành công");
+        }catch (InvalidDataException e){
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
 
-        redirectAttributes.addFlashAttribute("message", "Thay đổi báo giá thành công");
         return "redirect:/quotations/of-purchase/" + purchaseId;
     }
 
     // hiển thị ra list quotation của từng purchase reuqest
     @GetMapping("/of-purchase/{purchaseId}")
-    public String viewQuotationList(
+    public String viewQuotationOfPurchase(
             @PathVariable("purchaseId") Integer purchaseId,
             Model model) {
 
         // lấy ra list quotation
-        List<QuotationResponse> quotations = quotationService.getQuotationsByPurchase(purchaseId);
+        List<QuotationResponse> quotations = quotationService.getQuotationsByPurchaseId(purchaseId);
 
         prepareQuotationFilter(model);
 
         model.addAttribute("quotations", quotations);
         model.addAttribute("criteria", new QuotationSearchCriteria());
 
-        return URL_PURCHASE_OF_DETAIL;
+        return URL_QUO_OF_PURCHASE;
     }
 
     // hiển thị quotation chi tiết
     @GetMapping("/{id}")
-    public String getQuotation(@PathVariable("id") Integer id, Model model) {
+    public String getQuotationDetail(@PathVariable("id") Integer id, Model model) {
 
         QuotationResponse quotation = quotationService.getQuotationById(id);
 
@@ -170,30 +174,32 @@ public class QuotationController {
         prepareQuotationFilter(model);
 
         if (result.hasErrors()) {
-            return URL_PURCHASE_OF_DETAIL;
+            return URL_QUO_OF_PURCHASE;
         }
 
         criteria.setPurchaseId(purchaseId);
 
         model.addAttribute("quotations",
-                quotationService.quotationCriteriaForPurchase(criteria));
+                quotationService.searchQuotationsByPurchaseId(criteria));
 
-        return URL_PURCHASE_OF_DETAIL;
+        return URL_QUO_OF_PURCHASE;
     }
 
     // search cho màn quotaiton-list
     @GetMapping("/search")
-    public String searchQuotation(
+    public String searchQuotationList(
             @Valid @ModelAttribute("searchForQuotation") QuotationSearchCriteria criteria,
             BindingResult result,
             Model model) {
 
         prepareQuotationSearchModel(model);
         List<QuotationSummaryResponse> quotationResponses;
+
+        // nếu có lỗi trả lại màn quotation list
         if (result.hasErrors()) {
             quotationResponses = quotationService.getQuotationAndPurchase();
         } else {
-            quotationResponses = quotationService.searchAndFilterForQuotation(criteria);
+            quotationResponses = quotationService.searchQuotations(criteria);
         }
 
         model.addAttribute("quotations", quotationResponses);
@@ -203,7 +209,7 @@ public class QuotationController {
 
     // hiển thị quotation summary
     @GetMapping("")
-    public String showQuotations(Model model) {
+    public String showQuotationsSummary(Model model) {
 
         prepareQuotationSearchModel(model);
 

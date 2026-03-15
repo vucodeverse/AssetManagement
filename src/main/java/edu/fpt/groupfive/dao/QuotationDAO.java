@@ -14,16 +14,15 @@ public interface QuotationDAO {
 
     void update(Quotation quotation);
 
-    void updateStatusReject(Integer quotationId, QuotationStatus status, String rejectedReason);
+    void updateStatus(Integer quotationId, QuotationStatus status, String rejectedReason);
 
     List<Quotation> findByPurchaseId(Integer purchaseId);
 
-    Optional<Quotation> findResponseById(Integer quotationId);
-
+    Optional<Quotation> findWithDetailsById(Integer quotationId);
 
     Integer countQuotationFromPurchaseId(Integer purchaseId);
 
-    List<Quotation> searchAndFilterQuotationOfPurchase(QuotationSearchCriteria criteria);
+    List<Quotation> searchByPurchaseId(QuotationSearchCriteria criteria);
 
     List<Quotation> findAll();
 }

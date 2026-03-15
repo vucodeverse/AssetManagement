@@ -10,15 +10,11 @@ import java.util.Optional;
 public interface OrderDAO {
     Integer insert(Order order);
 
-    Map<Integer, Integer> getOrderedQtyByPurchaseDetail(List<Integer> purchaseDetailIds);
+    Map<Integer, Integer> getOrderedQuantityByPurchaseDetailId(List<Integer> purchaseDetailIds);
 
-    List<Object[]> searchAndFilter(PurchaseOrderSearchCriteria criteria);
+    List<Object[]> search(PurchaseOrderSearchCriteria criteria);
 
     Optional<Order> findById(Integer orderId);
-
-    long countAll();
-
-    java.math.BigDecimal sumTotalAmount();
 
     List<Order> findRecent();
 

@@ -11,22 +11,19 @@ import java.util.List;
 public interface QuotationService {
     Integer createQuotation(QuotationCreateRequest quotationCreateRequest, Integer purchaseId, String action);
 
-    QuotationCreateRequest checkFormQuotation(Integer purchaseId);
-
-    List<QuotationResponse> getQuotationsByPurchase(Integer purchaseId);
+    List<QuotationResponse> getQuotationsByPurchaseId(Integer purchaseId);
 
     QuotationResponse getQuotationById(Integer quotationId);
 
-    QuotationCreateRequest getQuotationRequestById(Integer id);
+    QuotationCreateRequest prepareQuotationUpdateForm(Integer id);
 
-    void actionWithQuota(Integer quotationId, String action,String reason);
+    void processQuotationAction(Integer quotationId, String action, String reason);
 
-
-    List<QuotationSummaryResponse> searchAndFilterForQuotation(QuotationSearchCriteria quotationSearchCriteria);
+    List<QuotationSummaryResponse> searchQuotations(QuotationSearchCriteria quotationSearchCriteria);
 
     List<QuotationSummaryResponse> getQuotationAndPurchase();
 
-    List<QuotationResponse> quotationCriteriaForPurchase(QuotationSearchCriteria quotationSearchCriteria);
+    List<QuotationResponse> searchQuotationsByPurchaseId(QuotationSearchCriteria quotationSearchCriteria);
 
-    List<QuotationDetailCreateRequest> mapPurchaseToQuotation(Integer purchaseId);
+    List<QuotationDetailCreateRequest> prepareQuotationForm(Integer purchaseId);
 }

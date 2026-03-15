@@ -7,13 +7,13 @@ import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import java.util.List;
 
 public interface OrderService {
-    PurchaseOrderCreateRequest checkFormCreateOrder(Integer quotationId);
+    PurchaseOrderCreateRequest preparePurchaseOrderForm(Integer quotationId);
 
-    Integer createOrder(Integer quotationId, PurchaseOrderCreateRequest orderCreateRequest, String username);
+    Integer createPurchaseOrder(Integer quotationId, PurchaseOrderCreateRequest orderCreateRequest, String username);
 
-    List<PurchaseOrderResponse> getPurchaseOrders(PurchaseOrderSearchCriteria criteria);
+    List<PurchaseOrderResponse> searchPurchaseOrders(PurchaseOrderSearchCriteria criteria);
 
-    PurchaseOrderResponse getOrderDetail(Integer orderId);
+    PurchaseOrderResponse getPurchaseOrderById(Integer orderId);
 
     void updateDeliveryDate(Integer orderId, String deliveryDate);
 }

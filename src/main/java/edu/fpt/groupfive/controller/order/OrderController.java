@@ -43,10 +43,10 @@ public class OrderController {
         model.addAttribute("suppliers", supplierService.getAllSupplier());
     }
 
-    // list purchase order
+    // list purchase order + search
     @GetMapping("")
     public String listPurchaseOrders(@ModelAttribute("criteria") PurchaseOrderSearchCriteria criteria, Model model) {
-        List<PurchaseOrderResponse> purchaseOrders = orderService.getPurchaseOrders(criteria);
+        List<PurchaseOrderResponse> purchaseOrders = orderService.searchPurchaseOrders(criteria);
         model.addAttribute("orders", purchaseOrders);
         return VIEW_ORDER_LIST;
     }
@@ -56,7 +56,7 @@ public class OrderController {
     @GetMapping("/create-from-quotation/{quotationId}")
     public String showCreateForm(@PathVariable("quotationId") Integer quotationId, Model model) {
         try {
-            PurchaseOrderCreateRequest orderCreateRequest = orderService.checkFormCreateOrder(quotationId);
+            PurchaseOrderCreateRequest orderCreateRequest = orderService.preparePurchaseOrderForm(quotationId);
             model.addAttribute("orderCreateRequest", orderCreateRequest);
         } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
@@ -69,11 +69,11 @@ public class OrderController {
     // xử lý form
     @IsDirector
     @PostMapping("/create-from-quotation/{quotationId}")
-    public String handleOrderForm(@PathVariable("quotationId") Integer quotationId,
-                                  @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest request,
-                                  BindingResult result,
-                                  @RequestParam(value = "removeLine", required = false) Integer removeLine,
-                                  Model model) {
+    public String createOrder(@PathVariable("quotationId") Integer quotationId,
+                              @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest request,
+                              BindingResult result,
+                              @RequestParam(value = "removeLine", required = false) Integer removeLine,
+                              Model model) {
         
         // logic xóa dòng
         if (removeLine != null && removeLine >= 0) {
@@ -83,8 +83,6 @@ public class OrderController {
                 // thực hiện xóa đi dòng cần xóa
                 lines.remove(removeLine.intValue());
 
-                // tính toán lại giá tiền
-                orderCalculationUtil.recalculateTotal(request);
             }
             return VIEW_ORDER_FORM;
         }
@@ -93,13 +91,12 @@ public class OrderController {
             return VIEW_ORDER_FORM;
         }
 
-        orderCalculationUtil.recalculateTotal(request);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
         try {
 
-            Integer orderId = orderService.createOrder(quotationId, request, username);
+            Integer orderId = orderService.createPurchaseOrder(quotationId, request, username);
 
             return "redirect:/purchase-orders/" + orderId;
         } catch (InvalidDataException e) {
@@ -111,7 +108,7 @@ public class OrderController {
     // hiển thị po detail
     @GetMapping("/{id}")
     public String getOrderDetail(@PathVariable("id") Integer id, Model model) {
-        PurchaseOrderResponse detail = orderService.getOrderDetail(id);
+        PurchaseOrderResponse detail = orderService.getPurchaseOrderById(id);
         model.addAttribute("order", detail);
         return VIEW_ORDER_DETAIL;
     }

@@ -222,7 +222,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
     // lấy purchase lọc theo filter và search
     @Override
-    public List<Purchase> getPurchaseByFilter(PurchaseRequestSearchCriteria p) {
+    public List<Purchase> search(PurchaseRequestSearchCriteria p) {
 
         // khai báo dynamic sql
         StringBuilder sql = new StringBuilder(
@@ -292,7 +292,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
     // update purchase
     @Override
-    public void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject, Integer userId) {
+    public void updateStatus(Request request, Integer purchaseId, String reasonReject, Integer userId) {
 
         String sql = "update purchase_request set status = ? , reject_reason = ?, updated_at = ?, " +
                 "approved_by_director_at = ?, approved_by_director_id = ? where purchase_request_id = ?";
@@ -331,7 +331,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     // từng purchase kèm các thuộc tính cần
     // của purchase
     @Override
-    public Map<Integer, Object[]> findQuotaSummaryByFilter(QuotationSearchCriteria s) {
+    public Map<Integer, Object[]> searchQuotationSummary(QuotationSearchCriteria s) {
         StringBuilder sql = new StringBuilder(
                 "select p.purchase_request_id, p.needed_by_date, p.priority, " +
                         "count(q.quotation_id) as number_of_quotation, " +

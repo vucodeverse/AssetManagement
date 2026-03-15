@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +87,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // lấy ra purchase theo id
     @Override
-    public PurchaseRequestResponse findById(Integer id) {
+    public PurchaseRequestResponse getPurchaseRequestById(Integer id) {
 
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
         Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
@@ -127,7 +126,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // lấy ra tấy cả purchase
     @Override
-    public List<PurchaseRequestResponse> findAllPurchases() {
+    public List<PurchaseRequestResponse> getPurchaseRequests() {
 
         // lấy ra tất first name và last name của use
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
@@ -145,7 +144,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // thực hiện search và filter
     @Override
-    public List<PurchaseRequestResponse> searchAndFilter(PurchaseRequestSearchCriteria p) {
+    public List<PurchaseRequestResponse> searchPurchaseRequests(PurchaseRequestSearchCriteria p) {
 
         // validate ngày tháng nhập vào có hợp lí ko
         if (p.getFrom() != null && p.getTo() != null
@@ -156,7 +155,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         // lấy ra user
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
 
-        return purchaseDAO.getPurchaseByFilter(p).stream()
+        return purchaseDAO.search(p).stream()
                 .map(pr -> {
 
                     // Chuyển đổi sang PurchaseRequestResponse để hiển thị trên giao diện
@@ -169,18 +168,18 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // thực hiện save và draft
     @Override
-    public void actionsWithPurchase(Integer purchaseId, String action, String reasonReject, Integer userId) {
+    public void processPurchaseRequestAction(Integer purchaseId, String action, String reasonReject, Integer userId) {
 
         // check purchase có tồn tại hay ko
         purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException(invalidIdMsg));
 
         // Xử lý các hành động (actions) nhận được từ controller
         if ("a".equals(action)) {
-            purchaseDAO.updatePurchaseStatus(Request.APPROVED, purchaseId, null, userId);
+            purchaseDAO.updateStatus(Request.APPROVED, purchaseId, null, userId);
         } else if ("r".equals(action)) {
-            purchaseDAO.updatePurchaseStatus(Request.REJECTED, purchaseId, reasonReject, userId);
+            purchaseDAO.updateStatus(Request.REJECTED, purchaseId, reasonReject, userId);
         } else if ("d".equals(action)) {
-            purchaseDAO.updatePurchaseStatus(Request.DELETED, purchaseId, null, userId);
+            purchaseDAO.updateStatus(Request.DELETED, purchaseId, null, userId);
         } else {
             throw new InvalidDataException(invalidActionMsg);
         }
@@ -188,7 +187,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     // lấy ra purchase đã save draft để sửa
     @Override
-    public PurchaseRequestCreateRequest loadDraftForEdit(Integer purchaseId) {
+    public PurchaseRequestCreateRequest preparePurchaseRequestForm(Integer purchaseId) {
 
         // check tồn tại
         Purchase purchase = purchaseDAO.findById(purchaseId)

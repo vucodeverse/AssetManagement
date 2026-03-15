@@ -92,7 +92,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     // lấy ra số lượng đã order ứng với từng purchas id
     @Override
-    public Map<Integer, Integer> getOrderedQtyByPurchaseDetail(List<Integer> purchaseDetailIds) {
+    public Map<Integer, Integer> getOrderedQuantityByPurchaseDetailId(List<Integer> purchaseDetailIds) {
         if (purchaseDetailIds == null || purchaseDetailIds.isEmpty()) {
             return new HashMap<>();
         }
@@ -123,7 +123,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     // search cho màn purchase orderlisst
     @Override
-    public List<Object[]> searchAndFilter(PurchaseOrderSearchCriteria criteria) {
+    public List<Object[]> search(PurchaseOrderSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder(
                 "select po.purchase_order_id, po.order_date, po.total_amount, po.note, po.status, " +
                         "po.created_at, po.purchase_request_id, po.supplier_id, po.quotation_id, po.approved_by, " +
@@ -250,34 +250,6 @@ public class OrderDAOImpl implements OrderDAO {
             throw new RuntimeException("Failed to find purchase order", e);
         }
         return java.util.Optional.empty();
-    }
-
-    @Override
-    public long countAll() {
-        String sql = "select count(*) from purchase_orders";
-        try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ResultSet rs = ps.executeQuery();
-            if (rs.next())
-                return rs.getLong(1);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return 0;
-    }
-
-    @Override
-    public java.math.BigDecimal sumTotalAmount() {
-        String sql = "select coalesce(sum(total_amount), 0) from purchase_orders";
-        try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ResultSet rs = ps.executeQuery();
-            if (rs.next())
-                return rs.getBigDecimal(1);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return java.math.BigDecimal.ZERO;
     }
 
     // lấy ra các po gần đây theo giới hạn
