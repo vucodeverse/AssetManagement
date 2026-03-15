@@ -5,10 +5,11 @@ import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.dto.request.*;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.dto.response.QuotationSummaryResponse;
+import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.QuotationService;
-import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
+import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -29,25 +30,27 @@ public class QuotationController {
     private static final String URL_QUOTATION_FORM = "quotation/quotation-form";
 
     private final QuotationService quotationService;
-    private final SupplierService supplierService;
+    private final ISupplierService supplierService;
 
     // show form tạo quotation
     @IsPurchaseStaff
     @GetMapping("/create/{purchaseId}")
-    public String showQuotationForm(@PathVariable("purchaseId") Integer purchaseId, Model model) {
+    public String showQuotationForm(@PathVariable("purchaseId") Integer purchaseId, Model model, RedirectAttributes redirectAttributes) {
 
         QuotationCreateRequest quotationCreateRequest = new QuotationCreateRequest();
         quotationCreateRequest.setPurchaseId(purchaseId);
+        try {
 
         // map purchase detail sang quotation detail
         List<QuotationDetailCreateRequest> details = quotationService.mapPurchaseToQuotation(purchaseId);
-
         quotationCreateRequest.setQuotationDetailCreateRequests(details);
-
         model.addAttribute("quotationCreateRequest", quotationCreateRequest);
         prepareQuotationFormModel(model, purchaseId);
-
         return URL_QUOTATION_FORM;
+        }catch (InvalidDataException e){
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/quotations";
+        }
     }
 
     // form update quotation
@@ -85,7 +88,10 @@ public class QuotationController {
 
         // xóa 1 dùng detail
         if (removeIndex != null) {
-            request.getQuotationDetailCreateRequests().remove(removeIndex.intValue());
+
+            if(removeIndex >= 0 && request.getQuotationDetailCreateRequests().size() > 1) {
+                request.getQuotationDetailCreateRequests().remove(removeIndex.intValue());
+            }
             prepareQuotationFormModel(model, purchaseId);
             return URL_QUOTATION_FORM;
         }
@@ -95,10 +101,14 @@ public class QuotationController {
             prepareQuotationFormModel(model, purchaseId);
             return URL_QUOTATION_FORM;
         }
-
+        Integer quotationId = null;
         // tạo quotation
-        Integer quotationId = quotationService.createQuotation(request, purchaseId, action);
-
+        try{
+         quotationId = quotationService.createQuotation(request, purchaseId, action);
+        }catch (InvalidDataException e){
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/quotations/of-purchases/" + purchaseId;
+        }
         if (quotationId != null) {
             redirectAttributes.addFlashAttribute("message", "Thêm báo giá thành công");
         }
@@ -240,8 +250,10 @@ public class QuotationController {
             QuotationCreateRequest request,
             Integer index) {
 
+        // lấy chính dòng hiện tại cần thêm mới ra
         QuotationDetailCreateRequest original = request.getQuotationDetailCreateRequests().get(index);
 
+        // tạo dòng mới bằng việc duplicate từ dòng cũ sang
         QuotationDetailCreateRequest duplicate = QuotationDetailCreateRequest.builder()
                 .purchaseRequestDetailId(original.getPurchaseRequestDetailId())
                 .assetTypeName(original.getAssetTypeName())
@@ -253,6 +265,7 @@ public class QuotationController {
                 .discountRate(original.getDiscountRate())
                 .build();
 
+        // thêm dòng mới vào
         request.getQuotationDetailCreateRequests().add(index + 1, duplicate);
     }
 }

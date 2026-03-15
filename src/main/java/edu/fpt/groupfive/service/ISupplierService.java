@@ -6,7 +6,14 @@ import edu.fpt.groupfive.dto.request.SupplierUpdateRequest;
 import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.SupplierResponse;
 
+import java.util.List;
+import java.util.Map;
+
 public interface ISupplierService {
+
+    List<SupplierResponse> getAllSupplier();
+
+    Map<Integer, String> getSupplierIdToNameMap();
 
     PageResponse<SupplierResponse> searchSuppliers(
             SupplierSearchCriteria criteria,

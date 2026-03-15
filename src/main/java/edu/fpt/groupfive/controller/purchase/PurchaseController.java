@@ -10,7 +10,7 @@ import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.annotation.IsAssetManager;
-import edu.fpt.groupfive.util.annotation.IsDirector;
+import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +34,9 @@ public class PurchaseController {
 
     @Value("${purchase.noti.create.successfully}")
     private String messageSuccess;
+
+    @Value("${purchase.success.update}")
+    private String messageActions;
 
     // khởi tọa các dependency
     private final PurchaseService purchaseService;
@@ -89,10 +92,18 @@ public class PurchaseController {
     // hiển thị form sửa purchase ruquest
     @IsAssetManager
     @GetMapping("/{id}/edit")
-    public String showEditPurchaseForm(@PathVariable("id") Integer id, Model model) {
-        model.addAttribute("purchaseCreateRequest", purchaseService.loadDraftForEdit(id));
-        prepareFormModel(model);
-        return URL_PURCHASE_FORM;
+    public String showEditPurchaseForm(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+
+        try {
+            PurchaseRequestCreateRequest p = purchaseService.loadDraftForEdit(id);
+             model.addAttribute("purchaseCreateRequest", p);
+         prepareFormModel(model);
+            return URL_PURCHASE_FORM;
+        }catch (InvalidDataException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/purchases";
+
+        }
     }
 
     // hiển thị chi tiết purchase request
@@ -107,8 +118,15 @@ public class PurchaseController {
     @PostMapping("/{id}/actions")
     public String actionWithPr(@PathVariable("id") Integer id,
             @RequestParam("action") String actions,
-            @RequestParam(value = "reasonReject", required = false) String reasonReject) {
+            @RequestParam(value = "reasonReject", required = false) String reasonReject,
+                               RedirectAttributes redirectAttributes) {
+
+        try{
         purchaseService.actionsWithPurchase(id, actions, reasonReject, getCurrentUserId());
+        redirectAttributes.addFlashAttribute("message", messageActions);
+        }catch (InvalidDataException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/purchases";
     }
 
@@ -133,6 +151,7 @@ public class PurchaseController {
         if (index >= 0 && purchaseCreateRequest.getPurchaseRequestDetailCreateRequests().size() > 1) {
             purchaseCreateRequest.getPurchaseRequestDetailCreateRequests().remove(index);
         }
+
         prepareFormModel(model);
         return URL_PURCHASE_FORM;
     }

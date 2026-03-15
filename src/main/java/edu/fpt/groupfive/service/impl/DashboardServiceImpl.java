@@ -11,9 +11,8 @@ import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.dao.SupplierDAO;
 import edu.fpt.groupfive.model.Supplier;
-import edu.fpt.groupfive.service.SupplierService;
+import edu.fpt.groupfive.service.ISupplierService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public class DashboardServiceImpl implements DashboardService {
         private final OrderDAO orderDAO;
         private final SupplierDAO supplierDAO;
         private final UserServiceImpl userService;
-        private final SupplierService supplierService;
+        private final ISupplierService supplierService;
 
         private final PurchaseMapper purchaseMapper;
         private final OrderMapper orderMapper;

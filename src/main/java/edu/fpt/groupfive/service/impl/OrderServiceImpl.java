@@ -17,13 +17,14 @@ import edu.fpt.groupfive.model.warehouse.InventoryTicket;
 import edu.fpt.groupfive.model.warehouse.TicketDetail;
 import edu.fpt.groupfive.model.warehouse.TicketType;
 import edu.fpt.groupfive.service.AssetTypeService;
+import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.OrderService;
-import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.service.warehouse.InventoryTicketService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -44,10 +45,43 @@ public class OrderServiceImpl implements OrderService {
     private final PurchaseDetailDAO purchaseDetailDAO;
     private final OrderCalculationUtil orderCalculationUtil;
     private final RangeAmount rangeAmount;
-    private final SupplierService supplierService;
+    private final ISupplierService supplierService;
     private final WarehouseDAO warehouseDAO;
-    private final InventoryTicketService  inventoryTicketService;
+    private final InventoryTicketService inventoryTicketService;
     private final UserDAO userDAO;
+
+    @Value("${order.quotation_not_found}")
+    private String quotationNotFoundMsg;
+
+    @Value("${order.create.min_lines}")
+    private String minLinesMsg;
+
+    @Value("${order.create.quotation_detail_not_found}")
+    private String quotationDetailNotFoundMsg;
+
+    @Value("${order.create.pr_detail_not_found}")
+    private String prDetailNotFoundMsg;
+
+    @Value("${order.create.excess_quantity}")
+    private String excessQuantityMsg;
+
+    @Value("${order.create.failure}")
+    private String failureMsg;
+
+    @Value("${order.not_found}")
+    private String orderNotFoundMsg;
+
+    @Value("${order.delivery_date.required}")
+    private String deliveryDateRequiredMsg;
+
+    @Value("${order.delivery_date.past}")
+    private String deliveryDatePastMsg;
+
+    @Value("${order.delivery_date.invalid_format}")
+    private String deliveryDateInvalidFormatMsg;
+
+    @Value("${order.not_found_fallback}")
+    private String notFoundFallbackMsg;
 
     // kiểm tra order hợp lệ hay ko
     @Override
@@ -55,13 +89,13 @@ public class OrderServiceImpl implements OrderService {
 
         // check quotation có đang tồn tịaij hay ko
         Quotation quotation = quotationDAO.findById(quotationId)
-                .orElseThrow(() -> new InvalidDataException("Quotation không tồn tại: " + quotationId));
+                .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
         // lấy ra list quotation detiail
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
         String whName = null;
-        if(orderDAO.getWhIdFromPr(quotation.getPurchaseId()) != null){
-             whName = warehouseDAO.getById(orderDAO.getWhIdFromPr(quotation.getPurchaseId())).getName();
+        if (orderDAO.getWhIdFromPr(quotation.getPurchaseId()) != null) {
+            whName = warehouseDAO.getById(orderDAO.getWhIdFromPr(quotation.getPurchaseId())).getName();
         }
 
         // lấy ra assettype
@@ -75,9 +109,10 @@ public class OrderServiceImpl implements OrderService {
                         .taxRate(qd.getTaxRate())
                         .price(qd.getPrice())
                         .assetTypeId(qd.getAssetTypeId())
-                        .assetTypeName(assetTypeNames.getOrDefault(qd.getAssetTypeId(), "N/A"))
+                        .assetTypeName(assetTypeNames.getOrDefault(qd.getAssetTypeId(), notFoundFallbackMsg))
                         .quantity(qd.getQuantity())
-                        .build()).toList() ;
+                        .build())
+                .toList();
 
         // trả về order create
         return PurchaseOrderCreateRequest.builder()
@@ -92,13 +127,11 @@ public class OrderServiceImpl implements OrderService {
     // tạo order
     @Override
     public Integer createOrder(Integer quotationId, PurchaseOrderCreateRequest purchaseOrderCreateRequest,
-                               String username) {
-
-
+            String username) {
 
         // ktra tồn tại
         Quotation quotation = quotationDAO.findById(quotationId)
-                .orElseThrow(() -> new InvalidDataException("Quotation không tồn tại: " + quotationId));
+                .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
         // ly toàn bộ quotation detail lên trước
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
@@ -111,7 +144,7 @@ public class OrderServiceImpl implements OrderService {
         List<PurchaseOrderDetailCreateRequest> lines = purchaseOrderCreateRequest
                 .getPurchaseOrderDetailCreateRequests();
         if (lines == null || lines.isEmpty()) {
-            throw new InvalidDataException("Cần ít nhất 1 dòng để tạo PO");
+            throw new InvalidDataException(minLinesMsg);
         }
 
         // bỏ những row có quantity null và <= 0
@@ -156,13 +189,13 @@ public class OrderServiceImpl implements OrderService {
             // hay ko
             QuotationDetail qd = quotationDetailMap.get(line.getQuotationDetailId());
             if (qd == null) {
-                throw new InvalidDataException("Quotation detail không tồn tại: " + line.getQuotationDetailId());
+                throw new InvalidDataException(quotationDetailNotFoundMsg);
             }
 
             // check xem có pr gốc của cái po này cần tạo hay ko
             PurchaseDetail prDetail = prDetailMap.get(qd.getPurchaseDetailId());
             if (prDetail == null) {
-                throw new InvalidDataException("Không tìm thấy thông tin Purchase Request gốc cho dòng này.");
+                throw new InvalidDataException(prDetailNotFoundMsg);
             }
 
             // lấy ra số lượng đã order của purcahserequestdetail id nầy
@@ -172,9 +205,7 @@ public class OrderServiceImpl implements OrderService {
             int remainingInPr = prDetail.getQuantity() - alreadyOrdered;
 
             if (line.getQuantity() > remainingInPr) {
-                throw new InvalidDataException(String.format(
-                        "Số lượng đặt hàng (%d) vượt quá số lượng còn lại trong PR (%d). Đã đặt trước đó: %d/%d.",
-                        line.getQuantity(), remainingInPr, alreadyOrdered, prDetail.getQuantity()));
+                throw new InvalidDataException(excessQuantityMsg);
             }
 
             OrderDetail orderDetail = orderDetailMapper.toOrderDetail(line);
@@ -195,17 +226,17 @@ public class OrderServiceImpl implements OrderService {
         // insert
         Integer orderId = orderDAO.insert(order);
         if (orderId == null || orderId <= 0) {
-            throw new InvalidDataException("Tạo purchase order thất bại");
+            throw new InvalidDataException(failureMsg);
         }
 
-        //  sau khi PO được tạo thành công
+        // sau khi PO được tạo thành công
         InventoryTicket ticket = new InventoryTicket();
         ticket.setWarehouseId(order.getWarehouseId());
         ticket.setTicketType(TicketType.IN);
         ticket.setStatus(HandleStatus.PENDING);
 
         List<TicketDetail> ticketDetails = new ArrayList<>();
-        for(OrderDetail od : orderDetails) {
+        for (OrderDetail od : orderDetails) {
             TicketDetail td = new TicketDetail();
             td.setAssetTypeId(od.getAssetTypeId());
             td.setQuantity(od.getQuantity());
@@ -225,18 +256,16 @@ public class OrderServiceImpl implements OrderService {
         criteria.setMinAmount(null);
         criteria.setMaxAmount(null);
 
-
-        if(criteria.getAmountRange() != null && !criteria.getAmountRange().isBlank()) {
+        if (criteria.getAmountRange() != null && !criteria.getAmountRange().isBlank()) {
             List<BigDecimal> list = rangeAmount.applyRangeAMount(criteria.getAmountRange());
 
-            if(list.size() == 1) {
+            if (list.size() == 1) {
                 criteria.setMinAmount(list.get(0));
-            }else if(list.size() == 2) {
+            } else if (list.size() == 2) {
                 criteria.setMinAmount(list.get(0));
-                criteria.setMaxAmount(list.get(list.size()-1));
+                criteria.setMaxAmount(list.get(list.size() - 1));
             }
         }
-
 
         List<Object[]> results = orderDAO.searchAndFilter(criteria);
         List<PurchaseOrderResponse> list = new ArrayList<>();
@@ -257,8 +286,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PurchaseOrderResponse getOrderDetail(Integer orderId) {
         Order order = orderDAO.findById(orderId)
-                .orElseThrow(() -> new InvalidDataException("Purchase Order không tồn tại: " + orderId));
-
+                .orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
 
         Map<Integer, String> map = supplierService.getSupplierIdToNameMap();
         Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
@@ -270,7 +298,7 @@ public class OrderServiceImpl implements OrderService {
         List<PurchaseOrderDetailResponse> items = poDetails.stream()
                 .map(detail -> {
                     PurchaseOrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
-                    itemDto.setAssetTypeName(assetTypeNames.getOrDefault(detail.getAssetTypeId(), "N/A"));
+                    itemDto.setAssetTypeName(assetTypeNames.getOrDefault(detail.getAssetTypeId(), notFoundFallbackMsg));
                     return itemDto;
                 })
                 .toList();
@@ -279,7 +307,7 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal[] calculated = orderCalculationUtil.calculatePoDetail(poDetails);
 
         PurchaseOrderResponse response = orderMapper.toPurchaseOrderResponse(order);
-        response.setSupplierName(map.getOrDefault(order.getSupplierId(), "N/A"));
+        response.setSupplierName(map.getOrDefault(order.getSupplierId(), notFoundFallbackMsg));
         response.setOrderDetails(items);
         response.setSubtotal(calculated[0]);
         response.setTotalDiscount(calculated[1]);
@@ -287,23 +315,23 @@ public class OrderServiceImpl implements OrderService {
         response.setTotalAmount(calculated[3]);
 
         return response;
+    }
+
+    @Override
+    public void updateDeliveryDate(Integer orderId, String deliveryDateStr) {
+        if (deliveryDateStr == null || deliveryDateStr.isBlank()) {
+            throw new InvalidDataException(deliveryDateRequiredMsg);
         }
 
-        @Override
-        public void updateDeliveryDate(Integer orderId, String deliveryDateStr) {
-           if (deliveryDateStr == null || deliveryDateStr.isBlank()) {
-            throw new InvalidDataException("Ngày giao hàng không được để trống");
-           }
-
-            LocalDate deliveryDate = LocalDate.parse(deliveryDateStr);
-           if(deliveryDate.isBefore(LocalDate.now())) {
-            throw new InvalidDataException("Ngày giao hàng không được trong quá khứ");
-          }
-           try {
+        LocalDate deliveryDate = LocalDate.parse(deliveryDateStr);
+        if (deliveryDate.isBefore(LocalDate.now())) {
+            throw new InvalidDataException(deliveryDatePastMsg);
+        }
+        try {
             orderDetailDAO.updateDeliveryDate(orderId, deliveryDate);
-          } catch (Exception e) {
-            throw new InvalidDataException("Định dạng ngày giao hàng không hợp lệ: " + deliveryDateStr);
-          }
+        } catch (Exception e) {
+            throw new InvalidDataException(deliveryDateInvalidFormatMsg);
+        }
     }
 
 }

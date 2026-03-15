@@ -15,6 +15,7 @@ import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -32,6 +33,27 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final PurchaseMapper purchaseMapper;
     private final UserService userService;
     private final AssetTypeService assetTypeService;
+
+    @Value("${purchase.detail.asset_type_not_found}")
+    private String assetTypeNotFoundMsg;
+
+    @Value("${purchase.user_not_found}")
+    private String userNotFoundMsg;
+
+    @Value("${purchase.not_found}")
+    private String purchaseNotFoundMsg;
+
+    @Value("${purchase.search.invalid_date}")
+    private String invalidDateMsg;
+
+    @Value("${purchase.action.invalid_id}")
+    private String invalidIdMsg;
+
+    @Value("${purchase.action.invalid_action}")
+    private String invalidActionMsg;
+
+    @Value("${purchase.edit.not_draft}")
+    private String notDraftMsg;
 
     // tạo 1 purchase request
     @Override
@@ -77,8 +99,8 @@ public class PurchaseServiceImpl implements PurchaseService {
                     List<PurchaseRequestDetailResponse> details = p.getPurchaseDetails().stream()
                             .map(pd -> PurchaseRequestDetailResponse.builder()
                                     .id(pd.getId())
-                                    .assetTypeName(assetTypeMap.getOrDefault(pd.getTypeId(),
-                                            "Không tồn tại loại tài sản"))
+                                    .assetTypeName(pd.getTypeId() == null ? assetTypeNotFoundMsg
+                                            : assetTypeMap.getOrDefault(pd.getTypeId(), assetTypeNotFoundMsg))
                                     .quantity(pd.getQuantity())
                                     .estimatePrice(pd.getEstimatePrice())
                                     .specificationRequirement(pd.getSpecificationRequirement())
@@ -87,18 +109,20 @@ public class PurchaseServiceImpl implements PurchaseService {
                             .toList();
 
                     // tính total amount
-                    BigDecimal totalAmount = p.getPurchaseDetails().stream().map(pd ->
-                         pd.getEstimatePrice().multiply(new BigDecimal(pd.getQuantity()))).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal totalAmount = p.getPurchaseDetails().stream()
+                            .map(pd -> pd.getEstimatePrice().multiply(new BigDecimal(pd.getQuantity())))
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                     // map snag purchase response
                     PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(p);
-                    resp.setCreatorName(userMap.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"));
+                    resp.setCreatorName(p.getCreatedByUser() == null ? userNotFoundMsg
+                            : userMap.getOrDefault(p.getCreatedByUser(), userNotFoundMsg));
                     resp.setPurchaseDetails(details);
                     resp.setQuotationCount(quotationDAO.countQuotationFromPurchaseId(p.getId()));
                     resp.setTotalAmount(totalAmount);
                     return resp;
                 })
-                .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại: " + id));
+                .orElseThrow(() -> new InvalidDataException(purchaseNotFoundMsg));
     }
 
     // lấy ra tấy cả purchase
@@ -114,7 +138,7 @@ public class PurchaseServiceImpl implements PurchaseService {
             PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(p);
 
             // lấy ra tên người dùng
-            resp.setCreatorName(userMap.getOrDefault(p.getCreatedByUser(), "Không tồn tại người dùng"));
+            resp.setCreatorName(userMap.getOrDefault(p.getCreatedByUser(), userNotFoundMsg));
             return resp;
         }).toList();
     }
@@ -126,7 +150,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         // validate ngày tháng nhập vào có hợp lí ko
         if (p.getFrom() != null && p.getTo() != null
                 && p.getFrom().isAfter(p.getTo())) {
-            throw new InvalidDataException("From phải trước To");
+            throw new InvalidDataException(invalidDateMsg);
         }
 
         // lấy ra user
@@ -137,7 +161,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
                     // Chuyển đổi sang PurchaseRequestResponse để hiển thị trên giao diện
                     PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(pr);
-                    resp.setCreatorName(userMap.getOrDefault(pr.getCreatedByUser(), "Không tồn tại người dùng"));
+                    resp.setCreatorName(userMap.getOrDefault(pr.getCreatedByUser(), userNotFoundMsg));
                     return resp;
                 })
                 .toList();
@@ -148,7 +172,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     public void actionsWithPurchase(Integer purchaseId, String action, String reasonReject, Integer userId) {
 
         // check purchase có tồn tại hay ko
-        purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException("Purchase request không tộn tại"));
+        purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException(invalidIdMsg));
 
         // Xử lý các hành động (actions) nhận được từ controller
         if ("a".equals(action)) {
@@ -158,7 +182,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         } else if ("d".equals(action)) {
             purchaseDAO.updatePurchaseStatus(Request.DELETED, purchaseId, null, userId);
         } else {
-            throw new InvalidDataException("Action không hợp lệ: " + action);
+            throw new InvalidDataException(invalidActionMsg);
         }
     }
 
@@ -168,11 +192,11 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         // check tồn tại
         Purchase purchase = purchaseDAO.findById(purchaseId)
-                .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại: " + purchaseId));
+                .orElseThrow(() -> new InvalidDataException(purchaseNotFoundMsg));
 
         // nếu ko phải draft thì ko thể sửa
         if (Request.DRAFT != purchase.getStatus()) {
-            throw new InvalidDataException("Yêu cầu mua sắm này không thể update");
+            throw new InvalidDataException(notDraftMsg);
         }
 
         // trả về purchase request và toàn bộ detail đã có

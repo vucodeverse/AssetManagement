@@ -179,9 +179,10 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                     purchase.setApprovedAt(approvedAt.toLocalDateTime());
                 }
                 purchase.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                LocalDateTime updatedAt = rs.getTimestamp("updated_at").toLocalDateTime();
+                Timestamp up = rs.getTimestamp("updated_at");
+                LocalDateTime updatedAt = up != null ? up.toLocalDateTime() : null;
                 purchase.setUpdatedAt(
-                        updatedAt != null ? updatedAt : null);
+                        updatedAt);
 
                 purchase.setPurchaseDetails(
                         purchaseDetailDAO.findByPurchaseRequestId(purchaseId));
@@ -431,10 +432,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 ps.setDate(3, Date.valueOf(purchase.getNeededByDate()));
                 ps.setString(4, purchase.getPriority().name());
                 ps.setString(5, purchase.getRejectReason());
-                ps.setTimestamp(6,
-                        purchase.getUpdatedAt() != null
-                                ? Timestamp.valueOf(purchase.getUpdatedAt())
-                                : null);
+                ps.setTimestamp(6, Timestamp.valueOf(purchase.getUpdatedAt()));
                 ps.setString(7, purchase.getReason());
                 ps.setInt(8, purchase.getId());
 

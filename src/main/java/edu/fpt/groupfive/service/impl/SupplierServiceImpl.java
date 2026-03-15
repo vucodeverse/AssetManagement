@@ -7,7 +7,6 @@ import edu.fpt.groupfive.dto.request.SupplierUpdateRequest;
 import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.SupplierResponse;
 import edu.fpt.groupfive.model.Supplier;
-import edu.fpt.groupfive.service.SupplierService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import edu.fpt.groupfive.service.ISupplierService;
@@ -24,7 +23,6 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j(topic = "SUPPLIER-SERVICE")
 public class SupplierServiceImpl implements ISupplierService {
 
     private final SupplierDAO supplierDAO;
@@ -33,29 +31,20 @@ public class SupplierServiceImpl implements ISupplierService {
 
     @Override
     public List<SupplierResponse> getAllSupplier() {
-        log.info("Get all supplier");
 
         return supplierDAO.getAllSupplier().stream().map(supplier -> SupplierResponse.builder()
                 .supplierName(supplier.getSupplierName())
-                .id(supplier.getId())
+                .id(supplier.getSupplierId())
                 .build()).toList();
     }
 
     @Override
     public Map<Integer, String> getSupplierIdToNameMap() {
         return supplierDAO.getAllSupplier().stream()
-                .collect(Collectors.toMap(Supplier::getId, Supplier::getSupplierName,
+                .collect(Collectors.toMap(Supplier::getSupplierId, Supplier::getSupplierName,
                         (existing, replacement) -> existing));
     }
 
-    @Autowired
-    public SupplierServiceImpl(SupplierDAO supplierDAO,
-                               SupplierValidator supplierValidator,
-                               SupplierNormalizer supplierNormalizer) {
-        this.supplierDAO = supplierDAO;
-        this.supplierValidator = supplierValidator;
-        this.supplierNormalizer = supplierNormalizer;
-    }
 
     @Override
     public PageResponse<SupplierResponse> searchSuppliers(
@@ -201,9 +190,10 @@ public class SupplierServiceImpl implements ISupplierService {
         return new SupplierResponse(
                 supplier.getSupplierCode(),
                 supplier.getSupplierName(),
+                supplier.getSupplierId(),
                 supplier.getTaxCode(),
-                supplier.getPhoneNumber(),
                 supplier.getEmail(),
+                supplier.getPhoneNumber(),
                 supplier.getAddress(),
                 supplier.getStatus(),
                 supplier.getCreatedDate(),
@@ -234,3 +224,4 @@ public class SupplierServiceImpl implements ISupplierService {
         return false;
     }
 }
+

@@ -4,8 +4,8 @@ import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
+import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.OrderService;
-import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.service.warehouse.impl.WarehouseService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.annotation.IsDirector;
@@ -32,7 +32,7 @@ public class OrderController {
     private static final String VIEW_ORDER_DETAIL = "order/order-of-purchase";
 
     private final OrderService orderService;
-    private final SupplierService supplierService;
+    private final ISupplierService supplierService;
     private final OrderCalculationUtil orderCalculationUtil;
     private final WarehouseService warehouseService;
 

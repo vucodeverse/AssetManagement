@@ -81,7 +81,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
         return purchaseDetails;
     }
 
-    // xóa tất cả purchase detail theo purchase request id (dùng cho update draft)
+    // xóa tất cả purchase detail theo purchase request id (dùng khi  update draft)
     @Override
     public void deleteByPurchaseRequestId(Integer purchaseRequestId, Connection conn) {
         String sql = "delete from purchase_request_detail where purchase_request_id = ?";

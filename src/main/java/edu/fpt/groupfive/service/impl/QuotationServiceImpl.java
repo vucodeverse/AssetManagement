@@ -13,12 +13,13 @@ import edu.fpt.groupfive.mapper.QuotationDetailMapper;
 import edu.fpt.groupfive.mapper.QuotationMapper;
 import edu.fpt.groupfive.model.*;
 import edu.fpt.groupfive.service.AssetTypeService;
+import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.QuotationService;
-import edu.fpt.groupfive.service.SupplierService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -39,11 +40,49 @@ public class QuotationServiceImpl implements QuotationService {
     private final PurchaseDetailDAO purchaseDetailDAO;
     private final QuotationMapper quotationMapper;
     private final QuotationDetailMapper quotationDetailMapper;
-    private final SupplierService supplierService;
+    private final ISupplierService supplierService;
     private final RangeAmount rangeAmount;
     private final AssetTypeService assetTypeService;
     private final OrderCalculationUtil orderCalculationUtil;
 
+    @Value("${quotation.supplier_not_found}")
+    private String supplierNotFoundMsg;
+
+    @Value("${quotation.create.purchase_not_approved}")
+    private String purchaseNotApprovedMsg;
+
+    @Value("${quotation.create.invalid_detail_id}")
+    private String invalidDetailIdMsg;
+
+    @Value("${quotation.not_found}")
+    private String quotationNotFoundMsg;
+
+    @Value("${quotation.edit.not_draft}")
+    private String editNotDraftMsg;
+
+    @Value("${quotation.asset_type_not_found}")
+    private String assetTypeNotFoundMsg;
+
+    @Value("${quotation.pr_not_approved}")
+    private String prNotApprovedMsg;
+
+    @Value("${quotation.pr_not_found}")
+    private String prNotFoundMsg;
+
+    @Value("${quotation.supplier_not_found_alt}")
+    private String supplierNotFoundAltMsg;
+
+    @Value("${quotation.search.invalid_date}")
+    private String searchInvalidDateMsg;
+
+    @Value("${quotation.map.not_approved}")
+    private String mapNotApprovedMsg;
+
+    @Value("${quotation.detail.asset_type_not_found}")
+    private String detailAssetTypeNotFoundMsg;
+
+    @Value("${purchase.detail.asset_type_not_found}")
+    private String purchaseAssetTypeNotFoundMsg;
 
     // helper map cả supplier
     private QuotationResponse toQuotationResponse(Quotation q, Map<Integer, String> supplierMap) {
@@ -53,7 +92,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .quotationStatus(q.getQuotationStatus())
                 .totalAmount(q.getTotalAmount())
                 .createdAt(q.getCreatedAt())
-                .supplierName(supplierMap.getOrDefault(q.getSupplierId(), "Không tồn tại supplier"))
+                .supplierName(supplierMap.getOrDefault(q.getSupplierId(), supplierNotFoundMsg))
                 .rejectedReason(q.getRejectedReason())
                 .build();
     }
@@ -64,8 +103,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // ktra purchase có tồn tại và dc approve chưa
         purchaseDAO.findByIdAndStatus(purchaseId, "APPROVED")
-                .orElseThrow(() -> new InvalidDataException("Purchase request này không tồn tại hoặc chưa được chấp " +
-                        "nhận"));
+                .orElseThrow(() -> new InvalidDataException(purchaseNotApprovedMsg));
 
         // lấy ra list purchase detail của purchase request nhận vào
         List<PurchaseDetail> details = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
@@ -112,7 +150,7 @@ public class QuotationServiceImpl implements QuotationService {
             // ktra purchase detail có tồn tại hay ko
             PurchaseDetail pd = purchaseDetailMap.get(qd.getPurchaseRequestDetailId());
             if (pd == null)
-                throw new InvalidDataException("Invalid purchaseDetailId");
+                throw new InvalidDataException(invalidDetailIdMsg);
 
             // map sang quotation detail
             QuotationDetail quotationDetail = quotationDetailMapper.toQuotationDetail(qd);
@@ -144,9 +182,9 @@ public class QuotationServiceImpl implements QuotationService {
 
         // check quotation có tồn tịa hay ko
         Quotation q = quotationDAO.findById(id)
-                .orElseThrow(() -> new InvalidDataException("Quotation not found"));
+                .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
         if (q.getQuotationStatus() != QuotationStatus.DRAFT) {
-            throw new InvalidDataException("Chỉ có báo giá nháp mới có thể cập nhật");
+            throw new InvalidDataException(editNotDraftMsg);
         }
 
         // lấy ra list detail theo quotation id
@@ -159,7 +197,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // duyệt từng quotation detial để add vào list
         for (QuotationDetail qd : detailsList) {
-            String assetTypeName = assetTypeMap.getOrDefault(qd.getAssetTypeId(), "Loại tài sản này không tồn tại");
+            String assetTypeName = assetTypeMap.getOrDefault(qd.getAssetTypeId(), assetTypeNotFoundMsg);
 
             quotationDetailCreateRequests.add(QuotationDetailCreateRequest.builder()
                     .purchaseRequestDetailId(qd.getPurchaseDetailId())
@@ -186,18 +224,17 @@ public class QuotationServiceImpl implements QuotationService {
 
     // update quotation
     @Override
-    public void actionWithQuota(Integer id, String action,String reason) {
+    public void actionWithQuota(Integer id, String action, String reason) {
 
-        quotationDAO.findById(id).orElseThrow(() -> new InvalidDataException("Quotation not found"));
+        quotationDAO.findById(id).orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
-        if("r".equals(action)) {
-        quotationDAO.updateStatusReject(id, QuotationStatus.REJECTED, reason);
-        }else if("d".equals(action)) {
+        if ("r".equals(action)) {
+            quotationDAO.updateStatusReject(id, QuotationStatus.REJECTED, reason);
+        } else if ("d".equals(action)) {
             quotationDAO.updateStatusReject(id, QuotationStatus.DELETED, null);
         }
 
     }
-
 
     // kiểm tra form để tạo quotation
     @Override
@@ -205,8 +242,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // load purchase request với status Approve
         Purchase purchase = purchaseDAO.findByIdAndStatus(purchaseId, Request.APPROVED.name())
-                .orElseThrow(() -> new InvalidDataException("Purchase " +
-                        "request này chưa được chấp nhận."));
+                .orElseThrow(() -> new InvalidDataException(prNotApprovedMsg));
 
         // load list detail nếu có
         List<PurchaseDetail> purchaseDetailList = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
@@ -219,7 +255,7 @@ public class QuotationServiceImpl implements QuotationService {
 
             String assetTypeName = purchaseDetail.getTypeId() != null
                     ? assetTypeService.findNameById(purchaseDetail.getTypeId())
-                    : "Không tồn tại loại tài sản";
+                    : purchaseAssetTypeNotFoundMsg;
 
             QuotationDetailCreateRequest item = QuotationDetailCreateRequest.builder()
                     .purchaseRequestDetailId(purchaseDetail.getId())
@@ -243,7 +279,7 @@ public class QuotationServiceImpl implements QuotationService {
     @Override
     public List<QuotationResponse> getQuotationsByPurchase(Integer purchaseId) {
         purchaseDAO.findById(purchaseId)
-                .orElseThrow(() -> new InvalidDataException("Purchase request không tồn tại"));
+                .orElseThrow(() -> new InvalidDataException(prNotFoundMsg));
 
         // lấy ra supplier
         Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
@@ -260,7 +296,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // ktra quotaiton có tồn tại hay ko
         Quotation q = quotationDAO.findResponseById(quotationId)
-                .orElseThrow(() -> new InvalidDataException("Quotation not found"));
+                .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
         // lấy ra list quotation detail từ DB
         List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(q.getId());
@@ -270,7 +306,8 @@ public class QuotationServiceImpl implements QuotationService {
         List<QuotationDetailResponse> quotationDetailResponses = details.stream()
                 .map(qd -> QuotationDetailResponse.builder()
                         .quotationId(q.getId())
-                        .assetTypeName(assetTypeMap.getOrDefault(qd.getAssetTypeId(), "Loại tài sản này không tồn tại"))
+                        .assetTypeName(qd.getAssetTypeId() == null ? assetTypeNotFoundMsg
+                                : assetTypeMap.getOrDefault(qd.getAssetTypeId(), assetTypeNotFoundMsg))
                         .specificationRequirement(qd.getSpecificationRequirement())
                         .quantity(qd.getQuantity())
                         .quotationDetailNote(qd.getQuotationDetailNote())
@@ -282,7 +319,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // lấy tên supplier
         Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
-        String supplierName = supplierMap.getOrDefault(q.getSupplierId(), "Supplier ko tồn tại");
+        String supplierName = supplierMap.getOrDefault(q.getSupplierId(), supplierNotFoundAltMsg);
 
         // tính toán chi tiết từng đầu giá của quotation
         BigDecimal[] calculated = orderCalculationUtil.calculateQuotationPrice(details);
@@ -313,7 +350,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // ktra from và to có khớp ko
         if (s.getFrom() != null && s.getTo() != null && s.getFrom().isAfter(s.getTo())) {
-            throw new InvalidDataException("From phải trước To");
+            throw new InvalidDataException(searchInvalidDateMsg);
         }
 
         // mặc định null
@@ -396,7 +433,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // check xem purrchase đã đc approve chưa
         purchaseDAO.findByIdAndStatus(purchaseId, Request.APPROVED.name()).orElseThrow(() -> new InvalidDataException(
-                "Yêu cầu mua sắm chưa đc cấp nhận"));
+                mapNotApprovedMsg));
 
         // lấy ra list purchase detail
         List<PurchaseDetail> prDetails = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
@@ -407,7 +444,7 @@ public class QuotationServiceImpl implements QuotationService {
         // thực hiện map sang quotation detail
         return prDetails.stream()
                 .map(pd -> {
-                    String assetTypeName = map.getOrDefault(pd.getTypeId(), "Không tồn tại loại tài sản này");
+                    String assetTypeName = map.getOrDefault(pd.getTypeId(), detailAssetTypeNotFoundMsg);
 
                     return QuotationDetailCreateRequest.builder()
                             .purchaseRequestDetailId(pd.getId())

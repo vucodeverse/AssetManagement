@@ -36,7 +36,7 @@ public class SupplierDAOImpl implements SupplierDAO {
             while (rs.next()){
                 Supplier supplier = new Supplier();
                 supplier.setSupplierName(rs.getString("supplier_name"));
-                supplier.setId(rs.getInt("supplier_id"));
+                supplier.setSupplierId(rs.getInt("supplier_id"));
 
                 suppliers.add(supplier);
             }
@@ -58,7 +58,7 @@ public class SupplierDAOImpl implements SupplierDAO {
             ResultSet rs = ps.executeQuery();
             if(rs.next()){
                 Supplier supplier = new Supplier();
-                supplier.setId(rs.getInt("supplier_id"));
+                supplier.setSupplierId(rs.getInt("supplier_id"));
                 supplier.setSupplierName(rs.getString("supplier_name"));
 
                 return Optional.of(supplier);
