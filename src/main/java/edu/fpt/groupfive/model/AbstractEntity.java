@@ -2,7 +2,6 @@ package edu.fpt.groupfive.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.cglib.core.Local;
 
 import java.io.Serializable;
 import java.time.LocalDate;
