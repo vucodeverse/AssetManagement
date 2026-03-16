@@ -183,7 +183,7 @@ public class AssetServiceImpl implements AssetService {
 
         var responses = assetMapper.toAssetResponseList(assets);
 
-        return new PageResponse<>(responses, page, PAGE_SIZE, total, totalPages);
+        return new PageResponse<>(responses, page, PAGE_SIZE, total);
     }
 
     // validate

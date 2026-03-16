@@ -45,7 +45,7 @@ public class AssetController {
 
         var result = assetService.searchAssets(keyword, status, fromDate, toDate, direction, page);
 
-        model.addAttribute("assets", result.getContent());
+        model.addAttribute("assets", result.getData());
         model.addAttribute("page", result);
 
         model.addAttribute("keyword", keyword);

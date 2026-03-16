@@ -86,7 +86,7 @@
               </thead>
               <tbody>
                 <tr th:each="item : ${order.getOrderDetails}">
-                  <td class="td-id" th:text="'#IT-' + ${item.id}">#IT-001</td>
+                  <td class="td-id" th:text="'#IT-' + ${item.purchaseOrderDetailId}">#IT-001</td>
                   <td class="td-bold" th:text="${item.assetTypeName}">MacBook Pro 14" M3</td>
                   <td th:text="${#numbers.formatInteger(item.quantity, 2)}">05</td>
                   <td th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}">$1,999.00</td>
