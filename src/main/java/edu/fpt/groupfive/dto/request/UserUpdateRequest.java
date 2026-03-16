@@ -16,23 +16,23 @@ public class UserUpdateRequest {
 
     private String password;
 
-    @NotBlank(message = "First name is required")
+    @NotBlank(message = "Tên là bắt buộc")
     private String firstName;
 
-    @NotBlank(message = "Last name is required")
+    @NotBlank(message = "Họ là bắt buộc")
     private String lastName;
 
-    @Email(message = "Invalid email format")
+    @Email(message = "Định dạng email không hợp lệ")
     private String email;
 
-    @NotBlank(message = "Phone is required")
+    @NotBlank(message = "Số điện thoại là bắt buộc")
     private String phoneNumber;
 
-    @NotNull(message = "Role is required")
+    @NotNull(message = "Vai trò là bắt buộc")
     private Role role;
 
     private String status;
 
-    @NotNull(message = "Department is required")
+    @NotNull(message = "Phòng ban là bắt buộc")
     private Integer departmentId;
 }
