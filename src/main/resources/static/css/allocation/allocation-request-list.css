@@ -290,7 +290,7 @@ table.dataTable tbody tr:hover,
     white-space: nowrap;
 }
 
-.badge {
+.status-badge {
     display: inline-block;
     padding: 5px 12px;
     border-radius: 6px;
@@ -302,32 +302,32 @@ table.dataTable tbody tr:hover,
     border: 1px solid var(--text);
 }
 
-.badge-PENDING,
-.badge-PENDING_APPROVAL {
+.status-badge-PENDING,
+.status-badge-PENDING_APPROVAL {
     background: #fff;
     color: var(--text);
     border-color: var(--text);
 }
 
-.badge-REVIEWING {
+.status-badge-REVIEWING {
     background: #fff;
     color: var(--text);
     border-color: var(--text);
 }
 
-.badge-APPROVED {
+.status-badge-APPROVED {
     background: var(--text);
     color: #fff;
     border-color: var(--text);
 }
 
-.badge-REJECTED {
+.status-badge-REJECTED {
     background: #fff;
     color: #dc2626;
     border-color: #dc2626;
 }
 
-.badge-DRAFT {
+.status-badge-DRAFT {
     background: #f3f4f6;
     color: var(--muted2);
     border-color: var(--border);
@@ -579,4 +579,74 @@ table.dataTable tbody tr:hover,
 
 .btn-cancel:hover {
     background: #f3f4f6;
+}
+
+.data-table thead th {
+    text-align: center !important;
+}
+/*.dataTables_wrapper .dataTables_paginate .paginate_button.current,*/
+/*.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover,*/
+/*.dataTables_wrapper .dataTables_paginate .paginate_button.current:focus {*/
+/*    background: #111827 !important;*/
+/*    color: #ffffff !important;*/
+/*    border-color: #111827 !important;*/
+/*}*/
+
+/*.dataTables_wrapper .dataTables_paginate .paginate_button.current a,*/
+/*.dataTables_wrapper .dataTables_paginate .paginate_button.current span {*/
+/*    color: #ffffff !important;*/
+/*}*/
+
+/*.dataTables_wrapper .dataTables_paginate .paginate_button {*/
+/*    color: #111827 !important;*/
+/*}*/
+
+/*.dataTables_paginate .paginate_button.current,*/
+/*.dataTables_paginate .paginate_button.current * {*/
+/*    color: white !important;*/
+/*}*/
+
+
+/* Đổi từ .modal → .reject-dialog */
+.reject-dialog {
+    width: min(560px, 92vw);
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, .25);
+    overflow: hidden;
+}
+/* Đổi từ .modal-header → .reject-dialog-header */
+.reject-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+}
+/* Đổi từ .modal-title → .reject-dialog-title */
+.reject-dialog-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--text);
+}
+/* Đổi từ .modal-body → .reject-dialog-body */
+.reject-dialog-body {
+    padding: 16px;
+}
+/* Đổi từ .modal textarea → .reject-dialog textarea */
+.reject-dialog textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    outline: none;
+    font-size: 13px;
+    color: var(--text);
+}
+.reject-dialog textarea:focus {
+    border-color: #9ca3af;
 }

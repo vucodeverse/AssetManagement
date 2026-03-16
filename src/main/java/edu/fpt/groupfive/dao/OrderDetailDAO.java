@@ -10,4 +10,5 @@ public interface OrderDetailDAO {
     Integer insert(OrderDetail orderDetail, Integer orderId,  Connection connection);
     List<OrderDetail> findByOrderId(Integer orderId);
     void updateDeliveryDate(Integer orderId, LocalDate deliveryDate);
+    List<OrderDetail> findAll();
 }

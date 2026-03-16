@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -62,7 +63,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
 
         List<OrderDetail> results = new java.util.ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
@@ -99,5 +100,35 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update delivery date", e);
         }
+    }
+
+    @Override
+    public List<OrderDetail> findAll() {
+        String sql = "select * from purchase_order_details";
+        List<OrderDetail> results = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                OrderDetail detail = new OrderDetail();
+                detail.setId(rs.getInt("purchase_order_detail_id"));
+                detail.setQuantity(rs.getInt("quantity"));
+                detail.setPrice(rs.getBigDecimal("unit_price"));
+                detail.setTaxRate(rs.getBigDecimal("tax_rate"));
+                detail.setDiscountRate(rs.getBigDecimal("discount"));
+                detail.setOrderDetailNote(rs.getString("note"));
+                detail.setAssetTypeId(rs.getInt("asset_type_id"));
+                detail.setQuotationDetailId(rs.getInt("quotation_detail_id"));
+                detail.setDeliveryDate(rs.getDate("delivery_date") != null
+                        ? rs.getDate("delivery_date").toLocalDate()
+                        : null);
+
+                results.add(detail);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return  results;
     }
 }

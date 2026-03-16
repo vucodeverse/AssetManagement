@@ -1,10 +1,11 @@
 package edu.fpt.groupfive.dto.response;
 
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,14 +13,25 @@ import java.time.LocalDateTime;
 @Setter
 public class AllocationRequestResponse {
     private Integer requestId;
+    private Integer requesterId;
+    private Integer requestedDepartmentId;
 
-    private String status;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate neededByDate;
 
     private String priority;
+    private String requestReason;
+    private String status;
 
-    private LocalDate neededByDate;
+    private Integer amApprovedBy;
+    private LocalDateTime amApprovedAt;
+    private String reasonReject;
 
     private LocalDateTime createdAt;
 
-    private String requesterName;
+    private List<AllocationRequestDetailResponse> details;
+
+    private String userName;
+    private String requestedDepartmentName;
+    private String amApprovedName;
 }

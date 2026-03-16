@@ -334,4 +334,31 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    @Override
+    public List<PurchaseOrderDetailResponse> getAllOrderDetails() {
+        List<OrderDetail> list=orderDetailDAO.findAll();
+
+        return null;
+    }
+
+    private void parseAmountRange(PurchaseOrderSearchCriteria criteria) {
+
+        if (criteria.getAmountRange() == null || criteria.getAmountRange().isBlank())
+            return;
+        switch (criteria.getAmountRange()) {
+            case "0-5000" -> {
+                criteria.setMinAmount(BigDecimal.ZERO);
+                criteria.setMaxAmount(new BigDecimal("5000"));
+            }
+            case "5000-20000" -> {
+                criteria.setMinAmount(new BigDecimal("5000"));
+                criteria.setMaxAmount(new BigDecimal("20000"));
+            }
+            case "20000+" -> {
+                criteria.setMinAmount(new BigDecimal("20000"));
+                criteria.setMaxAmount(null);
+            }
+        }
+    }
+
 }

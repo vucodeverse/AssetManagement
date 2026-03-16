@@ -2,6 +2,7 @@ package edu.fpt.groupfive.service;
 
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
+import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 
 import java.util.List;
@@ -16,4 +17,5 @@ public interface OrderService {
     PurchaseOrderResponse getPurchaseOrderById(Integer orderId);
 
     void updateDeliveryDate(Integer orderId, String deliveryDate);
+    List<PurchaseOrderDetailResponse> getAllOrderDetails();
 }

@@ -80,10 +80,6 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
-    @Override
-    public String findFullNameById(Integer purchaseId) {
-        return "";
-    }
 
     @Override
     public void insert(Users users) {
@@ -321,38 +317,6 @@ public class UserDAOImpl implements UserDAO {
 
 
     @Override
-    public List<Users> findAllByFirstNameDesc() {
-        String query = """
-                SELECT * FROM users ORDER BY first_name DESC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
-    public List<Users> findAllByFirstNameAsc() {
-        String query = """
-                SELECT * FROM users ORDER BY first_name ASC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
-    public List<Users> findAllByCreateDateAsc() {
-        String query = """
-                SELECT * FROM users ORDER BY created_date ASC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
-    public List<Users> findAllByCreateDateDesc() {
-        String query = """
-                SELECT * FROM users ORDER BY created_date DESC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
     public int countUsersInDepartment(Integer departmentId) {
         String sql = """
                     SELECT COUNT(*)
@@ -408,6 +372,7 @@ public class UserDAOImpl implements UserDAO {
 
         query.append(" ORDER BY user_id");
         query.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
         param.add(offset);
         param.add(size);
 

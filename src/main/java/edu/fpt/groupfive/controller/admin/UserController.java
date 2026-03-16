@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,6 +26,14 @@ public class UserController {
     private void setupData(Model model) {
         model.addAttribute("roles", Role.getRoles());
         model.addAttribute("departments", departmentService.getAllDepartments());
+    }
+
+    private void setupAttributes(Model model, Object user, boolean canEdit, boolean isEditMode) {
+        model.addAttribute("user", user);
+        model.addAttribute("roles", Role.getRoles());
+        model.addAttribute("departments", departmentService.getAllDepartments());
+        model.addAttribute("canEdit", canEdit);
+        model.addAttribute("isEditMode", isEditMode);
     }
 
     // Giữ lại dữ liệu trong form khi lỗi
@@ -71,9 +80,7 @@ public class UserController {
 
     @GetMapping("/add")
     public String addForm(Model model) {
-        model.addAttribute("user", new UserCreateRequest());
-        setupData(model);
-        model.addAttribute("mode", "Add");
+        setupAttributes(model, new UserCreateRequest(), true, false);
         return "user-detail";
     }
 
@@ -94,9 +101,18 @@ public class UserController {
         request.setDepartmentId(response.getDepartmentId());
 
 
-        model.addAttribute("user", request);
-        setupData(model);
-        model.addAttribute("mode", "Edit");
+        setupAttributes(model, request, true, true);
+
+        return "user-detail";
+    }
+
+    @GetMapping("/detail/{id}")
+    public String showDetail(@PathVariable("id") Integer id, Model model) {
+
+        UserResponse response = userService.getUserById(id);
+
+        setupAttributes(model, response, false, false);
+
         return "user-detail";
     }
 
@@ -111,7 +127,8 @@ public class UserController {
     public String createUser(
             @Valid @ModelAttribute("user") UserCreateRequest request,
             BindingResult bindingResult,
-            Model model) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
         // Nếu form nhập có lỗi
         if (bindingResult.hasErrors()) {
@@ -148,8 +165,14 @@ public class UserController {
         }
 
         if (bindingResult.hasErrors()) {
-            return returnData(model, "Add");
+            setupAttributes(model, request, true, false);
+            return "user-detail";
         }
+
+        redirectAttributes.addFlashAttribute(
+                "message",
+                "Tạo user thành công!"
+        );
 
         userService.createUser(request);
         return "redirect:/admin/home";
@@ -166,7 +189,8 @@ public class UserController {
     public String updateUser(
             @Valid @ModelAttribute("user") UserUpdateRequest request,
             BindingResult bindingResult,
-            Model model) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
         // Nếu có lỗi trong form
         if (bindingResult.hasErrors()) {
@@ -194,10 +218,17 @@ public class UserController {
         }
 
         if (bindingResult.hasErrors()) {
-            return returnData(model, "Edit");
+            setupAttributes(model, request, true, true);
+            return "user-detail";
         }
 
         userService.updateUser(request);
+
+        redirectAttributes.addFlashAttribute(
+                "message",
+                "Cập nhật thành công!"
+        );
+
         return "redirect:/admin/home";
     }
 

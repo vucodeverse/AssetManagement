@@ -7,8 +7,8 @@
     <title>Asset List</title>
 
     <th:block layout:fragment="extra-css">
-        <link rel="stylesheet"
-              th:href="@{/css/asset/asset-list.css}">
+        <link rel="stylesheet" th:href="@{/css/asset/asset-list.css}">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     </th:block>
 </head>
 
@@ -16,57 +16,195 @@
 
 <div layout:fragment="content" class="page-container">
 
-    <div class="page-header">
-        <h2>DANH SÁCH TÀI SẢN</h2>
+    <!-- header-->
+    <header class="page-header">
+
+<!--        error msg-->
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
+
+        <h1 class="page-title">DANH SÁCH TÀI SẢN</h1>
 
         <a th:href="@{/manager/assets/create}" class="btn-add">
-            Tạo tài sản
+            TẠO TÀI SẢN
         </a>
-    </div>
+    </header>
 
+    <!-- filter -->
+    <form th:action="@{/manager/assets}" method="get" class="filter-bar">
+
+        <div class="filter-item">
+            <label>Tìm kiếm</label>
+            <input type="text"
+                   name="keyword"
+                   placeholder="Tên tài sản"
+                   th:value="${keyword}">
+        </div>
+
+        <div class="filter-item">
+            <label>Trạng thái</label>
+            <select name="status">
+                <option value="">Tất cả</option>
+                <option th:each="s : ${T(edu.fpt.groupfive.common.AssetStatus).values()}"
+                        th:value="${s}"
+                        th:text="${s}"
+                        th:selected="${status == s}">
+                </option>
+            </select>
+        </div>
+
+        <div class="filter-item">
+            <label>Từ ngày</label>
+            <input type="date"
+                   name="fromDate"
+                   th:value="${fromDate}">
+        </div>
+
+        <div class="filter-item">
+            <label>Đến ngày</label>
+            <input type="date"
+                   name="toDate"
+                   th:value="${toDate}">
+        </div>
+
+        <div class="filter-item">
+            <label>Sắp xếp giá</label>
+            <select name="direction">
+                <option value="">Mặc định</option>
+                <option value="ASC"
+                        th:selected="${direction == 'ASC'}">
+                    Giá tăng dần
+                </option>
+                <option value="DESC"
+                        th:selected="${direction == 'DESC'}">
+                    Giá giảm dần
+                </option>
+            </select>
+        </div>
+
+        <div class="filter-buttons">
+            <button type="submit" class="search-btn">
+                Tìm kiếm
+            </button>
+
+            <a th:href="@{/manager/assets}" class="btn-reset">
+                Reset
+            </a>
+        </div>
+
+    </form>
+
+    <!-- Ttable -->
     <div class="table-wrapper">
+
         <table class="asset-table">
+
             <thead>
             <tr>
                 <th>Mã tài sản</th>
                 <th>Tên tài sản</th>
-                <th>Serial</th>
                 <th>Loại</th>
                 <th>Trạng thái</th>
                 <th>Giá</th>
+                <th>Mã đơn mua</th>
                 <th>Ngày mua</th>
-                <th>Hành động</th>
+                <th class="action-cell">Hành động</th>
             </tr>
             </thead>
 
             <tbody>
             <tr th:each="asset : ${assets}">
+
                 <td th:text="${asset.assetId}"></td>
+
                 <td th:text="${asset.assetName}"></td>
-                <td th:text="${asset.serialNumber}"></td>
+
                 <td th:text="${asset.assetTypeName}"></td>
+
                 <td th:text="${asset.currentStatus}"></td>
-                <td th:text="${#numbers.formatDecimal(asset.originalCost, 0, 'COMMA', 0, 'POINT')}"></td>
+
+                <td th:text="${#numbers.formatDecimal(asset.originalCost,0,'COMMA',0,'POINT')}"></td>
+
+                <td th:text="'PO-' + ${asset.purchaseOrderDetailId}"></td>
+
                 <td th:text="${asset.acquisitionDate}"></td>
 
-                <td class="action-buttons">
-                    <a th:href="@{/manager/assets/edit/{id}(id=${asset.assetId})}">
-                        ✏
-                    </a>
+                <td class="action-cell">
 
-                    <a th:href="@{/manager/assets/detail/{id}(id=${asset.assetId})}">
-                        👁️
+                    <a th:href="@{/manager/assets/detail/{id}(id=${asset.assetId})}"
+                       class="action-icon">
+                        <i class="fas fa-eye"></i>
                     </a>
 
                     <form th:action="@{/manager/assets/delete/{id}(id=${asset.assetId})}"
                           method="post"
                           style="display:inline">
-                        <button type="submit">🗑</button>
+
+                        <button class="icon-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
+
                     </form>
+
                 </td>
+
             </tr>
             </tbody>
+
         </table>
+
+        <!-- Phan trang -->
+        <div class="pagination" th:if="${page.totalPages > 0}">
+
+            <span>
+                Trang [[${page.currentPage}]] /
+                [[${page.totalPages}]]
+            </span>
+
+            <div class="pagination-controls">
+
+                <a th:if="${page.currentPage > 1}"
+                   th:href="@{/manager/assets(
+                   page=${page.currentPage - 1},
+                   keyword=${keyword},
+                   status=${status},
+                   fromDate=${fromDate},
+                   toDate=${toDate},
+                   direction=${direction})}"
+                   class="pagination-btn">
+                    Trước
+                </a>
+
+                <a th:each="i : ${#numbers.sequence(1,page.totalPages)}"
+                   th:href="@{/manager/assets(
+                   page=${i},
+                   keyword=${keyword},
+                   status=${status},
+                   fromDate=${fromDate},
+                   toDate=${toDate},
+                   direction=${direction})}"
+                   th:text="${i}"
+                   th:classappend="${i == page.currentPage}? 'active'"
+                   class="pagination-btn">
+                </a>
+
+                <a th:if="${page.currentPage < page.totalPages}"
+                   th:href="@{/manager/assets(
+                   page=${page.currentPage + 1},
+                   keyword=${keyword},
+                   status=${status},
+                   fromDate=${fromDate},
+                   toDate=${toDate},
+                   direction=${direction})}"
+                   class="pagination-btn">
+                    Tiếp
+                </a>
+
+            </div>
+
+        </div>
+
     </div>
 
 </div>

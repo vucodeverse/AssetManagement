@@ -1,10 +1,6 @@
 package edu.fpt.groupfive.model;
 
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,4 +36,8 @@ public class AllocationRequest {
     private LocalDateTime createdAt;
 
     private LocalDateTime updateAt;
+    // Hỗ trợ khi hiển thị tên chứ ko thuộc database feild
+    private String userName;
+    private String requestedDepartmentName;
+    private Integer assetManagerName;
 }

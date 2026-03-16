@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class Order extends AbstractEntity<Integer>{
+
     private BigDecimal totalAmount;
     private OrderStatus orderStatus;
     private String orderNote;

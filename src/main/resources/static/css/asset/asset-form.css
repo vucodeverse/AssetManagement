@@ -1,110 +1,79 @@
-/* ================= PAGE HEADER ================= */
-.page-header {
-    margin-bottom: 25px;
+.page-header{
+    margin-bottom:20px;
 }
 
-.page-title {
-    font-size: 26px;
-    font-weight: 700;
-    color: #2c3e50;
+.page-title{
+    font-size:26px;
+    font-weight:600;
 }
 
-/* ================= WRAPPER ================= */
-.content-wrapper {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+.content-wrapper{
+    max-width:900px;
 }
 
-/* ================= FORM PANEL ================= */
-.form-panel {
-    width: 100%;
+.form-panel{
+    background:white;
+    padding:24px;
+    border-radius:8px;
+    border:1px solid #e5e7eb;
 }
 
-/* ================= FORM FIELD ================= */
-.form-field {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px;
 }
 
-.form-label {
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: #34495e;
-    font-size: 14px;
+.form-field{
+    display:flex;
+    flex-direction:column;
 }
 
-/* ================= INPUT ================= */
-.form-input {
-    padding: 10px 12px;
-    border: 1px solid #dcdcdc;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.2s ease;
+.form-field label{
+    margin-bottom:6px;
+    font-weight:500;
 }
 
-.form-input:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(52,152,219,0.15);
+.form-field input,
+.form-field select{
+    padding:10px;
+    border:1px solid #e5e7eb;
+    border-radius:6px;
 }
 
-/* ================= SELECT ================= */
-select.form-input {
-    cursor: pointer;
+.form-actions{
+    margin-top:25px;
+    display:flex;
+    gap:10px;
 }
 
-/* ================= ERROR ================= */
-.error-box {
-    background-color: #ffecec;
-    color: #c0392b;
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    font-size: 14px;
+.btn-primary{
+    background:black;
+    color:white;
+    padding:10px 18px;
+    border-radius:6px;
+    border:none;
+    cursor:pointer;
 }
 
-.text-danger {
-    font-size: 12px;
-    color: #e74c3c;
-    margin-top: 4px;
+.btn-secondary{
+    background:#e5e7eb;
+    padding:10px 18px;
+    border-radius:6px;
+    border:none;
+    cursor:pointer;
+}
+.error{
+    color:red;
+    font-size:13px;
+    margin-top:4px;
+    display:block;
 }
 
-/* ================= BUTTONS ================= */
-.form-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-.btn-add {
-    background-color: black;
-    color: #ffffff;
-    padding: 10px 18px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.btn-add:hover {
-    background-color: #2980b9;
-}
-
-.btn-cancel {
-    background-color: #bdc3c7;
-    color: #2c3e50;
-    padding: 10px 18px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.btn-cancel:hover {
-    background-color: #95a5a6;
+.error-message{
+    background:#ffe5e5;
+    color:#d60000;
+    padding:10px;
+    border-radius:6px;
+    margin-bottom:15px;
 }

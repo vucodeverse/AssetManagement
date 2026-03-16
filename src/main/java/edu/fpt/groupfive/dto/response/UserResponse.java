@@ -5,8 +5,8 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Setter
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,5 +29,8 @@ public class UserResponse {
 
     private LocalDateTime createdDate;
 
+    private LocalDateTime updatedDate;
+
+    //Foreign key of table Department
     private Integer departmentId;
 }
