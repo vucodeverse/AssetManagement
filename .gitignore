@@ -50,6 +50,7 @@ build/
 
 ### Local docs ###
 docs/
+/docs/
 db-change-notes.md
 /.idea
 
