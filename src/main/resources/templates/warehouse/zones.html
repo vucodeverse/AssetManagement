@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Quản lý Zone</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>Quản lý Khu vực lưu trữ (Zones)</h1>
+    
+    <button class="btn btn-primary">Thêm Zone mới</button>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Zone ID</th>
+                <th>Tên Zone</th>
+                <th>Tên loại tài sản</th>
+                <th>Sức chứa tối đa</th>
+                <th>Sức chứa hiện tại</th>
+                <th>Tỷ lệ lấp đầy</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="zone : ${zones}">
+                <td th:text="${zone.zoneId}"></td>
+                <td th:text="${zone.zoneName}"></td>
+                <td th:text="${zone.assetTypeName}"></td>
+                <td th:text="${zone.maxCapacity}"></td>
+                <td th:text="${zone.currentCapacity}"></td>
+                <td>
+                    <div class="progress-bar">
+                        <div class="progress" th:style="'width: ' + ${zone.usagePercentage} + '%'" 
+                             th:classappend="${zone.usagePercentage > 80 ? 'bg-danger' : (zone.usagePercentage > 50 ? 'bg-warning' : 'bg-success')}"></div>
+                    </div>
+                    <span th:text="${#numbers.formatDecimal(zone.usagePercentage, 1, 1)} + '%'"></span>
+                </td>
+                <td>
+                    <form th:action="@{/warehouse/zones/reset/{id}(id=${zone.zoneId})}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-outline">Reset</button>
+                    </form>
+                    <form th:action="@{/warehouse/zones/delete/{id}(id=${zone.zoneId})}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

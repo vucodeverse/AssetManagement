@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Xuất kho Cấp phát</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>Xuất kho cho Lệnh Cấp phát (Allocation Picking)</h1>
+    <div class="form-container">
+        <form th:action="@{/warehouse/outbound/allocation}" method="post">
+            <div class="form-group">
+                <label>Mã yêu cầu cấp phát (Allocation Request ID):</label>
+                <input type="number" name="allocationRequestId" required>
+            </div>
+            <div class="form-group">
+                <label>Mã tài sản (Asset ID):</label>
+                <input type="number" name="assetId" required>
+            </div>
+            <p class="helper-text">Hệ thống sẽ tự động trừ sức chứa tại Zone tương ứng.</p>
+            <button type="submit" class="btn btn-primary">Xác nhận xuất kho</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

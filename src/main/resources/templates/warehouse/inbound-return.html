@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Nhập kho Thu hồi</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>Nhập kho Tài sản Thu hồi (Return Receipt)</h1>
+    <div class="form-container">
+        <form th:action="@{/warehouse/inbound/return}" method="post">
+            <div class="form-group">
+                <label>Mã yêu cầu thu hồi (Return Request ID):</label>
+                <input type="number" name="returnRequestId" required>
+            </div>
+            <div class="form-group">
+                <label>Mã tài sản (Asset ID):</label>
+                <input type="number" name="assetId" required>
+            </div>
+            <div class="form-group">
+                <label>Trạng thái tình trạng:</label>
+                <select name="conditionStatus">
+                    <option value="AVAILABLE">READY_TO_USE (Sẵn sàng sử dụng)</option>
+                    <option value="UNDER_MAINTENANCE">MAINTENANCE (Cần sửa chữa)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ghi chú:</label>
+                <textarea name="note"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Xác nhận nhập kho</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

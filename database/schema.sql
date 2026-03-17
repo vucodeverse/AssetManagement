@@ -1,4 +1,49 @@
 -- =============================================
+-- 0. DỌN DẸP DỮ LIỆU CŨ (DROP TABLES)
+-- =============================================
+SET NOCOUNT ON;
+
+-- Module Kho (Warehouse) - Xóa trước do có FK tham chiếu các bảng cơ bản
+DROP TABLE IF EXISTS map_allocation_transactions;
+DROP TABLE IF EXISTS map_return_transactions;
+DROP TABLE IF EXISTS map_po_transactions;
+DROP TABLE IF EXISTS wh_transactions;
+DROP TABLE IF EXISTS wh_asset_placement;
+DROP TABLE IF EXISTS wh_zones;
+DROP TABLE IF EXISTS wh_asset_capacity;
+DROP TABLE IF EXISTS wh_warehouses;
+
+-- Module Giao dịch & Cấp phát
+DROP TABLE IF EXISTS transfer_order_detail;
+DROP TABLE IF EXISTS transfer_order;
+DROP TABLE IF EXISTS asset_handover_detail;
+DROP TABLE IF EXISTS asset_handover;
+DROP TABLE IF EXISTS return_request_detail;
+DROP TABLE IF EXISTS return_request;
+DROP TABLE IF EXISTS allocation_request_detail;
+DROP TABLE IF EXISTS allocation_request;
+
+-- Module Tài sản & Mua sắm
+DROP TABLE IF EXISTS asset;
+DROP TABLE IF EXISTS purchase_order_details;
+DROP TABLE IF EXISTS purchase_orders;
+DROP TABLE IF EXISTS quotation_detail;
+DROP TABLE IF EXISTS quotation;
+DROP TABLE IF EXISTS purchase_request_detail;
+DROP TABLE IF EXISTS purchase_request;
+DROP TABLE IF EXISTS supplier;
+
+-- Danh mục & Người dùng
+-- Lưu ý: Xóa FK vòng trước khi xóa bảng departments/users
+IF OBJECT_ID('departments', 'U') IS NOT NULL 
+    ALTER TABLE departments DROP CONSTRAINT IF EXISTS FK_departments_manager;
+
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS departments;
+DROP TABLE IF EXISTS asset_type;
+DROP TABLE IF EXISTS category;
+
+-- =============================================
 -- 1. DANH MỤC CỐT LÕI (CATEGORIES & ASSET TYPES)
 -- =============================================
 
@@ -29,7 +74,7 @@ CREATE TABLE asset_type (
 CREATE TABLE departments (
     department_id   INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     department_name NVARCHAR(150) NOT NULL,
-    manager_user_id INT NULL REFERENCES users(user_id),
+    manager_user_id INT NULL, -- Sẽ thêm constraint sau khi bảng users được tạo
     status          NVARCHAR(40) NOT NULL DEFAULT N'ACTIVE',
     created_date    DATETIME NOT NULL DEFAULT GETDATE(),
     updated_date    DATETIME NULL,
@@ -50,6 +95,10 @@ CREATE TABLE users (
     updated_date   DATETIME NULL,
     department_id  INT NOT NULL REFERENCES departments(department_id)
 );
+
+-- Thêm ràng buộc vòng giữa departments và users
+ALTER TABLE departments 
+ADD CONSTRAINT FK_departments_manager FOREIGN KEY (manager_user_id) REFERENCES users(user_id);
 
 CREATE UNIQUE INDEX UQ_departments_manager_user
     ON departments(manager_user_id)

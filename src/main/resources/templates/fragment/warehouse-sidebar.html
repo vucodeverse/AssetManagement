@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Warehouse Sidebar</title>
+</head>
+<div class="sidebar" th:fragment="sidebar(activeMenu, activeSub)">
+    <div class="sidebar-logo">
+        <a th:href="@{/}">PROCUREX <span>WAREHOUSE</span></a>
+    </div>
+    <ul class="sidebar-menu">
+        <li th:classappend="${activeMenu == 'dashboard' ? 'active' : ''}">
+            <a th:href="@{/warehouse/dashboard}">
+                <i class="fa-solid fa-chart-line"></i>
+                Tổng quan
+            </a>
+        </li>
+        <li th:classappend="${activeMenu == 'zones' ? 'active' : ''}">
+            <a th:href="@{/warehouse/zones}">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                Quản lý Zone
+            </a>
+        </li>
+        <li class="menu-divider">Nghiệp vụ</li>
+        <li th:classappend="${activeMenu == 'inbound' ? 'active' : ''}">
+            <a href="#">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                Nhập kho
+            </a>
+            <ul class="sub-menu">
+                <li th:classappend="${activeSub == 'inbound-po' ? 'active' : ''}">
+                    <a th:href="@{/warehouse/inbound/po}">Mua mới (PO)</a>
+                </li>
+                <li th:classappend="${activeSub == 'inbound-return' ? 'active' : ''}">
+                    <a th:href="@{/warehouse/inbound/return}">Thu hồi</a>
+                </li>
+            </ul>
+        </li>
+        <li th:classappend="${activeMenu == 'outbound' ? 'active' : ''}">
+            <a th:href="@{/warehouse/outbound}">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Xuất kho Cấp phát
+            </a>
+        </li>
+        <li class="menu-divider">Tra cứu</li>
+        <li th:classappend="${activeMenu == 'locator' ? 'active' : ''}">
+            <a th:href="@{/warehouse/locator}">
+                <i class="fa-solid fa-magnifying-glass-location"></i>
+                Tìm vị trí tài sản
+            </a>
+        </li>
+        <li th:classappend="${activeMenu == 'ledger' ? 'active' : ''}">
+            <a th:href="@{/warehouse/ledger}">
+                <i class="fa-solid fa-book-open"></i>
+                Sổ cái giao dịch
+            </a>
+        </li>
+    </ul>
+    <div class="sidebar-footer">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+            </button>
+        </form>
+    </div>
+</div>
+</html>

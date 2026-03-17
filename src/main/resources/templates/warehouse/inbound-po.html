@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Nhập kho PO</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>Nhập kho Mua mới (PO Receipt)</h1>
+    <div class="form-container">
+        <form th:action="@{/warehouse/inbound/po}" method="post">
+            <div class="form-group">
+                <label>Mã Đơn mua hàng (PO ID):</label>
+                <input type="number" name="purchaseOrderId" required>
+            </div>
+            <div class="form-group">
+                <label>Loại tài sản:</label>
+                <input type="number" name="assetTypeId" required>
+            </div>
+            <div class="form-group">
+                <label>Số lượng:</label>
+                <input type="number" name="quantity" required>
+            </div>
+            <div class="form-group">
+                <label>Ghi chú:</label>
+                <textarea name="note"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Xác nhận nhập kho</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

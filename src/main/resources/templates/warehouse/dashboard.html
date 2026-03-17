@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Warehouse Dashboard</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="header">
+        <h1>Bảng điều khiển Kho</h1>
+    </div>
+
+    <div class="dashboard-widgets">
+        <div class="widget-card">
+            <h3>Chờ nhập PO</h3>
+            <p th:text="${stats.pendingPO}"></p>
+        </div>
+        <div class="widget-card">
+            <h3>Chờ nhập Thu hồi</h3>
+            <p th:text="${stats.pendingReturn}"></p>
+        </div>
+        <div class="widget-card">
+            <h3>Chờ xuất Cấp phát</h3>
+            <p th:text="${stats.pendingAllocation}"></p>
+        </div>
+    </div>
+
+    <div class="heatmap-section">
+        <h2>Bản đồ sức chứa (Heatmap)</h2>
+        <!-- Heatmap implementation -->
+    </div>
+</div>
+</body>
+</html>

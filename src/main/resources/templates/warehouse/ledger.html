@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Sổ cái giao dịch kho</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>Số cái giao dịch (Warehouse Ledger)</h1>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tài sản</th>
+                <th>Zone</th>
+                <th>Loại</th>
+                <th>Người thực hiện</th>
+                <th>Thời gian</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="tx : ${transactions}">
+                <td th:text="${tx.transactionId}"></td>
+                <td th:text="${tx.assetId}"></td>
+                <td th:text="${tx.zoneId}"></td>
+                <td th:text="${tx.transactionType}"></td>
+                <td th:text="${tx.executedBy}"></td>
+                <td th:text="${#temporals.format(tx.executedAt, 'dd-MM-yyyy HH:mm')}"></td>
+                <td th:text="${tx.note}"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
