@@ -1,18 +1,17 @@
 package edu.fpt.groupfive.util;
 
 import edu.fpt.groupfive.common.Role;
-import edu.fpt.groupfive.dao.DepartmentDAO;
-import edu.fpt.groupfive.dao.UserDAO;
-import edu.fpt.groupfive.model.Department;
-import edu.fpt.groupfive.model.Users;
+import edu.fpt.groupfive.dto.request.DepartmentCreateRequest;
+import edu.fpt.groupfive.dto.request.UserCreateRequest;
+import edu.fpt.groupfive.dto.response.DepartmentResponse;
+import edu.fpt.groupfive.service.DepartmentService;
+import edu.fpt.groupfive.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -20,9 +19,8 @@ import java.util.List;
 @Slf4j
 public class DataInitializer implements ApplicationListener<ContextRefreshedEvent> {
 
-    private final UserDAO userDAO;
-    private final DepartmentDAO departmentDAO;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
+    private final DepartmentService departmentService;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -33,42 +31,52 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
     }
 
     private void initializeData() {
-        log.info("Checking for default admin account...");
+        log.info("Starting data initialization...");
         
         // 1. Ensure at least one department exists
-        List<Department> departments = departmentDAO.findAll();
+        List<DepartmentResponse> departments = departmentService.getAllDepartments();
         if (departments.isEmpty()) {
             log.info("No departments found. Creating default 'Administration' department.");
-            Department adminDept = new Department();
-            adminDept.setDepartmentName("Administration");
-            adminDept.setStatus("ACTIVE");
-            adminDept.setCreatedDate(LocalDateTime.now());
-            departmentDAO.insert(adminDept);
+            DepartmentCreateRequest adminDeptRequest = new DepartmentCreateRequest();
+            adminDeptRequest.setDepartmentName("Administration");
+            adminDeptRequest.setDescription("Default administration department");
+            departmentService.createDepartment(adminDeptRequest);
             // Refresh list
-            departments = departmentDAO.findAll();
+            departments = departmentService.getAllDepartments();
         }
 
-        // 2. Ensure admin user exists
-        if (!userDAO.existsByUsername("admin")) {
-            log.info("Admin account not found. Creating default admin...");
-            
-            Integer deptId = departments.isEmpty() ? 1 : departments.get(0).getDepartmentId();
+        Integer defaultDeptId = departments.isEmpty() ? 1 : departments.get(0).getDepartmentId();
 
-            Users admin = new Users();
-            admin.setUsername("admin");
-            admin.setPasswordHash(passwordEncoder.encode("admin123"));
-            admin.setFirstName("System");
-            admin.setLastName("Administrator");
-            admin.setEmail("admin@asset.com");
-            admin.setRole(Role.ADMIN);
-            admin.setStatus("ACTIVE");
-            admin.setDepartmentId(deptId);
-            admin.setCreatedDate(LocalDateTime.now());
+        // 2. Initialize accounts for all roles
+        for (Role role : Role.values()) {
+            String username = role.name().toLowerCase().replace("_", "");
             
-            userDAO.insert(admin);
-            log.info("Default admin account created: admin / admin123");
-        } else {
-            log.info("Admin account already exists.");
+            // Special case for existing admin
+            if (role == Role.ADMIN) {
+                username = "admin";
+            }
+
+            if (!userService.existsByUsername(username)) {
+                log.info("Creating default account for role {}: {}...", role, username);
+                
+                UserCreateRequest request = new UserCreateRequest();
+                request.setUsername(username);
+                request.setPassword(username + "123");
+                request.setFirstName(role.getDisplayName());
+                request.setLastName("User");
+                request.setEmail(username + "@asset.com");
+                request.setRole(role);
+                request.setDepartmentId(defaultDeptId);
+                
+                try {
+                    userService.createUser(request);
+                    log.info("Created account: {} / {}123", username, username);
+                } catch (Exception e) {
+                    log.error("Failed to create account for role {}: {}", role, e.getMessage());
+                }
+            }
         }
+        
+        log.info("Data initialization completed.");
     }
 }

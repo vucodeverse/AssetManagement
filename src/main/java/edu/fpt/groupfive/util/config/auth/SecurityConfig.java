@@ -52,7 +52,7 @@ public class SecurityConfig {
                                                 authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
                                                                 .requestMatchers(WHITE_LIST)
                                                                 .permitAll()
-                                                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                                                .requestMatchers("/admin/**").hasAuthority("ADMIN")
                                                                 .requestMatchers("/dept-manager/**")
                                                                 .hasAnyAuthority("DEPARTMENT_MANAGER", "ADMIN")
                                                                 // Domain URLs: không gắn với role
