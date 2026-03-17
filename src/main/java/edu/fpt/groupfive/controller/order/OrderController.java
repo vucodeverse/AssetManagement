@@ -6,7 +6,6 @@ import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.OrderService;
-import edu.fpt.groupfive.service.warehouse.impl.WarehouseService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
@@ -34,8 +33,6 @@ public class OrderController {
     private final OrderService orderService;
     private final ISupplierService supplierService;
     private final OrderCalculationUtil orderCalculationUtil;
-    private final WarehouseService warehouseService;
-
 
     @ModelAttribute
     public void addCommonAttributes(Model model) {
@@ -62,7 +59,7 @@ public class OrderController {
             model.addAttribute("error", e.getMessage());
         }
 
-        model.addAttribute("wh", warehouseService.getNameWh());
+        // model.addAttribute("wh", warehouseService.getNameWh());
         return VIEW_ORDER_FORM;
     }
 
@@ -70,11 +67,11 @@ public class OrderController {
     @IsDirector
     @PostMapping("/create-from-quotation/{quotationId}")
     public String createOrder(@PathVariable("quotationId") Integer quotationId,
-                              @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest request,
-                              BindingResult result,
-                              @RequestParam(value = "removeLine", required = false) Integer removeLine,
-                              Model model) {
-        
+            @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest request,
+            BindingResult result,
+            @RequestParam(value = "removeLine", required = false) Integer removeLine,
+            Model model) {
+
         // logic xóa dòng
         if (removeLine != null && removeLine >= 0) {
             List<PurchaseOrderDetailCreateRequest> lines = request.getPurchaseOrderDetailCreateRequests();
@@ -117,8 +114,8 @@ public class OrderController {
     @IsPurchaseStaff
     @PostMapping("/{id}/update-delivery-date")
     public String updateDeliveryDate(@PathVariable("id") Integer id,
-                                     @RequestParam("deliveryDate") String deliveryDate,
-                                     RedirectAttributes redirectAttributes) {
+            @RequestParam("deliveryDate") String deliveryDate,
+            RedirectAttributes redirectAttributes) {
         try {
             orderService.updateDeliveryDate(id, deliveryDate);
             redirectAttributes.addFlashAttribute("message", "Cập nhật ngày giao hàng thành công");

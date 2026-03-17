@@ -3,7 +3,7 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.common.OrderStatus;
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.dao.*;
-import edu.fpt.groupfive.dao.warehouse.WarehouseDAO;
+// import edu.fpt.groupfive.dao.warehouse.WarehouseDAO;
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
@@ -12,14 +12,14 @@ import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.mapper.OrderDetailMapper;
 import edu.fpt.groupfive.mapper.OrderMapper;
 import edu.fpt.groupfive.model.*;
-import edu.fpt.groupfive.model.warehouse.HandleStatus;
-import edu.fpt.groupfive.model.warehouse.InventoryTicket;
-import edu.fpt.groupfive.model.warehouse.TicketDetail;
-import edu.fpt.groupfive.model.warehouse.TicketType;
+// import edu.fpt.groupfive.model.warehouse.HandleStatus;
+// import edu.fpt.groupfive.model.warehouse.InventoryTicket;
+// import edu.fpt.groupfive.model.warehouse.TicketDetail;
+// import edu.fpt.groupfive.model.warehouse.TicketType;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.OrderService;
-import edu.fpt.groupfive.service.warehouse.InventoryTicketService;
+//import edu.fpt.groupfive.service.warehouse.InventoryTicketService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
@@ -46,8 +46,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderCalculationUtil orderCalculationUtil;
     private final RangeAmount rangeAmount;
     private final ISupplierService supplierService;
-    private final WarehouseDAO warehouseDAO;
-    private final InventoryTicketService inventoryTicketService;
+    // private final WarehouseDAO warehouseDAO;
+    // private final InventoryTicketService inventoryTicketService;
     private final UserDAO userDAO;
 
     @Value("${order.quotation_not_found}")
@@ -94,9 +94,10 @@ public class OrderServiceImpl implements OrderService {
         // lấy ra list quotation detiail
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
         String whName = null;
-        if (orderDAO.getWhIdFromPr(quotation.getPurchaseId()) != null) {
-            whName = warehouseDAO.getById(orderDAO.getWhIdFromPr(quotation.getPurchaseId())).getName();
-        }
+        // if (orderDAO.getWhIdFromPr(quotation.getPurchaseId()) != null) {
+        // whName =
+        // warehouseDAO.getById(orderDAO.getWhIdFromPr(quotation.getPurchaseId())).getName();
+        // }
 
         // lấy ra assettype
         Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
@@ -127,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
     // tạo order
     @Override
     public Integer createPurchaseOrder(Integer quotationId, PurchaseOrderCreateRequest purchaseOrderCreateRequest,
-                                       String username) {
+            String username) {
 
         // ktra tồn tại
         Quotation quotation = quotationDAO.findById(quotationId)
@@ -164,7 +165,7 @@ public class OrderServiceImpl implements OrderService {
         Map<Integer, PurchaseDetail> prDetailMap = prDetails.stream()
                 .collect(Collectors.toMap(PurchaseDetail::getId, pd -> pd));
 
-        Integer whId = warehouseDAO.getByName(purchaseOrderCreateRequest.getWarehouseName());
+        Integer whId = 0; // warehouseDAO.getByName(purchaseOrderCreateRequest.getWarehouseName());
 
         // tạo order
         Order order = new Order();
@@ -230,21 +231,21 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // sau khi PO được tạo thành công
-        InventoryTicket ticket = new InventoryTicket();
-        ticket.setWarehouseId(order.getWarehouseId());
-        ticket.setTicketType(TicketType.IN);
-        ticket.setStatus(HandleStatus.PENDING);
+        // InventoryTicket ticket = new InventoryTicket();
+        // ticket.setWarehouseId(order.getWarehouseId());
+        // ticket.setTicketType(TicketType.IN);
+        // ticket.setStatus(HandleStatus.PENDING);
 
-        List<TicketDetail> ticketDetails = new ArrayList<>();
-        for (OrderDetail od : orderDetails) {
-            TicketDetail td = new TicketDetail();
-            td.setAssetTypeId(od.getAssetTypeId());
-            td.setQuantity(od.getQuantity());
-            td.setNote(od.getOrderDetailNote());
-            ticketDetails.add(td);
-        }
+        // List<TicketDetail> ticketDetails = new ArrayList<>();
+        // for (OrderDetail od : orderDetails) {
+        // TicketDetail td = new TicketDetail();
+        // td.setAssetTypeId(od.getAssetTypeId());
+        // td.setQuantity(od.getQuantity());
+        // td.setNote(od.getOrderDetailNote());
+        // ticketDetails.add(td);
+        // }
 
-        inventoryTicketService.createTicket(ticket, ticketDetails);
+        // inventoryTicketService.createTicket(ticket, ticketDetails);
         return orderId;
     }
 
@@ -304,7 +305,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
 
         // tính toán các loại giá cho order detail đó
-        BigDecimal[] calculated = orderCalculationUtil. calculatePoDetail(poDetails);
+        BigDecimal[] calculated = orderCalculationUtil.calculatePoDetail(poDetails);
 
         PurchaseOrderResponse response = orderMapper.toPurchaseOrderResponse(order);
         response.setSupplierName(map.getOrDefault(order.getSupplierId(), notFoundFallbackMsg));
@@ -336,7 +337,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<PurchaseOrderDetailResponse> getAllOrderDetails() {
-        List<OrderDetail> list=orderDetailDAO.findAll();
+        List<OrderDetail> list = orderDetailDAO.findAll();
 
         return null;
     }
