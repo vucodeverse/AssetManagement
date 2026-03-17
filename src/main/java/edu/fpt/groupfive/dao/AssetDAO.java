@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface AssetDAO {
 
-    void insert(Asset asset);
+    int insert(Asset asset);
 
     void update(Asset asset);
 

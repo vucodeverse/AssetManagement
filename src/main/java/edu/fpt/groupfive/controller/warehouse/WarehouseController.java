@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.controller.warehouse;
 
 import edu.fpt.groupfive.dto.warehouse.request.ZoneRequest;
+import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.warehouse.WarehouseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,7 @@ public class WarehouseController {
 
     private static final String REDIRECT_ZONES = "redirect:/warehouse/zones";
     private final WarehouseService warehouseService;
+    private final AssetTypeService assetTypeService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -24,6 +26,8 @@ public class WarehouseController {
     @GetMapping("/zones")
     public String zones(Model model) {
         model.addAttribute("zones", warehouseService.getAllZones());
+        model.addAttribute("assetTypes", assetTypeService.getAllAssetType());
+        model.addAttribute("newZone", new ZoneRequest());
         return "warehouse/zones";
     }
 

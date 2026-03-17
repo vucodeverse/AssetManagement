@@ -12,6 +12,7 @@ import edu.fpt.groupfive.model.warehouse.AssetPlacement;
 import edu.fpt.groupfive.model.warehouse.WarehouseTransaction;
 import edu.fpt.groupfive.model.warehouse.WarehouseZone;
 import edu.fpt.groupfive.service.warehouse.WarehouseOutboundService;
+import edu.fpt.groupfive.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +28,14 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     private final AssetCapacityDAO assetCapacityDAO;
     private final AssetPlacementDAO assetPlacementDAO;
     private final WarehouseTransactionDAO warehouseTransactionDAO;
+    private final SecurityUtils securityUtils;
 
     @Override
     @Transactional
     public void processAllocationOutbound(Integer allocationRequestId, Integer assetId) {
+        Integer currentUserId = securityUtils.getCurrentUserId();
+        if (currentUserId == null) currentUserId = 1;
+
         // 1. Validate Asset
         Asset asset = assetDAO.findById(assetId)
                 .orElseThrow(() -> new RuntimeException("Asset not found"));
@@ -58,7 +63,7 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
         tx.setAssetId(assetId);
         tx.setZoneId(zone.getZoneId());
         tx.setTransactionType("OUTBOUND");
-        tx.setExecutedBy(1); // TODO: Get current user
+        tx.setExecutedBy(currentUserId);
         tx.setExecutedAt(LocalDateTime.now());
         tx.setNote("Outbound for Allocation Request " + allocationRequestId);
         int txId = warehouseTransactionDAO.insert(tx);
@@ -70,9 +75,6 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
         assetPlacementDAO.delete(assetId);
 
         zone.setCurrentCapacity(zone.getCurrentCapacity() - capacity.getUnitVolume());
-        // If current capacity is 0, we don't necessarily clear asset_type_id automatically, 
-        // as the manager might want to keep it reserved for that type. 
-        // But the document mentions a "reset" function.
         warehouseZoneDAO.update(zone);
     }
 }

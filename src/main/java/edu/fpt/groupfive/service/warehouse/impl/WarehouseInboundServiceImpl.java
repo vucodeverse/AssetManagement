@@ -14,6 +14,7 @@ import edu.fpt.groupfive.model.warehouse.AssetPlacement;
 import edu.fpt.groupfive.model.warehouse.WarehouseTransaction;
 import edu.fpt.groupfive.model.warehouse.WarehouseZone;
 import edu.fpt.groupfive.service.warehouse.WarehouseInboundService;
+import edu.fpt.groupfive.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,10 +31,14 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
     private final AssetCapacityDAO assetCapacityDAO;
     private final AssetPlacementDAO assetPlacementDAO;
     private final WarehouseTransactionDAO warehouseTransactionDAO;
+    private final SecurityUtils securityUtils;
 
     @Override
     @Transactional
     public void processPOInbound(InboundPORequest request) {
+        Integer currentUserId = securityUtils.getCurrentUserId();
+        if (currentUserId == null) currentUserId = 1; // Fallback for safety during setup
+
         // 1. Get unit volume for the asset type
         AssetCapacity capacity = assetCapacityDAO.findByAssetTypeId(request.getAssetTypeId())
                 .orElse(new AssetCapacity(request.getAssetTypeId(), 1));
@@ -48,35 +53,31 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
 
         WarehouseZone targetZone = availableZones.get(0);
 
-        // 3. Create assets and place them (Simplifying to one placement for total quantity space)
-        // In reality, we would loop and create multiple asset records.
+        // 3. Create assets and place them
         for (int i = 0; i < request.getQuantity(); i++) {
             Asset asset = new Asset();
             asset.setAssetName("Asset from PO " + request.getPurchaseOrderId());
             asset.setAssetTypeId(request.getAssetTypeId());
             asset.setCurrentStatus(AssetStatus.AVAILABLE);
             asset.setAcquisitionDate(java.time.LocalDate.now());
-            // ... set other fields from order details if needed
-            assetDAO.insert(asset);
             
-            // Assume we can get the generated asset ID. 
-            // Note: Our AssetDAO.insert might need to return the ID or we fetch it.
-            // For now, let's assume we have it.
+            // Insert and get generated ID
+            int assetId = assetDAO.insert(asset);
             
             // Record placement
             AssetPlacement placement = new AssetPlacement();
-            placement.setAssetId(asset.getAssetId()); // This needs to be populated after insert
+            placement.setAssetId(assetId);
             placement.setZoneId(targetZone.getZoneId());
-            placement.setPlacedBy(1); // TODO: Get current user
+            placement.setPlacedBy(currentUserId);
             placement.setPlacedAt(LocalDateTime.now());
             assetPlacementDAO.insert(placement);
 
             // Record transaction
             WarehouseTransaction tx = new WarehouseTransaction();
-            tx.setAssetId(asset.getAssetId());
+            tx.setAssetId(assetId);
             tx.setZoneId(targetZone.getZoneId());
             tx.setTransactionType("INBOUND");
-            tx.setExecutedBy(1); // TODO: Get current user
+            tx.setExecutedBy(currentUserId);
             tx.setExecutedAt(LocalDateTime.now());
             tx.setNote(request.getNote());
             int txId = warehouseTransactionDAO.insert(tx);
@@ -96,6 +97,9 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
     @Override
     @Transactional
     public void processReturnInbound(InboundReturnRequest request) {
+        Integer currentUserId = securityUtils.getCurrentUserId();
+        if (currentUserId == null) currentUserId = 1;
+
         Asset asset = assetDAO.findById(request.getAssetId())
                 .orElseThrow(() -> new RuntimeException("Asset not found"));
 
@@ -118,7 +122,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
         AssetPlacement placement = new AssetPlacement();
         placement.setAssetId(asset.getAssetId());
         placement.setZoneId(targetZone.getZoneId());
-        placement.setPlacedBy(1);
+        placement.setPlacedBy(currentUserId);
         placement.setPlacedAt(LocalDateTime.now());
         assetPlacementDAO.insert(placement);
 
@@ -127,7 +131,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
         tx.setAssetId(asset.getAssetId());
         tx.setZoneId(targetZone.getZoneId());
         tx.setTransactionType("INBOUND");
-        tx.setExecutedBy(1);
+        tx.setExecutedBy(currentUserId);
         tx.setExecutedAt(LocalDateTime.now());
         tx.setNote(request.getNote());
         int txId = warehouseTransactionDAO.insert(tx);

@@ -33,6 +33,12 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
             redirectUrl += "/admin/home";
         }
 
+        if(authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("WAREHOUSE_STAFF"))
+        ){
+            redirectUrl += "/warehouse/dashboard";
+        }
+
         response.sendRedirect(redirectUrl);
     }
 }

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,12 +22,14 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
     private final UserService userService;
     private final DepartmentService departmentService;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         // Ensure this only runs once for the root context
         if (event.getApplicationContext().getParent() == null) {
             initializeData();
+            initializeWarehouseData();
         }
     }
 
@@ -78,5 +81,39 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
         }
         
         log.info("Data initialization completed.");
+    }
+
+    private void initializeWarehouseData() {
+        log.info("Initializing warehouse infrastructure...");
+
+        // 1. Ensure a default warehouse exists
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM wh_warehouses", Integer.class);
+        if (count == null || count == 0) {
+            log.info("No warehouses found. Creating default 'Procurex Central Warehouse'.");
+            // Find an admin user to be the manager
+            List<Integer> adminIds = jdbcTemplate.queryForList(
+                "SELECT user_id FROM users WHERE role = 'ADMIN' ORDER BY user_id", Integer.class);
+
+            if (!adminIds.isEmpty()) {
+                jdbcTemplate.update(
+                    "INSERT INTO wh_warehouses (name, address, manager_user_id, status) VALUES (?, ?, ?, ?)",
+                    "Procurex Central Warehouse", "123 Business Way, Tech Park", adminIds.get(0), "ACTIVE"
+                );
+                log.info("Default warehouse created.");
+            } else {
+                log.warn("Cannot create warehouse: No admin user found.");
+            }
+        }
+
+        // 2. Ensure some default asset capacities exist (optional but helpful)
+        Integer capacityCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM wh_asset_capacity", Integer.class);
+        if (capacityCount == null || capacityCount == 0) {
+            log.info("Adding default asset type capacities...");
+            jdbcTemplate.execute("""
+                INSERT INTO wh_asset_capacity (asset_type_id, unit_volume)
+                SELECT asset_type_id, 1 FROM asset_type
+                WHERE asset_type_id NOT IN (SELECT asset_type_id FROM wh_asset_capacity)
+            """);
+        }
     }
 }

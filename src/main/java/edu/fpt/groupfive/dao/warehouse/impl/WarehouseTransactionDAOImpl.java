@@ -57,6 +57,12 @@ public class WarehouseTransactionDAOImpl implements WarehouseTransactionDAO {
     }
 
     @Override
+    public List<WarehouseTransaction> findAll() {
+        String sql = "SELECT * FROM wh_transactions ORDER BY executed_at DESC";
+        return jdbcTemplate.query(sql, rowMapper);
+    }
+
+    @Override
     public void mapPoTransaction(Integer poId, Integer transactionId) {
         String sql = "INSERT INTO map_po_transactions (purchase_order_id, transaction_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, poId, transactionId);
