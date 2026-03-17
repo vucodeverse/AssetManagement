@@ -6,7 +6,6 @@ import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.OrderService;
-import edu.fpt.groupfive.service.warehouse.impl.WarehouseService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
@@ -34,7 +33,6 @@ public class OrderController {
     private final OrderService orderService;
     private final ISupplierService supplierService;
     private final OrderCalculationUtil orderCalculationUtil;
-    private final WarehouseService warehouseService;
 
 
     @ModelAttribute
@@ -62,7 +60,6 @@ public class OrderController {
             model.addAttribute("error", e.getMessage());
         }
 
-        model.addAttribute("wh", warehouseService.getNameWh());
         return VIEW_ORDER_FORM;
     }
 

@@ -18,6 +18,4 @@ public interface OrderDAO {
 
     List<Order> findRecent();
 
-    Integer getWhIdFromPr(Integer purchaseId);
-
 }
