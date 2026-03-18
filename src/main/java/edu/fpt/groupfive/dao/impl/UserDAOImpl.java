@@ -18,6 +18,7 @@ public class UserDAOImpl implements UserDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    // Map ResultSet sang Users object
     private Users mapRowToUser(ResultSet rs) throws Exception {
         Users user = new Users();
 
@@ -41,6 +42,7 @@ public class UserDAOImpl implements UserDAO {
         return user;
     }
 
+    // Thực thi truy vấn không có tham số và trả về danh sách Người dùng
     @NonNull
     private List<Users> getUsers(String query) {
         List<Users> list = new ArrayList<>();
@@ -60,11 +62,13 @@ public class UserDAOImpl implements UserDAO {
         return list;
     }
 
+    // Tìm kiếm username trong database
     @Override
     public Optional<Users> findUserByUsername(String username) {
         String query = """
                   select * from Users where username = ?
                 """;
+
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
@@ -81,6 +85,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
 
+    // Chèn một user mới vào database
     @Override
     public void insert(Users users) {
         String query = """
@@ -224,8 +229,8 @@ public class UserDAOImpl implements UserDAO {
         }
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query.toString())
-        ) {
+             PreparedStatement ps = connection.prepareStatement(query.toString())) {
+
             ps.setInt(1, departmentId);
             if (userId != null) {
                 ps.setInt(2, userId);
@@ -236,6 +241,26 @@ public class UserDAOImpl implements UserDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean exitsDirector(Role role) {
+        String query = """
+                SELECT 1 FROM users WHERE role = ?
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setString(1, role.name());
+
+            ResultSet rs = ps.executeQuery();
+
+            return rs.next();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 

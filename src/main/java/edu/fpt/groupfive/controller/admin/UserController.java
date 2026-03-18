@@ -100,7 +100,7 @@ public class UserController {
         request.setStatus(response.getStatus());
         request.setDepartmentId(response.getDepartmentId());
 
-
+        // Truyền giá trị lên form
         setupAttributes(model, request, true, true);
 
         return "user-detail";
@@ -130,10 +130,6 @@ public class UserController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        // Nếu form nhập có lỗi
-        if (bindingResult.hasErrors()) {
-            return returnData(model, "Add");
-        }
 
         // Nếu username bị trùng
         if (userService.existsByUsername(request.getUsername())) {
@@ -192,10 +188,6 @@ public class UserController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        // Nếu có lỗi trong form
-        if (bindingResult.hasErrors()) {
-            return returnData(model, "Edit");
-        }
 
         // Nếu email bị trùng
         if (userService.existsByEmail(request.getEmail(), request.getUserId())) {

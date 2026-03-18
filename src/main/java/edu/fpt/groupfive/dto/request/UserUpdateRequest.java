@@ -23,9 +23,9 @@ public class UserUpdateRequest {
     private String lastName;
 
     @Email(message = "Định dạng email không hợp lệ")
+    @NotBlank(message = "Email là bắt buộc")
     private String email;
 
-    @NotBlank(message = "Số điện thoại là bắt buộc")
     private String phoneNumber;
 
     @NotNull(message = "Vai trò là bắt buộc")

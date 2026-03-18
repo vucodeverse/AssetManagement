@@ -24,9 +24,12 @@ public class UserCreateRequest {
     private String lastName;
 
     @Email(message = "Định dạng email không hợp lệ")
+    @NotBlank(message = "Email là bắt buộc")
     private String email;
 
     private String phoneNumber;
+
+    private UserStatus status = UserStatus.ACTIVE;
 
     @NotNull(message = "Vai trò là bắt buộc")
     private Role role;

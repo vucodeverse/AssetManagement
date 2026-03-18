@@ -8,15 +8,27 @@ import java.util.Optional;
 
 public interface UserDAO {
     Optional<Users> findUserByUsername(String username);
+
     void insert (Users users);
+
     void update (Users users);
+
     void delete (Integer id);
+
     boolean existsByUsername(String username);
+
     boolean existsByEmail(String email, Integer userId);
+
     boolean existsManagerByDepartment(Integer departmentId, Integer userId);
+
+    boolean exitsDirector(Role role);
+
     List<Users> findAll();
+
     Integer findUserIdByUsername(String username);
+
     Optional<Users> findById(Integer id);
+
     List<Users> findByDepartmentId(Integer departmentId);
 
     int countUsersInDepartment(Integer departmentId);

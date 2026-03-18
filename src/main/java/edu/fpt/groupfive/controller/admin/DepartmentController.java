@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,6 @@ public class DepartmentController {
 
         // Lấy danh sách phòng ban
         List<DepartmentResponse> list = new ArrayList<>();
-
 
         if (keyword != null && !keyword.isBlank()) {
             list = departmentService.searchDepartments(keyword);
@@ -117,17 +117,21 @@ public class DepartmentController {
     }
 
     @PostMapping("/department/create")
-    public String createDepartment(DepartmentCreateRequest request) {
+    public String createDepartment(DepartmentCreateRequest request, RedirectAttributes redirectAttributes) {
         departmentService.createDepartment(request);
+        redirectAttributes.addFlashAttribute("successMsg", "Thêm phòng ban thành công!");
         return "redirect:/admin/department";
     }
 
     @PostMapping("/department/update")
     public String updateDepartment(
             DepartmentUpdateRequest request,
+            RedirectAttributes redirectAttributes,
             @RequestParam("page") int page) {
 
         departmentService.updateDepartment(request);
+        redirectAttributes.addFlashAttribute("successMsg", "Cập nhật phòng ban thành công!");
+
         return String.format("redirect:/admin/department?page=%d", page);
     }
 
