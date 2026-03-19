@@ -21,6 +21,10 @@ public class AllocationRequestCreateRequest {
     private String requestReason;
 
     @NotBlank(message = "Độ ưu tiên chưa được chọn")
+    @Pattern(
+            regexp = "LOW|MEDIUM|HIGH|URGENT",
+            message = "Priority không hợp lệ"
+    )
     private String priority;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")

@@ -26,6 +26,10 @@ public class UserUpdateRequest {
     @NotBlank(message = "Email là bắt buộc")
     private String email;
 
+    @Pattern(
+            regexp = "^0\\d{9}$",
+            message = "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0"
+    )
     private String phoneNumber;
 
     @NotNull(message = "Vai trò là bắt buộc")
