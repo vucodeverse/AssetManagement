@@ -43,7 +43,6 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDAO orderDAO;
     private final OrderDetailDAO orderDetailDAO;
     private final AssetTypeService assetTypeService;
-    private final PurchaseDetailDAO purchaseDetailDAO;
     private final OrderCalculationUtil orderCalculationUtil;
     private final RangeAmount rangeAmount;
     private final ISupplierService supplierService;
@@ -51,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
     private final InventoryTicketService inventoryTicketService;
     private final UserDAO userDAO;
     private final PurchaseDAO purchaseDAO;
+    private final PurchaseDetailDAO purchaseDetailDAO;
 
     @Value("${order.quotation_not_found}")
     private String quotationNotFoundMsg;
@@ -60,15 +60,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Value("${order.create.quotation_detail_not_found}")
     private String quotationDetailNotFoundMsg;
-
-    @Value("${order.create.pr_detail_not_found}")
-    private String prDetailNotFoundMsg;
-
-    @Value("${order.create.excess_quantity}")
-    private String excessQuantityMsg;
-
-    @Value("${order.create.failure}")
-    private String failureMsg;
 
     @Value("${order.not_found}")
     private String orderNotFoundMsg;
@@ -99,8 +90,9 @@ public class OrderServiceImpl implements OrderService {
                         || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
                 .toList();
         String whName = null;
-        if (orderDAO.getWhIdFromPr(quotation.getPurchaseId()) != null) {
-            whName = warehouseDAO.getById(orderDAO.getWhIdFromPr(quotation.getPurchaseId())).getName();
+        Integer existingWhId = orderDAO.getWhIdFromPr(quotation.getPurchaseId());
+        if (existingWhId != null) {
+            whName = warehouseDAO.getById(existingWhId).getName();
         }
 
         // lấy ra assettype
@@ -144,7 +136,7 @@ public class OrderServiceImpl implements OrderService {
                         || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
                 .toList();
 
-        // map dùng để check
+        // map dùng để lấy đơn giá, thuế... từ báo giá
         Map<Integer, QuotationDetail> quotationDetailMap = quotationDetails.stream()
                 .collect(Collectors.toMap(QuotationDetail::getId, qd -> qd));
 
@@ -158,19 +150,7 @@ public class OrderServiceImpl implements OrderService {
         // bỏ những row có quantity null và <= 0
         List<PurchaseOrderDetailCreateRequest> detailCreateRequests = lines.stream()
                 .filter(o -> o.getQuantity() != null && o.getQuantity() > 0)
-                .collect(Collectors.toList());
-
-        // lấy danh sách các prd id từ quotaiton detail id
-        List<Integer> prDetailIds = quotationDetails.stream()
-                .map(QuotationDetail::getPurchaseDetailId).toList();
-
-        // Lấy số lượng đã đặt của từng dòng prd
-        Map<Integer, Integer> orderedQtyByPrDetail = orderDAO.getOrderedQuantityByPurchaseDetailId(prDetailIds);
-
-        // Lấy thông tin prd gốc để biết số lượng yêu cầu ban đầu
-        List<PurchaseDetail> prDetails = purchaseDetailDAO.findByPurchaseRequestId(quotation.getPurchaseId());
-        Map<Integer, PurchaseDetail> prDetailMap = prDetails.stream()
-                .collect(Collectors.toMap(PurchaseDetail::getId, pd -> pd));
+                .toList();
 
         Integer whId = warehouseDAO.getByName(purchaseOrderCreateRequest.getWarehouseName());
 
@@ -193,75 +173,51 @@ public class OrderServiceImpl implements OrderService {
         // tạo từng order detail
         for (PurchaseOrderDetailCreateRequest line : detailCreateRequests) {
 
-            // check xem có tồn tại quotaiton ứng với quotaitondetail id trong po cần tạo
-            // hay ko
+            // lấy thông tin báo giá chi tiết
             QuotationDetail qd = quotationDetailMap.get(line.getQuotationDetailId());
             if (qd == null) {
                 throw new InvalidDataException(quotationDetailNotFoundMsg);
             }
 
-            // check xem có pr gốc của cái po này cần tạo hay ko
-            PurchaseDetail prDetail = prDetailMap.get(qd.getPurchaseDetailId());
-            if (prDetail == null) {
-                throw new InvalidDataException(prDetailNotFoundMsg);
-            }
-
-            // lấy ra số lượng đã order của purcahserequestdetail id nầy
-            int alreadyOrdered = orderedQtyByPrDetail.getOrDefault(qd.getPurchaseDetailId(), 0);
-
-            // số lượng còn lại có thể order
-            int remainingInPr = prDetail.getQuantity() - alreadyOrdered;
-
-            if (line.getQuantity() > remainingInPr) {
-                throw new InvalidDataException(excessQuantityMsg);
-            }
-
             OrderDetail orderDetail = orderDetailMapper.toOrderDetail(line);
-
             orderDetail.setPrice(qd.getPrice());
             orderDetail.setTaxRate(qd.getTaxRate());
             orderDetail.setDiscountRate(qd.getDiscountRate());
             orderDetail.setAssetTypeId(qd.getAssetTypeId());
 
             orderDetails.add(orderDetail);
-
         }
 
-        // 8. Update quotation status to APPROVED
-        quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED, null);
         order.setOrderDetails(orderDetails);
 
-        // insert
+        // insert order vao DB
         Integer orderId = orderDAO.insert(order);
-        if (orderId == null || orderId <= 0) {
-            throw new InvalidDataException(failureMsg);
-        }
 
-        // sau khi PO được tạo thành công
+        // update quotation detail sang APPROVED
+        detailCreateRequests
+                .forEach(line -> quotationDetailDAO.update(line.getQuotationDetailId(), QuotationStatus.APPROVED));
+
+        // update quotation sang APPROVED
+        quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED, null);
+
+        // tao inventory ticket cho warehouse nhan hang
         InventoryTicket ticket = new InventoryTicket();
         ticket.setWarehouseId(order.getWarehouseId());
         ticket.setTicketType(TicketType.IN);
         ticket.setStatus(HandleStatus.PENDING);
 
-        List<TicketDetail> ticketDetails = new ArrayList<>();
-        for (OrderDetail od : orderDetails) {
-            TicketDetail td = new TicketDetail();
-            td.setAssetTypeId(od.getAssetTypeId());
-            td.setQuantity(od.getQuantity());
-            td.setNote(od.getOrderDetailNote());
-            ticketDetails.add(td);
-        }
+        List<TicketDetail> ticketDetails = orderDetails.stream()
+                .map(od -> {
+                    TicketDetail td = new TicketDetail();
+                    td.setAssetTypeId(od.getAssetTypeId());
+                    td.setQuantity(od.getQuantity());
+                    td.setNote(od.getOrderDetailNote());
+                    return td;
+                })
+                .collect(Collectors.toList());
 
         inventoryTicketService.createTicket(ticket, ticketDetails);
-
-        // update các quota detail sang APPROVE
-        for (PurchaseOrderDetailCreateRequest line : detailCreateRequests) {
-            quotationDetailDAO.update(line.getQuotationDetailId(), QuotationStatus.APPROVED);
-        }
-
-        // update pr sang ORDERED
-        purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
-
+        if(checkQuantityOfPO(quotation.getPurchaseId())) purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
         return orderId;
     }
 
@@ -311,11 +267,18 @@ public class OrderServiceImpl implements OrderService {
         // lấy ra list po detail theo po id
         List<OrderDetail> poDetails = orderDetailDAO.findByOrderId(orderId);
 
+        // Fetch quotation details to get purchaseRequestDetailId
+        List<QuotationDetail> qDetails = quotationDetailDAO.findByQuotationId(order.getQuotationId());
+        Map<Integer, Integer> qDetailIdToPurchaseDetailId = qDetails.stream()
+                .collect(java.util.stream.Collectors.toMap(QuotationDetail::getId,
+                        QuotationDetail::getPurchaseDetailId));
+
         // map sang po detail response
         List<PurchaseOrderDetailResponse> items = poDetails.stream()
                 .map(detail -> {
                     PurchaseOrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
                     itemDto.setAssetTypeName(assetTypeNames.getOrDefault(detail.getAssetTypeId(), notFoundFallbackMsg));
+                    itemDto.setPurchaseRequestDetailId(qDetailIdToPurchaseDetailId.get(detail.getQuotationDetailId()));
                     return itemDto;
                 })
                 .toList();
@@ -353,29 +316,24 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<PurchaseOrderDetailResponse> getAllOrderDetails() {
-        List<OrderDetail> list = orderDetailDAO.findAll();
-
-        return null;
+        throw new UnsupportedOperationException("getAllOrderDetails() chua duoc implement");
     }
 
-    private void parseAmountRange(PurchaseOrderSearchCriteria criteria) {
+    private Boolean checkQuantityOfPO(Integer purchaseId){
 
-        if (criteria.getAmountRange() == null || criteria.getAmountRange().isBlank())
-            return;
-        switch (criteria.getAmountRange()) {
-            case "0-5000" -> {
-                criteria.setMinAmount(BigDecimal.ZERO);
-                criteria.setMaxAmount(new BigDecimal("5000"));
-            }
-            case "5000-20000" -> {
-                criteria.setMinAmount(new BigDecimal("5000"));
-                criteria.setMaxAmount(new BigDecimal("20000"));
-            }
-            case "20000+" -> {
-                criteria.setMinAmount(new BigDecimal("20000"));
-                criteria.setMaxAmount(null);
+        List<PurchaseDetail> purchaseDetails = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
+
+        Map<Integer, Integer> ordered = orderDAO.getOrderedQuantityByPurchaseDetailId(purchaseDetails);
+
+        for(PurchaseDetail pd : purchaseDetails){
+            int orderedQty = ordered.getOrDefault(pd.getId(), 0);
+
+            if(orderedQty < pd.getQuantity()){
+                return false;
             }
         }
+
+        return true;
     }
 
 }

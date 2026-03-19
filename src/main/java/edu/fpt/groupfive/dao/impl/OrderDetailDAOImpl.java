@@ -17,6 +17,15 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    @org.springframework.beans.factory.annotation.Value("${dao.order.detail.insert_error}")
+    private String insertErrorMsg;
+
+    @org.springframework.beans.factory.annotation.Value("${dao.order.detail.find_error}")
+    private String findErrorMsg;
+
+    @org.springframework.beans.factory.annotation.Value("${dao.order.detail.update_delivery_date_error}")
+    private String updateDeliveryDateErrorMsg;
+
     // insert po detail
     @Override
     public Integer insert(OrderDetail orderDetail, Integer orderId, Connection connection) {
@@ -47,13 +56,13 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to insert order detail", e);
+            throw new RuntimeException(insertErrorMsg, e);
         }
 
         return null;
     }
 
-    // lấy  ra list detail theo po
+    // lấy ra list detail theo po
     @Override
     public List<OrderDetail> findByOrderId(Integer orderId) {
         String sql = "select purchase_order_detail_id, quantity, unit_price, tax_rate, " +
@@ -63,7 +72,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
 
         List<OrderDetail> results = new java.util.ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
@@ -84,7 +93,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
                 results.add(detail);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to find order details", e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return results;
     }
@@ -93,12 +102,12 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
     public void updateDeliveryDate(Integer orderId, LocalDate deliveryDate) {
         String sql = "update purchase_order_details set delivery_date = ? where purchase_order_id = ?";
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(deliveryDate));
             ps.setInt(2, orderId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to update delivery date", e);
+            throw new RuntimeException(updateDeliveryDateErrorMsg, e);
         }
     }
 
@@ -107,8 +116,8 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
         String sql = "select * from purchase_order_details";
         List<OrderDetail> results = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 OrderDetail detail = new OrderDetail();
                 detail.setId(rs.getInt("purchase_order_detail_id"));
@@ -127,8 +136,8 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
-        return  results;
+        return results;
     }
 }

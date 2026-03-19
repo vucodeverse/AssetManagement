@@ -10,6 +10,7 @@ import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.annotation.IsAssetManager;
+import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -115,6 +116,7 @@ public class PurchaseController {
     }
 
     // duyệt và từ chối purhcase reuqest
+    @IsDirector
     @PostMapping("/{id}/actions")
     public String actionWithPr(@PathVariable("id") Integer id,
             @RequestParam("action") String actions,

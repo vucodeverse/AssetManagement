@@ -48,11 +48,11 @@
                     </div>
 
                     <div class="manager-actions" sec:authorize="hasAuthority('PURCHASE_STAFF')"
-                         th:if="${purchase.status.name() == 'APPROVED'}">
+                         th:if="${purchase.status != null and purchase.status.name() == 'APPROVED'}">
                         <a th:href="@{/quotations/create/{id}(id=${purchase.purchaseId})}"
                            class="btn-create-quote">TẠO BÁO GIÁ</a>
                     </div>
-                    <div th:if="${purchase.status.name() == 'PENDING'}" style="display: flex; gap: 12px;"
+                    <div th:if="${purchase.status != null and purchase.status.name() == 'PENDING'}" class="action-group"
                         sec:authorize="hasAuthority('DIRECTOR')">
                         <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
                             <button type="submit" name="action" value="a" class="btn-approve">DUYỆT</button>
@@ -98,13 +98,10 @@
                 </div>
 
                 <!-- Lý do từ chối (chỉ hiển thị khi trạng thái là REJECTED) -->
-                <div th:if="${purchase.status.name() == 'REJECTED' && purchase.rejectReason != null}"
-                    style="margin-top: 12px; padding: 12px 16px; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 6px;">
-                    <label
-                        style="font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #ef4444; text-transform: uppercase;">LÝ
-                        DO TỪ CHỐI</label>
-                    <div style="margin-top: 4px; font-size: 14px; color: #991b1b; font-weight: 500;"
-                        th:text="${purchase.rejectReason}">Reason...</div>
+                <div th:if="${purchase.status != null and purchase.status.name() == 'REJECTED' and purchase.rejectReason != null}"
+                    class="reject-reason-box">
+                    <label class="reject-reason-label">LÝ DO TỪ CHỐI</label>
+                    <div class="reject-reason-text" th:text="${purchase.rejectReason}"></div>
                 </div>
 
                 <hr class="separator">
@@ -150,12 +147,13 @@
                 <!-- Tóm tắt tài chính -->
                 <div class="summary-area">
                     <div class="summary-line total">
-                        <span>TỔNG YÊU CẦU MUA SẮM </span>
+                        <span>TỔNG YÊU CẦU MUA SẮM:  </span>
                         <strong th:text="${#numbers.formatDecimal(purchase.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ
                         </strong>
                     </div>
+
                     <!-- Phần tóm tắt báo giá liên quan -->
-                    <div class="quotations-summary-section" th:if="${purchase.status.name() == 'APPROVED'}">
+                    <div class="quotations-summary-section" th:if="${purchase.status != null and purchase.status.name() == 'APPROVED'}">
                         <hr class="separator">
                         <div class="quotation-header">
                             <div class="q-title">

@@ -29,7 +29,7 @@
                     <th:block>
                         <div sec:authorize="hasAuthority('DIRECTOR')">
                             <button type="button" class="btn-outline-prem"
-                                th:if="${quotation.quotationStatus.name() == 'PENDING'}"
+                                th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
                                 th:attr="data-action=@{/quotations/{id}/actions(id=${quotation.quotationId})}"
                                 onclick="openRejectModal(event,this)">
                                 TỪ CHỐI
@@ -51,10 +51,9 @@
             </header>
 
             <!-- Success Message -->
-            <div th:if="${message}" class="success-alert"
-                style="background-color: #f0fdf4; border: 1px solid #16a34a; color: #166534; padding: 16px; border-radius: 4px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+            <div th:if="${message}" class="alert-success-banner">
                 <i class="fas fa-check-circle"></i>
-                <span th:text="${message}" style="font-weight: 600; font-size: 14px;">Success message here</span>
+                <span th:text="${message}" style="font-weight: 600; font-size: 14px;"></span>
             </div>
 
             <div class="details-card">
@@ -67,14 +66,14 @@
                     <div class="info-item">
                         <label>NHÀ CUNG CẤP</label>
                         <p class="val-bold">
-                            <span th:text="${quotation.supplierName}">Global Tech Solutions Inc.</span>
+                            <span th:text="${quotation.supplierName}">Nhà cung cấp mẫu</span>
                         </p>
                     </div>
                     <div class="info-item">
                         <label>TRẠNG THÁI</label>
                         <div>
                             <span class="status-badge" th:classappend="${quotation.quotationStatus.name()}"
-                                th:text="${quotation.quotationStatus.description}">PENDING</span>
+                                th:text="${quotation.quotationStatus.description}">ĐANG CHỜ</span>
                         </div>
                     </div>
                     <div class="info-item">
@@ -119,7 +118,7 @@
                             <tbody>
                                 <tr th:each="item, stat : ${quotation.quotationDetails}">
                                     <td class="td-id" th:text="${stat.count}">1</td>
-                                    <td class="td-bold" th:text="${item.assetTypeName}">Asset Type</td>
+                                    <td class="td-bold" th:text="${item.assetTypeName}">Loại tài sản</td>
                                     <td th:text="${#numbers.formatInteger(item.quantity, 2)}">01</td>
                                     <td th:text="${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
                                         0 VNĐ</td>
@@ -162,10 +161,8 @@
                 <!-- Khu vực tổng kết cuối trang -->
                 <div class="footer-summary">
                     <div class="terms-box">
-                        <!-- Vị trí dành cho Ghi chú hoặc Điều khoản báo giá -->
                         <label>GHI CHÚ BÁO GIÁ</label>
-                        <p>Báo giá này có giá trị trong 30 ngày. Thông số kỹ thuật cung cấp khớp với yêu cầu mua sắm.
-                            Bảo hành chỉ áp dụng cho các lỗi từ nhà sản xuất.</p>
+                        <p th:text="${quotation.quotationNote != null ? quotation.quotationNote : 'Không có ghi chú'}"></p>
                     </div>
                     <div class="total-summary">
                         <div class="summary-line">

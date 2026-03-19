@@ -31,7 +31,8 @@
                         </button>
                     </div>
                     <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
-                        <a th:href="@{/quotations/create/{id}(id=${purchaseId})}" class="btn-primary">
+                        <a th:if="${purchaseStatus == null || purchaseStatus.name() != 'ORDERED'}"
+                           th:href="@{/quotations/create/{id}(id=${purchaseId})}" class="btn-primary">
                             <i class="fas fa-plus"></i> Thêm Báo Giá Mới
                         </a>
                     </div>
@@ -91,8 +92,8 @@
                     </div>
                 </div>
             </form>
-            <div th:if="${message}">
-                <i class="fas fa-exclamation-circle"></i>
+            <div th:if="${message}" class="alert-success-banner">
+                <i class="fas fa-check-circle"></i>
                 <span th:text="${message}"></span>
             </div>
             <!-- Bảng danh sách báo giá -->
@@ -122,7 +123,7 @@
                                 <div class="supplier-cell">
                                     <i class="fas fa-building supplier-icon"></i>
                                     <div class="supplier-info">
-                                        <strong th:text="${q.supplierName}">Nexus Systems Ltd.</strong>
+                                        <strong th:text="${q.supplierName}">Nhà cung cấp mẫu</strong>
                                     </div>
                                 </div>
                             </td>
@@ -134,17 +135,17 @@
                             </td>
                             <td>
                                 <span th:class="'status-tag ' + ${#strings.toLowerCase(q.quotationStatus.name())}"
-                                    th:text="${q.quotationStatus.description}">PENDING REVIEW</span>
+                                    th:text="${q.quotationStatus.description}">ĐANG CHỜ DUYỆT</span>
                                 <span
                                     th:if="${q.quotationStatus == T(edu.fpt.groupfive.common.QuotationStatus).REJECTED and q.rejectedReason != null}"
-                                    class="rejected-reason-mini" th:title="${q.rejectedReason}"
+                                    class="rejected-reason-mini" th:title="${q.rejectedReason}"></span>
                             </td>
                             <td class="cell-actions" onclick="event.stopPropagation()">
 
                                 <!-- Navigation actions -->
                                 <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
                                     <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
-                                        th:href="@{/quotations/{id}/edit(id=${q.quotationId})}" title="Edit">
+                                        th:href="@{/quotations/{id}/edit(id=${q.quotationId})}" title="Chỉnh sửa">
                                         <i class="far fa-edit action-icon"></i>
                                     </a>
                                 </div>
@@ -152,7 +153,7 @@
                                 <div sec:authorize="hasAuthority('DIRECTOR')">
                                     <a th:if="${q.quotationStatus.name() == 'PENDING'}" class="btn-approve-sm"
                                         th:href="@{/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}">
-                                        DUYỆT & TẠO ĐH
+                                        DUYỆT & TẠO ĐƠN HÀNG
                                     </a>
                                 </div>
 

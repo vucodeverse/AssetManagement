@@ -36,11 +36,13 @@ public class OrderController {
     private final OrderCalculationUtil orderCalculationUtil;
     private final WarehouseService warehouseService;
 
+    @org.springframework.beans.factory.annotation.Value("${order.success.delivery_date_update}")
+    private String successDeliveryDateUpdateMsg;
+
 
     @ModelAttribute
     public void addCommonAttributes(Model model) {
         model.addAttribute("activeMenu", "po");
-        model.addAttribute("suppliers", supplierService.getAllSupplier());
     }
 
     // list purchase order + search
@@ -58,6 +60,11 @@ public class OrderController {
         try {
             PurchaseOrderCreateRequest orderCreateRequest = orderService.preparePurchaseOrderForm(quotationId);
             model.addAttribute("orderCreateRequest", orderCreateRequest);
+
+            // truyền tên nhà cung cấp ra view để hiển thị thảy vì phải loop
+            String supplierName = supplierService.getSupplierIdToNameMap()
+                    .getOrDefault(orderCreateRequest.getSupplierId(), "Không rõ");
+            model.addAttribute("supplierName", supplierName);
         } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
         }
@@ -121,7 +128,7 @@ public class OrderController {
                                      RedirectAttributes redirectAttributes) {
         try {
             orderService.updateDeliveryDate(id, deliveryDate);
-            redirectAttributes.addFlashAttribute("message", "Cập nhật ngày giao hàng thành công");
+            redirectAttributes.addFlashAttribute("message", successDeliveryDateUpdateMsg);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }

@@ -65,7 +65,7 @@
                 <span th:text="${error}"></span>
             </div>
             <div th:if="${message}" class="success-message">
-                <i class="fas fa-exclamation-circle"></i>
+                <i class="fas fa-check-circle"></i>
                 <span th:text="${message}"></span>
             </div>
 
@@ -88,7 +88,7 @@
                             th:attr="onclick=|window.location.href='@{/purchases/{id}(id=${p.purchaseId})}'|">
 
                             <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
-                            <td>
+                            <td th:data-order="${p.status.name() == 'DRAFT' ? 1 : 0}">
                                 <span th:if="${p.status != null}" class="badge"
                                     th:classappend="'badge-' + ${p.status.name()}"
                                     th:text="${p.status.description}"></span>

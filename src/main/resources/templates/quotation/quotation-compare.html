@@ -101,11 +101,8 @@
                                                     <span
                                                         th:text="${#numbers.formatDecimal(qDetail.price, 1, 'POINT', 0, 'COMMA')} + ' đ'"></span>
                                                 </div>
-                                                <div class="detail-row total">
-                                                    <span>TỔNG DÒNG:</span>
                                                     <span style="color: #000;"
-                                                        th:text="${(qDetail.price != null && qDetail.quantity != null) ? #numbers.formatDecimal(qDetail.price * qDetail.quantity, 1, 'POINT', 0, 'COMMA') + ' VNĐ' : 'N/A'}"></span>
-                                                </div>
+                                                        th:text="${(qDetail.price != null && qDetail.quantity != null) ? #numbers.formatDecimal(qDetail.price * qDetail.quantity, 1, 'POINT', 0, 'COMMA') + ' VNĐ' : '—'}"></span>
 
                                                 <div style="margin-top: 12px; text-align: center;">
                                                     <span th:if="${#strings.toString(qDetail.status) == 'APPROVED'}"
@@ -118,7 +115,8 @@
                                                         style="width: 100%; box-sizing: border-box; text-align: center; background:#fff; color:#000; border-color:#000;"
                                                         th:utext="'<i class=&quot;fas fa-times&quot;></i> ' + ${qDetail.status?.description}">
                                                     </span>
-                                                    <div th:if="${#strings.toString(qDetail.status) == 'PENDING' || #strings.toString(qDetail.status) == 'DRAFT'}"
+                                                    <div
+                                                            th:if="${#strings.toString(qDetail.status) == 'PENDING' || #strings.toString(qDetail.status) == 'DRAFT'}" sec:authorize="hasAuthority('DIRECTOR')"
                                                         style="display: flex; gap: 5px;">
                                                         <form method="post"
                                                             th:action="@{/quotations/details/{id}/actions(id=${qDetail.quotationDetailId})}"
@@ -133,9 +131,9 @@
                                                             th:action="@{/quotations/details/{id}/actions(id=${qDetail.quotationDetailId})}"
                                                             style="flex: 1;">
                                                             <input type="hidden" name="actions" value="r">
-                                                            <button type="submit" class="btn-bw btn-bw-reject"
+                                                                <button type="submit" class="btn-bw btn-bw-reject"
                                                                 style="width: 100%; font-size: 11px; padding: 6px; background: #fff; color: #000; border: 1px solid #000;">
-                                                                <i class="fas fa-times"></i> LOẠI
+                                                                <i class="fas fa-times"></i> TỪ CHỐI
                                                             </button>
                                                         </form>
                                                     </div>
@@ -160,7 +158,8 @@
                             <td class="sticky-col">THAO TÁC BÁO GIÁ TỔNG</td>
                             <td th:each="q : ${quotations}">
                                 <div style="display: flex; gap: 10px; justify-content: center;"
-                                    th:if="${#strings.toString(q.quotationStatus) == 'PENDING'}">
+                                    th:if="${#strings.toString(q.quotationStatus) == 'PENDING'}"
+                                     sec:authorize="hasAuthority('DIRECTOR')">
                                     <form method="post" th:action="@{/quotations/{id}/actions(id=${q.quotationId})}">
                                         <button type="submit" name="action" value="r" class="btn-bw btn-bw-reject">
                                             × TỪ CHỐI

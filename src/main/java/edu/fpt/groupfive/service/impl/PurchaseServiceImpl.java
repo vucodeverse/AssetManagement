@@ -177,6 +177,8 @@ public class PurchaseServiceImpl implements PurchaseService {
         // check purchase có tồn tại hay ko
         purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException(invalidIdMsg));
 
+
+
         // Xử lý các hành động (actions) nhận được từ controller
         if ("a".equals(action)) {
             purchaseDAO.updateStatus(Request.APPROVED, purchaseId, null, userId);

@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class QuotationDetail extends AbstractEntity<Integer>{
+    private Integer quotationId;
     private Integer assetTypeId;
     private Integer quantity;
     private String quotationDetailNote;

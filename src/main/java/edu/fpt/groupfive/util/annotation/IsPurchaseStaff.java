@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("hasAnyAuthority('PURCHASESTAFF')")
+@PreAuthorize("hasAuthority('PURCHASE_STAFF')")
 public @interface IsPurchaseStaff {
 }

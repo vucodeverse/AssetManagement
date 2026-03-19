@@ -19,7 +19,6 @@ public interface OrderDetailMapper {
         @Mapping(source = "id", target = "purchaseOrderDetailId")
         PurchaseOrderDetailResponse toOrderDetailResponse(OrderDetail orderDetail);
 
-
         List<PurchaseOrderDetailResponse> toListOrderDetailResponse(List<OrderDetail> orderDetails);
 
 }

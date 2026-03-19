@@ -94,6 +94,7 @@
                                     <th>THAM CHIẾU YC</th>
                                     <th>TỔNG SỐ TIỀN</th>
                                     <th>TRẠNG THÁI</th>
+                                    <th>NGÀY TẠO</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -109,6 +110,7 @@
                                     <td><span class="badge-prem"
                                             th:classappend="'quo-' + ${quo.quotationStatus.name().toLowerCase()}"
                                             th:text="${quo.quotationStatus.description}">PENDING</span></td>
+                                    <td th:text="${#temporals.format(quo.createdAt, 'dd-MM-yyyy')}">____</td>
                                     <td style="text-align: right;"><i class="fas fa-chevron-right arrow-icon"></i></td>
                                 </tr>
                             </tbody>

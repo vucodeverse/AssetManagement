@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("hasAnyAuthority('ASSETMANAGER')")
+@PreAuthorize("hasAuthority('ASSETMANAGER')")
 public @interface IsAssetManager {
 }

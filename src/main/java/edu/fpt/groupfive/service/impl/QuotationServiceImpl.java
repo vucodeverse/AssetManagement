@@ -132,17 +132,14 @@ public class QuotationServiceImpl implements QuotationService {
             q.setUpdatedAt(LocalDateTime.now());
         }
 
-        // map ngược lại
+        // map từ assetTypeName -> assetTypeId (đảo ngược assetTypeIdToNameMap)
         Map<String, Integer> map = new HashMap<>();
-
         for (Map.Entry<Integer, String> e : assetTypeService.getAssetTypeIdToNameMap().entrySet()) {
             map.put(e.getValue(), e.getKey());
         }
 
-        // Khởi tạo danh sách chi tiết báo giá trước
+        // Khởi tạo danh sách chi tiết báo giá
         List<QuotationDetail> quotationDetails = new ArrayList<>();
-
-        BigDecimal totalAmount = BigDecimal.ZERO;
 
         // mapừng quotation detail
         for (QuotationDetailCreateRequest qd : quotationCreateRequest.getQuotationDetailCreateRequests()) {
@@ -233,15 +230,10 @@ public class QuotationServiceImpl implements QuotationService {
                quotationDetailDAO.findByQuotationId(quotation.getId()).stream().filter(qd -> QuotationStatus.REJECTED != qd.getQuotationDetailStatus() && QuotationStatus.DELETED != qd.getQuotationDetailStatus()).toList();
 
         if ("r".equals(action)) {
-            for(int i = 0; i< detailsList.size(); i++){
-                quotationDetailDAO.update(detailsList.get(i).getId(), QuotationStatus.REJECTED);
-            }
+            detailsList.forEach(qd -> quotationDetailDAO.update(qd.getId(), QuotationStatus.REJECTED));
             quotationDAO.updateStatus(id, QuotationStatus.REJECTED, reason);
         } else if ("d".equals(action)) {
-
-            for(int i = 0; i< detailsList.size(); i++){
-                quotationDetailDAO.update(detailsList.get(i).getId(), QuotationStatus.DELETED);
-            }
+            detailsList.forEach(qd -> quotationDetailDAO.update(qd.getId(), QuotationStatus.DELETED));
             quotationDAO.updateStatus(id, QuotationStatus.DELETED, null);
         }
 
@@ -437,9 +429,12 @@ public class QuotationServiceImpl implements QuotationService {
                 .toList();
     }
 
+    @Value("${quotation.detail.not_found}")
+    private String quotationDetailNotFoundMsg;
+
     @Override
     public void processQuotationDetailAction(Integer id, String actions) {
-        quotationDetailDAO.findById(id).orElseThrow(() -> new InvalidDataException("Không tồn tại báo giá này"));
+        quotationDetailDAO.findById(id).orElseThrow(() -> new InvalidDataException(quotationDetailNotFoundMsg));
 
         if("a".equals(actions)){
             quotationDetailDAO.update(id, QuotationStatus.APPROVED);

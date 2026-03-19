@@ -27,6 +27,15 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     private final DatabaseConfig databaseConfig;
     private final PurchaseDetailDAO purchaseDetailDAO;
 
+    @org.springframework.beans.factory.annotation.Value("${dao.common.insert_error}")
+    private String insertErrorMsg;
+
+    @org.springframework.beans.factory.annotation.Value("${purchase.create.failure}")
+    private String createFailureMsg;
+
+    @org.springframework.beans.factory.annotation.Value("${dao.common.map_error}")
+    private String mapErrorMsg;
+
     // map các thuộc tính
     private Purchase mapRowForList(ResultSet rs) throws SQLException {
         Purchase purchase = new Purchase();
@@ -110,13 +119,13 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
             } catch (Exception e) {
                 connection.rollback();
-                throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+                throw new DataAccessException(insertErrorMsg, e);
             } finally {
                 connection.setAutoCommit(true);
             }
 
         } catch (Exception e) {
-            throw new DataAccessException("Thêm yêu cầu mua sắm thất bại", e);
+            throw new DataAccessException(createFailureMsg, e);
         }
     }
 
@@ -142,7 +151,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
 
         return Optional.empty();
@@ -168,7 +177,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
 
         return Optional.empty();
@@ -188,11 +197,11 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 try {
                     purchases.add(mapRowForList(rs));
                 } catch (Exception e) {
-                    throw new DataAccessException("Lỗi không thể map dữ liệu", e);
+                    throw new DataAccessException(mapErrorMsg, e);
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
         return purchases;
     }
@@ -257,12 +266,12 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                     Purchase mappedPurchase = mapRowForList(rs);
                     purchases.add(mappedPurchase);
                 } catch (Exception e) {
-                    throw new DataAccessException("Lỗi không thể map dữ liệu", e);
+                    throw new DataAccessException(mapErrorMsg, e);
                 }
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
         return purchases;
     }
@@ -300,7 +309,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
     }
 
@@ -384,7 +393,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
 
         return result;
@@ -428,7 +437,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             connection.commit();
 
         } catch (Exception e) {
-            throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
     }
 }

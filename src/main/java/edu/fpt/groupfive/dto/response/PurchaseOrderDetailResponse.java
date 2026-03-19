@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class PurchaseOrderDetailResponse {
     private Integer purchaseOrderDetailId;
+    private Integer purchaseRequestDetailId;
     private String assetTypeName;
     private Integer quantity;
     private BigDecimal price;

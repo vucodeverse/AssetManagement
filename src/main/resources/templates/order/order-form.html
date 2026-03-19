@@ -4,12 +4,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Create Purchase Order</title>
+    <title>Tạo Đơn Đặt Hàng</title>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" th:href="@{/css/order/order-form.css}">
-    </th:block>
-    <th:block layout:fragment="extra-js">
-        <script th:src="@{/js/order/order-form.js}"></script>
     </th:block>
 </head>
 
@@ -19,17 +16,17 @@
 
             <!-- Thanh điều hướng (Breadcrumb) -->
             <div class="breadcrumb">
-                <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a>
+                <a th:href="@{/purchase-staff/dashboard}">TRANG CHỦ</a>
                 /
-                <a th:href="@{/purchase-orders}">PURCHASE ORDERS</a> /
-                <span class="active">GENERATE PO</span>
+                <a th:href="@{/purchase-orders}">ĐƠN ĐẶT HÀNG</a> /
+                <span class="active">TẠO ĐƠN</span>
             </div>
 
             <!-- Tiêu đề trang -->
             <header class="page-header">
                 <div class="header-text">
-                    <h1>CREATE PURCHASE ORDER</h1>
-                    <p>Review quotation details and issue a formal purchase order to the supplier.</p>
+                    <h1>TẠO ĐƠN ĐẶT HÀNG</h1>
+                    <p>Kiểm tra chi tiết báo giá và phát hành đơn đặt hàng chính thức đến nhà cung cấp.</p>
                 </div>
             </header>
 
@@ -43,32 +40,24 @@
                 th:action="@{/purchase-orders/create-from-quotation/{id}(id=${orderCreateRequest.quotationId})}"
                 th:object="${orderCreateRequest}" method="post">
 
-                <!-- Thông tin chung -->
                 <div class="po-card">
-                    <h2 class="section-label">General Information</h2>
+                    <h2 class="section-label">THÔNG TIN CHUNG</h2>
                     <div class="form-grid">
 
                         <div class="form-item">
-                            <label>Quotation ID</label>
+                            <label>MÃ BÁO GIÁ</label>
                             <input type="text" th:value="'QT-' + *{quotationId}" readonly>
                             <input type="hidden" th:field="*{quotationId}">
                         </div>
 
                         <div class="form-item">
-                            <label>Supplier</label>
-                            <th:block th:with="supplierName=${#strings.toString('')}">
-                                <th:block th:each="sup : ${suppliers}">
-                                    <th:block th:if="${sup.id == orderCreateRequest.supplierId}"
-                                        th:with="supplierName=${sup.supplierName}">
-                                        <input type="text" th:value="${sup.supplierName}" readonly>
-                                    </th:block>
-                                </th:block>
-                            </th:block>
+                            <label>NHÀ CUNG CẤP</label>
+                            <input type="text" th:value="${supplierName}" readonly>
                             <input type="hidden" th:field="*{supplierId}">
                         </div>
 
                         <div class="form-item">
-                            <label>Total Amount (VNĐ)</label>
+                            <label>TỔNG TIỀN (VNĐ)</label>
                             <input type="hidden" id="totalAmountInput" th:field="*{totalAmount}">
                             <input type="text" id="totalAmountDisplay" th:value="${orderCreateRequest.totalAmount != null ?
                                        #numbers.formatDecimal(orderCreateRequest.totalAmount, 1, 'POINT', 0, 'COMMA') + ' VNĐ'
@@ -76,19 +65,19 @@
                         </div>
 
                         <div class="form-item full-width">
-                            <label>Order Note</label>
+                            <label>GHI CHÚ ĐƠN HÀNG</label>
                             <textarea th:field="*{orderNote}"
-                                placeholder="Internal remarks or delivery instructions..."></textarea>
+                                placeholder="Hướng dẫn nội bộ hoặc yêu cầu giao hàng..."></textarea>
                         </div>
 
                         <div class="form-item full-width">
-                            <label>Warehouse Name</label>
+                            <label>KHO NHẬP HÀNG</label>
                             <th:block th:if="*{warehouseName != null and warehouseName != ''}">
                                 <input type="text" th:field="*{warehouseName}" readonly>
                             </th:block>
                             <th:block th:unless="*{warehouseName != null and warehouseName != ''}">
                                 <select th:field="*{warehouseName}">
-                                    <option value="">-- Select Warehouse --</option>
+                                    <option value="">-- Chọn kho --</option>
                                     <th:block th:each="name : ${wh}">
                                         <option th:value="${name}" th:text="${name}"></option>
                                     </th:block>
@@ -101,18 +90,18 @@
 
                 <!-- Chi tiết đơn hàng -->
                 <div class="po-card">
-                    <h2 class="section-label">Order Details</h2>
+                    <h2 class="section-label">CHI TIẾT ĐƠN HÀNG</h2>
                     <div class="table-container">
                         <table class="po-table">
                             <thead>
                                 <tr>
-                                    <th class="th-header" style="width: 15%;">ASSET TYPE</th>
-                                    <th>Detail ID</th>
-                                    <th>Unit Price</th>
-                                    <th>Tax %</th>
-                                    <th>Disc %</th>
-                                    <th>Quantity</th>
-                                    <th>Note</th>
+                                    <th class="th-header" style="width: 15%;">LOẠI TÀI SẢN</th>
+                                    <th>MÃ CHI TIẾT</th>
+                                    <th>ĐƠN GIÁ</th>
+                                    <th>THUẾS (%)</th>
+                                    <th>CHIẾT KHẤU (%)</th>
+                                    <th>SỐ LƯỢNG</th>
+                                    <th>GHI CHÚ</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -186,14 +175,14 @@
                 <!-- Các nút điều hướng cuối -->
                 <div class="po-footer">
                     <div class="footer-info">
-                        <i class="fas fa-info-circle"></i> Review all fields carefully before submitting.
+                        <i class="fas fa-info-circle"></i> Kiểm tra kỹ tất cả các trường trước khi gửi.
                     </div>
                     <div class="footer-actions">
                         <a th:href="@{/purchase-orders}" class="btn-outline">
-                            <i class="fas fa-arrow-left"></i> Cancel
+                            <i class="fas fa-arrow-left"></i> HỦY
                         </a>
                         <button type="submit" class="btn-solid">
-                            <i class="fas fa-file-invoice"></i> Generate Purchase Order
+                            <i class="fas fa-file-invoice"></i> TẠO ĐƠN ĐẶT HÀNG
                         </button>
                     </div>
                 </div>
@@ -201,6 +190,10 @@
             </form>
 
         </main>
+    </th:block>
+
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/order/order-form.js}"></script>
     </th:block>
 </body>
 

@@ -9,6 +9,7 @@ import edu.fpt.groupfive.model.QuotationDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.util.exception.DataAccessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -23,6 +24,15 @@ import java.util.Optional;
 public class QuotationDAOImpl implements QuotationDAO {
     private final DatabaseConfig databaseConfig;
     private final QuotationDetailDAO quotationDetailDAO;
+
+    @Value("${dao.common.insert_error}")
+    private String insertErrorMsg;
+
+    @Value("${purchase.create.failure}")
+    private String createFailureMsg;
+
+    @Value("${dao.common.find_error}")
+    private String findErrorMsg;
 
     private Quotation mapResultSetToQuotation(ResultSet rs) throws SQLException {
         Quotation quotation = new Quotation();
@@ -76,7 +86,7 @@ public class QuotationDAOImpl implements QuotationDAO {
                 // insert details cùng 1 connection
                 if (quotationId != 0 && quotation.getQuotationDetails() != null) {
                     for (QuotationDetail qd : quotation.getQuotationDetails()) {
-                        qd.setId(quotationId);
+                        qd.setQuotationId(quotationId);
                         quotationDetailDAO.insert(qd, connection);
                     }
                 }
@@ -86,12 +96,12 @@ public class QuotationDAOImpl implements QuotationDAO {
             } catch (SQLException e) {
                 connection.rollback();
 
-                throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+                throw new DataAccessException(insertErrorMsg, e);
             } finally {
                 connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Thêm yêu cầu mua sắm thất bại", e);
+            throw new DataAccessException(createFailureMsg, e);
         }
 
     }
@@ -120,7 +130,7 @@ public class QuotationDAOImpl implements QuotationDAO {
 
             if (quotation.getQuotationDetails() != null) {
                 for (QuotationDetail qd : quotation.getQuotationDetails()) {
-                    qd.setId(quotation.getId());
+                    qd.setQuotationId(quotation.getId());
                     quotationDetailDAO.insert(qd, connection);
                 }
             }
@@ -156,10 +166,12 @@ public class QuotationDAOImpl implements QuotationDAO {
             connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, status.toString());
-            preparedStatement.setString(2, rejectedReason != null ? rejectedReason : null);
+            preparedStatement.setString(2, rejectedReason);
             preparedStatement.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
             preparedStatement.setInt(4, quotationId);
             preparedStatement.executeUpdate();
+
+            connection.commit();
         } catch (SQLException e) {
             if (connection != null) {
                 try {
@@ -193,7 +205,7 @@ public class QuotationDAOImpl implements QuotationDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
 
         return Optional.empty();
@@ -216,7 +228,7 @@ public class QuotationDAOImpl implements QuotationDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return quotations;
     }
@@ -239,7 +251,7 @@ public class QuotationDAOImpl implements QuotationDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return 0;
     }
@@ -317,7 +329,7 @@ public class QuotationDAOImpl implements QuotationDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return quotations;
     }
@@ -336,7 +348,7 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotations.add(mapResultSetToQuotation(rs));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return quotations;
     }

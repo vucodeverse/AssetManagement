@@ -36,6 +36,15 @@ public class QuotationController {
     private final AssetTypeService assetTypeService;
     private final PurchaseService purchaseService;
 
+    @org.springframework.beans.factory.annotation.Value("${quotation.success.detail_action}")
+    private String successDetailActionMsg;
+
+    @org.springframework.beans.factory.annotation.Value("${quotation.success.create_flash}")
+    private String successCreateMsg;
+
+    @org.springframework.beans.factory.annotation.Value("${quotation.success.action_flash}")
+    private String successActionMsg;
+
     // hiển thị trang compare quotation
     @IsDirector
     @GetMapping("/compare")
@@ -72,7 +81,7 @@ public class QuotationController {
             RedirectAttributes redirectAttributes, @RequestHeader(value = "Referer", required = false) String referer) {
 
         quotationService.processQuotationDetailAction(id, actions);
-        redirectAttributes.addFlashAttribute("message", "Thay đổi dữ liệu thành công");
+        redirectAttributes.addFlashAttribute("message", successDetailActionMsg);
         return (referer != null) ? "redirect:" + referer : "redirect:/quotations";
 
     }
@@ -95,7 +104,7 @@ public class QuotationController {
             return URL_QUOTATION_FORM;
         } catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/quotations";
+            return "redirect:/quotations/of-purchase/" + purchaseId;
         }
     }
 
@@ -153,10 +162,10 @@ public class QuotationController {
             quotationId = quotationService.createQuotation(request, purchaseId, action);
         } catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/quotations/of-purchases/" + purchaseId;
+            return "redirect:/quotations/of-purchase/" + purchaseId;
         }
         if (quotationId != null) {
-            redirectAttributes.addFlashAttribute("message", "Thêm báo giá thành công");
+            redirectAttributes.addFlashAttribute("message", successCreateMsg);
         }
 
         return "redirect:/quotations/" + quotationId;
@@ -173,7 +182,7 @@ public class QuotationController {
         int purchaseId = quotationService.getQuotationById(id).getPurchaseId();
         try {
             quotationService.processQuotationAction(id, action, reason);
-            redirectAttributes.addFlashAttribute("message", "Thay đổi báo giá thành công");
+            redirectAttributes.addFlashAttribute("message", successActionMsg);
         } catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -192,6 +201,8 @@ public class QuotationController {
 
         prepareQuotationFilter(model);
 
+        model.addAttribute("purchaseId", purchaseId);
+        model.addAttribute("purchaseStatus", purchaseService.getPurchaseRequestById(purchaseId).getStatus());
         model.addAttribute("quotations", quotations);
         model.addAttribute("criteria", new QuotationSearchCriteria());
 
@@ -226,6 +237,8 @@ public class QuotationController {
 
         criteria.setPurchaseId(purchaseId);
 
+        model.addAttribute("purchaseId", purchaseId);
+        model.addAttribute("purchaseStatus", purchaseService.getPurchaseRequestById(purchaseId).getStatus());
         model.addAttribute("quotations",
                 quotationService.searchQuotationsByPurchaseId(criteria));
 

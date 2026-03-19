@@ -18,6 +18,9 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    @org.springframework.beans.factory.annotation.Value("${dao.common.insert_error}")
+    private String insertErrorMsg;
+
     // insert purchase detail
     @Override
     public void insert(PurchaseDetail purchaseDetail, Connection connection) {
@@ -33,7 +36,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             preparedStatement.setString(6, purchaseDetail.getPurchaseDetailNote());
             preparedStatement.executeUpdate();
         } catch (Exception exception) {
-            throw new DataAccessException("Lỗi không thể chèn dữ liệu", exception);
+            throw new DataAccessException(insertErrorMsg, exception);
         }
     }
 
@@ -69,8 +72,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException(
-                    "Lỗi không thể chèn dữ liệu", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
 
         return purchaseDetails;
@@ -84,7 +86,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             ps.setInt(1, purchaseRequestId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Lỗi không thể chèn dữ liệu", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
     }
 }
