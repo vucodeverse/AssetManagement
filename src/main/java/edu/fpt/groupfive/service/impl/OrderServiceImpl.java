@@ -2,6 +2,7 @@ package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.OrderStatus;
 import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dao.warehouse.WarehouseDAO;
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
@@ -49,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
     private final WarehouseDAO warehouseDAO;
     private final InventoryTicketService inventoryTicketService;
     private final UserDAO userDAO;
+    private final PurchaseDAO purchaseDAO;
 
     @Value("${order.quotation_not_found}")
     private String quotationNotFoundMsg;
@@ -92,7 +94,10 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
         // lấy ra list quotation detiail
-        List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
+        List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
+                .filter(qd -> QuotationStatus.APPROVED == qd.getQuotationDetailStatus()
+                        || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
+                .toList();
         String whName = null;
         if (orderDAO.getWhIdFromPr(quotation.getPurchaseId()) != null) {
             whName = warehouseDAO.getById(orderDAO.getWhIdFromPr(quotation.getPurchaseId())).getName();
@@ -127,14 +132,17 @@ public class OrderServiceImpl implements OrderService {
     // tạo order
     @Override
     public Integer createPurchaseOrder(Integer quotationId, PurchaseOrderCreateRequest purchaseOrderCreateRequest,
-                                       String username) {
+            String username) {
 
         // ktra tồn tại
         Quotation quotation = quotationDAO.findById(quotationId)
                 .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
         // ly toàn bộ quotation detail lên trước
-        List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
+        List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
+                .filter(qd -> QuotationStatus.APPROVED == qd.getQuotationDetailStatus()
+                        || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
+                .toList();
 
         // map dùng để check
         Map<Integer, QuotationDetail> quotationDetailMap = quotationDetails.stream()
@@ -245,6 +253,15 @@ public class OrderServiceImpl implements OrderService {
         }
 
         inventoryTicketService.createTicket(ticket, ticketDetails);
+
+        // update các quota detail sang APPROVE
+        for (PurchaseOrderDetailCreateRequest line : detailCreateRequests) {
+            quotationDetailDAO.update(line.getQuotationDetailId(), QuotationStatus.APPROVED);
+        }
+
+        // update pr sang ORDERED
+        purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
+
         return orderId;
     }
 
@@ -304,7 +321,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
 
         // tính toán các loại giá cho order detail đó
-        BigDecimal[] calculated = orderCalculationUtil. calculatePoDetail(poDetails);
+        BigDecimal[] calculated = orderCalculationUtil.calculatePoDetail(poDetails);
 
         PurchaseOrderResponse response = orderMapper.toPurchaseOrderResponse(order);
         response.setSupplierName(map.getOrDefault(order.getSupplierId(), notFoundFallbackMsg));
@@ -336,7 +353,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<PurchaseOrderDetailResponse> getAllOrderDetails() {
-        List<OrderDetail> list=orderDetailDAO.findAll();
+        List<OrderDetail> list = orderDetailDAO.findAll();
 
         return null;
     }

@@ -18,7 +18,7 @@ import java.util.List;
 public class PurchaseRequestCreateRequest {
     private Integer purchaseId;
 
-    @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
+    @Size(max=255, message = "Độ dài không quá 255 kí tự")
     @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String purchaseNote;
 
@@ -28,7 +28,7 @@ public class PurchaseRequestCreateRequest {
     private LocalDate neededByDate;
 
     @NotBlank(message = "Lý do Không được để trống")
-    @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
+    @Size(min = 1,max=255, message = "Độ dài không quá 255 kí tự")
     @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String reason;
 

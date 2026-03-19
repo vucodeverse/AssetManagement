@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
@@ -23,10 +23,6 @@
 
 
 
-            <!-- BÁO GIÁ -->
-            <a class="nav-item" th:href="@{/quotations}" th:classappend="${activeMenu}=='quotation' ? ' active' : ''">
-                <i class="fas fa-file-invoice"></i> BÁO GIÁ
-            </a>
 
             <!-- TRUNG TÂM PHÊ DUYỆT -->
             <div class="nav-group">
@@ -39,9 +35,6 @@
                         Yêu Cầu Mua Sắm
                     </a>
 
-                    <a class="sub-item" th:href="@{/quotations}" th:classappend="${activeSub}=='qt' ? ' active' : ''">
-                        Báo Giá
-                    </a>
                 </div>
             </div>
 

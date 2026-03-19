@@ -115,7 +115,7 @@ public class OrderDAOImpl implements OrderDAO {
                 map.put(rs.getInt("purchase_request_detail_id"), rs.getInt("total_qty"));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to get ordered qty by purchase detail", e);
+            throw new RuntimeException("Lấy order thất bại", e);
         }
         return map;
     }
@@ -131,7 +131,7 @@ public class OrderDAOImpl implements OrderDAO {
                         "s.supplier_name " +
                         "from purchase_orders po " +
                         "join supplier s on po.supplier_id = s.supplier_id " +
-                        "where 1=1 ");
+                        "where po.status <> 'DELETED' ");
 
         List<Object> params = new ArrayList<>();
 
@@ -220,7 +220,7 @@ public class OrderDAOImpl implements OrderDAO {
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by, warehouse_id " +
                 "from purchase_orders " +
-                "where purchase_order_id = ?";
+                "where purchase_order_id = ? and status <> 'DELETED'";
 
         try (Connection conn = databaseConfig.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -252,13 +252,14 @@ public class OrderDAOImpl implements OrderDAO {
         return java.util.Optional.empty();
     }
 
-    // lấy ra các po gần đây theo giới hạn
+    // lấy ra các po
     @Override
     public List<Order> findRecent() {
         String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by, warehouse_id " +
                 "from purchase_orders " +
+                "where status <> 'DELETED' " +
                 "order by created_at desc";
 
         List<Order> orders = new ArrayList<>();

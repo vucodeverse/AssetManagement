@@ -89,7 +89,7 @@
                   <td class="td-id" th:text="'#IT-' + ${item.purchaseOrderDetailId}">#IT-001</td>
                   <td class="td-bold" th:text="${item.assetTypeName}">MacBook Pro 14" M3</td>
                   <td th:text="${#numbers.formatInteger(item.quantity, 2)}">05</td>
-                  <td th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}">$1,999.00</td>
+                  <td th:text="${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">1.999 VNĐ</td>
                   <td
                     th:text="${item.taxRate != null ? #numbers.formatDecimal(item.taxRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
                     8.0%</td>
@@ -116,21 +116,21 @@
           <div class="total-summary">
             <div class="summary-line">
               <span>Tạm tính</span>
-              <span th:text="'$' + ${#numbers.formatDecimal(order.subtotal, 1, 'COMMA', 2, 'POINT')}">$19,270.00</span>
+              <span th:text="${#numbers.formatDecimal(order.subtotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">19.270 VNĐ</span>
             </div>
             <div class="summary-line">
               <span>Tổng chiết khấu</span>
               <span class="discount-val"
-                th:text="'-$' + ${#numbers.formatDecimal(order.totalDiscount, 1, 'COMMA', 2, 'POINT')}">-$624.50</span>
+                th:text="'-' + ${#numbers.formatDecimal(order.totalDiscount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">-624 VNĐ</span>
             </div>
             <div class="summary-line">
               <span>Thuế dự kiến</span>
-              <span th:text="'$' + ${#numbers.formatDecimal(order.totalTax, 1, 'COMMA', 2, 'POINT')}">$1,491.64</span>
+              <span th:text="${#numbers.formatDecimal(order.totalTax, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">1.491 VNĐ</span>
             </div>
             <div class="grand-total-row">
               <span>TỔNG CỘNG</span>
               <span class="grand-total"
-                th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">$20,137.14</span>
+                th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">20.137 VNĐ</span>
             </div>
           </div>
         </div>

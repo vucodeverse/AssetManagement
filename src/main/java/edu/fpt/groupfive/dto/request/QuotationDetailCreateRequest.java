@@ -18,6 +18,7 @@ public class QuotationDetailCreateRequest {
     private Integer quantity;
 
     @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Size(max = 255, message = "Không được điền quá 255 kí tự")
     private String quotationDetailNote;
 
     @NotNull(message = "Thời gian bảo hành không được để trống")
@@ -39,5 +40,7 @@ public class QuotationDetailCreateRequest {
     private String assetTypeName;
 
     @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
+    @Size(min = 1,max = 255, message = "Không được điền quá 255 kí tự")
+    @NotBlank(message = "Không được để trống")
     private String specificationRequirement;
 }

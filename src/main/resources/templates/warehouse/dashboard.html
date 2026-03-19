@@ -218,7 +218,7 @@
                             <span th:if="${ticket.status.name() == 'PENDING'}" class="badge badge-pending">ĐANG
                                 CHỜ</span>
                         </td>
-                        <td th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${#temporals.format(ticket.createdAt, 'dd-MM-yyyy')}"></td>
                         <td>
                             <a th:href="@{'/wh/' + ${userId} + '/tickets/' + ${ticket.id}}" class="action-btn">
                                 <i class="fas fa-eye"></i> Xử Lý Ngay

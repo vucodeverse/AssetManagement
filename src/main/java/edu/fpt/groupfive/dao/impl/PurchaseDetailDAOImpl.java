@@ -33,13 +33,8 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             preparedStatement.setString(6, purchaseDetail.getPurchaseDetailNote());
             preparedStatement.executeUpdate();
         } catch (Exception exception) {
-            throw new DataAccessException("Lỗi không thể chèn dữ liệu",exception);
+            throw new DataAccessException("Lỗi không thể chèn dữ liệu", exception);
         }
-    }
-
-    @Override
-    public Optional<PurchaseDetail> findById(Integer purchaseDetailId) {
-        return Optional.empty();
     }
 
     // tìm purchase detail theo purchse request
@@ -51,7 +46,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
                 "where pd.purchase_request_id = ?";
         List<PurchaseDetail> purchaseDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+                PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, purchaseRequestId);
 
@@ -81,7 +76,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
         return purchaseDetails;
     }
 
-    // xóa tất cả purchase detail theo purchase request id (dùng khi  update draft)
+    // xóa tất cả purchase detail theo purchase request id (dùng khi update draft)
     @Override
     public void deleteByPurchaseRequestId(Integer purchaseRequestId, Connection conn) {
         String sql = "delete from purchase_request_detail where purchase_request_id = ?";

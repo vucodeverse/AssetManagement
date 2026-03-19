@@ -18,8 +18,6 @@ public interface QuotationDAO {
 
     List<Quotation> findByPurchaseId(Integer purchaseId);
 
-    Optional<Quotation> findWithDetailsById(Integer quotationId);
-
     Integer countQuotationFromPurchaseId(Integer purchaseId);
 
     List<Quotation> searchByPurchaseId(QuotationSearchCriteria criteria);

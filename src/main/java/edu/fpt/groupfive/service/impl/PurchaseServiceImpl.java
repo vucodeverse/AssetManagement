@@ -2,12 +2,14 @@ package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.PurchaseDAO;
+import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.dao.QuotationDAO;
 import edu.fpt.groupfive.dto.request.PurchaseRequestCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseRequestDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
+import edu.fpt.groupfive.mapper.PurchaseDetailMapper;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.service.AssetTypeService;
@@ -32,6 +34,8 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final PurchaseMapper purchaseMapper;
     private final UserService userService;
     private final AssetTypeService assetTypeService;
+    private final PurchaseDetailDAO purchaseDetailDAO;
+    private final PurchaseDetailMapper purchaseDetailMapper;
 
     @Value("${purchase.detail.asset_type_not_found}")
     private String assetTypeNotFoundMsg;
@@ -217,4 +221,6 @@ public class PurchaseServiceImpl implements PurchaseService {
                 .build();
 
     }
+
+
 }

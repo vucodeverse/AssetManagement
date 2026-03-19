@@ -108,7 +108,7 @@
                             </td>
                             <td>
                                 <span th:if="${p.createdAt != null}"
-                                    th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy HH:mm')}"></span>
+                                    th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></span>
                                 <span th:if="${p.createdAt == null}">—</span>
                             </td>
 
@@ -118,7 +118,7 @@
 
                                     <div sec:authorize="hasAuthority('DIRECTOR')">
                                         <div th:if="${p.status != null
-                                 && p.status.name() != 'APPROVED'
+                                 && p.status.name() != 'APPROVED' && p.status.name() != 'ORDERED'
                                  && p.status.name() != 'REJECTED'
                                     && p.status.name() != 'DRAFT'}">
 
@@ -134,8 +134,7 @@
 
                                         </div>
                                     </div>
-
-                                    <div sec:authorize="hasAuthority('ASSET_MANAGER')">
+                                        <div sec:authorize="hasAuthority('ASSET_MANAGER')">
                                         <button type="submit"
                                             th:if="${p.status != null && (p.status.name() == 'DRAFT' || p.status.name() == 'PENDING')}"
                                             class="btn-reject" name="action" value="d">
@@ -150,6 +149,14 @@
                                         th:href="@{/purchases/{id}/edit(id=${p.purchaseId})}" class="btn-approve"
                                         onclick="event.stopPropagation();">
                                         CẬP NHẬT
+                                    </a>
+                                </div>
+
+                                <div sec:authorize="hasAnyAuthority('DIRECTOR', 'PURCHASE_STAFF')">
+                                    <a th:if="${p.status != null && (p.status.name() == 'APPROVED' || p.status.name() == 'ORDERED')}"
+                                        th:href="@{/quotations/of-purchase/{id}(id=${p.purchaseId})}" class="btn-approve"
+                                        onclick="event.stopPropagation();">
+                                        XEM BÁO GIÁ
                                     </a>
                                 </div>
 

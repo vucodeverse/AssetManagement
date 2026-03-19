@@ -9,8 +9,6 @@ import java.util.Optional;
 public interface PurchaseDetailDAO {
     void insert(PurchaseDetail purchaseDetail, Connection conn);
 
-    Optional<PurchaseDetail> findById(Integer purchaseDetailId);
-
     List<PurchaseDetail> findByPurchaseRequestId(Integer purchaseRequestId);
 
     void deleteByPurchaseRequestId(Integer purchaseRequestId, Connection conn);

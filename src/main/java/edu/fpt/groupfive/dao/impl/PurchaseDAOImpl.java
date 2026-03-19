@@ -124,9 +124,9 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     @Override
     public Optional<Purchase> findById(Integer purchaseId) {
 
-        String sql = "select p.*, u.first_name, u.last_name " +
-                "from purchase_request p left join users u on p.creator_id = u.user_id " +
-                "where p.purchase_request_id = ?";
+        String sql = "select p.* " +
+                "from purchase_request p " +
+                "where p.purchase_request_id = ? and p.status <> 'DELETED'";
 
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -159,30 +159,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             preparedStatement.setString(2, status);
             ResultSet rs = preparedStatement.executeQuery();
             if (rs.next()) {
-
-                Purchase purchase = new Purchase();
-                purchase.setId(rs.getInt("purchase_request_id"));
-                purchase.setStatus(Request.valueOf(rs.getString("status").toUpperCase()));
-                purchase.setPurchaseNote(rs.getString("note"));
-                purchase.setRejectReason(rs.getString("reject_reason"));
-                purchase.setCreatedByUser(rs.getInt("creator_id"));
-                Date neededByDate = rs.getDate("needed_by_date");
-                purchase.setNeededByDate(
-                        neededByDate != null ? neededByDate.toLocalDate() : null);
-
-                purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(Priority.valueOf(rs.getString("priority").toUpperCase()));
-                purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
-
-                Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
-                if (approvedAt != null) {
-                    purchase.setApprovedAt(approvedAt.toLocalDateTime());
-                }
-                purchase.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                Timestamp up = rs.getTimestamp("updated_at");
-                LocalDateTime updatedAt = up != null ? up.toLocalDateTime() : null;
-                purchase.setUpdatedAt(
-                        updatedAt);
+                Purchase purchase = mapRowForList(rs);
 
                 purchase.setPurchaseDetails(
                         purchaseDetailDAO.findByPurchaseRequestId(purchaseId));
@@ -337,7 +314,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                         "count(q.quotation_id) as number_of_quotation, " +
                         "min(q.total_amount) as est_price " +
                         "from purchase_request p " +
-                        "left join quotation q on p.purchase_request_id = q.purchase_request_id " +
+                        "left join quotation q on p.purchase_request_id = q.purchase_request_id and q.status <> 'DELETED' " +
                         "left join users u on p.creator_id = u.user_id " +
                         "where p.status = 'APPROVED' ");
 
@@ -419,7 +396,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
         String sql = "update purchase_request set status = ?, note = ?, needed_by_date = ?, " +
                 "priority = ?, reject_reason = ?, updated_at = ?, request_reason = ? " +
-                "where purchase_request_id = ?";
+                "where purchase_request_id = ? and status in ('DRAFT','PENDING')";
 
         try (Connection connection = databaseConfig.getConnection()) {
 
