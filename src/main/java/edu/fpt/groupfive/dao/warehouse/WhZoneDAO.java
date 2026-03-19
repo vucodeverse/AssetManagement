@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.dao;
+package edu.fpt.groupfive.dao.warehouse;
 
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
 import edu.fpt.groupfive.model.warehouse.WarehouseZone;

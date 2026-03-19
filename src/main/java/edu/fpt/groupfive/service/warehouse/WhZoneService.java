@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.service;
+package edu.fpt.groupfive.service.warehouse;
 
 import edu.fpt.groupfive.dto.request.warehouse.ZoneCreateRequestDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;

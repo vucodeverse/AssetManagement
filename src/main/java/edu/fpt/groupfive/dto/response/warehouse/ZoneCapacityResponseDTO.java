@@ -13,6 +13,7 @@ import lombok.Setter;
 @Builder
 public class ZoneCapacityResponseDTO {
     private Integer zoneId;
+    private Integer warehouseId;
     private String zoneName;
     private Integer maxCapacity;
     private Integer currentCapacity;
