@@ -92,14 +92,15 @@ public class PurchaseController {
     // hiển thị form sửa purchase ruquest
     @IsAssetManager
     @GetMapping("/{id}/edit")
-    public String showEditPurchaseForm(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+    public String showEditPurchaseForm(@PathVariable("id") Integer id, Model model,
+            RedirectAttributes redirectAttributes) {
 
         try {
             PurchaseRequestCreateRequest p = purchaseService.preparePurchaseRequestForm(id);
-             model.addAttribute("purchaseCreateRequest", p);
-         prepareFormModel(model);
+            model.addAttribute("purchaseCreateRequest", p);
+            prepareFormModel(model);
             return URL_PURCHASE_FORM;
-        }catch (InvalidDataException e) {
+        } catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/purchases";
 
@@ -119,12 +120,12 @@ public class PurchaseController {
     public String actionWithPr(@PathVariable("id") Integer id,
             @RequestParam("action") String actions,
             @RequestParam(value = "reasonReject", required = false) String reasonReject,
-                               RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
 
-        try{
-        purchaseService.processPurchaseRequestAction(id, actions, reasonReject, getCurrentUserId());
-        redirectAttributes.addFlashAttribute("message", messageActions);
-        }catch (InvalidDataException e) {
+        try {
+            purchaseService.processPurchaseRequestAction(id, actions, reasonReject, getCurrentUserId());
+            redirectAttributes.addFlashAttribute("message", messageActions);
+        } catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/purchases";

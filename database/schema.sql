@@ -400,15 +400,8 @@ CREATE TABLE map_po_transactions (
 );
 
 -- 11.3 Bảng trung gian: Ánh xạ Nhập kho từ Lệnh Thu hồi (Luân chuyển về kho)
-CREATE TABLE map_return_transactions (
-    return_request_id INT NOT NULL REFERENCES return_request(request_id),
+CREATE TABLE map_handover_transactions (
+    asset_handover_id INT NOT NULL REFERENCES asset_handover(handover_id),
     transaction_id    INT NOT NULL REFERENCES wh_transactions(transaction_id),
-    PRIMARY KEY (return_request_id, transaction_id)
-);
-
--- 11.4 Bảng trung gian: Ánh xạ Xuất kho cho Lệnh Cấp phát (Pick & Pack)
-CREATE TABLE map_allocation_transactions (
-    allocation_request_id INT NOT NULL REFERENCES allocation_request(request_id),
-    transaction_id        INT NOT NULL REFERENCES wh_transactions(transaction_id),
-    PRIMARY KEY (allocation_request_id, transaction_id)
+    PRIMARY KEY (asset_handover_id, transaction_id)
 );
