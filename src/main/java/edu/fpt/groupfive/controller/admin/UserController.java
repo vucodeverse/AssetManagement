@@ -36,12 +36,6 @@ public class UserController {
         model.addAttribute("isEditMode", isEditMode);
     }
 
-    // Giữ lại dữ liệu trong form khi lỗi
-    private String returnData(Model model, String mode) {
-        setupData(model);
-        model.addAttribute("mode", mode);
-        return "user-detail";
-    }
 
     @GetMapping("/home")
     public String homePage(
@@ -78,12 +72,20 @@ public class UserController {
         return "user-list";
     }
 
+
     @GetMapping("/add")
     public String addForm(Model model) {
         setupAttributes(model, new UserCreateRequest(), true, false);
         return "user-detail";
     }
 
+    /**
+     * Điều hướng đến trang edit
+     *
+     * @param id mã định danh của user cần cập nhật
+     * @param model dùng để truyền dữ liệu từ controller sang view
+     * @return tên trang hiển thị form chỉnh sửa user
+     */
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable("id") Integer id, Model model) {
 
@@ -106,6 +108,14 @@ public class UserController {
         return "user-detail";
     }
 
+
+    /**
+     * Hàm xem chi tiết người dùng
+     *
+     * @param id mã của người cần xem chi tiết
+     * @param model dùng để truyền dữ liệu từ controller sang view
+     * @return tên trang hiển thị form chỉnh sửa user
+     */
     @GetMapping("/detail/{id}")
     public String showDetail(@PathVariable("id") Integer id, Model model) {
 
@@ -118,10 +128,11 @@ public class UserController {
 
     /**
      * Hàm điều hướng khi ấn nút add
+     *
      * @param request nhận giá trị từ form
      * @param bindingResult kiểm tra lỗi
      * @param model truyền lại data
-     * @return trang chủ
+     * @return tên trang hiển thị form thêm user
      */
     @PostMapping("/create")
     public String createUser(
@@ -160,6 +171,16 @@ public class UserController {
             }
         }
 
+        // Nếu công ty đã có giám đốc rồi
+        if (request.getRole() == Role.DIRECTOR) {
+            if (userService.existsDirector(null)) {
+                bindingResult.rejectValue(
+                        "role",
+                        "duplicate.manager",
+                        "Công ty đã có giám đốc");
+            }
+        }
+
         if (bindingResult.hasErrors()) {
             setupAttributes(model, request, true, false);
             return "user-detail";
@@ -176,6 +197,7 @@ public class UserController {
 
     /**
      * Hàm điều hướng khi ấn nút add
+     *
      * @param request nhận giá trị từ form
      * @param bindingResult kiểm tra lỗi
      * @param model truyền lại data
@@ -209,6 +231,17 @@ public class UserController {
             }
         }
 
+        // Nếu công ty đã có giám đốc rồi
+        if (request.getRole() == Role.DIRECTOR) {
+            if (userService.existsDirector(request.getUserId())) {
+                bindingResult.rejectValue(
+                        "role",
+                        "duplicate.manager",
+                        "Công ty đã có giám đốc");
+            }
+        }
+
+
         if (bindingResult.hasErrors()) {
             setupAttributes(model, request, true, true);
             return "user-detail";
@@ -225,6 +258,12 @@ public class UserController {
     }
 
 
+    /**
+     * Xóa 1 user khỏi hệ thống
+     *
+     * @param userId mã định danh của user cần xóa
+     * @return quay về trang danh sách user sau khi xóa
+     */
     @GetMapping("/delete/{id}")
     public String deleteUser(@PathVariable("id") Integer userId) {
         userService.removeUser(userId);

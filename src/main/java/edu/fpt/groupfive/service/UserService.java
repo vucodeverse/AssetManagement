@@ -36,6 +36,6 @@ public interface UserService {
 
     boolean existsManager(Integer departmentId, Integer userId);
 
-    boolean existsDirector();
+    boolean existsDirector(Integer userId);
 
 }

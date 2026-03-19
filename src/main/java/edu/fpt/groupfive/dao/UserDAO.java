@@ -21,7 +21,7 @@ public interface UserDAO {
 
     boolean existsManagerByDepartment(Integer departmentId, Integer userId);
 
-    boolean exitsDirector(Role role);
+    boolean exitsDirector(Role role, Integer userId);
 
     List<Users> findAll();
 

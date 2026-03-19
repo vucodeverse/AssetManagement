@@ -152,8 +152,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean existsDirector() {
-        return userDAO.exitsDirector(Role.DIRECTOR);
+    public boolean existsDirector(Integer userId) {
+        return userDAO.exitsDirector(Role.DIRECTOR, userId);
     }
 
     @Override

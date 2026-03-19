@@ -244,18 +244,27 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean exitsDirector(Role role) {
-        String query = """
-                SELECT 1 FROM users WHERE role = ?
-                """;
+    public boolean exitsDirector(Role role, Integer userId) {
+
+        StringBuilder query = new StringBuilder("""
+                  SELECT 1 FROM Users
+                  WHERE role = ?
+                """);
+
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
+             PreparedStatement ps = connection.prepareStatement(query.toString())) {
 
             ps.setString(1, role.name());
 
-            ResultSet rs = ps.executeQuery();
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
 
-            return rs.next();
+            return ps.executeQuery().next();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
