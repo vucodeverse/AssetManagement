@@ -1,32 +1,251 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/main-layout}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
 <head>
     <title>Warehouse Dashboard</title>
+    <th:block layout:fragment="extra-css">
+        <style>
+            .dashboard-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+                margin-bottom: 32px;
+            }
+
+            .stat-card {
+                background: var(--panel);
+                padding: 24px;
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--border);
+                box-shadow: var(--shadow-sm);
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                transition: var(--transition);
+            }
+
+            .stat-card:hover {
+                transform: translateY(-4px);
+                box-shadow: var(--shadow-md);
+                border-color: var(--accent);
+            }
+
+            .stat-icon {
+                width: 56px;
+                height: 56px;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+            }
+
+            .icon-po { background: #eff6ff; color: #2563eb; }
+            .icon-return { background: #fef2f2; color: #dc2626; }
+            .icon-alloc { background: #f0fdf4; color: #16a34a; }
+
+            .stat-info h3 {
+                font-size: 13px;
+                color: var(--muted);
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 4px;
+            }
+
+            .stat-info .value {
+                font-size: 28px;
+                font-weight: 800;
+                color: var(--text);
+            }
+
+            /* Heatmap Styles */
+            .section-card {
+                background: var(--panel);
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--border);
+                padding: 24px;
+                margin-bottom: 32px;
+            }
+
+            .section-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 24px;
+            }
+
+            .section-header h2 {
+                font-size: 18px;
+                font-weight: 800;
+                color: var(--text);
+            }
+
+            .heatmap-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 16px;
+            }
+
+            .heat-node {
+                padding: 16px;
+                border-radius: 12px;
+                border: 1px solid var(--border);
+                background: var(--bg);
+                position: relative;
+            }
+
+            .heat-node .zone-name {
+                font-weight: 700;
+                font-size: 14px;
+                display: block;
+                margin-bottom: 8px;
+            }
+
+            .heat-node .usage-bar {
+                height: 6px;
+                background: #e2e8f0;
+                border-radius: 3px;
+                overflow: hidden;
+            }
+
+            .heat-node .usage-fill {
+                height: 100%;
+                transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .usage-low { background: #22c55e; }
+            .usage-medium { background: #f59e0b; }
+            .usage-high { background: #ef4444; }
+
+            .heat-node .percentage {
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--muted);
+                margin-top: 6px;
+                display: block;
+            }
+
+            /* Recent Activity Table */
+            .activity-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .activity-table th {
+                text-align: left;
+                padding: 12px 16px;
+                font-size: 12px;
+                color: var(--muted);
+                text-transform: uppercase;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .activity-table td {
+                padding: 16px;
+                border-bottom: 1px solid var(--border);
+                font-size: 14px;
+            }
+
+            .type-badge {
+                padding: 4px 8px;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 700;
+            }
+
+            .type-inbound { background: #dcfce7; color: #166534; }
+            .type-outbound { background: #fee2e2; color: #991b1b; }
+        </style>
+    </th:block>
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="header">
-        <h1>Bảng điều khiển Kho</h1>
+    <div class="section-header">
+        <h1 style="font-size: 24px; font-weight: 800;">Tổng quan Kho vận</h1>
+        <span style="color: var(--muted); font-size: 14px;" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span>
     </div>
 
-    <div class="dashboard-widgets">
-        <div class="widget-card">
-            <h3>Chờ nhập PO</h3>
-            <p th:text="${stats.pendingPO}"></p>
+    <!-- Stats Widgets -->
+    <div class="dashboard-grid">
+        <a th:href="@{/warehouse/inbound/po}" class="stat-card" style="text-decoration: none;">
+            <div class="stat-icon icon-po"><i class="fa-solid fa-cart-shopping"></i></div>
+            <div class="stat-info">
+                <h3>Chờ nhập PO</h3>
+                <div class="value" th:text="${stats.pendingPO}">12</div>
+            </div>
+        </a>
+        <a th:href="@{/warehouse/inbound/return}" class="stat-card" style="text-decoration: none;">
+            <div class="stat-icon icon-return"><i class="fa-solid fa-rotate-left"></i></div>
+            <div class="stat-info">
+                <h3>Chờ thu hồi</h3>
+                <div class="value" th:text="${stats.pendingReturn}">5</div>
+            </div>
+        </a>
+        <a th:href="@{/warehouse/outbound}" class="stat-card" style="text-decoration: none;">
+            <div class="stat-icon icon-alloc"><i class="fa-solid fa-truck-ramp-box"></i></div>
+            <div class="stat-info">
+                <h3>Chờ cấp phát</h3>
+                <div class="value" th:text="${stats.pendingAllocation}">8</div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Capacity Heatmap -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2>Bản đồ sức chứa (Heatmap)</h2>
+            <a th:href="@{/warehouse/zones}" class="btn-text" style="font-size: 13px; font-weight: 600; color: var(--accent);">
+                Chi tiết Zone <i class="fa-solid fa-arrow-right"></i>
+            </a>
         </div>
-        <div class="widget-card">
-            <h3>Chờ nhập Thu hồi</h3>
-            <p th:text="${stats.pendingReturn}"></p>
-        </div>
-        <div class="widget-card">
-            <h3>Chờ xuất Cấp phát</h3>
-            <p th:text="${stats.pendingAllocation}"></p>
+        <div class="heatmap-grid">
+            <div th:each="zone : ${zones}" class="heat-node">
+                <span class="zone-name" th:text="${zone.zoneName}">ZONE A</span>
+                <div class="usage-bar">
+                    <div class="usage-fill" 
+                         th:style="'width: ' + ${zone.usagePercentage} + '%'"
+                         th:classappend="${zone.usagePercentage < 50 ? 'usage-low' : (zone.usagePercentage < 85 ? 'usage-medium' : 'usage-high')}">
+                    </div>
+                </div>
+                <span class="percentage" th:text="${zone.usagePercentage} + '% đã sử dụng'"></span>
+            </div>
         </div>
     </div>
 
-    <div class="heatmap-section">
-        <h2>Bản đồ sức chứa (Heatmap)</h2>
-        <!-- Heatmap implementation -->
+    <!-- Recent Activity -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2>Hoạt động gần đây</h2>
+            <a th:href="@{/warehouse/ledger}" class="btn-text" style="font-size: 13px; font-weight: 600; color: var(--accent);">
+                Xem tất cả <i class="fa-solid fa-list-ul"></i>
+            </a>
+        </div>
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th>Giao diện</th>
+                    <th>Tài sản</th>
+                    <th>Vị trí</th>
+                    <th>Thời gian</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="act : ${recentActivity}">
+                    <td>
+                        <span class="type-badge" 
+                              th:classappend="${act.transactionType == 'INBOUND' ? 'type-inbound' : 'type-outbound'}"
+                              th:text="${act.transactionType}">INBOUND</span>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600;" th:text="${act.assetName}">Dell Latitude</div>
+                        <div style="font-size: 11px; color: var(--muted);" th:text="'AST-' + ${act.assetId}"></div>
+                    </td>
+                    <td th:text="${act.zoneName}">ZONE A-01</td>
+                    <td th:text="${#temporals.format(act.executedAt, 'HH:mm dd/MM')}">10:30 18/03</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 </body>

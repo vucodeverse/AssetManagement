@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+<head>
+    <title>Tra cứu Vị trí Tài sản</title>
+    <th:block layout:fragment="extra-css">
+        <style>
+            .locator-container {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+
+            .search-box-large {
+                background: var(--panel);
+                padding: 32px;
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--border);
+                box-shadow: var(--shadow-md);
+                margin-bottom: 32px;
+                text-align: center;
+            }
+
+            .search-box-large h2 {
+                margin-bottom: 24px;
+                font-size: 20px;
+                font-weight: 700;
+            }
+
+            .input-wrapper {
+                position: relative;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+
+            .input-wrapper i {
+                position: absolute;
+                left: 16px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--muted);
+                font-size: 18px;
+            }
+
+            .search-input {
+                width: 100%;
+                padding: 16px 16px 16px 48px;
+                border: 2px solid var(--border);
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                transition: var(--transition);
+            }
+
+            .search-input:focus {
+                outline: none;
+                border-color: var(--accent);
+                box-shadow: 0 0 0 4px rgba(30, 41, 59, 0.1);
+            }
+
+            .result-card {
+                background: var(--panel);
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--border);
+                padding: 24px;
+                display: none; /* Hidden by default */
+                animation: slideUp 0.4s ease-out;
+            }
+
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .result-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .asset-info-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+            }
+
+            .info-item label {
+                display: block;
+                font-size: 12px;
+                color: var(--muted);
+                font-weight: 700;
+                text-transform: uppercase;
+                margin-bottom: 4px;
+            }
+
+            .info-item span {
+                font-size: 16px;
+                font-weight: 600;
+                color: var(--text);
+            }
+
+            .location-badge {
+                background: var(--accent);
+                color: #fff;
+                padding: 12px 24px;
+                border-radius: var(--radius-md);
+                text-align: center;
+            }
+
+            .location-badge .zone-name {
+                display: block;
+                font-size: 24px;
+                font-weight: 800;
+            }
+
+            .location-badge .label {
+                font-size: 11px;
+                text-transform: uppercase;
+                opacity: 0.8;
+                font-weight: 700;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="locator-container">
+        <div class="search-box-large">
+            <h2><i class="fa-solid fa-magnifying-glass-location"></i> Tìm vị trí tài sản</h2>
+            <form th:action="@{/warehouse/locator}" method="get">
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-barcode"></i>
+                    <input type="text" name="query" id="assetSearchInput" class="search-input" 
+                           th:value="${query}"
+                           placeholder="Quét mã Barcode hoặc nhập ID tài sản..." autocomplete="off">
+                </div>
+            </form>
+            <p style="margin-top: 16px; color: var(--muted); font-size: 14px;">
+                Hệ thống sẽ tự động tìm kiếm ngay khi bạn nhấn Enter.
+            </p>
+        </div>
+
+        <div th:if="${result != null}" id="searchResult" class="result-card" style="display: block;">
+            <div class="result-header">
+                <div>
+                    <span th:text="${result.assetName}" id="resAssetName" style="font-size: 20px; font-weight: 800; color: var(--accent);">Dell Latitude 5420</span>
+                    <div th:text="${result.assetTag}" id="resAssetTag" style="color: var(--muted); font-size: 13px; font-weight: 600;">#AST-2024-001</div>
+                </div>
+                <div class="location-badge">
+                    <span class="label">Vị trí hiện tại</span>
+                    <span th:text="${result.zoneName != null ? result.zoneName : 'Chưa xếp zone'}" id="resZoneName" class="zone-name">ZONE A-01</span>
+                </div>
+            </div>
+            
+            <div class="asset-info-grid">
+                <div class="info-item">
+                    <label>Loại tài sản</label>
+                    <span th:text="${result.assetTypeName}" id="resAssetType">Laptop</span>
+                </div>
+                <div class="info-item">
+                    <label>Trạng thái</label>
+                    <span th:text="${result.status}" id="resStatus">Sẵn sàng sử dụng</span>
+                </div>
+                <div class="info-item">
+                    <label>Ngày nhập kho</label>
+                    <span th:text="${result.inboundDate != null ? #temporals.format(result.inboundDate, 'dd/MM/yyyy') : 'N/A'}" id="resInboundDate">18/03/2024</span>
+                </div>
+                <div class="info-item">
+                    <label>Người cất kho</label>
+                    <span th:text="${result.executedBy != null ? result.executedBy : 'N/A'}" id="resExecutedBy">Admin User</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State / Not Found -->
+        <div th:if="${result == null && query != null && !query.isEmpty()}" id="notFoundState" style="display: block; text-align: center; padding: 48px; color: var(--muted);">
+            <i class="fa-solid fa-box-open" style="font-size: 48px; margin-bottom: 16px;"></i>
+            <p>Không tìm thấy tài sản với mã này.</p>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="extra-js">
+    <!-- No client-side fetch needed, using standard MVC search -->
+</th:block>
+</body>
+</html>

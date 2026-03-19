@@ -1,35 +1,189 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/main-layout}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
 <head>
-    <title>Nhập kho Thu hồi</title>
+    <title>Nhập kho Thu hồi - Procurex</title>
+    <th:block layout:fragment="extra-css">
+        <style>
+            .inbound-wrapper {
+                display: grid;
+                grid-template-columns: 1fr 350px;
+                gap: 24px;
+            }
+
+            .list-card {
+                background: var(--panel);
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--border);
+                overflow: hidden;
+            }
+
+            .list-header {
+                padding: 16px 20px;
+                background: #f8fafc;
+                border-bottom: 1px solid var(--border);
+                font-weight: 700;
+            }
+
+            .return-item {
+                padding: 16px 20px;
+                border-bottom: 1px solid var(--border);
+                cursor: pointer;
+                transition: var(--transition);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .return-item:hover {
+                background: #f1f5f9;
+            }
+
+            .return-item.active {
+                background: #eff6ff;
+                border-left: 4px solid var(--accent);
+            }
+
+            .form-side {
+                background: var(--panel);
+                padding: 24px;
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--border);
+                height: fit-content;
+            }
+
+            .form-control {
+                width: 100%;
+                padding: 10px 14px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 14px;
+                margin-top: 8px;
+            }
+
+            .btn-confirm {
+                width: 100%;
+                padding: 12px;
+                background: #22c55e;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                font-weight: 700;
+                margin-top: 16px;
+                cursor: pointer;
+            }
+
+            .condition-select {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                margin-top: 8px;
+            }
+
+            .cond-option {
+                border: 1px solid var(--border);
+                padding: 8px;
+                border-radius: 6px;
+                text-align: center;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .cond-option.active {
+                border-color: var(--accent);
+                background: #eff6ff;
+                color: var(--accent);
+            }
+        </style>
+    </th:block>
 </head>
 <body>
 <div layout:fragment="content">
-    <h1>Nhập kho Tài sản Thu hồi (Return Receipt)</h1>
-    <div class="form-container">
-        <form th:action="@{/warehouse/inbound/return}" method="post">
-            <div class="form-group">
-                <label>Mã yêu cầu thu hồi (Return Request ID):</label>
-                <input type="number" name="returnRequestId" required>
+    <div style="margin-bottom: 24px;">
+        <h1 style="font-size: 24px; font-weight: 800;">Nhập kho Thu hồi (Return Receipt)</h1>
+        <p style="color: var(--muted);">Kiểm tra tình trạng tài sản thu hồi và xác nhận vị trí lưu kho mới.</p>
+    </div>
+
+    <div class="inbound-wrapper">
+        <div class="list-card">
+            <div class="list-header">Danh sách yêu cầu thu hồi chờ nhập</div>
+            <div th:if="${pendingReturns.isEmpty()}" style="padding: 40px; text-align: center; color: var(--muted);">
+                <p>Không có yêu cầu thu hồi nào cần xử lý.</p>
             </div>
-            <div class="form-group">
-                <label>Mã tài sản (Asset ID):</label>
-                <input type="number" name="assetId" required>
+            <div th:each="ret : ${pendingReturns}" class="return-item"
+                 th:data-id="${ret.request_id}"
+                 th:data-asset-id="${ret.asset_id}"
+                 th:data-asset-name="${ret.asset_name}"
+                 th:data-user-name="${ret.user_name}"
+                 onclick="selectReturn(this)">
+                <div>
+                    <div style="font-weight: 700; color: var(--accent);" th:text="'RT #' + ${ret.request_id}"></div>
+                    <div style="font-size: 13px; color: var(--muted);" th:text="${ret.user_name}"></div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-weight: 600;" th:text="${ret.asset_name}"></div>
+                    <div style="font-size: 12px; color: var(--muted);" th:text="${ret.type_name}"></div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Trạng thái tình trạng:</label>
-                <select name="conditionStatus">
-                    <option value="AVAILABLE">READY_TO_USE (Sẵn sàng sử dụng)</option>
-                    <option value="UNDER_MAINTENANCE">MAINTENANCE (Cần sửa chữa)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Ghi chú:</label>
-                <textarea name="note"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Xác nhận nhập kho</button>
-        </form>
+        </div>
+
+        <div class="form-side">
+            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 20px;">QC & Nhập kho</h3>
+            <form th:action="@{/warehouse/inbound/return}" method="post" id="returnForm">
+                <input type="hidden" name="returnRequestId" id="f_retId">
+                <input type="hidden" name="assetId" id="f_assetId">
+                <input type="hidden" name="conditionStatus" id="f_condition" value="AVAILABLE">
+
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 13px; font-weight: 700;">Tài sản</label>
+                    <input type="text" id="v_assetName" class="form-control" readonly style="background: #f8fafc;">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 13px; font-weight: 700;">Đánh giá tình trạng (QC)</label>
+                    <div class="condition-select">
+                        <div class="cond-option active" onclick="setCondition('AVAILABLE', this)">Sẵn sàng</div>
+                        <div class="cond-option" onclick="setCondition('MAINTENANCE', this)">Cần bảo trì</div>
+                        <div class="cond-option" onclick="setCondition('BROKEN', this)">Hư hỏng</div>
+                        <div class="cond-option" onclick="setCondition('DISPOSED', this)">Thanh lý</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 13px; font-weight: 700;">Ghi chú kiểm tra</label>
+                    <textarea name="note" class="form-control" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn-confirm">
+                    <i class="fa-solid fa-check"></i> Hoàn tất Thu hồi
+                </button>
+            </form>
+        </div>
     </div>
 </div>
+
+<th:block layout:fragment="extra-js">
+    <script>
+        function selectReturn(el) {
+            const retId = el.getAttribute('data-id');
+            const assetId = el.getAttribute('data-asset-id');
+            const assetName = el.getAttribute('data-asset-name');
+
+            document.querySelectorAll('.return-item').forEach(e => e.classList.remove('active'));
+            el.classList.add('active');
+
+            document.getElementById('f_retId').value = retId;
+            document.getElementById('f_assetId').value = assetId;
+            document.getElementById('v_assetName').value = assetName;
+        }
+
+        function setCondition(val, el) {
+            document.querySelectorAll('.cond-option').forEach(opt => opt.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('f_condition').value = val;
+        }
+    </script>
+</th:block>
 </body>
 </html>

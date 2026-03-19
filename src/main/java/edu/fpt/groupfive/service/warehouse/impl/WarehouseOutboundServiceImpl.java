@@ -14,10 +14,13 @@ import edu.fpt.groupfive.model.warehouse.WarehouseZone;
 import edu.fpt.groupfive.service.warehouse.WarehouseOutboundService;
 import edu.fpt.groupfive.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -29,12 +32,13 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     private final AssetPlacementDAO assetPlacementDAO;
     private final WarehouseTransactionDAO warehouseTransactionDAO;
     private final SecurityUtils securityUtils;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
     public void processAllocationOutbound(Integer allocationRequestId, Integer assetId) {
         Integer currentUserId = securityUtils.getCurrentUserId();
-        if (currentUserId == null) currentUserId = 1;
+        if (currentUserId == null) throw new RuntimeException("Unauthorized");
 
         // 1. Validate Asset
         Asset asset = assetDAO.findById(assetId)
@@ -76,5 +80,31 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
 
         zone.setCurrentCapacity(zone.getCurrentCapacity() - capacity.getUnitVolume());
         warehouseZoneDAO.update(zone);
+    }
+
+    @Override
+    public List<Map<String, Object>> getPendingAllocations() {
+        String sql = """
+            SELECT ar.request_id, ar.request_date, u.first_name + ' ' + u.last_name as requester_name,
+                   ad.asset_type_id, at.type_name, 
+                   (ad.quantity_requested - (
+                       SELECT COUNT(*) FROM map_allocation_transactions mat 
+                       JOIN wh_transactions wt ON mat.transaction_id = wt.transaction_id
+                       JOIN asset a ON wt.asset_id = a.asset_id
+                       WHERE mat.allocation_request_id = ar.request_id AND a.asset_type_id = ad.asset_type_id
+                   )) as quantity
+            FROM allocation_request ar
+            JOIN users u ON ar.requester_id = u.user_id
+            JOIN allocation_request_detail ad ON ar.request_id = ad.request_id
+            JOIN asset_type at ON ad.asset_type_id = at.asset_type_id
+            WHERE ar.status = 'APPROVED'
+            AND ad.quantity_requested > (
+                SELECT COUNT(*) FROM map_allocation_transactions mat 
+                JOIN wh_transactions wt ON mat.transaction_id = wt.transaction_id
+                JOIN asset a ON wt.asset_id = a.asset_id
+                WHERE mat.allocation_request_id = ar.request_id AND a.asset_type_id = ad.asset_type_id
+            )
+        """;
+        return jdbcTemplate.queryForList(sql);
     }
 }

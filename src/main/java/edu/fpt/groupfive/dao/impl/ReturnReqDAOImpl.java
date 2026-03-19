@@ -251,7 +251,7 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
     @Override
     public void updateStatus(Integer id, String status, Integer whApprovedBy) {
         String query = """
-                UPDATE allocation_request
+                UPDATE return_request
                 SET status = ?,
                     wh_confirmed_by = ?,
                     wh_confirmed_at = CURRENT_TIMESTAMP,

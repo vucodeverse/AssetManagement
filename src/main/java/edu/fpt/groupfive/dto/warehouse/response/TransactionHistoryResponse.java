@@ -14,4 +14,8 @@ public class TransactionHistoryResponse {
     private String executedByName;
     private LocalDateTime executedAt;
     private String note;
+    
+    // Traceability
+    private Integer referenceId;    // ID of PO, Return, or Allocation
+    private String referenceType;   // "PO", "RETURN", "ALLOCATION"
 }

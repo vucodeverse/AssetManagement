@@ -20,6 +20,12 @@
                 Quản lý Zone
             </a>
         </li>
+        <li th:classappend="${activeMenu == 'capacities' ? 'active' : ''}">
+            <a th:href="@{/warehouse/capacities}">
+                <i class="fa-solid fa-ruler-combined"></i>
+                Định mức Sức chứa
+            </a>
+        </li>
         <li class="menu-divider">Nghiệp vụ</li>
         <li th:classappend="${activeMenu == 'inbound' ? 'active' : ''}">
             <a href="#">

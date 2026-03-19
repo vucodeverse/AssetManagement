@@ -15,7 +15,7 @@ import lombok.Setter;
 @Builder
 @Setter
 public class AssetTypeResponse {
-    private Integer typeId;
+    private Integer assetTypeId;
     private String typeName;
     private String description;
     private AssetTypeClass typeClass;

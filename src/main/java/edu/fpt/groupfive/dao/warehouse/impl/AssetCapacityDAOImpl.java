@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dao.warehouse.impl;
 
 import edu.fpt.groupfive.dao.warehouse.AssetCapacityDAO;
+import edu.fpt.groupfive.dto.warehouse.response.AssetCapacityResponse;
 import edu.fpt.groupfive.model.warehouse.AssetCapacity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,5 +36,25 @@ public class AssetCapacityDAOImpl implements AssetCapacityDAO {
         String sql = "SELECT * FROM wh_asset_capacity WHERE asset_type_id = ?";
         List<AssetCapacity> results = jdbcTemplate.query(sql, rowMapper, assetTypeId);
         return results.stream().findFirst();
+    }
+
+    @Override
+    public List<AssetCapacityResponse> findAllWithAssetType() {
+        String sql = """
+                    SELECT t.asset_type_id, t.type_name, c.category_name, 
+                           COALESCE(cap.unit_volume, 1) as unit_volume
+                    FROM asset_type t
+                    JOIN category c ON t.category_id = c.category_id
+                    LEFT JOIN wh_asset_capacity cap ON t.asset_type_id = cap.asset_type_id
+                    ORDER BY c.category_name, t.type_name
+                """;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            AssetCapacityResponse response = new AssetCapacityResponse();
+            response.setAssetTypeId(rs.getInt("asset_type_id"));
+            response.setTypeName(rs.getString("type_name"));
+            response.setCategoryName(rs.getString("category_name"));
+            response.setUnitVolume(rs.getInt("unit_volume"));
+            return response;
+        });
     }
 }
