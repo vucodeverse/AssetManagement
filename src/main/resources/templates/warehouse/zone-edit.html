@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+
+<head>
+    <title>Cập nhật Zone</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fa-solid fa-pen-to-square" style="margin-right:8px;"></i>
+                Cập nhật Zone: <span th:text="${zone.zoneName}">A-01</span>
+            </h1>
+            <p class="page-subtitle">
+                <a th:href="@{'/warehouse/zones/' + ${zone.zoneId}}"
+                   style="color:#3b82f6; text-decoration:none;">
+                    <i class="fa-solid fa-arrow-left" style="margin-right:4px;"></i>Quay lại chi tiết
+                </a>
+            </p>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+
+        <!-- Flash messages -->
+        <div th:if="${errorMessage}" class="flash-message error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div class="wh-layout">
+
+            <!-- LEFT: Form chỉnh sửa -->
+            <div>
+                <div class="form-panel">
+                    <h3 class="form-panel-title">
+                        <i class="fa-solid fa-pen-to-square" style="margin-right:6px;"></i>Chỉnh sửa thông tin Zone
+                    </h3>
+
+                    <form th:action="@{'/warehouse/zones/' + ${zone.zoneId} + '/update'}"
+                          method="post"
+                          th:object="${editForm}">
+
+                        <div class="form-field">
+                            <label class="form-label" for="zoneName">Tên Zone</label>
+                            <input type="text" id="zoneName" th:field="*{zoneName}"
+                                   class="form-input"
+                                   placeholder="VD: A-01, B-02..."
+                                   autocomplete="off" required/>
+                            <div class="form-error" th:errors="*{zoneName}"></div>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label" for="maxCapacity">Sức chứa Tối đa (Đơn vị)</label>
+                            <input type="number" id="maxCapacity" th:field="*{maxCapacity}"
+                                   class="form-input"
+                                   min="1" required/>
+                            <p class="form-hint">
+                                <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
+                                Giá trị mới không được nhỏ hơn sức chứa hiện tại
+                                (<strong th:text="${zone.currentCapacity} + ' đv'"></strong>).
+                            </p>
+                            <div class="form-error" th:errors="*{maxCapacity}"></div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">
+                                <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                            </button>
+                            <a th:href="@{'/warehouse/zones/' + ${zone.zoneId}}" class="btn-secondary">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RIGHT: Thông tin hiện tại
+            <div>
+                <div class="wh-panel">
+                    <div class="wh-panel-header">
+                        <span class="wh-panel-title"><i class="fa-solid fa-circle-info"></i> Giá trị hiện tại</span>
+                    </div>
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="detail-label">Tên Zone</span>
+                            <span class="detail-value zone-name" th:text="${zone.zoneName}">A-01</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Sức chứa tối đa</span>
+                            <span class="detail-value" th:text="${zone.maxCapacity} + ' đv'">20 đv</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Đang chiếm dụng</span>
+                            <span class="detail-value" th:text="${zone.currentCapacity} + ' đv'">18 đv</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Tình trạng</span>
+                            <span th:switch="${zone.statusFlag}">
+                                <span th:case="'EMPTY'"  class="badge badge-empty">Trống</span>
+                                <span th:case="'IN_USE'" class="badge badge-in-use">Đang dùng</span>
+                                <span th:case="'FULL'"   class="badge badge-full">Đầy</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+        </div>
+    </div>
+
+</th:block>
+</body>
+</html>
