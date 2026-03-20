@@ -8,4 +8,8 @@ public interface AllocationReqDao {
 
     List<AllocationRequest> findAll(Integer departmentId);
     Integer insert(AllocationRequest request);
+
+    List<AllocationRequest> findAll();
+    List<AllocationRequest> findAllPending();
+    List<AllocationRequest> findAllOrderByCreatedAtDesc();
 }

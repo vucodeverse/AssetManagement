@@ -35,5 +35,8 @@ public interface AssetDAO {
     int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate
     );
 
+    List<Asset> findExpiringWarranties(int days);
+
+
 
 }

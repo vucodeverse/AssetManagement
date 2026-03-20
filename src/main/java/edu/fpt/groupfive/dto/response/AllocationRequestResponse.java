@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class AllocationRequestResponse {
     private Integer requestId;
 
