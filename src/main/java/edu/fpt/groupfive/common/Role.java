@@ -8,8 +8,7 @@ public enum Role {
     ASSET_MANAGER("Quản lý tài sản"),
     DEPARTMENT_MANAGER("Trưởng phòng ban"),
     WAREHOUSE_STAFF("Nhân viên kho"),
-    DIRECTOR("Giám đốc"),
-    MANAGER("t");
+    DIRECTOR("Giám đốc");
 
     private final String displayName;
 
@@ -23,7 +22,6 @@ public enum Role {
 
     public static List<Role> getRoles() {
         return List.of(
-                DIRECTOR,
                 DEPARTMENT_MANAGER,
                 ASSET_MANAGER,
                 PURCHASE_STAFF,

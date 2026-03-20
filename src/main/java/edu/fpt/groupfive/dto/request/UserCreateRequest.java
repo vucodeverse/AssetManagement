@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dto.request;
 
 import edu.fpt.groupfive.common.Role;
+import edu.fpt.groupfive.common.UserStatus;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -23,9 +24,16 @@ public class UserCreateRequest {
     private String lastName;
 
     @Email(message = "Định dạng email không hợp lệ")
+    @NotBlank(message = "Email là bắt buộc")
     private String email;
 
+    @Pattern(
+            regexp = "^0\\d{9}$",
+            message = "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0"
+    )
     private String phoneNumber;
+
+    private UserStatus status = UserStatus.ACTIVE;
 
     @NotNull(message = "Vai trò là bắt buộc")
     private Role role;

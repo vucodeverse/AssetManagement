@@ -93,7 +93,7 @@ public class ReturnRequestController {
     }
 
     @PostMapping("/save")
-    public String saveRequest(@ModelAttribute ReturnRequestCreateRequest requestDto,
+    public String saveRequest(@ModelAttribute("requestDto") ReturnRequestCreateRequest requestDto,
                               RedirectAttributes redirectAttributes) {
         try {
             if (requestDto.getDetails() == null || requestDto.getDetails().isEmpty()) {
@@ -134,7 +134,7 @@ public class ReturnRequestController {
     @PostMapping("/update/{id}")
     public String updateRequest(
             @PathVariable("id") Integer id,
-            @ModelAttribute ReturnRequestCreateRequest dto,
+            @ModelAttribute("requestDto") ReturnRequestCreateRequest dto,
             RedirectAttributes redirectAttributes) {
 
         try {

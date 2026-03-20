@@ -100,7 +100,7 @@ public class AllocationRequestController {
 
 
     @PostMapping("/save")
-    public String saveRequest(@ModelAttribute @Valid AllocationRequestCreateRequest requestDto,
+    public String saveRequest(@ModelAttribute("requestDto") @Valid AllocationRequestCreateRequest requestDto,
                               BindingResult bindingResult,
                               Model model,
                               RedirectAttributes redirectAttributes) {
@@ -166,7 +166,7 @@ public class AllocationRequestController {
     @PostMapping("/update/{id}")
     public String updateRequest(
             @PathVariable("id") Integer id,
-            @ModelAttribute AllocationRequestCreateRequest dto,
+            @ModelAttribute("requestDto") @Valid AllocationRequestCreateRequest dto,
             RedirectAttributes redirectAttributes) {
 
         try {
