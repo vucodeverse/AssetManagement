@@ -6,6 +6,8 @@ import edu.fpt.groupfive.dto.response.warehouse.PODetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.POItemDetailDTO;
 import edu.fpt.groupfive.dto.response.warehouse.POResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
+import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
+import edu.fpt.groupfive.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,7 +27,10 @@ public class WarehouseInboundController {
     private static final String ACTIVE_MENU = "activeMenu";
     private static final String MENU_INBOUND = "inbound";
     private static final String PAGE_TITLE = "pageTitle";
+    private static final String PENDING_STATUS = "PENDING";
     private static final String SUMMARY_ATTR = "summary";
+
+    private final OrderService orderService;
 
     // =========================================================
     //  PO LIST  —  GET /wh/inbound/po
@@ -35,7 +40,22 @@ public class WarehouseInboundController {
     public String poListPage(Model model) {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Nhập kho PO - Warehouse");
-        model.addAttribute("pos", buildDummyPOs());
+        
+        // Fetch real pending POs
+        List<PurchaseOrderResponse> pendingOrders = orderService.getOrderWithPending();
+        
+        // Map to POResponseDTO for template compatibility
+        List<POResponseDTO> pos = pendingOrders.stream()
+                .map(order -> POResponseDTO.builder()
+                        .purchaseOrderId(order.getOrderId())
+                        .supplierName(order.getSupplierName())
+                        .totalAmount(order.getTotalAmount() != null ? order.getTotalAmount().longValue() : 0L)
+                        .createdAt(order.getCreatedAt())
+                        .status(order.getOrderStatus())
+                        .build())
+                .toList();
+        
+        model.addAttribute("pos", pos);
         return "warehouse/inbound/po_list";
     }
 
@@ -132,8 +152,8 @@ public class WarehouseInboundController {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Nhập kho Thu hồi - Warehouse");
         model.addAttribute("returns", List.of(
-            HandoverResponseDTO.builder().handoverId(501).fromDepartmentName("Phòng IT").createdAt(LocalDateTime.now().minusHours(5)).status("PENDING").build(),
-            HandoverResponseDTO.builder().handoverId(502).fromDepartmentName("Phòng HR").createdAt(LocalDateTime.now().minusDays(1)).status("PENDING").build()
+            HandoverResponseDTO.builder().handoverId(501).fromDepartmentName("Phòng IT").createdAt(LocalDateTime.now().minusHours(5)).status(PENDING_STATUS).build(),
+            HandoverResponseDTO.builder().handoverId(502).fromDepartmentName("Phòng HR").createdAt(LocalDateTime.now().minusDays(1)).status(PENDING_STATUS).build()
         ));
         return "warehouse/inbound/return_list";
     }
@@ -147,7 +167,7 @@ public class WarehouseInboundController {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Chi tiết Thu hồi #" + handoverId);
         model.addAttribute("handover", HandoverDetailResponseDTO.builder()
-            .handoverId(handoverId).fromDepartmentName("Phòng IT").status("PENDING")
+            .handoverId(handoverId).fromDepartmentName("Phòng IT").status(PENDING_STATUS)
             .items(List.of(
                 HandoverDetailResponseDTO.HandoverItemDTO.builder().assetId(10).assetCode("AST-991").assetTypeName("Laptop Dell").isScanned(false).build(),
                 HandoverDetailResponseDTO.HandoverItemDTO.builder().assetId(11).assetCode("AST-992").assetTypeName("Chuột Logitech").isScanned(false).build()
@@ -173,20 +193,6 @@ public class WarehouseInboundController {
     // =========================================================
     //  DUMMY DATA
     // =========================================================
-
-    private List<POResponseDTO> buildDummyPOs() {
-        return List.of(
-            POResponseDTO.builder()
-                .purchaseOrderId(101).supplierName("Phong Vũ IT").totalAmount(155000000L)
-                .createdAt(LocalDateTime.now().minusDays(2)).status("APPROVED").build(),
-            POResponseDTO.builder()
-                .purchaseOrderId(102).supplierName("Trần Anh Computer").totalAmount(120000000L)
-                .createdAt(LocalDateTime.now().minusDays(5)).status("APPROVED").build(),
-            POResponseDTO.builder()
-                .purchaseOrderId(103).supplierName("Hà Nội Computer").totalAmount(45000000L)
-                .createdAt(LocalDateTime.now().minusDays(1)).status("APPROVED").build()
-        );
-    }
 
     private PODetailResponseDTO buildDummyPODetail(Integer poId) {
         if (poId == 101) {

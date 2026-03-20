@@ -185,7 +185,8 @@ public class OrderServiceImpl implements OrderService {
         // update quotation sang APPROVED
         quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED, null);
 
-        if(checkQuantityOfPO(quotation.getPurchaseId())) purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
+        if (checkQuantityOfPO(quotation.getPurchaseId()))
+            purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
         return orderId;
     }
 
@@ -300,7 +301,8 @@ public class OrderServiceImpl implements OrderService {
                         .discountRate(pod.getDiscountRate())
                         .quantity(pod.getQuantity())
                         .assetTypeName(map.getOrDefault(pod.getAssetTypeId(), "Không có loại tài sản"))
-                        .build()).toList();
+                        .build())
+                .toList();
     }
 
     @Override
@@ -308,14 +310,21 @@ public class OrderServiceImpl implements OrderService {
 
         Map<Integer, String> map = userService.getUserIdToUsernameMap();
 
-        return (List<PurchaseOrderResponse>) orderDAO.findRecent().stream().filter(o -> OrderStatus.PENDING == o.getOrderStatus()).map(o -> PurchaseOrderResponse.builder()
-                        .orderId(o.getId())
+        return  orderDAO.findRecent().stream()
+                .filter(o -> OrderStatus.PENDING == o.getOrderStatus())
+                .map(o -> mapToPoResponse(o, map)).toList();
+    }
+
+    private static PurchaseOrderResponse mapToPoResponse(Order o, Map<Integer, String> map) {
+        return PurchaseOrderResponse.builder()
+                .orderId(o.getId())
                 .orderNote(o.getOrderNote())
                 .createdAt(o.getCreatedAt())
                 .orderStatus(o.getOrderStatus().name())
                 .purchaseId(o.getPurchaseId())
                 .approvedByName(map.getOrDefault(o.getUpdatedBy(), "Hiện chưa được chấp nhận"))
-                .totalAmount(o.getTotalAmount())).toList();
+                .totalAmount(o.getTotalAmount())
+                .build();
     }
 
     @Override
@@ -325,16 +334,16 @@ public class OrderServiceImpl implements OrderService {
         orderDAO.updateStatus(orderId, orderStatus);
     }
 
-    private Boolean checkQuantityOfPO(Integer purchaseId){
+    private Boolean checkQuantityOfPO(Integer purchaseId) {
 
         List<PurchaseDetail> purchaseDetails = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
 
         Map<Integer, Integer> ordered = orderDAO.getOrderedQuantityByPurchaseDetailId(purchaseDetails);
 
-        for(PurchaseDetail pd : purchaseDetails){
+        for (PurchaseDetail pd : purchaseDetails) {
             int orderedQty = ordered.getOrDefault(pd.getId(), 0);
 
-            if(orderedQty < pd.getQuantity()){
+            if (orderedQty < pd.getQuantity()) {
                 return false;
             }
         }
