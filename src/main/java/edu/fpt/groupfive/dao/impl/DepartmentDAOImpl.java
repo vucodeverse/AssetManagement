@@ -6,10 +6,7 @@ import edu.fpt.groupfive.model.Department;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +30,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
             preparedStatement.setString(1, department.getDepartmentName());
             preparedStatement.setTimestamp(2, Timestamp.valueOf(department.getCreatedDate()));
             preparedStatement.setString(3, department.getStatus());
-            preparedStatement.setObject(4, department.getManagerId());
+            preparedStatement.setObject(4, department.getManagerUserId());
 
             preparedStatement.executeUpdate();
         } catch (Exception e) {
@@ -58,7 +55,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
             preparedStatement.setString(1, department.getDepartmentName());
             preparedStatement.setTimestamp(2, Timestamp.valueOf(department.getUpdatedDate()));
             preparedStatement.setString(3, department.getStatus());
-            preparedStatement.setObject(4, department.getManagerId());
+            preparedStatement.setObject(4, department.getManagerUserId());
             preparedStatement.setInt(5, department.getDepartmentId());
 
             preparedStatement.executeUpdate();
@@ -89,7 +86,38 @@ public class DepartmentDAOImpl implements DepartmentDAO {
 
     @Override
     public Optional<Department> findById(Integer departmentId) {
-        return Optional.empty();
+        System.out.println("DepartmentDAO.findById called with ID: " + departmentId);
+
+        if (departmentId == null) {
+            System.out.println("Department ID is null");
+            return Optional.empty();
+        }
+
+        String query = """
+                SELECT * FROM Departments WHERE department_id = ? AND status = 'ACTIVE'
+                """;
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setInt(1, departmentId);
+
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                if (rs.next()) {
+                    Department department = mapResultSetToDepartment(rs);
+                    System.out.println("Found department: " + department.getDepartmentName());
+                    return Optional.of(department);
+                } else {
+                    System.out.println("No department found with ID: " + departmentId);
+                    return Optional.empty();
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error finding department by ID: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error finding department by ID: " + departmentId, e);
+        }
     }
 
     @Override
@@ -109,7 +137,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
                 d.setDepartmentId(rs.getInt("department_id"));
                 d.setDepartmentName(rs.getString("department_name"));
                 d.setStatus(rs.getString("status"));
-                d.setManagerId(rs.getInt("manager_user_id"));
+                d.setManagerUserId(rs.getInt("manager_user_id"));
 
                 Timestamp created = rs.getTimestamp("created_date");
                 Timestamp updated = rs.getTimestamp("updated_date");
@@ -138,5 +166,20 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    private Department mapResultSetToDepartment(ResultSet rs) throws SQLException {
+        Department d = new Department();
+        d.setDepartmentId(rs.getInt("department_id"));
+        d.setDepartmentName(rs.getString("department_name"));
+        d.setStatus(rs.getString("status"));
+        d.setManagerUserId(rs.getInt("manager_user_id"));
+
+        Timestamp created = rs.getTimestamp("created_date");
+        Timestamp updated = rs.getTimestamp("updated_date");
+
+        if (created != null) d.setCreatedDate(created.toLocalDateTime());
+        if (updated != null) d.setUpdatedDate(updated.toLocalDateTime());
+
+        return d;
     }
 }

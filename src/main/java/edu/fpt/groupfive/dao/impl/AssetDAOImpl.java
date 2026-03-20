@@ -1,0 +1,664 @@
+package edu.fpt.groupfive.dao.impl;
+
+import edu.fpt.groupfive.common.AssetStatus;
+import edu.fpt.groupfive.dao.AssetDAO;
+import edu.fpt.groupfive.dto.request.search.AssetSearchCriteria;
+import edu.fpt.groupfive.dto.response.AssetDetailResponse;
+import edu.fpt.groupfive.model.Asset;
+import edu.fpt.groupfive.util.config.database.DatabaseConfig;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+@RequiredArgsConstructor
+public class AssetDAOImpl implements AssetDAO {
+
+    private final DatabaseConfig databaseConfig;
+
+    @Override
+    public void insert(Asset asset) {
+
+        String sql = """
+                    INSERT INTO asset
+                    (asset_name,
+                     purchase_order_detail_id,
+                     current_status,
+                     warranty_start_date,
+                     warranty_end_date,
+                     original_cost,
+                     asset_type_id,
+                     acquisition_date)
+                    VALUES (?,?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, asset.getAssetName());
+            ps.setInt(2, asset.getPurchaseOrderDetailId());
+            ps.setString(3, asset.getCurrentStatus().name());
+
+            setDate(ps, 4, asset.getWarrantyStartDate());
+            setDate(ps, 5, asset.getWarrantyEndDate());
+
+            setBigDecimal(ps, 6, asset.getOriginalCost());
+
+            ps.setInt(7, asset.getAssetTypeId());
+
+            setDate(ps, 8, asset.getAcquisitionDate());
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi không tạo được tài sản.", e);
+        }
+    }
+
+    @Override
+    public void update(Asset asset) {
+
+        String sql = """
+                    UPDATE asset
+                    SET asset_name = ?,
+                        purchase_order_detail_id=?,
+                        warranty_start_date = ?,
+                        warranty_end_date = ?,
+                        original_cost = ?,
+                        asset_type_id = ?,
+                        current_status=?,
+                        acquisition_date = ?
+                    WHERE asset_id = ?
+                """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, asset.getAssetName());
+            ps.setInt(2, asset.getPurchaseOrderDetailId());
+
+            setDate(ps, 3, asset.getWarrantyStartDate());
+            setDate(ps, 4, asset.getWarrantyEndDate());
+            setBigDecimal(ps, 5, asset.getOriginalCost());
+
+            ps.setInt(6, asset.getAssetTypeId());
+            ps.setString(7, asset.getCurrentStatus().name());
+            setDate(ps, 8, asset.getAcquisitionDate());
+
+            ps.setInt(9, asset.getAssetId());
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi không cập nhật được tài sản", e);
+        }
+    }
+
+    @Override
+    public void delete(Integer id) {
+
+        String sql = "DELETE FROM asset WHERE asset_id = ?";
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Xóa tài sản thất bại", e);
+        }
+    }
+    @Override
+    public List<Integer> findValidAssetIds(List<Integer> assetIds, int departmentId) {
+
+        if (assetIds == null || assetIds.isEmpty()) {
+            return List.of();
+        }
+
+        String placeholders = assetIds.stream()
+                .map(id -> "?")
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+
+        String sql = """
+        SELECT asset_id
+        FROM asset
+        WHERE department_id = ?
+        AND asset_id IN (%s)
+        """.formatted(placeholders);
+
+        List<Integer> validIds = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, departmentId);
+
+            int index = 2;
+            for (Integer id : assetIds) {
+                ps.setInt(index++, id);
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                validIds.add(rs.getInt("asset_id"));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi kiểm tra asset hợp lệ", e);
+        }
+
+        return validIds;
+    }
+
+    @Override
+    public void updateAssetDepartment(List<Integer> assetIds, int newDepartmentId) {
+
+        if (assetIds == null || assetIds.isEmpty()) {
+            throw new IllegalArgumentException("Danh sách asset không hợp lệ");
+        }
+        String placeholders = assetIds.stream()
+                .map(id -> "?")
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+
+        String sql = """
+        UPDATE asset
+        SET department_id = ?
+        WHERE asset_id IN (%s)
+        """.formatted(placeholders);
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, newDepartmentId);
+
+            int index = 2;
+            for (Integer id : assetIds) {
+                ps.setInt(index++, id);
+            }
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi update department cho asset", e);
+        }
+    }
+    //  find asset by id
+    @Override
+    public Optional<Asset> findById(Integer id) {
+
+        String sql = """
+                    SELECT a.*,
+                           t.type_name
+                    FROM asset a
+                    LEFT JOIN asset_type t
+                        ON a.asset_type_id = t.asset_type_id
+                    WHERE a.asset_id = ?
+                """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapResultSet(rs));
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Tìm tài sản với id = " + id + " thất bại.", e);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public List<Asset> findAll() {
+
+        String sql = """
+    SELECT a.asset_id,
+           a.asset_name,
+           a.asset_type_id,
+           a.purchase_order_detail_id,
+           a.current_status,
+           a.original_cost,
+           a.department_id,
+           a.acquisition_date,
+           a.in_service_date,
+           a.warranty_start_date,
+           a.warranty_end_date,
+           t.type_name AS asset_type_name
+    FROM asset a
+    LEFT JOIN asset_type t ON a.asset_type_id = t.asset_type_id
+""";
+
+        List<Asset> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapResultSet(rs));
+            }
+        } catch (SQLException e) {
+            System.out.println("Lỗi khi lấy danh sách tài sản. SQL: {}\nMessage: {}" + sql + e.getMessage() + e);
+            throw new RuntimeException("Tìm danh sách tài sản thất bại", e);
+        }
+
+        return list;
+    }
+
+
+
+    @Override
+    public Optional<AssetDetailResponse> findDetailById(Integer id) {
+
+        String sql = """
+                SELECT 
+                    a.*,
+                    t.type_name,
+                    d.department_name,
+                    po.purchase_order_id,
+                    po.order_date,
+                    s.supplier_name
+                FROM asset a
+                
+                LEFT JOIN asset_type t
+                    ON a.asset_type_id = t.asset_type_id
+                
+                LEFT JOIN departments d
+                    ON a.department_id = d.department_id
+                
+                LEFT JOIN purchase_order_details pod
+                    ON a.purchase_order_detail_id = pod.purchase_order_detail_id
+                
+                LEFT JOIN purchase_orders po
+                    ON pod.purchase_order_id = po.purchase_order_id
+                
+                LEFT JOIN supplier s
+                    ON po.supplier_id = s.supplier_id
+                
+                WHERE a.asset_id = ?
+                """;
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    AssetDetailResponse dto = new AssetDetailResponse();
+                    dto.setAssetId(rs.getInt("asset_id"));
+                    dto.setAssetName(rs.getString("asset_name"));
+
+                    dto.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
+                    dto.setOriginalCost(rs.getBigDecimal("original_cost"));
+
+                    dto.setAssetTypeName(rs.getString("type_name"));
+
+                    dto.setDepartmentName(rs.getString("department_name"));
+
+                    dto.setAcquisitionDate(toLocalDate(rs.getDate("acquisition_date")));
+                    dto.setInServiceDate(toLocalDate(rs.getDate("in_service_date")));
+                    dto.setWarrantyStartDate(toLocalDate(rs.getDate("warranty_start_date")));
+                    dto.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
+
+
+                    dto.setPurchaseOrderId(rs.getInt("purchase_order_id"));
+                    dto.setOrderDate(toLocalDate(rs.getDate("order_date")));
+                    dto.setSupplierName(rs.getString("supplier_name"));
+                    return Optional.of(dto);
+
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi lấy chi tiết tài sản", e);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public List<Asset> searchAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate, String direction, int offset, int pageSize) {
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT a.*, t.type_name
+        FROM asset a
+        LEFT JOIN asset_type t
+            ON a.asset_type_id = t.asset_type_id
+        WHERE 1=1
+        """);
+
+        if(keyword!=null &&!keyword.isBlank()){
+            sql.append(" and a.asset_name like ? ");
+        }
+        if(status!=null){
+            sql.append(" and a.current_status = ? ");
+        }
+
+        if (fromDate != null) {
+            sql.append(" AND a.acquisition_date >= ? ");
+        }
+
+        if (toDate != null) {
+            sql.append(" AND a.acquisition_date <= ? ");
+        }
+
+
+        //sort
+        if (direction != null && !direction.isBlank()) {
+
+            sql.append(" order by a.original_cost ");
+
+            if ("DESC".equalsIgnoreCase(direction)) {
+                sql.append(" DESC ");
+            } else {
+                sql.append(" ASC ");
+            }
+
+        } else {
+
+            sql.append(" order by a.asset_id ");
+
+        }
+
+        sql.append(" offset ? rows fetch next ? rows only ");
+        List<Asset> assets= new ArrayList<>();
+        try(Connection conn = databaseConfig.getConnection();
+            PreparedStatement ps=conn.prepareStatement(sql.toString())){
+
+            int index=1;
+
+            if(keyword !=null && !keyword.isBlank()){
+                ps.setString(index++, "%" +keyword +"%");
+            }
+
+            if(status!=null){
+                ps.setString(index++, status.name());
+            }
+
+            if (fromDate != null) {
+                ps.setDate(index++, Date.valueOf(fromDate));
+            }
+
+            if (toDate != null) {
+                ps.setDate(index++, Date.valueOf(toDate));
+            }
+
+            ps.setInt(index++, offset);
+            ps.setInt(index, pageSize);
+
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                Asset asset= mapResultSet(rs);
+                assets.add(asset);
+
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return assets;
+    }
+
+    @Override
+    public List<Asset> searchAssets(
+            AssetSearchCriteria criteria,
+            int offset,
+            int pageSize
+    ) {
+        StringBuilder sql = new StringBuilder("""
+        SELECT a.*, t.type_name
+        FROM asset a
+        LEFT JOIN asset_type t
+            ON a.asset_type_id = t.asset_type_id
+        WHERE 1=1
+        """);
+
+        if (criteria.getDepartmentId() != null) {
+            sql.append(" AND a.department_id = ? ");
+        }
+        if (criteria.getKeyword() != null && !criteria.getKeyword().isBlank()) {
+            sql.append(" AND a.asset_name LIKE ? ");
+        }
+        if (criteria.getStatus() != null) {
+            sql.append(" AND a.current_status = ? ");
+        }
+        if (criteria.getAcquisitionFrom() != null) {
+            sql.append(" AND a.acquisition_date >= ? ");
+        }
+        if (criteria.getAcquisitionTo() != null) {
+            sql.append(" AND a.acquisition_date <= ? ");
+        }
+
+        // sort
+        if (criteria.getDirection() != null && !criteria.getDirection().isBlank()) {
+            sql.append(" ORDER BY a.original_cost ");
+            if ("DESC".equalsIgnoreCase(criteria.getDirection())) {
+                sql.append(" DESC ");
+            } else {
+                sql.append(" ASC ");
+            }
+        } else {
+            sql.append(" ORDER BY a.asset_id ");
+        }
+
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ");
+
+        List<Asset> assets = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (criteria.getDepartmentId() != null) {
+                ps.setInt(index++, criteria.getDepartmentId());
+            }
+            if (criteria.getKeyword() != null && !criteria.getKeyword().isBlank()) {
+                ps.setString(index++, "%" + criteria.getKeyword() + "%");
+            }
+            if (criteria.getStatus() != null) {
+                ps.setString(index++, criteria.getStatus().name());
+            }
+            if (criteria.getAcquisitionFrom() != null) {
+                ps.setDate(index++, Date.valueOf(criteria.getAcquisitionFrom()));
+            }
+            if (criteria.getAcquisitionTo() != null) {
+                ps.setDate(index++, Date.valueOf(criteria.getAcquisitionTo()));
+            }
+
+            ps.setInt(index++, offset);
+            ps.setInt(index, pageSize);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                assets.add(mapResultSet(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Search assets failed", e);
+        }
+
+        return assets;
+    }
+
+    @Override
+    public int countAssets(String keyword, AssetStatus status,  LocalDate fromDate, LocalDate toDate) {
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT COUNT(*)
+        FROM asset a
+        WHERE 1=1
+        """);
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append(" AND a.asset_name LIKE ? ");
+        }
+
+        if (status != null) {
+            sql.append(" AND a.current_status = ? ");
+        }
+
+        if (fromDate != null) {
+            sql.append(" AND a.acquisition_date >= ?");
+        }
+
+        if (toDate != null) {
+            sql.append(" AND a.acquisition_date <= ?");
+        }
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (keyword != null && !keyword.isBlank()) {
+                ps.setString(index++, "%" + keyword + "%");
+            }
+
+            if (status != null) {
+                ps.setString(index++, status.name());
+            }
+
+            if (fromDate != null) {
+                ps.setDate(index++, Date.valueOf(fromDate));
+            }
+
+            if (toDate != null) {
+                ps.setDate(index++, Date.valueOf(toDate));
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+    }
+
+    @Override
+    public List<Asset> findByDepartmentId(Integer departmentId) {
+
+        String sql = """
+                SELECT a.*,
+                       t.type_name
+                FROM asset a
+                LEFT JOIN asset_type t
+                    ON a.asset_type_id = t.asset_type_id
+                WHERE a.department_id = ?
+                """;
+
+        List<Asset> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, departmentId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+                    list.add(mapResultSet(rs));
+                }
+
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Tìm tài sản theo department thất bại", e);
+        }
+
+        return list;
+    }
+
+    private Asset mapResultSet(ResultSet rs) throws SQLException {
+        Asset asset = new Asset();
+
+        asset.setAssetId(rs.getInt("asset_id"));
+        asset.setAssetName(rs.getString("asset_name"));
+
+        int podId = rs.getInt("purchase_order_detail_id");
+        asset.setPurchaseOrderDetailId(rs.wasNull() ? null : podId);
+
+        String status = rs.getString("current_status");
+        if (status != null && !status.isBlank()) {
+            try {
+                asset.setCurrentStatus(AssetStatus.valueOf(status.trim().toUpperCase()));
+            } catch (IllegalArgumentException ex) {
+                asset.setCurrentStatus(null);
+            }
+        } else {
+            asset.setCurrentStatus(null);
+        }
+
+        asset.setOriginalCost(rs.getBigDecimal("original_cost"));
+
+        int typeId = rs.getInt("asset_type_id");
+        asset.setAssetTypeId(rs.wasNull() ? null : typeId);
+
+        asset.setAssetTypeName(rs.getString("asset_type_name"));
+
+        Date wStart = rs.getDate("warranty_start_date");
+        asset.setWarrantyStartDate(wStart == null ? null : wStart.toLocalDate());
+
+        Date wEnd = rs.getDate("warranty_end_date");
+        asset.setWarrantyEndDate(wEnd == null ? null : wEnd.toLocalDate());
+
+        Date acq = rs.getDate("acquisition_date");
+        asset.setAcquisitionDate(acq == null ? null : acq.toLocalDate());
+
+        Date inService = rs.getDate("in_service_date");
+        asset.setInServiceDate(inService == null ? null : inService.toLocalDate());
+
+        return asset;
+    }
+
+    private void setDate(PreparedStatement ps, int index, java.time.LocalDate date)
+            throws SQLException {
+        if (date != null) {
+            ps.setDate(index, Date.valueOf(date));
+        } else {
+            ps.setNull(index, Types.DATE);
+        }
+    }
+
+    private void setBigDecimal(PreparedStatement ps, int index, BigDecimal value)
+            throws SQLException {
+        if (value != null) {
+            ps.setBigDecimal(index, value);
+        } else {
+            ps.setNull(index, Types.NUMERIC);
+        }
+    }
+
+    private java.time.LocalDate toLocalDate(Date date) {
+        return date != null ? date.toLocalDate() : null;
+    }
+
+
+
+
+
+
+
+
+}

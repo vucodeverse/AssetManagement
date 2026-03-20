@@ -1,27 +1,22 @@
 package edu.fpt.groupfive.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
-
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class Department {
-    private Integer departmentId;
-
+    private int departmentId    ;
     private String departmentName;
-
-    private LocalDateTime createdDate;
-
-    private LocalDateTime updatedDate;
-
-    // ACTIVE or INACTIVE
+    private Integer managerUserId;
     private String status;
-
-    //Foreign user_id of Table Users
-    private Integer managerId;
-
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
+    private String description;
 }

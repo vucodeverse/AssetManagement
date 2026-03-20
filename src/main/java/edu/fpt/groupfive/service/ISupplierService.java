@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.service;
 
 import edu.fpt.groupfive.dto.request.SupplierCreateRequest;
-import edu.fpt.groupfive.dto.request.SupplierSearchCriteria;
+import edu.fpt.groupfive.dto.request.search.SupplierSearchCriteria;
 import edu.fpt.groupfive.dto.request.SupplierUpdateRequest;
 import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.SupplierResponse;

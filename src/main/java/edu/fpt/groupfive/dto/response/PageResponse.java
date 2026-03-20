@@ -34,6 +34,4 @@ public class PageResponse<T> {
         return data.isEmpty();
     }
 
-
-
 }

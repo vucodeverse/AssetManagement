@@ -1,14 +1,13 @@
 package edu.fpt.groupfive.util.config.web;
 
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
-import edu.fpt.groupfive.util.config.auth.SecurityConfig;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class WebInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[]{RootConfig.class, DatabaseConfig.class, SecurityConfig.class};
+        return new Class[]{RootConfig.class, DatabaseConfig.class};
     }
 
     @Override

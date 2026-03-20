@@ -12,20 +12,22 @@ import java.time.LocalDateTime;
 public class UserResponse {
     private Integer userId;
 
-    private String username;
+//    private String username;
 
     private String fullName;
+//
+//    private String phoneNumber;
+//
+//    private String email;
+//
+//    private String status;
+//
+//    private String role;
+//
+//    private LocalDateTime createdDate;
+//
+//    //Foreign key of table Department
+//    private Integer departmentId;
 
-    private String phoneNumber;
 
-    private String email;
-
-    private String status;
-
-    private String role;
-
-    private LocalDateTime createdDate;
-
-    //Foreign key of table Department
-    private Integer departmentId;
 }

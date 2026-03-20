@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Danh sách báo cáo QC</title>
+</head>
+<body>
+<h2>Danh sách báo cáo QC</h2>
+
+<!-- Hiển thị thông báo thành công -->
+<div th:if="${message}" style="color:green;">
+    <p th:text="${message}"></p>
+</div>
+
+<!-- Hiển thị thông báo lỗi -->
+<div th:if="${error}" style="color:red;">
+    <p th:text="${error}"></p>
+</div>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Tài sản</th>
+        <th>Trạng thái</th>
+        <th>Người kiểm tra</th>
+        <th>Ngày QC</th>
+        <th>Ghi chú</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="report : ${reports}">
+        <td th:text="${report.reportId}"></td>
+        <td th:text="${report.assetId}"></td>
+        <td th:text="${report.status}"></td>
+        <td th:text="${report.inspectedBy}"></td>
+        <td th:text="${#temporals.format(report.qcDate, 'dd/MM/yyyy HH:mm')}"></td>
+        <td th:text="${report.note}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<a th:href="@{/qc-reports/create}">Tạo báo cáo QC mới</a>
+</body>
+</html>

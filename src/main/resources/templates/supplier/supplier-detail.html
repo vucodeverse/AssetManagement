@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-
     <meta charset="UTF-8">
     <title>Chi tiết nhà cung cấp</title>
 
-    <link rel="stylesheet" th:href="@{/css/detail.css}">
+    <link rel="stylesheet" th:href="@{/css/supplier/detail.css}">
     <script src="https://unpkg.com/lucide@latest"></script>
-
 </head>
 
 <body>
@@ -19,13 +17,12 @@
     </div>
     <div class="topbar-right">
         <div class="avatar">
-            <i data-lucide="user" style="width:18px;height:18px;"></i>
+            <i data-lucide="user"></i>
         </div>
     </div>
 </header>
 
 <div class="detail-container"
-     id="detailContainer"
      th:classappend="${mode == 'edit'} ? ' editing'">
 
     <!-- BREADCRUMB -->
@@ -35,8 +32,7 @@
         <span>Chi tiết nhà cung cấp</span>
     </nav>
 
-
-    <!-- FLASH MESSAGE -->
+    <!-- MESSAGE -->
     <div th:if="${message}" class="alert success">
         <span th:text="${message}"></span>
     </div>
@@ -45,143 +41,74 @@
         <span th:text="${error}"></span>
     </div>
 
-
+    <!-- ================= UPDATE FORM ================= -->
     <form th:action="@{/suppliers/{code}(code=${supplierResponse.supplierCode})}"
           th:object="${supplierUpdateRequest}"
-          method="post"
-          id="supplierForm">
+          method="post">
 
-
-        <!-- HEADER CARD -->
+        <!-- HEADER -->
         <div class="header-card">
 
             <div class="supplier-name">
-
-                <h1 class="view-field"
-                    th:text="*{supplierName}">
-                </h1>
-
-                <input type="text"
-                       th:field="*{supplierName}"
-                       class="edit-field supplier-name-input">
-
+                <h1 class="view-field" th:text="*{supplierName}"></h1>
+                <input type="text" th:field="*{supplierName}" class="edit-field">
             </div>
 
             <div class="supplier-meta">
-
                 <div>
                     Mã NCC:
                     <strong th:text="${supplierResponse.supplierCode}"></strong>
                 </div>
 
-                <div class="updated-time">
+                <div>
                     Cập nhật:
                     <span th:text="${#temporals.format(supplierResponse.updatedDate,'dd/MM/yyyy HH:mm')}"></span>
                 </div>
-
             </div>
 
             <span class="status-badge"
                   th:classappend="${supplierResponse.status} == 'ACTIVE' ? ' status-active' : ' status-inactive'"
                   th:text="${supplierResponse.status} == 'ACTIVE' ? 'ĐANG HOẠT ĐỘNG' : 'NGỪNG HOẠT ĐỘNG'">
             </span>
-
         </div>
 
-
-        <!-- DEACTIVATE CONFIRM CARD -->
-        <div id="deactivateConfirm"
-             class="card deactivate-card"
-        style="display: none">
-
-            <h3 class="danger-title">Xác nhận ngừng hoạt động</h3>
-
-            <p class="danger-text">
-                Bạn có chắc chắn muốn ngừng hoạt động nhà cung cấp này?
-            </p>
-
-            <div class="confirm-actions">
-
-                <button type="submit"
-                        class="btn btn-danger"
-                        th:formaction="@{/suppliers/{code}/deactivate(code=${supplierResponse.supplierCode})}"
-                        formmethod="post">
-                    Xác nhận ngừng hoạt động
-                </button>
-
-                <button type="button"
-                        class="btn btn-secondary"
-                        onclick="hideDeactivateConfirm()">
-                    Hủy
-                </button>
-
-                <div th:if="${supplierResponse.status == 'INACTIVE'}"
-                     class="inactive-text">
-                    Nhà cung cấp đã ngừng hoạt động.
-                </div>
-
-            </div>
-
-        </div>
-        <!-- INFORMATION CARD -->
+        <!-- INFO -->
         <div class="card">
-            <h3 class="section-title">Thông tin chung</h3>
+            <h3>Thông tin chung</h3>
+
             <div class="detail-grid">
-                <div class="form-group">
 
+                <div class="form-group">
                     <label>Mã số thuế</label>
-
                     <span class="view-field" th:text="*{taxCode}"></span>
-
-                    <input type="text"
-                           th:field="*{taxCode}"
-                           class="edit-field">
-
+                    <input type="text" th:field="*{taxCode}" class="edit-field">
                 </div>
-                <div class="form-group">
 
+                <div class="form-group">
                     <label>Email</label>
-
                     <span class="view-field" th:text="*{email}"></span>
-
-                    <input type="email"
-                           th:field="*{email}"
-                           class="edit-field">
-
+                    <input type="email" th:field="*{email}" class="edit-field">
                 </div>
+
                 <div class="form-group">
-
-                    <label>Số điện thoại</label>
-
+                    <label>SĐT</label>
                     <span class="view-field" th:text="*{phoneNumber}"></span>
-
-                    <input type="text"
-                           th:field="*{phoneNumber}"
-                           class="edit-field">
-
+                    <input type="text" th:field="*{phoneNumber}" class="edit-field">
                 </div>
+
                 <div class="form-group full-width">
-
                     <label>Địa chỉ</label>
-
-                    <span class="view-field"
-                          th:text="*{address}">
-                    </span>
-
-                    <textarea class="edit-field"
-                              th:field="*{address}"
-                              rows="3"
-                              placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố...">
-                    </textarea>
+                    <span class="view-field" th:text="*{address}"></span>
+                    <textarea th:field="*{address}" class="edit-field"></textarea>
                 </div>
+
             </div>
         </div>
-        <!-- ACTION BAR -->
+
+        <!-- ACTION -->
         <div class="action-bar">
 
-            <a th:href="@{/suppliers}" class="btn btn-secondary">
-                Quay lại
-            </a>
+            <a th:href="@{/suppliers}" class="btn btn-secondary">Quay lại</a>
 
             <div class="action-right">
 
@@ -203,27 +130,58 @@
                     Lưu thay đổi
                 </button>
 
+                <!-- OPEN MODAL -->
                 <button type="button"
                         class="btn btn-danger"
-                        onclick="showDeactivateConfirm()"
+                        onclick="openModal()"
                         th:if="${supplierResponse.status == 'ACTIVE'}">
                     Ngừng hoạt động
                 </button>
+
             </div>
         </div>
+
     </form>
+
+</div>
+
+<!-- ================= DEACTIVATE MODAL ================= -->
+<div id="modal" class="modal">
+
+    <div class="modal-content">
+
+        <h3>Xác nhận</h3>
+        <p>Bạn có chắc chắn muốn ngừng hoạt động?</p>
+
+        <div class="modal-actions">
+
+            <!-- FORM riêng -->
+            <form th:action="@{/suppliers/{code}/deactivate(code=${supplierResponse.supplierCode})}"
+                  method="post">
+
+                <button type="submit" class="btn btn-danger">
+                    Xác nhận
+                </button>
+            </form>
+
+            <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+
+        </div>
+    </div>
+
 </div>
 
 <script>
     lucide.createIcons()
 
-    function showDeactivateConfirm() {
-        document.getElementById("deactivateConfirm").style.display = "block";
+    function openModal() {
+        document.getElementById("modal").style.display = "flex";
     }
 
-    function hideDeactivateConfirm() {
-        document.getElementById("deactivateConfirm").style.display = "none";
+    function closeModal() {
+        document.getElementById("modal").style.display = "none";
     }
 </script>
+
 </body>
 </html>

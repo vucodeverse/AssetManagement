@@ -1,19 +1,15 @@
 package edu.fpt.groupfive.dao.impl;
 
-import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.dao.UserDAO;
-import edu.fpt.groupfive.model.Users;
+import edu.fpt.groupfive.model.User;
+import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @Repository
 @RequiredArgsConstructor
 public class UserDAOImpl implements UserDAO {
@@ -21,102 +17,136 @@ public class UserDAOImpl implements UserDAO {
     private final DatabaseConfig databaseConfig;
 
     @Override
-    public Optional<Users> findUserByUsername(String username) {
-        return null;
-    }
+    public Optional<User> findUserByUsername(String username) {
 
-    @Override
-    public void insert(Users users) {
         String query = """
-                   INSERT INTO Users
-                   (username, password_hash, full_name, phone_number, email,
-                    status, role, created_date, department_id)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """;
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query);
-        ) {
-            preparedStatement.setString(1, users.getUsername());
-            preparedStatement.setString(2, users.getPasswordHash());
-            preparedStatement.setString(3, users.getFullName());
-            preparedStatement.setString(4, users.getPhoneNumber());
-            preparedStatement.setString(5, users.getEmail());
-            preparedStatement.setString(6, users.getStatus());
-            preparedStatement.setString(7, users.getRole());
-            preparedStatement.setTimestamp(8, Timestamp.valueOf(users.getCreatedDate()));
-            preparedStatement.setInt(9, users.getDepartmentId());
+            SELECT user_id, username, password_hash, first_name, last_name,
+                   phone_number, email, status, role,
+                   created_date, updated_date, department_id
+            FROM users
+            WHERE username = ?
+        """;
 
-            preparedStatement.executeUpdate();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, username);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+
+            return Optional.empty();
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void update(Users users) {
-        String query = """
-                UPDATE Users
-                SET
-                    password_hash = ?,
-                    full_name = ?,
-                    phone_number = ?,
-                    email = ?,
-                    status = ?,
-                    role = ?,
-                    updated_date = ?,
-                    department_id = ?
-                WHERE user_id = ?
-                """;
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)
-        ) {
-            preparedStatement.setString(1, users.getPasswordHash());
-            preparedStatement.setString(2, users.getFullName());
-            preparedStatement.setString(3, users.getPhoneNumber());
-            preparedStatement.setString(4, users.getEmail());
-            preparedStatement.setString(5, users.getStatus());
-            preparedStatement.setTimestamp(6, Timestamp.valueOf(users.getCreatedDate()));
-            preparedStatement.setInt(7, users.getDepartmentId());
-            preparedStatement.setInt(8, users.getUserId());
+    public void insert(User user) {
 
-            preparedStatement.executeUpdate();
+        String query = """
+            INSERT INTO users
+            (username, password_hash, first_name, last_name,
+             phone_number, email, status, role, created_date, department_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPasswordHash());
+            ps.setString(3, user.getFirstName());
+            ps.setString(4, user.getLastName());
+            ps.setString(5, user.getPhoneNumber());
+            ps.setString(6, user.getEmail());
+            ps.setString(7, user.getStatus());
+            ps.setString(8, user.getRole());
+            ps.setTimestamp(9, Timestamp.valueOf(user.getCreatedDate()));
+            ps.setInt(10, user.getDepartmentId());
+
+            ps.executeUpdate();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
 
+    @Override
+    public void update(User user) {
+
+        String query = """
+            UPDATE users
+            SET password_hash = ?,
+                first_name = ?,
+                last_name = ?,
+                phone_number = ?,
+                email = ?,
+                status = ?,
+                role = ?,
+                updated_date = ?,
+                department_id = ?
+            WHERE user_id = ?
+        """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, user.getPasswordHash());
+            ps.setString(2, user.getFirstName());
+            ps.setString(3, user.getLastName());
+            ps.setString(4, user.getPhoneNumber());
+            ps.setString(5, user.getEmail());
+            ps.setString(6, user.getStatus());
+            ps.setString(7, user.getRole());
+            ps.setTimestamp(8, Timestamp.valueOf(user.getUpdatedDate()));
+            ps.setInt(9, user.getDepartmentId());
+            ps.setInt(10, user.getUserId());
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void delete(Integer id) {
-        String query = """
-                UPDATE Users
-                SET status = 'INACTIVE', updated_date = GETDATE()
-                WHERE user_id = ?;
-                """;
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)
-        ) {
-            preparedStatement.setInt(1, id);
 
-            preparedStatement.executeQuery().next();
+        String query = """
+            UPDATE users
+            SET status = 'INACTIVE',
+                updated_date = GETDATE()
+            WHERE user_id = ?
+        """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
     public boolean existsByUsername(String username) {
-        String query = """
-                  SELECT 1 FROM Users WHERE username = ?
-                """;
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)
-        ) {
-            preparedStatement.setString(1, username);
 
-            return preparedStatement.executeQuery().next();
+        String query = "SELECT 1 FROM users WHERE username = ?";
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, username);
+
+            return ps.executeQuery().next();
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -124,53 +154,42 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public boolean existsByEmail(String email) {
-        String query = """
-                  SELECT 1 FROM Users WHERE email = ?
-                """;
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)
-        ) {
-            preparedStatement.setString(1, email);
 
-            return preparedStatement.executeQuery().next();
+        String query = "SELECT 1 FROM users WHERE email = ?";
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, email);
+
+            return ps.executeQuery().next();
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public List<Users> findAll() {
+    public List<User> findAll() {
+
         String query = """
-                SELECT * FROM users WHERE status = 'ACTIVE'
-                """;
+            SELECT user_id, username, password_hash, first_name, last_name,
+                   phone_number, email, status, role,
+                   created_date, updated_date, department_id
+            FROM users
+            WHERE status = 'ACTIVE'
+        """;
 
-        List<Users> list = new ArrayList<>();
+        List<User> list = new ArrayList<>();
 
-        try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Users u = new Users();
-                u.setUserId(rs.getInt("user_id"));
-                u.setUsername(rs.getString("username"));
-                u.setPasswordHash(rs.getString("password_hash"));
-                u.setFullName(rs.getString("full_name"));
-                u.setPhoneNumber(rs.getString("phone_number"));
-                u.setEmail(rs.getString("email"));
-                u.setStatus(rs.getString("status"));
-                u.setRole(rs.getString("role"));
-
-                Timestamp created = rs.getTimestamp("created_date");
-                Timestamp updated = rs.getTimestamp("updated_date");
-
-                if (created != null) u.setCreatedDate(created.toLocalDateTime());
-                if (updated != null) u.setUpdatedDate(updated.toLocalDateTime());
-
-                u.setDepartmentId(rs.getInt("department_id"));
-
-                list.add(u);
+                list.add(mapRow(rs));
             }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -178,5 +197,62 @@ public class UserDAOImpl implements UserDAO {
         return list;
     }
 
+    @Override
+    public Optional<User> findById(int userId) {
 
+        String query = """
+            SELECT user_id, username, password_hash, first_name, last_name,
+                   phone_number, email, status, role,
+                   created_date, updated_date, department_id
+            FROM users
+            WHERE user_id = ?
+        """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, userId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+
+            return Optional.empty();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private User mapRow(ResultSet rs) throws SQLException {
+
+        User user = new User();
+
+        user.setUserId(rs.getInt("user_id"));
+        user.setUsername(rs.getString("username"));
+        user.setPasswordHash(rs.getString("password_hash"));
+        user.setFirstName(rs.getString("first_name"));
+        user.setLastName(rs.getString("last_name"));
+        user.setPhoneNumber(rs.getString("phone_number"));
+        user.setEmail(rs.getString("email"));
+        user.setStatus(rs.getString("status"));
+        user.setRole(rs.getString("role"));
+
+        Timestamp created = rs.getTimestamp("created_date");
+        Timestamp updated = rs.getTimestamp("updated_date");
+
+        if (created != null) {
+            user.setCreatedDate(created.toLocalDateTime());
+        }
+
+        if (updated != null) {
+            user.setUpdatedDate(updated.toLocalDateTime());
+        }
+
+        user.setDepartmentId(rs.getInt("department_id"));
+
+        return user;
+    }
 }

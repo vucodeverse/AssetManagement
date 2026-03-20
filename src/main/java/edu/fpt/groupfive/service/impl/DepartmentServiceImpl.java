@@ -3,12 +3,16 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.dao.DepartmentDAO;
 import edu.fpt.groupfive.dto.request.DepartmentCreateRequest;
 import edu.fpt.groupfive.dto.request.DepartmentUpdateRequest;
+import edu.fpt.groupfive.dto.response.DepartmentResponse;
 import edu.fpt.groupfive.model.Department;
 import edu.fpt.groupfive.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -34,5 +38,16 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public void updateDepartment(DepartmentUpdateRequest request) {
 
+    }
+    @Override
+    public List<DepartmentResponse> findAll() {
+
+        return departmentDAO.findAll()
+                .stream()
+                .map(dept -> new DepartmentResponse(
+                        dept.getDepartmentId(),
+                        dept.getDepartmentName()
+                ))
+                .toList();
     }
 }

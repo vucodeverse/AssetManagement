@@ -16,22 +16,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/add")
-    public String addForm(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
-        model.addAttribute("newUser", new UseCreateRequest());
-        return "add-user";
-    }
+//    @GetMapping("/add")
+//    public String addForm(Model model) {
+//        model.addAttribute("users", userService.getAllUsers());
+//        model.addAttribute("newUser", new UseCreateRequest());
+//        return "add-user";
+//    }
 
-    @PostMapping("/save")
-    public String addUser(@ModelAttribute("newUser") UseCreateRequest request) {
-        userService.createUser(request);
-        return "redirect:/user/home";
-    }
+//    @PostMapping("/save")
+//    public String addUser(@ModelAttribute("newUser") UseCreateRequest request) {
+//        userService.createUser(request);
+//        return "redirect:/user/home";
+//    }
 
-    @GetMapping("/home")
-    public String home(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
-        return "home";
-    }
+//    @GetMapping("/home")
+//    public String home(Model model) {
+//        model.addAttribute("users", userService.getAllUsers());
+//        return "home";
+//    }
 }

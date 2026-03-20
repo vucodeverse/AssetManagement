@@ -2,7 +2,7 @@ package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.dao.SupplierDAO;
 import edu.fpt.groupfive.dto.request.SupplierCreateRequest;
-import edu.fpt.groupfive.dto.request.SupplierSearchCriteria;
+import edu.fpt.groupfive.dto.request.search.SupplierSearchCriteria;
 import edu.fpt.groupfive.dto.request.SupplierUpdateRequest;
 import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.SupplierResponse;
@@ -54,7 +54,6 @@ public class SupplierServiceImpl implements ISupplierService {
 
     @Override
     public void createSupplier(SupplierCreateRequest request) {
-
         supplierNormalizer.normalizeForCreate(request);
         supplierValidator.validateForCreate(request);
 
@@ -69,7 +68,6 @@ public class SupplierServiceImpl implements ISupplierService {
                 throw new IllegalArgumentException(
                         "Mã nhà cung cấp hoặc mã số thuế đã tồn tại.");
             }
-
             throw new IllegalStateException(
                     "Đã xảy ra lỗi không mong muốn khi tạo nhà cung cấp.", ex);
         }
