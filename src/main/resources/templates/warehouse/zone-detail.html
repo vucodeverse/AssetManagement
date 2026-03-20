@@ -205,7 +205,7 @@
                 Chi tiết Zone
             </h1>
             <p class="page-subtitle">
-                <a href="/warehouse/zones" style="color:#6b7280; text-decoration:none;">
+                <a href="/wh/config/zones" style="color:#6b7280; text-decoration:none;">
                     <i class="fa-solid fa-arrow-left" style="margin-right:4px;"></i>Quay lại danh sách
                 </a>
             </p>
@@ -381,14 +381,14 @@
 
                 <!-- Actions -->
                 <div style="display:flex; flex-direction:column; gap:0.75rem;">
-                    <a th:href="@{'/warehouse/zones/' + ${zone.zoneId} + '/edit'}"
+                    <a th:href="@{'/wh/config/zones/' + ${zone.zoneId} + '/edit'}"
                        style="display:flex; align-items:center; justify-content:center; gap:0.5rem;
                               padding:0.75rem; background:#0f172a; color:white; border-radius:10px;
                               text-decoration:none; font-size:0.8rem; font-weight:800;
                               text-transform:uppercase; letter-spacing:0.06em; transition:background 0.15s;">
                         <i class="fa-solid fa-pen-to-square"></i> Cập nhật thông tin
                     </a>
-                    <a href="/warehouse/zones"
+                    <a href="/wh/config/zones"
                        style="display:flex; align-items:center; justify-content:center; gap:0.5rem;
                               padding:0.75rem; background:white; color:#374151; border:1px solid #e5e7eb;
                               border-radius:10px; text-decoration:none; font-size:0.8rem; font-weight:700;

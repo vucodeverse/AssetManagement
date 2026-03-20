@@ -4,13 +4,14 @@ import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.dto.request.DepartmentCreateRequest;
 import edu.fpt.groupfive.dto.request.UserCreateRequest;
 import edu.fpt.groupfive.dto.response.DepartmentResponse;
+import edu.fpt.groupfive.dao.warehouse.WhWarehouseDAO;
+import edu.fpt.groupfive.model.warehouse.Warehouse;
 import edu.fpt.groupfive.service.DepartmentService;
 import edu.fpt.groupfive.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
     private final UserService userService;
     private final DepartmentService departmentService;
+    private final WhWarehouseDAO whWarehouseDAO;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -33,8 +35,24 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
     private void initializeData() {
         log.info("Starting data initialization...");
+        initializeDepartmentsAndUsers();
+        initializeWarehouse();
+        log.info("Data initialization completed.");
+    }
 
-        // 1. Ensure at least one department exists
+    private void initializeWarehouse() {
+        if (!whWarehouseDAO.existsAny()) {
+            log.info("No warehouses found. Creating default 'Main Warehouse'.");
+            Warehouse w = new Warehouse();
+            w.setName("Main Warehouse");
+            w.setAddress("123 Logistics St.");
+            w.setManagerUserId(1); // Will be updated if 1 doesn't exist, but usually 1 is the first user
+            w.setStatus("ACTIVE");
+            whWarehouseDAO.createWarehouse(w);
+        }
+    }
+
+    private void initializeDepartmentsAndUsers() {
         List<DepartmentResponse> departments = departmentService.getAllDepartments();
         if (departments.isEmpty()) {
             log.info("No departments found. Creating default 'Administration' department.");

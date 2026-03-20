@@ -8,7 +8,7 @@
 
     <!-- Logo -->
     <div class="sidebar-logo">
-        <a th:href="@{/warehouse/zones}" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:10px;">
+        <a th:href="@{/wh/config/zones}" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:10px;">
             <i class="fa-solid fa-warehouse" style="font-size:20px;"></i>
             <span>PROCUREX <span style="color:#3b82f6; font-weight:900;">WH</span></span>
         </a>
@@ -18,7 +18,7 @@
     <nav class="sidebar-nav">
 
         <!-- Tổng quan -->
-        <a th:href="@{/warehouse/dashboard}"
+        <a th:href="@{/wh/dashboard}"
            th:classappend="${activeMenu == 'dashboard'} ? ' active'"
            class="nav-item">
             <i class="fa-solid fa-chart-line"></i>
@@ -28,14 +28,14 @@
         <!-- Master data -->
         <div class="nav-group-title" style="margin-top:16px;">Cấu hình</div>
 
-        <a th:href="@{/warehouse/zones}"
+        <a th:href="@{/wh/config/zones}"
            th:classappend="${activeMenu == 'zones'} ? ' active'"
            class="nav-item">
             <i class="fa-solid fa-boxes-stacked"></i>
             <span>Quản lý Zone</span>
         </a>
 
-        <a th:href="@{/warehouse/capacities}"
+        <a th:href="@{/wh/config/capacities}"
            th:classappend="${activeMenu == 'capacities'} ? ' active'"
            class="nav-item">
             <i class="fa-solid fa-ruler-combined"></i>
@@ -45,7 +45,7 @@
         <!-- Nghiệp vụ -->
         <div class="nav-group-title" style="margin-top:16px;">Nghiệp vụ</div>
 
-        <a th:href="@{/warehouse/inbound/po}"
+        <a th:href="@{/wh/inbound/po}"
            th:classappend="${activeMenu == 'inbound'} ? ' active'"
            class="nav-item">
             <i class="fa-solid fa-arrow-right-to-bracket"></i>
@@ -53,15 +53,15 @@
         </a>
 
         <div th:if="${activeMenu == 'inbound'}" class="sub-nav">
-            <a th:href="@{/warehouse/inbound/po}"
+            <a th:href="@{/wh/inbound/po}"
                th:classappend="${activeSub == 'inbound-po'} ? ' active'"
                class="sub-item">Mua mới (PO)</a>
-            <a th:href="@{/warehouse/inbound/return}"
+            <a th:href="@{/wh/inbound/return}"
                th:classappend="${activeSub == 'inbound-return'} ? ' active'"
                class="sub-item">Thu hồi</a>
         </div>
 
-        <a th:href="@{/warehouse/outbound}"
+        <a th:href="@{/wh/outbound}"
            th:classappend="${activeMenu == 'outbound'} ? ' active'"
            class="nav-item">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -71,14 +71,14 @@
         <!-- Tra cứu -->
         <div class="nav-group-title" style="margin-top:16px;">Tra cứu</div>
 
-        <a th:href="@{/warehouse/locator}"
+        <a th:href="@{/wh/locator}"
            th:classappend="${activeMenu == 'locator'} ? ' active'"
            class="nav-item">
             <i class="fa-solid fa-magnifying-glass-location"></i>
             <span>Tìm vị trí tài sản</span>
         </a>
 
-        <a th:href="@{/warehouse/ledger}"
+        <a th:href="@{/wh/ledger}"
            th:classappend="${activeMenu == 'ledger'} ? ' active'"
            class="nav-item">
             <i class="fa-solid fa-book-open"></i>

@@ -125,7 +125,7 @@
 
                             <!-- Action: Xem chi tiết -->
                             <td class="action-cell">
-                                <a th:href="@{'/warehouse/zones/' + ${zone.zoneId}}"
+                                <a th:href="@{'/wh/config/zones/' + ${zone.zoneId}}"
                                    class="btn-sm primary">
                                     <i class="fa-solid fa-eye"></i> Xem
                                 </a>
@@ -153,7 +153,7 @@
                         <i class="fa-solid fa-plus" style="margin-right:6px;"></i>Tạo Zone Mới
                     </h3>
 
-                    <form th:action="@{/warehouse/zones/create}" method="post"
+                    <form th:action="@{/wh/config/zones/create}" method="post"
                           th:object="${zoneForm}">
 
                         <div class="form-field">
@@ -182,7 +182,7 @@
                             <button type="submit" class="btn-primary">
                                 <i class="fa-solid fa-plus"></i> Tạo Zone
                             </button>
-                            <a href="/warehouse/zones" class="btn-secondary">Hủy</a>
+                            <a th:href="@{/wh/config/zones}" class="btn-secondary">Hủy</a>
                         </div>
                     </form>
                 </div>

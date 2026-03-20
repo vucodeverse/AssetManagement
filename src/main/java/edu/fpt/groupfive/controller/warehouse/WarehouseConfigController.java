@@ -2,7 +2,7 @@ package edu.fpt.groupfive.controller.warehouse;
 
 import edu.fpt.groupfive.dto.request.warehouse.AssetVolumeUpdateRequestDTO;
 import edu.fpt.groupfive.dto.request.warehouse.ZoneCreateRequestDTO;
-
+import edu.fpt.groupfive.dto.response.warehouse.AssetTypeVolumeDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -20,22 +20,22 @@ import java.util.List;
  * Controller quản lý không gian kho: Zone & Định mức sức chứa loại tài sản.
  */
 @Controller
-@RequestMapping("/warehouse")
+@RequestMapping("/wh/config")
 @RequiredArgsConstructor
 public class WarehouseConfigController {
 
     private final WhZoneService whZoneService;
     private final WhAssetCapacityService whAssetCapacityService;
 
-    private static final String REDIRECT_ZONES       = "redirect:/warehouse/zones";
-    private static final String REDIRECT_CAPACITIES  = "redirect:/warehouse/capacities";
+    private static final String REDIRECT_ZONES       = "redirect:/wh/config/zones";
+    private static final String REDIRECT_CAPACITIES  = "redirect:/wh/config/capacities";
     private static final String SUCCESS_MSG          = "successMessage";
     private static final String ERROR_MSG            = "errorMessage";
     private static final String ZONE_FORM            = "zoneForm";
     private static final String VOLUME_FORM          = "volumeForm";
 
     // =========================================================
-    //  ZONE LIST  —  GET /warehouse/zones
+    //  ZONE LIST  —  GET /wh/config/zones
     // =========================================================
 
     @GetMapping("/zones")
@@ -77,7 +77,7 @@ public class WarehouseConfigController {
     }
 
     // =========================================================
-    //  ZONE DETAIL  —  GET /warehouse/zones/{zoneId}
+    //  ZONE DETAIL  —  GET /wh/config/zones/{zoneId}
     // =========================================================
 
     @GetMapping("/zones/{zoneId}")
@@ -95,7 +95,7 @@ public class WarehouseConfigController {
     }
 
     // =========================================================
-    //  ZONE EDIT FORM  —  GET /warehouse/zones/{zoneId}/edit
+    //  ZONE EDIT FORM  —  GET /wh/config/zones/{zoneId}/edit
     // =========================================================
 
     @GetMapping("/zones/{zoneId}/edit")
@@ -122,7 +122,7 @@ public class WarehouseConfigController {
     }
 
     // =========================================================
-    //  ZONE UPDATE  —  POST /warehouse/zones/{zoneId}/update
+    //  ZONE UPDATE  —  POST /wh/config/zones/{zoneId}/update
     // =========================================================
 
     @PostMapping("/zones/{zoneId}/update")
@@ -135,30 +135,38 @@ public class WarehouseConfigController {
             ra.addFlashAttribute("org.springframework.validation.BindingResult.editForm", result);
             ra.addFlashAttribute("editForm", dto);
             ra.addFlashAttribute(ERROR_MSG, "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.");
-            return "redirect:/warehouse/zones/" + zoneId + "/edit";
+            return "redirect:/wh/config/zones/" + zoneId + "/edit";
         }
 
         try {
             whZoneService.updateZone(zoneId, dto);
             ra.addFlashAttribute(SUCCESS_MSG,
                     "Cập nhật zone \"" + dto.getZoneName() + "\" thành công.");
-            return "redirect:/warehouse/zones/" + zoneId;
+            return "redirect:/wh/config/zones/" + zoneId;
         } catch (IllegalArgumentException ex) {
             ra.addFlashAttribute(ERROR_MSG, ex.getMessage());
             ra.addFlashAttribute("editForm", dto);
-            return "redirect:/warehouse/zones/" + zoneId + "/edit";
+            return "redirect:/wh/config/zones/" + zoneId + "/edit";
         }
     }
 
     // =========================================================
-    //  ASSET CAPACITY CONFIG  —  GET /warehouse/capacities
+    //  ASSET CAPACITY CONFIG  —  GET /wh/config/capacities
     // =========================================================
 
     @GetMapping("/capacities")
     public String capacitiesPage(Model model) {
         model.addAttribute("activeMenu", "capacities");
         model.addAttribute("pageTitle", "Định mức Sức chứa - Warehouse");
-        model.addAttribute("assetTypes", whAssetCapacityService.getAllAssetTypeVolumes());
+        
+        List<AssetTypeVolumeDTO> allTypes = whAssetCapacityService.getAllAssetTypeVolumes();
+        model.addAttribute("assetTypes", allTypes);
+        
+        // Filter those without a volume set
+        List<AssetTypeVolumeDTO> unconfigured = allTypes.stream()
+                .filter(at -> at.getUnitVolume() == null)
+                .toList();
+        model.addAttribute("unconfiguredAssetTypes", unconfigured);
 
         if (!model.containsAttribute(VOLUME_FORM)) {
             model.addAttribute(VOLUME_FORM, new AssetVolumeUpdateRequestDTO());

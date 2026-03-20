@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-truck-ramp-box" style="margin-right:8px;"></i>Nhập kho PO</h1>
+            <p class="page-subtitle">Danh sách các Đơn mua hàng (Purchase Order) đang chờ thực hiện nhập kho</p>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div th:if="${successMessage}" class="flash-message success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <div class="wh-panel">
+            <div class="wh-panel-header">
+                <span class="wh-panel-title"><i class="fa-solid fa-list"></i> Đơn hàng Chờ Nhập</span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã PO</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Ngày tạo</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th class="action-cell">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="p : ${pos}">
+                        <td th:text="'#PO-' + ${p.purchaseOrderId}">101</td>
+                        <td th:text="${p.supplierName}">Phong Vũ</td>
+                        <td th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#numbers.formatDecimal(p.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                        <td><span class="badge badge-active">APPROVED</span></td>
+                        <td class="action-cell">
+                            <a th:href="@{'/wh/inbound/po/' + ${p.purchaseOrderId}}" class="btn-sm primary">
+                                <i class="fa-solid fa-eye"></i> Xem & Nhập
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

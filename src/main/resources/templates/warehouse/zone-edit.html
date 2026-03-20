@@ -21,7 +21,7 @@
                 Cập nhật Zone: <span th:text="${zone.zoneName}">A-01</span>
             </h1>
             <p class="page-subtitle">
-                <a th:href="@{'/warehouse/zones/' + ${zone.zoneId}}"
+                <a th:href="@{'/wh/config/zones/' + ${zone.zoneId}}"
                    style="color:#3b82f6; text-decoration:none;">
                     <i class="fa-solid fa-arrow-left" style="margin-right:4px;"></i>Quay lại chi tiết
                 </a>
@@ -46,7 +46,7 @@
                         <i class="fa-solid fa-pen-to-square" style="margin-right:6px;"></i>Chỉnh sửa thông tin Zone
                     </h3>
 
-                    <form th:action="@{'/warehouse/zones/' + ${zone.zoneId} + '/update'}"
+                    <form th:action="@{'/wh/config/zones/' + ${zone.zoneId} + '/update'}"
                           method="post"
                           th:object="${editForm}">
 
@@ -76,7 +76,7 @@
                             <button type="submit" class="btn-primary">
                                 <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
                             </button>
-                            <a th:href="@{'/warehouse/zones/' + ${zone.zoneId}}" class="btn-secondary">Hủy</a>
+                            <a th:href="@{'/wh/config/zones/' + ${zone.zoneId}}" class="btn-secondary">Hủy</a>
                         </div>
                     </form>
                 </div>
