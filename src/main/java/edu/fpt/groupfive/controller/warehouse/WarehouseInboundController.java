@@ -5,16 +5,13 @@ import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.PODetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.POItemDetailDTO;
 import edu.fpt.groupfive.dto.response.warehouse.POResponseDTO;
-import edu.fpt.groupfive.dto.request.warehouse.InboundPOReceiveRequestDTO;
-import jakarta.validation.Valid;
+import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import edu.fpt.groupfive.dto.response.warehouse.BarcodeDistributionResponseDTO;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +21,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WarehouseInboundController {
 
-    private static final String REDIRECT_PO_LIST = "redirect:/wh/inbound/po";
     private static final String SUCCESS_MSG = "successMessage";
-    private static final String ERROR_MSG = "errorMessage";
+    private static final String ACTIVE_MENU = "activeMenu";
+    private static final String MENU_INBOUND = "inbound";
+    private static final String PAGE_TITLE = "pageTitle";
+    private static final String SUMMARY_ATTR = "summary";
 
     // =========================================================
     //  PO LIST  —  GET /wh/inbound/po
@@ -34,8 +33,8 @@ public class WarehouseInboundController {
 
     @GetMapping("/po")
     public String poListPage(Model model) {
-        model.addAttribute("activeMenu", "inbound");
-        model.addAttribute("pageTitle", "Nhập kho PO - Warehouse");
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        model.addAttribute(PAGE_TITLE, "Nhập kho PO - Warehouse");
         model.addAttribute("pos", buildDummyPOs());
         return "warehouse/inbound/po_list";
     }
@@ -46,83 +45,82 @@ public class WarehouseInboundController {
 
     @GetMapping("/po/{po_id}")
     public String poDetailPage(@PathVariable("po_id") Integer poId, Model model) {
-        model.addAttribute("activeMenu", "inbound");
-        model.addAttribute("pageTitle", "Chi tiết Nhận hàng PO #" + poId);
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        model.addAttribute(PAGE_TITLE, "Chi tiết Nhận hàng PO #" + poId);
         
         PODetailResponseDTO poDetail = buildDummyPODetail(poId);
         model.addAttribute("po", poDetail);
-        
-        if (!model.containsAttribute("receiveRequest")) {
-            model.addAttribute("receiveRequest", new InboundPOReceiveRequestDTO());
-        }
         
         return "warehouse/inbound/po_detail";
     }
 
     // =========================================================
-    //  PROCESS RECEIVE  —  POST /wh/inbound/po/{po_id}/receive/{po_detail_id}
-    //  NEW: Redirects to barcode distribution instead of finishing
+    //  CONFIRM PO — POST /wh/inbound/po/{po_id}/confirm
     // =========================================================
 
-    @PostMapping("/po/{po_id}/receive/{po_detail_id}")
-    public String receivePO(
-            @PathVariable("po_id") Integer poId,
-            @PathVariable("po_detail_id") Integer poDetailId,
-            @RequestParam("actualQuantity") Integer actualQuantity,
-            RedirectAttributes ra) {
-
-        if (actualQuantity == null || actualQuantity <= 0) {
-            ra.addFlashAttribute(ERROR_MSG, "Số lượng thực nhập không hợp lệ.");
-            return "redirect:/wh/inbound/po/" + poId;
+    @PostMapping("/po/{po_id}/confirm")
+    public String confirmPO(@PathVariable("po_id") Integer poId, RedirectAttributes ra) {
+        PODetailResponseDTO poDetail = buildDummyPODetail(poId);
+        
+        List<InboundSummaryResponseDTO.AssetGroupDTO> groups = new ArrayList<>();
+        int nextId = 1001; // Base ID for demo
+        for (POItemDetailDTO item : poDetail.getItems()) {
+            int qty = item.getQuantity() - item.getReceivedQuantity();
+            if (qty > 0) {
+                List<Integer> ids = new ArrayList<>();
+                for (int i = 0; i < qty; i++) {
+                    ids.add(nextId++);
+                }
+                groups.add(InboundSummaryResponseDTO.AssetGroupDTO.builder()
+                        .assetTypeName(item.getAssetTypeName())
+                        .quantity(qty)
+                        .assetIds(ids)
+                        .build());
+            }
         }
-
-        // Logic sync: Instead of finishing, go to barcode distribution
-        return "redirect:/wh/inbound/po/" + poId + "/barcode?typeId=" + poDetailId + "&qty=" + actualQuantity;
-    }
-
-    // =========================================================
-    //  BARCODE DISTRIBUTION — GET /wh/inbound/po/{po_id}/barcode
-    // =========================================================
-
-    @GetMapping("/po/{po_id}/barcode")
-    public String barcodeDistributionPage(
-            @PathVariable("po_id") Integer poId,
-            @RequestParam("typeId") Integer assetTypeId,
-            @RequestParam("qty") Integer quantity,
-            Model model) {
-            
-        model.addAttribute("activeMenu", "inbound");
-        model.addAttribute("pageTitle", "Phân phối Mã định danh - PO #" + poId);
-
-        // Build mock items based on quantity received
-        List<BarcodeDistributionResponseDTO.BarcodeItemDTO> items = new ArrayList<>();
-        for (int i = 1; i <= quantity; i++) {
-            items.add(BarcodeDistributionResponseDTO.BarcodeItemDTO.builder()
-                    .assetCode("AST-" + poId + "-" + (1000 + i))
-                    .status("CHỜ DÁN NHÃN")
-                    .build());
-        }
-
-        BarcodeDistributionResponseDTO distribution = BarcodeDistributionResponseDTO.builder()
+        
+        InboundSummaryResponseDTO summary = InboundSummaryResponseDTO.builder()
                 .purchaseOrderId(poId)
-                .assetTypeId(assetTypeId)
-                .assetTypeName("Tài sản từ PO #" + poId) // Placeholder
-                .quantity(quantity)
-                .items(items)
+                .supplierName(poDetail.getSupplierName())
+                .inboundDate(LocalDateTime.now())
+                .assetGroups(groups)
                 .build();
-
-        model.addAttribute("distribution", distribution);
-        return "warehouse/inbound/barcode_distribution";
+        
+        ra.addFlashAttribute(SUMMARY_ATTR, summary);
+        ra.addFlashAttribute(SUCCESS_MSG, "Đã dán mã và nhập kho thành công toàn bộ PO #" + poId);
+        return "redirect:/wh/inbound/po/" + poId + "/summary";
     }
 
     // =========================================================
-    //  CONFIRM BARCODE — POST /wh/inbound/po/{po_id}/barcode/confirm
+    //  INBOUND SUMMARY — GET /wh/inbound/po/{po_id}/summary
     // =========================================================
 
-    @PostMapping("/po/{po_id}/barcode/confirm")
-    public String confirmBarcodeDistribution(@PathVariable("po_id") Integer poId, RedirectAttributes ra) {
-        ra.addFlashAttribute(SUCCESS_MSG, "Đã ghi nhận nhập kho và dán mã thành công cho PO #" + poId);
-        return "redirect:/wh/inbound/po/" + poId;
+    @GetMapping("/po/{po_id}/summary")
+    public String poSummaryPage(@PathVariable("po_id") Integer poId, Model model) {
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        model.addAttribute(PAGE_TITLE, "Kết quả Nhập kho PO #" + poId);
+        
+        if (!model.containsAttribute(SUMMARY_ATTR)) {
+             // Fallback for demo if flash attribute is lost
+             PODetailResponseDTO poDetail = buildDummyPODetail(poId);
+             List<InboundSummaryResponseDTO.AssetGroupDTO> groups = new ArrayList<>();
+             int nextId = 2001;
+             for (POItemDetailDTO item : poDetail.getItems()) {
+                 groups.add(InboundSummaryResponseDTO.AssetGroupDTO.builder()
+                         .assetTypeName(item.getAssetTypeName())
+                         .quantity(item.getQuantity())
+                         .assetIds(List.of(nextId++, nextId++))
+                         .build());
+             }
+             model.addAttribute(SUMMARY_ATTR, InboundSummaryResponseDTO.builder()
+                     .purchaseOrderId(poId)
+                     .supplierName(poDetail.getSupplierName())
+                     .inboundDate(LocalDateTime.now())
+                     .assetGroups(groups)
+                     .build());
+        }
+        
+        return "warehouse/inbound/summary";
     }
 
     // =========================================================
@@ -131,8 +129,8 @@ public class WarehouseInboundController {
 
     @GetMapping("/return")
     public String returnListPage(Model model) {
-        model.addAttribute("activeMenu", "inbound");
-        model.addAttribute("pageTitle", "Nhập kho Thu hồi - Warehouse");
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        model.addAttribute(PAGE_TITLE, "Nhập kho Thu hồi - Warehouse");
         model.addAttribute("returns", List.of(
             HandoverResponseDTO.builder().handoverId(501).fromDepartmentName("Phòng IT").createdAt(LocalDateTime.now().minusHours(5)).status("PENDING").build(),
             HandoverResponseDTO.builder().handoverId(502).fromDepartmentName("Phòng HR").createdAt(LocalDateTime.now().minusDays(1)).status("PENDING").build()
@@ -146,8 +144,8 @@ public class WarehouseInboundController {
 
     @GetMapping("/return/{handover_id}")
     public String returnDetailPage(@PathVariable("handover_id") Integer handoverId, Model model) {
-        model.addAttribute("activeMenu", "inbound");
-        model.addAttribute("pageTitle", "Chi tiết Thu hồi #" + handoverId);
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        model.addAttribute(PAGE_TITLE, "Chi tiết Thu hồi #" + handoverId);
         model.addAttribute("handover", HandoverDetailResponseDTO.builder()
             .handoverId(handoverId).fromDepartmentName("Phòng IT").status("PENDING")
             .items(List.of(

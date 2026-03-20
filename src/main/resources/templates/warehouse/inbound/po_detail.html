@@ -19,17 +19,16 @@
             <h1 class="page-title">Chi tiết PO #<span th:text="${po.purchaseOrderId}"></span></h1>
             <p class="page-subtitle">Nhà cung cấp: <strong th:text="${po.supplierName}"></strong></p>
         </div>
+        <div class="header-actions">
+            <form th:action="@{'/wh/inbound/po/' + ${po.purchaseOrderId} + '/confirm'}" method="post">
+                <button type="submit" class="btn-primary">
+                    <i class="fa-solid fa-check-double"></i> Xác nhận nhập kho toàn bộ PO
+                </button>
+            </form>
+        </div>
     </header>
 
     <div class="content-wrapper">
-        <div th:if="${successMessage}" class="flash-message success">
-            <i class="fa-solid fa-circle-check"></i>
-            <span th:text="${successMessage}"></span>
-        </div>
-        <div th:if="${errorMessage}" class="flash-message error">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span th:text="${errorMessage}"></span>
-        </div>
 
         <div class="wh-panel">
             <div class="wh-panel-header">
@@ -40,26 +39,12 @@
                     <tr>
                         <th>Tên loại tài sản</th>
                         <th>Dự kiến</th>
-                        <th>Đã nhập</th>
-                        <th>Cần nhập thêm</th>
-                        <th style="width: 250px;">Thao tác Nhập</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="item : ${po.items}">
                         <td th:text="${item.assetTypeName}"></td>
                         <td th:text="${item.quantity}"></td>
-                        <td th:text="${item.receivedQuantity}"></td>
-                        <td th:text="${item.quantity - item.receivedQuantity}" style="font-weight: 700; color: #ef4444;"></td>
-                        <td>
-                            <form th:action="@{'/wh/inbound/po/' + ${po.purchaseOrderId} + '/receive/' + ${item.assetTypeId}}" method="post" style="display: flex; gap: 8px;">
-                                <input type="number" name="actualQuantity" class="form-input" 
-                                       th:max="${item.quantity - item.receivedQuantity}" min="1" value="1" style="width: 70px;">
-                                <button type="submit" class="btn-sm primary">
-                                    <i class="fa-solid fa-plus-square"></i> Nhập kho
-                                </button>
-                            </form>
-                        </td>
                     </tr>
                 </tbody>
             </table>
