@@ -37,7 +37,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/home")
+    @GetMapping("/users")
     public String homePage(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "status", required = false) String status,
@@ -47,7 +47,7 @@ public class UserController {
             Model model) {
 
         // Số lượng data trong một trang
-        int pageSize = 5;
+        int pageSize = 7;
 
         if (status != null && status.isBlank()) status = null;
         if (keyword != null && keyword.isBlank()) keyword = null;
@@ -69,14 +69,19 @@ public class UserController {
         model.addAttribute("keyword", keyword);
 
         setupData(model);
-        return "user-list";
+        return "admin/user-list";
     }
 
 
-    @GetMapping("/add")
+    /**
+     *
+     * @param model dùng để truyền dữ liệu từ controller sang view
+     * @return tên trang hiển thị form chỉnh sửa user
+     */
+    @GetMapping("/user/add")
     public String addForm(Model model) {
         setupAttributes(model, new UserCreateRequest(), true, false);
-        return "user-detail";
+        return "admin/user-detail";
     }
 
     /**
@@ -86,7 +91,7 @@ public class UserController {
      * @param model dùng để truyền dữ liệu từ controller sang view
      * @return tên trang hiển thị form chỉnh sửa user
      */
-    @GetMapping("/edit/{id}")
+    @GetMapping("/user/edit/{id}")
     public String editForm(@PathVariable("id") Integer id, Model model) {
 
         UserResponse response = userService.getUserById(id);
@@ -105,7 +110,7 @@ public class UserController {
         // Truyền giá trị lên form
         setupAttributes(model, request, true, true);
 
-        return "user-detail";
+        return "admin/user-detail";
     }
 
 
@@ -116,14 +121,14 @@ public class UserController {
      * @param model dùng để truyền dữ liệu từ controller sang view
      * @return tên trang hiển thị form chỉnh sửa user
      */
-    @GetMapping("/detail/{id}")
+    @GetMapping("/user/detail/{id}")
     public String showDetail(@PathVariable("id") Integer id, Model model) {
 
         UserResponse response = userService.getUserById(id);
 
         setupAttributes(model, response, false, false);
 
-        return "user-detail";
+        return "admin/user-detail";
     }
 
     /**
@@ -134,7 +139,7 @@ public class UserController {
      * @param model truyền lại data
      * @return tên trang hiển thị form thêm user
      */
-    @PostMapping("/create")
+    @PostMapping("/user/create")
     public String createUser(
             @Valid @ModelAttribute("user") UserCreateRequest request,
             BindingResult bindingResult,
@@ -157,6 +162,15 @@ public class UserController {
                     "email",
                     "duplicate.email",
                     "Email đã tồn tại!"
+            );
+        }
+
+        // Nếu phone bị trùng
+        if (userService.existsByPhone(request.getPhoneNumber(), null)) {
+            bindingResult.rejectValue(
+                    "phoneNumber",
+                    "duplicate.phoneNumber",
+                    "Số điện thoại đã tồn tại!"
             );
         }
 
@@ -183,7 +197,7 @@ public class UserController {
 
         if (bindingResult.hasErrors()) {
             setupAttributes(model, request, true, false);
-            return "user-detail";
+            return "admin/user-detail";
         }
 
         redirectAttributes.addFlashAttribute(
@@ -192,7 +206,7 @@ public class UserController {
         );
 
         userService.createUser(request);
-        return "redirect:/admin/home";
+        return "redirect:/admin/users";
     }
 
     /**
@@ -203,7 +217,7 @@ public class UserController {
      * @param model truyền lại data
      * @return trang chủ
      */
-    @PostMapping("/update")
+    @PostMapping("/user/update")
     public String updateUser(
             @Valid @ModelAttribute("user") UserUpdateRequest request,
             BindingResult bindingResult,
@@ -217,6 +231,15 @@ public class UserController {
                     "email",
                     "duplicate.email",
                     "Email đã tồn tại!"
+            );
+        }
+
+        // Nếu phone bị trùng
+        if (userService.existsByPhone(request.getPhoneNumber(), request.getUserId())) {
+            bindingResult.rejectValue(
+                    "phoneNumber",
+                    "duplicate.phoneNumber",
+                    "Số điện thoại đã tồn tại!"
             );
         }
 
@@ -244,7 +267,7 @@ public class UserController {
 
         if (bindingResult.hasErrors()) {
             setupAttributes(model, request, true, true);
-            return "user-detail";
+            return "admin/user-detail";
         }
 
         userService.updateUser(request);
@@ -254,7 +277,7 @@ public class UserController {
                 "Cập nhật thành công!"
         );
 
-        return "redirect:/admin/home";
+        return "redirect:/admin/users";
     }
 
 
@@ -264,10 +287,10 @@ public class UserController {
      * @param userId mã định danh của user cần xóa
      * @return quay về trang danh sách user sau khi xóa
      */
-    @GetMapping("/delete/{id}")
+    @GetMapping("/user/delete/{id}")
     public String deleteUser(@PathVariable("id") Integer userId) {
         userService.removeUser(userId);
-        return "redirect:/admin/home";
+        return "redirect:/admin/users";
     }
 
 

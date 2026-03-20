@@ -26,7 +26,7 @@ public class DepartmentController {
     private final DepartmentService departmentService;
 
 
-    @GetMapping("/department")
+    @GetMapping("/departments")
     public String homePage(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "keyword", required = false) String keyword,
@@ -66,7 +66,7 @@ public class DepartmentController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("mode", "Add");
 
-        return "department-list";
+        return "admin/department-list";
     }
 
 
@@ -113,14 +113,14 @@ public class DepartmentController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("mode", "Edit");
 
-        return "department-list";
+        return "admin/department-list";
     }
 
     @PostMapping("/department/create")
     public String createDepartment(DepartmentCreateRequest request, RedirectAttributes redirectAttributes) {
         departmentService.createDepartment(request);
         redirectAttributes.addFlashAttribute("successMsg", "Thêm phòng ban thành công!");
-        return "redirect:/admin/department";
+        return "redirect:/admin/departments";
     }
 
     @PostMapping("/department/update")
@@ -132,14 +132,14 @@ public class DepartmentController {
         departmentService.updateDepartment(request);
         redirectAttributes.addFlashAttribute("successMsg", "Cập nhật phòng ban thành công!");
 
-        return String.format("redirect:/admin/department?page=%d", page);
+        return String.format("redirect:/admin/departments?page=%d", page);
     }
 
 
     @PostMapping("/department/delete")
     public String deleteDepartment(@RequestParam("id") Integer id) {
         departmentService.removeDepartment(id);
-        return "redirect:/admin/department";
+        return "redirect:/admin/departments";
     }
 
 }

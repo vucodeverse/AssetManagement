@@ -166,4 +166,9 @@ public class UserServiceImpl implements UserService {
         return userDAO.existsByEmail(email, userId);
     }
 
+    @Override
+    public boolean existsByPhone(String phone, Integer userId) {
+        return userDAO.existsByPhone(phone, userId);
+    }
+
 }

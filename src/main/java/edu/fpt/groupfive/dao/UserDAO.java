@@ -19,6 +19,8 @@ public interface UserDAO {
 
     boolean existsByEmail(String email, Integer userId);
 
+    boolean existsByPhone(String phone, Integer userId);
+
     boolean existsManagerByDepartment(Integer departmentId, Integer userId);
 
     boolean exitsDirector(Role role, Integer userId);

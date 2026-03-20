@@ -215,6 +215,32 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public boolean existsByPhone(String phone, Integer userId) {
+        StringBuilder query = new StringBuilder("""
+                SELECT 1 FROM Users WHERE phone_number = ?
+                """);
+
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query.toString())
+        ) {
+            ps.setString(1, phone);
+
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
+            return ps.executeQuery().next();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
     public boolean existsManagerByDepartment(Integer departmentId, Integer userId) {
 
         StringBuilder query = new StringBuilder("""

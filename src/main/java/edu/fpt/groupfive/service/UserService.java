@@ -34,6 +34,8 @@ public interface UserService {
 
     boolean existsByEmail(String email, Integer userId);
 
+    boolean existsByPhone(String phone, Integer userId);
+
     boolean existsManager(Integer departmentId, Integer userId);
 
     boolean existsDirector(Integer userId);
