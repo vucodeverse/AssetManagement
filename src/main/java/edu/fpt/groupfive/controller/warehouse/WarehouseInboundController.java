@@ -14,7 +14,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import edu.fpt.groupfive.dto.response.warehouse.BarcodeDistributionResponseDTO;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -59,21 +61,67 @@ public class WarehouseInboundController {
 
     // =========================================================
     //  PROCESS RECEIVE  —  POST /wh/inbound/po/{po_id}/receive/{po_detail_id}
+    //  NEW: Redirects to barcode distribution instead of finishing
     // =========================================================
 
     @PostMapping("/po/{po_id}/receive/{po_detail_id}")
     public String receivePO(
             @PathVariable("po_id") Integer poId,
             @PathVariable("po_detail_id") Integer poDetailId,
-            @Valid @ModelAttribute("receiveRequest") InboundPOReceiveRequestDTO dto,
-            BindingResult result, RedirectAttributes ra) {
+            @RequestParam("actualQuantity") Integer actualQuantity,
+            RedirectAttributes ra) {
 
-        if (result.hasErrors()) {
-            ra.addFlashAttribute(ERROR_MSG, "Dữ liệu nhập hàng không hợp lệ.");
+        if (actualQuantity == null || actualQuantity <= 0) {
+            ra.addFlashAttribute(ERROR_MSG, "Số lượng thực nhập không hợp lệ.");
             return "redirect:/wh/inbound/po/" + poId;
         }
 
-        ra.addFlashAttribute(SUCCESS_MSG, "Đã ghi nhận nhập kho thành công (demo).");
+        // Logic sync: Instead of finishing, go to barcode distribution
+        return "redirect:/wh/inbound/po/" + poId + "/barcode?typeId=" + poDetailId + "&qty=" + actualQuantity;
+    }
+
+    // =========================================================
+    //  BARCODE DISTRIBUTION — GET /wh/inbound/po/{po_id}/barcode
+    // =========================================================
+
+    @GetMapping("/po/{po_id}/barcode")
+    public String barcodeDistributionPage(
+            @PathVariable("po_id") Integer poId,
+            @RequestParam("typeId") Integer assetTypeId,
+            @RequestParam("qty") Integer quantity,
+            Model model) {
+            
+        model.addAttribute("activeMenu", "inbound");
+        model.addAttribute("pageTitle", "Phân phối Mã định danh - PO #" + poId);
+
+        // Build mock items based on quantity received
+        List<BarcodeDistributionResponseDTO.BarcodeItemDTO> items = new ArrayList<>();
+        for (int i = 1; i <= quantity; i++) {
+            items.add(BarcodeDistributionResponseDTO.BarcodeItemDTO.builder()
+                    .assetCode("AST-" + poId + "-" + (1000 + i))
+                    .status("CHỜ DÁN NHÃN")
+                    .build());
+        }
+
+        BarcodeDistributionResponseDTO distribution = BarcodeDistributionResponseDTO.builder()
+                .purchaseOrderId(poId)
+                .assetTypeId(assetTypeId)
+                .assetTypeName("Tài sản từ PO #" + poId) // Placeholder
+                .quantity(quantity)
+                .items(items)
+                .build();
+
+        model.addAttribute("distribution", distribution);
+        return "warehouse/inbound/barcode_distribution";
+    }
+
+    // =========================================================
+    //  CONFIRM BARCODE — POST /wh/inbound/po/{po_id}/barcode/confirm
+    // =========================================================
+
+    @PostMapping("/po/{po_id}/barcode/confirm")
+    public String confirmBarcodeDistribution(@PathVariable("po_id") Integer poId, RedirectAttributes ra) {
+        ra.addFlashAttribute(SUCCESS_MSG, "Đã ghi nhận nhập kho và dán mã thành công cho PO #" + poId);
         return "redirect:/wh/inbound/po/" + poId;
     }
 
@@ -131,21 +179,38 @@ public class WarehouseInboundController {
     private List<POResponseDTO> buildDummyPOs() {
         return List.of(
             POResponseDTO.builder()
-                .purchaseOrderId(101).supplierName("Phong Vũ IT").totalAmount(55000000L)
+                .purchaseOrderId(101).supplierName("Phong Vũ IT").totalAmount(155000000L)
                 .createdAt(LocalDateTime.now().minusDays(2)).status("APPROVED").build(),
             POResponseDTO.builder()
                 .purchaseOrderId(102).supplierName("Trần Anh Computer").totalAmount(120000000L)
-                .createdAt(LocalDateTime.now().minusDays(5)).status("APPROVED").build()
+                .createdAt(LocalDateTime.now().minusDays(5)).status("APPROVED").build(),
+            POResponseDTO.builder()
+                .purchaseOrderId(103).supplierName("Hà Nội Computer").totalAmount(45000000L)
+                .createdAt(LocalDateTime.now().minusDays(1)).status("APPROVED").build()
         );
     }
 
     private PODetailResponseDTO buildDummyPODetail(Integer poId) {
+        if (poId == 101) {
+            return PODetailResponseDTO.builder()
+                .purchaseOrderId(101)
+                .supplierName("Phong Vũ IT")
+                .status("APPROVED")
+                .items(List.of(
+                    POItemDetailDTO.builder().assetTypeId(1).assetTypeName("Laptop Dell XPS").quantity(5).receivedQuantity(2).build(),
+                    POItemDetailDTO.builder().assetTypeId(2).assetTypeName("Màn hình Dell 24 inch").quantity(10).receivedQuantity(0).build(),
+                    POItemDetailDTO.builder().assetTypeId(3).assetTypeName("Bàn phím Logitech K120").quantity(20).receivedQuantity(5).build(),
+                    POItemDetailDTO.builder().assetTypeId(4).assetTypeName("Chuột không dây Silent").quantity(15).receivedQuantity(10).build()
+                ))
+                .build();
+        }
+        
         return PODetailResponseDTO.builder()
             .purchaseOrderId(poId)
             .supplierName("Nhà cung cấp demo")
             .status("APPROVED")
             .items(List.of(
-                POItemDetailDTO.builder().assetTypeId(1).assetTypeName("Laptop Dell XPS").quantity(5).receivedQuantity(0).build()
+                POItemDetailDTO.builder().assetTypeId(5).assetTypeName("Máy in Canon LBP").quantity(3).receivedQuantity(0).build()
             ))
             .build();
     }
