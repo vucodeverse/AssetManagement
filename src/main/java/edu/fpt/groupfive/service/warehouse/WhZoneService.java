@@ -13,7 +13,4 @@ public interface WhZoneService {
     void updateZone(int zoneId, ZoneCreateRequestDTO dto);
     
     void createZone(ZoneCreateRequestDTO dto);
-    java.util.Optional<edu.fpt.groupfive.model.warehouse.WarehouseZone> findSuitableZone(Integer assetTypeId, int requiredUnits);
-
-    void updateCapacity(Integer zoneId, int delta, Integer assetTypeId);
 }

@@ -12,9 +12,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/warehouse/inbound")
@@ -25,10 +24,6 @@ public class WarehouseInboundController {
     private static final String SUCCESS_MSG = "successMessage";
     private static final String ERROR_MSG = "errorMessage";
 
-    private final edu.fpt.groupfive.service.OrderService orderService;
-    private final edu.fpt.groupfive.service.warehouse.WhInboundService whInboundService;
-    private final edu.fpt.groupfive.service.UserService userService;
-
     // =========================================================
     //  PO LIST  —  GET /warehouse/inbound/po
     // =========================================================
@@ -37,14 +32,7 @@ public class WarehouseInboundController {
     public String poListPage(Model model) {
         model.addAttribute("activeMenu", "inbound");
         model.addAttribute("pageTitle", "Nhập kho PO - Warehouse");
-        
-        List<PurchaseOrderResponse> allPOs = orderService.getPendingInboundPOs();
-        
-        List<POResponseDTO> poList = allPOs.stream()
-                .map(this::mapToPOResponseDTO)
-                .collect(Collectors.toList());
-                
-        model.addAttribute("pos", poList);
+        model.addAttribute("pos", buildDummyPOs());
         return "warehouse/inbound/po-list";
     }
 
@@ -57,14 +45,11 @@ public class WarehouseInboundController {
         model.addAttribute("activeMenu", "inbound");
         model.addAttribute("pageTitle", "Chi tiết Nhận hàng PO #" + poId);
         
-        edu.fpt.groupfive.dto.response.PurchaseOrderResponse poResponse = orderService.getPurchaseOrderById(poId);
-        PODetailResponseDTO poDetail = mapToPODetailResponseDTO(poResponse);
+        PODetailResponseDTO poDetail = buildDummyPODetail(poId);
         model.addAttribute("po", poDetail);
         
         if (!model.containsAttribute("receiveRequest")) {
-            InboundPOReceiveRequestDTO request = new InboundPOReceiveRequestDTO();
-            request.setPurchaseOrderId(poId);
-            model.addAttribute("receiveRequest", request);
+            model.addAttribute("receiveRequest", new InboundPOReceiveRequestDTO());
         }
         
         return "warehouse/inbound/po-detail";
@@ -77,7 +62,7 @@ public class WarehouseInboundController {
     @PostMapping("/po/receive")
     public String receivePO(
             @Valid @ModelAttribute("receiveRequest") InboundPOReceiveRequestDTO dto,
-            BindingResult result, java.security.Principal principal, RedirectAttributes ra) {
+            BindingResult result, RedirectAttributes ra) {
 
         if (result.hasErrors()) {
             ra.addFlashAttribute("org.springframework.validation.BindingResult.receiveRequest", result);
@@ -86,48 +71,39 @@ public class WarehouseInboundController {
             return "redirect:/warehouse/inbound/po/" + dto.getPurchaseOrderId();
         }
 
-        try {
-            Integer userId = userService.getUserIdByUsername(principal.getName());
-            whInboundService.processPOInbound(dto, userId);
-            ra.addFlashAttribute(SUCCESS_MSG, "Đã ghi nhận nhập kho thành công cho PO #" + dto.getPurchaseOrderId());
-        } catch (Exception e) {
-            ra.addFlashAttribute(ERROR_MSG, "Lỗi khi xử lý nhập kho: " + e.getMessage());
-            return "redirect:/warehouse/inbound/po/" + dto.getPurchaseOrderId();
-        }
-        
+        // Logic thật sẽ tạo Asset record, Transaction, Update Zone capacity...
+        ra.addFlashAttribute(SUCCESS_MSG, "Đã ghi nhận nhập kho cho PO #" + dto.getPurchaseOrderId() + " (demo).");
         return REDIRECT_PO_LIST;
     }
 
+
     // =========================================================
-    //  MAPPING HELPERS
+    //  DUMMY DATA
     // =========================================================
 
-    private POResponseDTO mapToPOResponseDTO(PurchaseOrderResponse po) {
-        return POResponseDTO.builder()
-                .purchaseOrderId(po.getOrderId())
-                .supplierName(po.getSupplierName())
-                .totalAmount(po.getTotalAmount() != null ? po.getTotalAmount().longValue() : 0L)
-                .createdAt(po.getCreatedAt())
-                .status(po.getOrderStatus())
-                .build();
+    private List<POResponseDTO> buildDummyPOs() {
+        return List.of(
+            POResponseDTO.builder()
+                .purchaseOrderId(101).supplierName("Phong Vũ IT").totalAmount(55000000L)
+                .createdAt(LocalDateTime.now().minusDays(2)).status("APPROVED").build(),
+            POResponseDTO.builder()
+                .purchaseOrderId(102).supplierName("Trần Anh Computer").totalAmount(120000000L)
+                .createdAt(LocalDateTime.now().minusDays(5)).status("APPROVED").build(),
+            POResponseDTO.builder()
+                .purchaseOrderId(105).supplierName("Dell Global Vietnam").totalAmount(210000000L)
+                .createdAt(LocalDateTime.now().minusDays(1)).status("APPROVED").build()
+        );
     }
 
-    private PODetailResponseDTO mapToPODetailResponseDTO(edu.fpt.groupfive.dto.response.PurchaseOrderResponse po) {
-        List<POItemDetailDTO> items = po.getOrderDetails().stream()
-                .map(d -> POItemDetailDTO.builder()
-                        .purchaseOrderDetailId(d.getPurchaseOrderDetailId())
-                        .assetTypeId(d.getAssetTypeId())
-                        .assetTypeName(d.getAssetTypeName())
-                        .quantity(d.getQuantity())
-                        .receivedQuantity(0) // Logic thật cần check mapping po -> transactions -> count assets
-                        .build())
-                .toList();
-
+    private PODetailResponseDTO buildDummyPODetail(Integer poId) {
         return PODetailResponseDTO.builder()
-                .purchaseOrderId(po.getOrderId())
-                .supplierName(po.getSupplierName())
-                .status(po.getOrderStatus())
-                .items(items)
-                .build();
+            .purchaseOrderId(poId)
+            .supplierName(poId == 101 ? "Phong Vũ IT" : "Nhà cung cấp khác")
+            .status("APPROVED")
+            .items(List.of(
+                POItemDetailDTO.builder().assetTypeId(1).assetTypeName("Laptop Dell XPS").quantity(5).receivedQuantity(0).build(),
+                POItemDetailDTO.builder().assetTypeId(2).assetTypeName("Màn hình LG 24\"").quantity(10).receivedQuantity(0).build()
+            ))
+            .build();
     }
 }

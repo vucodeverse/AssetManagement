@@ -14,9 +14,6 @@ public class POItemReceiveRequestDTO {
     @NotNull(message = "Loại tài sản không được để trống")
     private Integer assetTypeId;
 
-    @NotNull(message = "ID chi tiết đơn hàng không được để trống")
-    private Integer purchaseOrderDetailId;
-
     @NotNull(message = "Số lượng không được để trống")
     @Min(value = 1, message = "Số lượng phải lớn hơn 0")
     private Integer actualQuantity;

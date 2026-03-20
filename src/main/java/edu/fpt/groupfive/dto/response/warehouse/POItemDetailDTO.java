@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 @Builder
 public class POItemDetailDTO {
-    private Integer purchaseOrderDetailId;
     private Integer assetTypeId;
     private String assetTypeName;
     private Integer quantity; // Số lượng đặt mua
