@@ -41,4 +41,4 @@ search_urls.txt
 
 # --- Maven Wrapper (Allow jar if needed, but usually ignored) ---
 !.mvn/wrapper/maven-wrapper.jar
-/.docs/
+/docs/
