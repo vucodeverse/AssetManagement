@@ -11,6 +11,8 @@ import lombok.*;
 @Setter
 public class UserCreateRequest {
     @NotBlank(message = "Tên đăng nhập là bắt buộc")
+    @Size(min = 4, max = 20, message = "Tên đăng nhập có độ dài từ {min} đến {max}")
+    @Pattern(regexp = "^\\w+$", message = "Tên đăng nhập không được có kí tự đặc biệt")
     private String username;
 
     @NotBlank(message = "Mật khẩu là bắt buộc")
@@ -18,6 +20,7 @@ public class UserCreateRequest {
     private String password;
 
     @NotBlank(message = "Tên là bắt buộc")
+
     private String firstName;
 
     @NotBlank(message = "Họ là bắt buộc")
@@ -29,7 +32,7 @@ public class UserCreateRequest {
 
     @Pattern(
             regexp = "^0\\d{9}$",
-            message = "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0"
+            message = "Số điện thoại phải có 10 chữ số và có định dạng 0xxxxxxxxx"
     )
     private String phoneNumber;
 
