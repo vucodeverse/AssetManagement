@@ -311,5 +311,57 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
 
         return list;
     }
+    @Override
+    public List<AllocationRequest> findAll() {
+        String sql = "select * from allocation_request order by request_id asc";
+        List<AllocationRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRowToRequest(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+
+        }
+        return list;
+    }
+
+    @Override
+    public List<AllocationRequest> findAllPending() {
+        String sql = "select * from allocation_request where status in ('PENDING', 'SUBMITTED') order by created_at desc";
+
+        List<AllocationRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRowToRequest(rs));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<AllocationRequest> findAllOrderByCreatedAtDesc() {
+        String sql = "select * from allocation_request order by created_at desc";
+
+        List<AllocationRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRowToRequest(rs));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
 
 }
