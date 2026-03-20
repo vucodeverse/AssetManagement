@@ -23,6 +23,5 @@ public class QuotationDetailResponse {
     private String specificationRequirement;
     private Integer purchaseDetailId;
     private Integer assetTypeId;
-    private String rejectedReason;
     private QuotationStatus status;
 }

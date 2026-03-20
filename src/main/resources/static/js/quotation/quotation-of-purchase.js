@@ -104,7 +104,8 @@ function openCompareModal() {
     let purchaseId = $('#purchaseIdForCompare').val();
     let ids = Array.from(selectedIds);
 
-    window.location.href = `../compare?purchaseId=${purchaseId}&ids=${ids.join(',')}`;
+    let compareBaseUrl = $('#btnCompare').data('url');
+    window.location.href = `${compareBaseUrl}?purchaseId=${purchaseId}&ids=${ids.join(',')}`;
 }
 
 function closeCompareModal() {

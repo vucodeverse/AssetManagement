@@ -38,39 +38,33 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
     @Override
     public Integer insert(QuotationDetail quotationDetail, Connection connection) {
         String sql = "insert into quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, " +
-                "quantity," +
-                "quotation_detail_note, warranty_months, price, tax_rate, discount_rate, reject_reason, spec_requirement, status) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+                "quantity, quotation_detail_note, warranty_months, price, tax_rate, discount_rate, spec_requirement, status) " +
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (
-                PreparedStatement preparedStatement = connection.prepareStatement(sql,
-                        Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             preparedStatement.setInt(1, quotationDetail.getQuotationId());
             preparedStatement.setInt(2, quotationDetail.getPurchaseDetailId());
             preparedStatement.setInt(3, quotationDetail.getAssetTypeId());
-
             preparedStatement.setInt(4, quotationDetail.getQuantity() != null ? quotationDetail.getQuantity() : 0);
             preparedStatement.setString(5, quotationDetail.getQuotationDetailNote());
-            preparedStatement.setInt(6,
-                    quotationDetail.getWarrantyMonths() != null ? quotationDetail.getWarrantyMonths() : 0);
+            preparedStatement.setInt(6, quotationDetail.getWarrantyMonths() != null ? quotationDetail.getWarrantyMonths() : 0);
             preparedStatement.setBigDecimal(7, quotationDetail.getPrice());
-            preparedStatement.setBigDecimal(8,
-                    quotationDetail.getTaxRate() != null ? quotationDetail.getTaxRate() : BigDecimal.ZERO);
-            preparedStatement.setBigDecimal(9,
-                    quotationDetail.getDiscountRate() != null ? quotationDetail.getDiscountRate() : BigDecimal.ZERO);
-            preparedStatement.setString(10, quotationDetail.getRejectedReason());
-            preparedStatement.setString(11, quotationDetail.getSpecificationRequirement());
-            preparedStatement.setString(12,
-                    quotationDetail.getQuotationDetailStatus() != null
-                            ? quotationDetail.getQuotationDetailStatus().name()
-                            : QuotationStatus.PENDING.name());
+            preparedStatement.setBigDecimal(8, quotationDetail.getTaxRate() != null ? quotationDetail.getTaxRate() : BigDecimal.ZERO);
+            preparedStatement.setBigDecimal(9, quotationDetail.getDiscountRate() != null ? quotationDetail.getDiscountRate() : BigDecimal.ZERO);
+            preparedStatement.setString(10, quotationDetail.getSpecificationRequirement());
+            preparedStatement.setString(11, quotationDetail.getQuotationDetailStatus() != null 
+                    ? quotationDetail.getQuotationDetailStatus().name() 
+                    : QuotationStatus.PENDING.name());
 
             preparedStatement.executeUpdate();
-            ResultSet rs = preparedStatement.getGeneratedKeys();
-            if (rs.next())
-                return rs.getInt(1);
+            try (ResultSet rs = preparedStatement.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error inserting quotation detail", e);
         }
         return 0;
     }
@@ -98,7 +92,6 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 q.setPrice(rs.getBigDecimal("price"));
                 q.setTaxRate(rs.getBigDecimal("tax_rate"));
                 q.setDiscountRate(rs.getBigDecimal("discount_rate"));
-                q.setRejectedReason(rs.getString("reject_reason"));
                 q.setSpecificationRequirement(rs.getString("spec_requirement"));
 
                 String statusStr = rs.getString("status");
@@ -168,7 +161,6 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
                 q.setPrice(rs.getBigDecimal("price"));
                 q.setTaxRate(rs.getBigDecimal("tax_rate"));
                 q.setDiscountRate(rs.getBigDecimal("discount_rate"));
-                q.setRejectedReason(rs.getString("reject_reason"));
                 q.setSpecificationRequirement(rs.getString("spec_requirement"));
 
                 String statusStr = rs.getString("status");

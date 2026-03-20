@@ -25,14 +25,15 @@
                 <div class="header-actions" style="display: flex; gap: 10px;">
                     <input type="hidden" id="purchaseIdForCompare" th:value="${purchaseId}">
                     <div sec:authorize="hasAnyAuthority('PURCHASE_STAFF', 'DIRECTOR')">
-                        <button id="btnCompare" class="btn-compare-custom" style="display: none;">
+                        <button id="btnCompare" class="btn-compare-custom" style="display: none;"
+                                th:data-url="@{/quotations/compare}">
                             <span class="icon-wrap"><i class="fas fa-columns"></i></span>
                             <span class="text-wrap">So sánh (<span id="compareCount">0</span>/3)</span>
                         </button>
                     </div>
                     <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
                         <a th:if="${purchaseStatus == null || purchaseStatus.name() != 'ORDERED'}"
-                           th:href="@{/quotations/create/{id}(id=${purchaseId})}" class="btn-primary">
+                            th:href="@{/quotations/create/{id}(id=${purchaseId})}" class="btn-primary">
                             <i class="fas fa-plus"></i> Thêm Báo Giá Mới
                         </a>
                     </div>
@@ -101,7 +102,8 @@
                 <table class="data-table" id="quotationDetailTable">
                     <thead>
                         <tr>
-                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="checkAllCompare" title="Chọn tất cả"></th>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="checkAllCompare"
+                                    title="Chọn tất cả"></th>
                             <th>MÃ BÁO GIÁ</th>
                             <th>NHÀ CUNG CẤP</th>
                             <th>NGÀY TẠO</th>
@@ -130,7 +132,8 @@
                             <td th:text="${#temporals.format(q.createdAt, 'dd-MM-yyyy')}">12-10-2023</td>
                             <td>
                                 <strong
-                                    th:text="${#numbers.formatDecimal(q.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">11.240 VNĐ</strong>
+                                    th:text="${#numbers.formatDecimal(q.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">11.240
+                                    VNĐ</strong>
 
                             </td>
                             <td>
