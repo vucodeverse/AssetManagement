@@ -81,15 +81,15 @@ public class AssetManagerDashboardServiceImpl implements AssetManagerDashboardSe
     }
 
     private AllocationRequestResponse toAllocationResponse(AllocationRequest req) {
-        String requesterName = userDAO.findFullNameById(req.getRequesterId());
-        return new AllocationRequestResponse(
-                req.getRequestId(),
-                req.getStatus(),
-                requesterName,
-                req.getNeededByDate(),
-                req.getCreatedAt(),
-                req.getPriority()
-        );
+        String requesterName = userDAO.findFullNameByUserId(req.getRequesterId());
+        return AllocationRequestResponse.builder()
+                .requestId(req.getRequestId())
+                .status(req.getStatus())
+                .userName(requesterName)
+                .neededByDate(req.getNeededByDate())
+                .createdAt(req.getCreatedAt())
+                .priority(req.getPriority())
+                .build();
     }
 
     private ExpiringWarrantyAssetResponse toExpiringAsset(Asset asset) {
