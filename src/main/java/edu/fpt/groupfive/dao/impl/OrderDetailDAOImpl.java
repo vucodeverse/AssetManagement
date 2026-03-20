@@ -4,6 +4,7 @@ import edu.fpt.groupfive.dao.OrderDetailDAO;
 import edu.fpt.groupfive.model.OrderDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -17,13 +18,13 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
 
     private final DatabaseConfig databaseConfig;
 
-    @org.springframework.beans.factory.annotation.Value("${dao.order.detail.insert_error}")
+    @Value("${dao.order.detail.insert_error}")
     private String insertErrorMsg;
 
-    @org.springframework.beans.factory.annotation.Value("${dao.order.detail.find_error}")
+    @Value("${dao.order.detail.find_error}")
     private String findErrorMsg;
 
-    @org.springframework.beans.factory.annotation.Value("${dao.order.detail.update_delivery_date_error}")
+    @Value("${dao.order.detail.update_delivery_date_error}")
     private String updateDeliveryDateErrorMsg;
 
     // insert po detail

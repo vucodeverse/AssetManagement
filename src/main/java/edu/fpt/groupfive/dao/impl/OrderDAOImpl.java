@@ -6,10 +6,13 @@ import edu.fpt.groupfive.dao.OrderDetailDAO;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.model.Order;
 import edu.fpt.groupfive.model.OrderDetail;
+import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.model.PurchaseDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
+import edu.fpt.groupfive.util.exception.DataAccessException;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -26,13 +29,17 @@ public class OrderDAOImpl implements OrderDAO {
     private final DatabaseConfig databaseConfig;
     private final OrderDetailDAO orderDetailDAO;
 
-    @org.springframework.beans.factory.annotation.Value("${order.create.excess_quantity_basic}")
+
+
+    @Value("${dao.common.insert_error}")
+    private String insertErrorMsg;
+    @Value("${order.create.excess_quantity_basic}")
     private String excessQuantityMsg;
 
-    @org.springframework.beans.factory.annotation.Value("${dao.order.generate_id_error}")
+    @Value("${dao.order.generate_id_error}")
     private String generateIdErrorMsg;
 
-    @org.springframework.beans.factory.annotation.Value("${dao.common.find_error}")
+    @Value("${dao.common.find_error}")
     private String findErrorMsg;
 
     @org.springframework.beans.factory.annotation.Value("${dao.order.detail.find_error}")
@@ -41,9 +48,9 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public Integer insert(Order order) {
         String sql = "insert into purchase_orders " +
-                "(order_date, total_amount, note, status, created_at, purchase_request_id, supplier_id, quotation_id, approved_by, updated_at, updated_by, warehouse_id) "
+                "(order_date, total_amount, note, status, created_at, purchase_request_id, supplier_id, quotation_id, approved_by, updated_at, updated_by) "
                 +
-                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection connection = null;
         try {
@@ -155,7 +162,6 @@ public class OrderDAOImpl implements OrderDAO {
                 ps.setObject(9, order.getApprovedBy());
                 ps.setTimestamp(10, Timestamp.valueOf(LocalDateTime.now()));
                 ps.setObject(11, order.getUpdatedBy());
-                ps.setObject(12, order.getWarehouseId());
 
                 ps.executeUpdate();
 
@@ -234,7 +240,7 @@ public class OrderDAOImpl implements OrderDAO {
         StringBuilder sql = new StringBuilder(
                 "select po.purchase_order_id, po.order_date, po.total_amount, po.note, po.status, " +
                         "po.created_at, po.purchase_request_id, po.supplier_id, po.quotation_id, po.approved_by, " +
-                        "po.updated_at, po.updated_by, po.warehouse_id, " +
+                        "po.updated_at, po.updated_by, " +
                         "s.supplier_name " +
                         "from purchase_orders po " +
                         "join supplier s on po.supplier_id = s.supplier_id " +
@@ -309,7 +315,6 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setUpdatedAt(
                         rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
-                order.setWarehouseId(rs.getObject("warehouse_id") != null ? rs.getInt("warehouse_id") : null);
 
                 String supplierName = rs.getString("supplier_name");
                 results.add(new Object[] { order, supplierName });
@@ -325,7 +330,7 @@ public class OrderDAOImpl implements OrderDAO {
     public Optional<Order> findById(Integer orderId) {
         String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
-                "updated_at, updated_by, warehouse_id " +
+                "updated_at, updated_by " +
                 "from purchase_orders " +
                 "where purchase_order_id = ? and status <> 'DELETED'";
 
@@ -349,14 +354,13 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setUpdatedAt(
                         rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
-                order.setWarehouseId(rs.getObject("warehouse_id") != null ? rs.getInt("warehouse_id") : null);
 
                 return Optional.of(order);
             }
         } catch (SQLException e) {
             throw new RuntimeException(findErrorMsg, e);
         }
-        return java.util.Optional.empty();
+        return Optional.empty();
     }
 
     // lấy ra các po
@@ -364,7 +368,7 @@ public class OrderDAOImpl implements OrderDAO {
     public List<Order> findRecent() {
         String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
-                "updated_at, updated_by, warehouse_id " +
+                "updated_at, updated_by " +
                 "from purchase_orders " +
                 "where status <> 'DELETED' " +
                 "order by created_at desc";
@@ -389,7 +393,6 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setUpdatedAt(
                         rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
-                order.setWarehouseId(rs.getObject("warehouse_id") != null ? rs.getInt("warehouse_id") : null);
                 orders.add(order);
             }
         } catch (SQLException e) {
@@ -399,22 +402,31 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public Integer getWhIdFromPr(Integer purchaseId) {
+    public void updateStatus(Integer orderId, OrderStatus orderStatus) {
+        String sql = "update purchase_orders set status = ? where order_id = ?";
 
-        String sql = "select o.warehouse_id from purchase_orders o  where o.purchase_request_id = ?";
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
+            try (Connection connection = databaseConfig.getConnection()) {
 
-            ps.setInt(1, purchaseId);
+                connection.setAutoCommit(false);
 
-            ResultSet rs = ps.executeQuery();
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            if (rs.next())
-                return (Integer) rs.getObject("warehouse_id");
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+                    preparedStatement.setString(1, orderStatus.name());
+                    preparedStatement.setInt(2, orderId);
+                    connection.commit();
+
+                } catch (Exception e) {
+                    connection.rollback();
+                    throw new DataAccessException(insertErrorMsg, e);
+                } finally {
+                    connection.setAutoCommit(true);
+                }
+
+            } catch (Exception e) {
+                throw new DataAccessException("Update thất bại", e);
+            }
         }
-        return null;
-    }
+
+
 }

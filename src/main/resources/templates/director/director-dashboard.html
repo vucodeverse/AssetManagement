@@ -14,12 +14,41 @@
     <th:block layout:fragment="content">
         <!-- Main Content -->
         <div class="director-dashboard-wrapper">
-            <header class="dashboard-header">
-                <div class="header-left">
-                    <h1>TỔNG QUAN HỆ THỐNG</h1>
-                    <p>Theo dõi hoạt động mua sắm và các nhiệm vụ phê duyệt của bạn.</p>
+            <!-- Summary Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon icon-pending">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">YÊU CẦU CHỜ DUYỆT</span>
+                        <h2 class="stat-value" th:text="${dashboard.totalPrPending}">0</h2>
+                    </div>
                 </div>
-            </header>
+
+                <div class="stat-card">
+                    <div class="stat-icon icon-quotation">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">BÁO GIÁ CHỜ PHÊ DUYỆT</span>
+                        <h2 class="stat-value" th:text="${dashboard.totalQuotationPending}">0</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-card-wide">
+                    <div class="stat-icon icon-spending">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">TỔNG CHI TIÊU NĂM NAY</span>
+                        <h2 class="stat-value" 
+                            th:text="${#numbers.formatDecimal(dashboard.totalPrTotalInYear, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
+                            0 VNĐ
+                        </h2>
+                    </div>
+                </div>
+            </div>
 
             <!-- Content Grid -->
             <div class="dashboard-grid">

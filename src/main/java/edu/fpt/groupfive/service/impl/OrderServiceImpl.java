@@ -4,7 +4,6 @@ import edu.fpt.groupfive.common.OrderStatus;
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.*;
-import edu.fpt.groupfive.dao.warehouse.WarehouseDAO;
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
@@ -13,14 +12,10 @@ import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.mapper.OrderDetailMapper;
 import edu.fpt.groupfive.mapper.OrderMapper;
 import edu.fpt.groupfive.model.*;
-import edu.fpt.groupfive.model.warehouse.HandleStatus;
-import edu.fpt.groupfive.model.warehouse.InventoryTicket;
-import edu.fpt.groupfive.model.warehouse.TicketDetail;
-import edu.fpt.groupfive.model.warehouse.TicketType;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.OrderService;
-import edu.fpt.groupfive.service.warehouse.InventoryTicketService;
+import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
@@ -46,8 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderCalculationUtil orderCalculationUtil;
     private final RangeAmount rangeAmount;
     private final ISupplierService supplierService;
-    private final WarehouseDAO warehouseDAO;
-    private final InventoryTicketService inventoryTicketService;
+    private final UserService userService;
     private final UserDAO userDAO;
     private final PurchaseDAO purchaseDAO;
     private final PurchaseDetailDAO purchaseDetailDAO;
@@ -89,11 +83,6 @@ public class OrderServiceImpl implements OrderService {
                 .filter(qd -> QuotationStatus.APPROVED == qd.getQuotationDetailStatus()
                         || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
                 .toList();
-        String whName = null;
-        Integer existingWhId = orderDAO.getWhIdFromPr(quotation.getPurchaseId());
-        if (existingWhId != null) {
-            whName = warehouseDAO.getById(existingWhId).getName();
-        }
 
         // lấy ra assettype
         Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
@@ -116,7 +105,6 @@ public class OrderServiceImpl implements OrderService {
                 .totalAmount(quotation.getTotalAmount())
                 .supplierId(quotation.getSupplierId())
                 .quotationId(quotationId)
-                .warehouseName(whName)
                 .purchaseOrderDetailCreateRequests(purchaseOrderDetailCreateRequests)
                 .build();
     }
@@ -152,15 +140,12 @@ public class OrderServiceImpl implements OrderService {
                 .filter(o -> o.getQuantity() != null && o.getQuantity() > 0)
                 .toList();
 
-        Integer whId = warehouseDAO.getByName(purchaseOrderCreateRequest.getWarehouseName());
-
         // tạo order
         Order order = new Order();
         order.setQuotationId(quotationId);
         order.setPurchaseId(quotation.getPurchaseId());
         order.setOrderStatus(OrderStatus.PENDING);
         order.setOrderNote(purchaseOrderCreateRequest.getOrderNote());
-        order.setWarehouseId(whId);
         order.setSupplierId(quotation.getSupplierId());
         order.setApprovedBy(userDAO.findUserIdByUsername(username));
 
@@ -200,23 +185,6 @@ public class OrderServiceImpl implements OrderService {
         // update quotation sang APPROVED
         quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED, null);
 
-        // tao inventory ticket cho warehouse nhan hang
-        InventoryTicket ticket = new InventoryTicket();
-        ticket.setWarehouseId(order.getWarehouseId());
-        ticket.setTicketType(TicketType.IN);
-        ticket.setStatus(HandleStatus.PENDING);
-
-        List<TicketDetail> ticketDetails = orderDetails.stream()
-                .map(od -> {
-                    TicketDetail td = new TicketDetail();
-                    td.setAssetTypeId(od.getAssetTypeId());
-                    td.setQuantity(od.getQuantity());
-                    td.setNote(od.getOrderDetailNote());
-                    return td;
-                })
-                .collect(Collectors.toList());
-
-        inventoryTicketService.createTicket(ticket, ticketDetails);
         if(checkQuantityOfPO(quotation.getPurchaseId())) purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
         return orderId;
     }
@@ -317,6 +285,44 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<PurchaseOrderDetailResponse> getAllOrderDetails() {
         throw new UnsupportedOperationException("getAllOrderDetails() chua duoc implement");
+    }
+
+    @Override
+    public List<PurchaseOrderDetailResponse> getAllOrderDetails(Integer orderId) {
+        Map<Integer, String> map = assetTypeService.getAssetTypeIdToNameMap();
+
+        return orderDetailDAO.findByOrderId(orderId).stream()
+                .map(pod -> PurchaseOrderDetailResponse.builder()
+                        .purchaseOrderDetailId(pod.getId())
+                        .price(pod.getPrice())
+                        .taxRate(pod.getTaxRate())
+                        .deliveryDate(pod.getDeliveryDate())
+                        .discountRate(pod.getDiscountRate())
+                        .quantity(pod.getQuantity())
+                        .assetTypeName(map.getOrDefault(pod.getAssetTypeId(), "Không có loại tài sản"))
+                        .build()).toList();
+    }
+
+    @Override
+    public List<PurchaseOrderResponse> getOrderWithPending() {
+
+        Map<Integer, String> map = userService.getUserIdToUsernameMap();
+
+        return (List<PurchaseOrderResponse>) orderDAO.findRecent().stream().filter(o -> OrderStatus.PENDING == o.getOrderStatus()).map(o -> PurchaseOrderResponse.builder()
+                        .orderId(o.getId())
+                .orderNote(o.getOrderNote())
+                .createdAt(o.getCreatedAt())
+                .orderStatus(o.getOrderStatus().name())
+                .purchaseId(o.getPurchaseId())
+                .approvedByName(map.getOrDefault(o.getUpdatedBy(), "Hiện chưa được chấp nhận"))
+                .totalAmount(o.getTotalAmount())).toList();
+    }
+
+    @Override
+    public void updateStatus(Integer orderId, OrderStatus orderStatus) {
+        orderDAO.findById(orderId).orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
+
+        orderDAO.updateStatus(orderId, orderStatus);
     }
 
     private Boolean checkQuantityOfPO(Integer purchaseId){

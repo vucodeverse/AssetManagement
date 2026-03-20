@@ -15,13 +15,17 @@ import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -36,28 +40,38 @@ public class QuotationController {
     private final AssetTypeService assetTypeService;
     private final PurchaseService purchaseService;
 
-    @org.springframework.beans.factory.annotation.Value("${quotation.success.detail_action}")
+    @Value("${quotation.success.detail_action}")
     private String successDetailActionMsg;
 
-    @org.springframework.beans.factory.annotation.Value("${quotation.success.create_flash}")
+    @Value("${quotation.success.create_flash}")
     private String successCreateMsg;
 
-    @org.springframework.beans.factory.annotation.Value("${quotation.success.action_flash}")
+    @Value("${quotation.success.action_flash}")
     private String successActionMsg;
 
     // hiển thị trang compare quotation
-    @IsDirector
+    @PreAuthorize("hasAnyAuthority('DIRECTOR', 'PURCHASE_STAFF')")
     @GetMapping("/compare")
-    public String showCompare(@RequestParam(value = "ids", required = false) List<Integer> ids,
+    public String showCompare(@RequestParam(value = "ids", required = false) String ids,
             @RequestParam(value = "purchaseId", required = false) Integer purchaseId,
             Model model) {
         PurchaseRequestResponse purchaseRequestResponse = purchaseService.getPurchaseRequestById(purchaseId);
         model.addAttribute("purchaseDetails", purchaseRequestResponse.getPurchaseDetails());
         model.addAttribute("purchaseId", purchaseId);
 
+        if (ids == null || ids.isBlank()) {
+            return "redirect:/quotations/purchase/" + purchaseId;
+        }
+
+        List<Integer> idList = Arrays.stream(ids.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+
         // chỉ lấy ra các quotation detial ko bị reject
         List<QuotationResponse> quotationResponses =
-                ids.stream()
+                idList.stream()
                         .map(quotationService::getQuotationById)
                         .map(qr -> {
                             qr.setQuotationDetails(

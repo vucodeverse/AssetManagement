@@ -19,6 +19,5 @@ public class Order extends AbstractEntity<Integer>{
     private Integer quotationId;
     private Integer approvedBy;
     private Integer updatedBy;
-    private Integer warehouseId;
     private List<OrderDetail> orderDetails;
 }

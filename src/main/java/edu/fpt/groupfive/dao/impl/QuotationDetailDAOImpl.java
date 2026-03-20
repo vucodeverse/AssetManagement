@@ -146,8 +146,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
     @Override
     public List<QuotationDetail> findByQuotationId(Integer quotationId) {
 
-        String sql = "select qd.* from quotation_detail qd join dbo.quotation q on qd.quotation_id = q" +
-                ".quotation_id where qd.quotation_id = ? and q.status <> 'DELETED'";
+        String sql = "select * from quotation_detail where quotation_id = ? and status <> 'DELETED'";
 
         List<QuotationDetail> quotationDetails = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
@@ -159,11 +158,11 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
             while (rs.next()) {
 
                 QuotationDetail q = new QuotationDetail();
-                q.setQuotationId(rs.getInt("quotation_id"));
-                q.setId(rs.getInt("quotation_detail_id"));
-                q.setPurchaseDetailId(rs.getInt("purchase_request_detail_id"));
-                q.setAssetTypeId(rs.getInt("asset_type_id"));
-                q.setQuantity(rs.getInt("quantity"));
+                q.setQuotationId((Integer) rs.getObject("quotation_id"));
+                q.setId((Integer) rs.getObject("quotation_detail_id"));
+                q.setPurchaseDetailId((Integer) rs.getObject("purchase_request_detail_id"));
+                q.setAssetTypeId((Integer) rs.getObject("asset_type_id"));
+                q.setQuantity((Integer) rs.getObject("quantity"));
                 q.setQuotationDetailNote(rs.getString("quotation_detail_note"));
                 q.setWarrantyMonths(rs.getInt("warranty_months"));
                 q.setPrice(rs.getBigDecimal("price"));

@@ -24,8 +24,6 @@ public class PurchaseOrderCreateRequest {
     private String orderNote;
     private BigDecimal totalAmount;
 
-    @NotNull(message = "Tên kho không được để trống")
-    private String warehouseName;
 
     @Builder.Default
     private List<PurchaseOrderDetailCreateRequest> purchaseOrderDetailCreateRequests = new ArrayList<>();

@@ -11,5 +11,4 @@ public class StaffDashboardDTO {
     private List<PurchaseRequestResponse> approvedPRs;
     private List<QuotationResponse> recentQuotations;
     private List<PurchaseOrderResponse> activeOrders;
-
 }

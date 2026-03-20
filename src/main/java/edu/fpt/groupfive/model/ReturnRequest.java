@@ -21,10 +21,6 @@ public class ReturnRequest {
 
     private String requestReason;
 
-    private Integer whApprovedByUserId;
-
-    private LocalDateTime whApprovedDate;
-
     private LocalDateTime createdAt;
 
     private LocalDateTime updateAt;

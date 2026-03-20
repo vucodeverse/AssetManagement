@@ -12,8 +12,10 @@ import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.util.exception.DataAccessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
 import java.time.LocalDateTime;
@@ -27,13 +29,13 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     private final DatabaseConfig databaseConfig;
     private final PurchaseDetailDAO purchaseDetailDAO;
 
-    @org.springframework.beans.factory.annotation.Value("${dao.common.insert_error}")
+    @Value("${dao.common.insert_error}")
     private String insertErrorMsg;
 
-    @org.springframework.beans.factory.annotation.Value("${purchase.create.failure}")
+    @Value("${purchase.create.failure}")
     private String createFailureMsg;
 
-    @org.springframework.beans.factory.annotation.Value("${dao.common.map_error}")
+    @Value("${dao.common.map_error}")
     private String mapErrorMsg;
 
     // map các thuộc tính
@@ -397,6 +399,33 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         }
 
         return result;
+    }
+
+    @Override
+    public List<Object[]> getItemOnDB() {
+        String sql =" select " +
+                "          (select count(*) from purchase_request p where p.status = 'PENDING'), " +
+                "          (select count(*) from quotation q where q.status = 'PENDING'), " +
+                "          (select coalesce(sum(po.total_amount), 0) from purchase_orders po where po.status <> 'DELETED' " +
+                "           and exists (select 1 from purchase_order_details pod where pod.purchase_order_id = po.purchase_order_id and year(pod.delivery_date) = year(getdate()))) ";
+
+        try(Connection connection = databaseConfig.getConnection();
+        PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ResultSet rs = ps.executeQuery();
+            List<Object[]> result = new ArrayList<>();
+            while (rs.next()) {
+                Integer countPrPending = rs.getInt(1);
+                Integer countQtPending = rs.getInt(2);
+                BigDecimal totalAmount = rs.getBigDecimal(3);
+
+                result.add(new Object[] { countPrPending, countQtPending, totalAmount });
+            }
+
+            return result;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // update purchase request nếu là draft

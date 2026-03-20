@@ -132,13 +132,13 @@ public class QuotationServiceImpl implements QuotationService {
             q.setUpdatedAt(LocalDateTime.now());
         }
 
-        // map từ assetTypeName -> assetTypeId (đảo ngược assetTypeIdToNameMap)
+        // map ngược lại
         Map<String, Integer> map = new HashMap<>();
         for (Map.Entry<Integer, String> e : assetTypeService.getAssetTypeIdToNameMap().entrySet()) {
             map.put(e.getValue(), e.getKey());
         }
 
-        // Khởi tạo danh sách chi tiết báo giá
+        // Khởi tạo danh sách chi tiết báo giá trước
         List<QuotationDetail> quotationDetails = new ArrayList<>();
 
         // mapừng quotation detail
@@ -223,11 +223,13 @@ public class QuotationServiceImpl implements QuotationService {
     @Override
     public void processQuotationAction(Integer id, String action, String reason) {
 
-       Quotation quotation =
-               quotationDAO.findById(id).orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
+        Quotation quotation = quotationDAO.findById(id)
+                .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
-       List<QuotationDetail>  detailsList =
-               quotationDetailDAO.findByQuotationId(quotation.getId()).stream().filter(qd -> QuotationStatus.REJECTED != qd.getQuotationDetailStatus() && QuotationStatus.DELETED != qd.getQuotationDetailStatus()).toList();
+        List<QuotationDetail> detailsList = quotationDetailDAO.findByQuotationId(quotation.getId()).stream()
+                .filter(qd -> QuotationStatus.REJECTED != qd.getQuotationDetailStatus()
+                        && QuotationStatus.DELETED != qd.getQuotationDetailStatus())
+                .toList();
 
         if ("r".equals(action)) {
             detailsList.forEach(qd -> quotationDetailDAO.update(qd.getId(), QuotationStatus.REJECTED));
@@ -238,7 +240,6 @@ public class QuotationServiceImpl implements QuotationService {
         }
 
     }
-
 
     // hiển thị các báo giá của 1 purhase
     @Override
@@ -264,8 +265,8 @@ public class QuotationServiceImpl implements QuotationService {
                 .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
         // lấy ra list quotation detail từ DB
-        List<QuotationDetail> details =
-                quotationDetailDAO.findByQuotationId(q.getId()).stream().filter(qd -> QuotationStatus.DELETED != qd.getQuotationDetailStatus()).toList();
+        List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(q.getId()).stream()
+                .filter(qd -> QuotationStatus.DELETED != qd.getQuotationDetailStatus()).toList();
 
         // lấy ra các loại tài sản
         Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
@@ -282,8 +283,11 @@ public class QuotationServiceImpl implements QuotationService {
                         .quotationDetailNote(qd.getQuotationDetailNote())
                         .warrantyMonths(qd.getWarrantyMonths())
                         .price(qd.getPrice())
+                        .taxRate(qd.getTaxRate())
                         .discountRate(qd.getDiscountRate())
                         .status(qd.getQuotationDetailStatus())
+                        .purchaseDetailId(qd.getPurchaseDetailId())
+                        .assetTypeId(qd.getAssetTypeId())
                         .build())
                 .toList();
 
@@ -436,9 +440,9 @@ public class QuotationServiceImpl implements QuotationService {
     public void processQuotationDetailAction(Integer id, String actions) {
         quotationDetailDAO.findById(id).orElseThrow(() -> new InvalidDataException(quotationDetailNotFoundMsg));
 
-        if("a".equals(actions)){
+        if ("a".equals(actions)) {
             quotationDetailDAO.update(id, QuotationStatus.APPROVED);
-        }else if("r".equals(actions)){
+        } else if ("r".equals(actions)) {
             quotationDetailDAO.update(id, QuotationStatus.REJECTED);
         }
     }

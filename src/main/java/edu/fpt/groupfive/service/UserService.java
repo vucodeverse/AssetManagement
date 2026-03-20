@@ -8,6 +8,7 @@ import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.model.Users;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     void createUser(UserCreateRequest request);
@@ -15,6 +16,7 @@ public interface UserService {
     void updateUser(UserUpdateRequest request);
 
     void removeUser(Integer id);
+    Integer getUserIdByUsername(String username);
 
     List<UserResponse> searchUsers(
             int page, int size,
@@ -40,4 +42,5 @@ public interface UserService {
 
     boolean existsDirector(Integer userId);
 
+    Map<Integer, String> getUserIdToUsernameMap();
 }

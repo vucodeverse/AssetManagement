@@ -108,8 +108,4 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
         return returnRequestMapper.toResponseList(returnReqDAO.search(departmentId, requestId, status, fromDate, toDate));
     }
 
-    @Override
-    public void updateStatus(Integer id, String status, Integer whApprovedBy) {
-
-    }
 }

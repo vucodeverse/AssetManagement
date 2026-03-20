@@ -12,9 +12,12 @@ import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.dao.SupplierDAO;
 import edu.fpt.groupfive.model.Supplier;
 import edu.fpt.groupfive.service.ISupplierService;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -34,9 +37,18 @@ public class DashboardServiceImpl implements DashboardService {
 
         @Override
         public DashboardDTO getDirectorDashboardData() {
+                List<Object[]> summaryDB = purchaseDAO.getItemOnDB();
+
+                Object[] row = summaryDB.get(0);
+                Integer prPending = (Integer)  row[0];
+                Integer qtPending = (Integer)  row[1];
+                BigDecimal totalAmount = (BigDecimal)  row[2];
                 return DashboardDTO.builder()
                                 .recentPRs(fetchRecentPRs())
                                 .recentQuotations(fetchRecentQuotations(QuotationStatus.PENDING))
+                        .totalPrPending(prPending)
+                        .totalQuotationPending(qtPending)
+                        .totalPrTotalInYear(totalAmount)
                                 .build();
         }
 

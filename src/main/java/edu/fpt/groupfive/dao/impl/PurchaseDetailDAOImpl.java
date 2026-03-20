@@ -5,6 +5,7 @@ import edu.fpt.groupfive.model.PurchaseDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.util.exception.DataAccessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -18,7 +19,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
 
     private final DatabaseConfig databaseConfig;
 
-    @org.springframework.beans.factory.annotation.Value("${dao.common.insert_error}")
+    @Value("${dao.common.insert_error}")
     private String insertErrorMsg;
 
     // insert purchase detail

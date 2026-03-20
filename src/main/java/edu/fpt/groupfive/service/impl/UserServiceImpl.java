@@ -15,7 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -108,6 +111,11 @@ public class UserServiceImpl implements UserService {
         userDAO.delete(id);
     }
 
+    @Override
+    public Integer getUserIdByUsername(String username) {
+        return userDAO.findUserIdByUsername(username);
+    }
+
     // Tìm kiếm user theo keyword
     @Override
     public List<UserResponse> searchUsers(
@@ -169,6 +177,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByPhone(String phone, Integer userId) {
         return userDAO.existsByPhone(phone, userId);
+    }
+
+    @Override
+    public Map<Integer, String> getUserIdToUsernameMap() {
+
+        Map<Integer, String> userMap = new HashMap<>();
+
+        for (Users user : userDAO.findAll()) {
+            userMap.put(user.getUserId(), user.getFirstName() + ' ' + user.getLastName());
+        }
+
+        return userMap;
     }
 
 }
