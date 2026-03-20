@@ -187,16 +187,25 @@ public class DepartmentDAOImpl implements DepartmentDAO {
     }
 
     @Override
-    public boolean existsByName(String departmentName) {
-        String query = """
+    public boolean existsByName(String departmentName, Integer departId) {
+        StringBuilder query = new StringBuilder("""
                 SELECT 1 FROM Departments
                 WHERE department_name = ? AND status = 'ACTIVE'
-                """;
+                """);
+
+        if (departId != null) {
+            query.append(" AND department_id <> ?");
+        }
+
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)
+             PreparedStatement ps = connection.prepareStatement(query.toString())
         ) {
             ps.setString(1, departmentName);
+            if (departId != null) {
+                ps.setInt(2, departId);
+            }
+
             return ps.executeQuery().next();
         } catch (Exception e) {
             throw new RuntimeException(e);
