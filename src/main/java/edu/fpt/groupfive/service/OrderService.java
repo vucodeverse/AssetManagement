@@ -18,4 +18,6 @@ public interface OrderService {
 
     void updateDeliveryDate(Integer orderId, String deliveryDate);
     List<PurchaseOrderDetailResponse> getAllOrderDetails();
+    void updateOrderStatus(Integer orderId, edu.fpt.groupfive.common.OrderStatus status);
+    java.util.List<PurchaseOrderResponse> getPendingInboundPOs();
 }

@@ -119,12 +119,11 @@ public class OrderDAOImpl implements OrderDAO {
         return map;
     }
 
-
     // search cho màn purchase orderlisst
     @Override
     public List<Object[]> search(PurchaseOrderSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder(
-                "select po.purchase_order_id, po.order_date, po.total_amount, po.note, po.status, " +
+                "select po.purchase_order_id, po.total_amount, po.note, po.status, " +
                         "po.created_at, po.purchase_request_id, po.supplier_id, po.quotation_id, po.approved_by, " +
                         "po.updated_at, po.updated_by, " +
                         "s.supplier_name " +
@@ -192,14 +191,13 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
-                        : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
+                order.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
                 order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() :
-                        null);
+                order.setUpdatedAt(
+                        rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
                 String supplierName = rs.getString("supplier_name");
                 results.add(new Object[] { order, supplierName });
@@ -213,7 +211,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public Optional<Order> findById(Integer orderId) {
-        String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
+        String sql = "select purchase_order_id, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by " +
                 "from purchase_orders " +
@@ -230,14 +228,13 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
-                        : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
+                order.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
                 order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() :
-                        null);
+                order.setUpdatedAt(
+                        rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
                 return Optional.of(order);
             }
@@ -250,7 +247,7 @@ public class OrderDAOImpl implements OrderDAO {
     // lấy ra các po gần đây theo giới hạn
     @Override
     public List<Order> findRecent() {
-        String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
+        String sql = "select purchase_order_id, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by " +
                 "from purchase_orders " +
@@ -267,14 +264,13 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
-                        : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
+                order.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
                 order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() :
-                        null);
+                order.setUpdatedAt(
+                        rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
                 orders.add(order);
             }
@@ -282,5 +278,59 @@ public class OrderDAOImpl implements OrderDAO {
             throw new RuntimeException("Failed to find recent purchase orders", e);
         }
         return orders;
+    }
+
+    @Override
+    public void updateStatus(Integer orderId, OrderStatus status) {
+        String sql = "update purchase_orders set status = ?, updated_at = ? where purchase_order_id = ?";
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status.toString());
+            ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(3, orderId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update purchase order status", e);
+        }
+    }
+
+    @Override
+    public List<Object[]> findByStatus(OrderStatus status) {
+        String sql = "select po.purchase_order_id, po.total_amount, po.note, po.status, " +
+                "po.created_at, po.purchase_request_id, po.supplier_id, po.quotation_id, po.approved_by, " +
+                "po.updated_at, po.updated_by, " +
+                "s.supplier_name " +
+                "from purchase_orders po " +
+                "join supplier s on po.supplier_id = s.supplier_id " +
+                "where po.status = ? " +
+                "order by po.created_at desc";
+
+        List<Object[]> results = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, status.toString());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Order order = new Order();
+                order.setId(rs.getInt("purchase_order_id"));
+                order.setTotalAmount(rs.getBigDecimal("total_amount"));
+                order.setOrderNote(rs.getString("note"));
+                order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
+                order.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
+                order.setPurchaseId(rs.getInt("purchase_request_id"));
+                order.setSupplierId(rs.getInt("supplier_id"));
+                order.setQuotationId(rs.getInt("quotation_id"));
+                order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
+                order.setUpdatedAt(
+                        rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
+                order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
+                String supplierName = rs.getString("supplier_name");
+                results.add(new Object[] { order, supplierName });
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to find purchase orders by status", e);
+        }
+        return results;
     }
 }

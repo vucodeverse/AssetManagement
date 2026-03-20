@@ -60,10 +60,9 @@ public class AssetServiceImpl implements AssetService {
         return assetMapper.toAssetResponseList(assets);
     }
 
-    // create
     @Override
     @Transactional
-    public void create(AssetCreateRequest request) {
+    public List<Integer> create(AssetCreateRequest request) {
         Integer quantity = request.getQuantity();
 
         //ktra số lượng phản >=1
@@ -88,12 +87,13 @@ public class AssetServiceImpl implements AssetService {
                 request.getAcquisitionDate()
         );
 
-
+        List<Integer> ids = new java.util.ArrayList<>();
         for (int i = 0; i < quantity; i++) {
             Asset asset = assetMapper.toAsset(request);
-            assetDAO.insert(asset);
+            ids.add(assetDAO.insert(asset));
 
         }
+        return ids;
     }
 
     // update

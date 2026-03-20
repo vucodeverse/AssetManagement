@@ -18,4 +18,6 @@ public interface OrderDAO {
 
     List<Order> findRecent();
 
+    void updateStatus(Integer orderId, edu.fpt.groupfive.common.OrderStatus status);
+    List<Object[]> findByStatus(edu.fpt.groupfive.common.OrderStatus status);
 }

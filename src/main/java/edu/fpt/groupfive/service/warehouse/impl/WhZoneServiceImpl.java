@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,5 +41,15 @@ public class WhZoneServiceImpl implements WhZoneService {
         zone.setMaxCapacity(dto.getMaxCapacity());
         zone.setStatus("ACTIVE");
         whZoneDAO.createZone(zone);
+    }
+
+    @Override
+    public Optional<WarehouseZone> findSuitableZone(Integer assetTypeId, int requiredUnits) {
+        return whZoneDAO.findSuitableZone(assetTypeId, requiredUnits);
+    }
+
+    @Override
+    public void updateCapacity(Integer zoneId, int delta, Integer assetTypeId) {
+        whZoneDAO.updateCapacity(zoneId, delta, assetTypeId);
     }
 }

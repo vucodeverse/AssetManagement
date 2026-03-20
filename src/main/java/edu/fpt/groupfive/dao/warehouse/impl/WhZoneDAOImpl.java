@@ -32,6 +32,18 @@ public class WhZoneDAOImpl implements WhZoneDAO {
         return dto;
     };
 
+    private final RowMapper<WarehouseZone> warehouseZoneRowMapper = (rs, rowNum) -> {
+        WarehouseZone zone = new WarehouseZone();
+        zone.setZoneId(rs.getInt("zone_id"));
+        zone.setWarehouseId(rs.getInt("warehouse_id"));
+        zone.setZoneName(rs.getString("zone_name"));
+        zone.setMaxCapacity(rs.getInt("max_capacity"));
+        zone.setCurrentCapacity(rs.getInt("current_capacity"));
+        zone.setAssetTypeId(rs.getObject("asset_type_id", Integer.class));
+        zone.setStatus(rs.getString("status"));
+        return zone;
+    };
+
     @Override
     @SuppressWarnings("null")
     public List<ZoneCapacityResponseDTO> getAllZonesWithCapacity() {
@@ -57,5 +69,25 @@ public class WhZoneDAOImpl implements WhZoneDAO {
     public void createZone(WarehouseZone zone) {
         String sql = "INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, status) VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(sql, zone.getWarehouseId(), zone.getZoneName(), zone.getMaxCapacity(), zone.getStatus());
+    }
+
+    @Override
+    @SuppressWarnings("null")
+    public Optional<WarehouseZone> findSuitableZone(Integer assetTypeId, int requiredUnits) {
+        String sql = "SELECT TOP 1 * FROM wh_zones " +
+                     "WHERE status = 'ACTIVE' " +
+                     "AND (asset_type_id = ? OR asset_type_id IS NULL) " +
+                     "AND (max_capacity - current_capacity) >= ? " +
+                     "ORDER BY CASE WHEN asset_type_id = ? THEN 0 ELSE 1 END, " +
+                     "(max_capacity - current_capacity) ASC";
+        
+        List<WarehouseZone> results = jdbcTemplate.query(sql, warehouseZoneRowMapper, assetTypeId, requiredUnits, assetTypeId);
+        return results.stream().findFirst();
+    }
+
+    @Override
+    public void updateCapacity(Integer zoneId, int delta, Integer assetTypeId) {
+        String sql = "UPDATE wh_zones SET current_capacity = current_capacity + ?, asset_type_id = ? WHERE zone_id = ?";
+        jdbcTemplate.update(sql, delta, assetTypeId, zoneId);
     }
 }

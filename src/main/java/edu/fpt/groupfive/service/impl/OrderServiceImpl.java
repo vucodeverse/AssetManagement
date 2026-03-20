@@ -336,4 +336,24 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    @Override
+    public void updateOrderStatus(Integer orderId, OrderStatus status) {
+        orderDAO.updateStatus(orderId, status);
+    }
+
+    @Override
+    public List<PurchaseOrderResponse> getPendingInboundPOs() {
+        List<Object[]> results = orderDAO.findByStatus(OrderStatus.APPROVED);
+        List<PurchaseOrderResponse> list = new ArrayList<>();
+
+        for (Object[] row : results) {
+            Order order = (Order) row[0];
+            String supplierName = (String) row[1];
+            PurchaseOrderResponse poResponse = orderMapper.toPurchaseOrderResponse(order);
+            poResponse.setSupplierName(supplierName);
+            list.add(poResponse);
+        }
+
+        return list;
+    }
 }

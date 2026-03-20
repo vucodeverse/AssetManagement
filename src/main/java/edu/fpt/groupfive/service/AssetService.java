@@ -20,7 +20,7 @@ public interface AssetService {
 
     List<AssetResponse> getAllByReturnRequestId(Integer requestId);
 
-    void create(AssetCreateRequest request);
+    List<Integer> create(AssetCreateRequest request);
 
     void update(Integer id, AssetUpdateRequest request);
 

@@ -124,6 +124,7 @@
                         <td style="text-align:right; color:#9ca3af;" th:text="${item.receivedQuantity}">0</td>
                         <td style="text-align:right;">
                             <!-- Hidden info for the list binding -->
+                            <input type="hidden" th:name="'items[' + ${stat.index} + '].purchaseOrderDetailId'" th:value="${item.purchaseOrderDetailId}"/>
                             <input type="hidden" th:name="'items[' + ${stat.index} + '].assetTypeId'" th:value="${item.assetTypeId}"/>
                             
                             <!-- Input for actual quantity -->
