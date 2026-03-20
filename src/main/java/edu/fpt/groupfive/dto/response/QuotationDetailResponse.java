@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dto.response;
 
+import edu.fpt.groupfive.common.QuotationStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -23,4 +24,5 @@ public class QuotationDetailResponse {
     private Integer purchaseDetailId;
     private Integer assetTypeId;
     private String rejectedReason;
+    private QuotationStatus status;
 }

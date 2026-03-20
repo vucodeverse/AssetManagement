@@ -38,7 +38,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
             ps.setString(3, asset.getCurrentStatus().name());
@@ -83,7 +83,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
@@ -105,14 +105,13 @@ public class AssetDAOImpl implements AssetDAO {
         }
     }
 
-
     @Override
     public void delete(Integer id) {
 
         String sql = "DELETE FROM asset WHERE asset_id = ?";
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();
@@ -122,7 +121,7 @@ public class AssetDAOImpl implements AssetDAO {
         }
     }
 
-    //  find asset by id
+    // find asset by id
     @Override
     public Optional<Asset> findById(Integer id) {
 
@@ -136,7 +135,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -167,8 +166,8 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 list.add(mapResultSet(rs));
@@ -199,7 +198,7 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, departmentId);
             ResultSet rs = ps.executeQuery();
@@ -213,7 +212,6 @@ public class AssetDAOImpl implements AssetDAO {
         }
         return list;
     }
-
 
     private Asset mapResultSet2(ResultSet rs) throws SQLException {
 
@@ -235,7 +233,6 @@ public class AssetDAOImpl implements AssetDAO {
         return asset;
     }
 
-
     @Override
     public List<Asset> findByReturnRequestId(Integer requestId) {
         String sql = """
@@ -251,7 +248,7 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, requestId);
             ResultSet rs = ps.executeQuery();
@@ -266,7 +263,6 @@ public class AssetDAOImpl implements AssetDAO {
         return list;
     }
 
-
     @Override
     public Optional<AssetDetailResponse> findDetailById(Integer id) {
 
@@ -279,26 +275,26 @@ public class AssetDAOImpl implements AssetDAO {
                     po.order_date,
                     s.supplier_name
                 FROM asset a
-                
+
                 LEFT JOIN asset_type t
                     ON a.asset_type_id = t.asset_type_id
-                
+
                 LEFT JOIN departments d
                     ON a.department_id = d.department_id
-                
+
                 LEFT JOIN purchase_order_details pod
                     ON a.purchase_order_detail_id = pod.purchase_order_detail_id
-                
+
                 LEFT JOIN purchase_orders po
                     ON pod.purchase_order_id = po.purchase_order_id
-                
+
                 LEFT JOIN supplier s
                     ON po.supplier_id = s.supplier_id
-                
+
                 WHERE a.asset_id = ?
                 """;
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -320,7 +316,6 @@ public class AssetDAOImpl implements AssetDAO {
                     dto.setWarrantyStartDate(toLocalDate(rs.getDate("warranty_start_date")));
                     dto.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
 
-
                     dto.setPurchaseOrderId(rs.getInt("purchase_order_id"));
                     dto.setOrderDate(toLocalDate(rs.getDate("order_date")));
                     dto.setSupplierName(rs.getString("supplier_name"));
@@ -338,7 +333,7 @@ public class AssetDAOImpl implements AssetDAO {
 
     @Override
     public List<Asset> searchAssets(String keyword, AssetStatus status, LocalDate fromDate,
-                                    LocalDate toDate, String direction, int offset, int pageSize) {
+            LocalDate toDate, String direction, int offset, int pageSize) {
 
         StringBuilder sql = new StringBuilder("""
                 SELECT a.*, t.type_name
@@ -363,8 +358,7 @@ public class AssetDAOImpl implements AssetDAO {
             sql.append(" AND a.acquisition_date <= ? ");
         }
 
-
-        //sort
+        // sort
         if (direction != null && !direction.isBlank()) {
 
             sql.append(" order by a.original_cost ");
@@ -382,7 +376,7 @@ public class AssetDAOImpl implements AssetDAO {
         sql.append(" offset ? rows fetch next ? rows only ");
         List<Asset> assets = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 
@@ -444,7 +438,7 @@ public class AssetDAOImpl implements AssetDAO {
         }
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 
@@ -476,7 +470,6 @@ public class AssetDAOImpl implements AssetDAO {
 
         return 0;
     }
-
 
     private Asset mapResultSet(ResultSet rs) throws SQLException {
 
@@ -518,6 +511,5 @@ public class AssetDAOImpl implements AssetDAO {
     private java.time.LocalDate toLocalDate(Date date) {
         return date != null ? date.toLocalDate() : null;
     }
-
 
 }

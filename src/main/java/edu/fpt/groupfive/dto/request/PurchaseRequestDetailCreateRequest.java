@@ -21,7 +21,7 @@ public class PurchaseRequestDetailCreateRequest {
     @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String specificationRequirement;
 
-    @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
+    @Size( max=255, message = "Độ dài không quá 255 kí tự")
     @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String purchaseDetailNote;
 
@@ -29,6 +29,6 @@ public class PurchaseRequestDetailCreateRequest {
     private Integer typeId;
 
     @NotNull(message = "Giá ước tính Không được để trống")
-    @Min(value = 1, message = "Giá ước tính phải lớn hơn 0")
+    @DecimalMin(value = "0.0", message = "Giá ước tính phải lớn hơn 0")
     private BigDecimal estimatePrice;
 }

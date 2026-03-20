@@ -5,8 +5,14 @@ import edu.fpt.groupfive.dao.OrderDAO;
 import edu.fpt.groupfive.dao.OrderDetailDAO;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.model.Order;
+import edu.fpt.groupfive.model.OrderDetail;
+import edu.fpt.groupfive.model.Purchase;
+import edu.fpt.groupfive.model.PurchaseDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
+import edu.fpt.groupfive.util.exception.DataAccessException;
+import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -23,6 +29,22 @@ public class OrderDAOImpl implements OrderDAO {
     private final DatabaseConfig databaseConfig;
     private final OrderDetailDAO orderDetailDAO;
 
+
+
+    @Value("${dao.common.insert_error}")
+    private String insertErrorMsg;
+    @Value("${order.create.excess_quantity_basic}")
+    private String excessQuantityMsg;
+
+    @Value("${dao.order.generate_id_error}")
+    private String generateIdErrorMsg;
+
+    @Value("${dao.common.find_error}")
+    private String findErrorMsg;
+
+    @org.springframework.beans.factory.annotation.Value("${dao.order.detail.find_error}")
+    private String findOrderDetailErrorMsg;
+
     @Override
     public Integer insert(Order order) {
         String sql = "insert into purchase_orders " +
@@ -34,6 +56,96 @@ public class OrderDAOImpl implements OrderDAO {
         try {
             connection = databaseConfig.getConnection();
             connection.setAutoCommit(false);
+
+            // tạm khóa yeee cầu mua sắm chi tiết và số lượng yêu cầu mua ko cho các thread khác thay đổi
+            String lockSql = "SELECT purchase_request_detail_id, quantity FROM purchase_request_detail WITH (UPDLOCK, HOLDLOCK) WHERE purchase_request_id = ?";
+
+            // lưu lại id yc detail và số lượng của nó
+            Map<Integer, Integer> prdMaxQty = new HashMap<>();
+            try (PreparedStatement psLock = connection.prepareStatement(lockSql)) {
+                psLock.setInt(1, order.getPurchaseId());
+                try (ResultSet rsLock = psLock.executeQuery()) {
+                    while (rsLock.next()) {
+                        prdMaxQty.put(rsLock.getInt("purchase_request_detail_id"), rsLock.getInt("quantity"));
+                    }
+                }
+            }
+
+            // lấy ra quotation detail và purchase request detail
+            String mappingSql = "SELECT quotation_detail_id, purchase_request_detail_id FROM quotation_detail WHERE quotation_id = ?";
+
+            // lưu lại qd và prd
+            Map<Integer, Integer> qdToPrd = new HashMap<>();
+            try (PreparedStatement psMap = connection.prepareStatement(mappingSql)) {
+                psMap.setInt(1, order.getQuotationId());
+                try (ResultSet rsMap = psMap.executeQuery()) {
+                    while (rsMap.next()) {
+                        qdToPrd.put(rsMap.getInt("quotation_detail_id"), rsMap.getInt("purchase_request_detail_id"));
+                    }
+                }
+            }
+
+            //
+            if (!prdMaxQty.isEmpty()) {
+                String placeholders = prdMaxQty.keySet().stream().map(id -> "?").collect(Collectors.joining(", "));
+
+                // lấy ra tổng số lượng đc báo giá của từng request detail
+                String orderedSql = "select qd.purchase_request_detail_id, sum(pod.quantity) as total_qty " +
+                        "from purchase_order_details pod " +
+                        "join quotation_detail qd on pod.quotation_detail_id = qd.quotation_detail_id " +
+                        "join purchase_orders po on pod.purchase_order_id = po.purchase_order_id " +
+                        "where qd.purchase_request_detail_id in (" + placeholders + ") " +
+                        "and po.status <> 'DELETED' " +
+                        "group by qd.purchase_request_detail_id";
+
+                // lưu prd và tổng số lượng đã order
+                Map<Integer, Integer> prdOrderedQty = new HashMap<>();
+                try (PreparedStatement psOrdered = connection.prepareStatement(orderedSql)) {
+                    int i = 1;
+                    for (Integer prdId : prdMaxQty.keySet()) {
+                        psOrdered.setInt(i++, prdId);
+                    }
+                    try (ResultSet rsOrdered = psOrdered.executeQuery()) {
+                        while (rsOrdered.next()) {
+                            prdOrderedQty.put(rsOrdered.getInt("purchase_request_detail_id"),
+                                    rsOrdered.getInt("total_qty"));
+                        }
+                    }
+                }
+
+                if (order.getOrderDetails() != null) {
+
+                    // lưu id detail và số lượng sẽ nhập ở thread hiện tại
+                    Map<Integer, Integer> currentRequestQty = new HashMap<>();
+                    for (OrderDetail od : order.getOrderDetails()) {
+
+                        // lấy ra prdId của qd hiện tiện
+                        Integer prdId = qdToPrd.get(od.getQuotationDetailId());
+                        if (prdId != null) {
+
+                            // số lượng tối đa có thể mua
+                            int max = prdMaxQty.getOrDefault(prdId, 0);
+
+                            // số lượng đã mua
+                            int already = prdOrderedQty.getOrDefault(prdId, 0);
+
+                            // số lượng mua trong thread hiện tại
+                            int inThisRequest = currentRequestQty.getOrDefault(prdId, 0);
+
+                            if (already + inThisRequest + od.getQuantity() > max) {
+                                throw new InvalidDataException(
+                                        excessQuantityMsg + " (Cần thêm: "
+                                                + od.getQuantity() + ", Đã đặt trong các đơn cũ: " + already
+                                                + ", Đã có trong đơn này: " + inThisRequest + ", Tối đa: " + max + ")");
+                            }
+
+                            // nếu hợp lệ thì update số lượng đã mua của prd này
+                            currentRequestQty.put(prdId, inThisRequest + od.getQuantity());
+
+                        }
+                    }
+                }
+            }
 
             try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -55,7 +167,7 @@ public class OrderDAOImpl implements OrderDAO {
 
                 try (ResultSet rs = ps.getGeneratedKeys()) {
                     if (!rs.next()) {
-                        throw new RuntimeException("Failed to get generated purchase_order_id");
+                        throw new RuntimeException(generateIdErrorMsg);
                     }
                     int orderId = rs.getInt(1);
 
@@ -70,12 +182,15 @@ public class OrderDAOImpl implements OrderDAO {
                 }
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             if (connection != null) {
                 try {
                     connection.rollback();
                 } catch (Exception ignored) {
                 }
+            }
+            if (e instanceof InvalidDataException) {
+                throw (InvalidDataException) e;
             }
             throw new RuntimeException(e);
         } finally {
@@ -91,7 +206,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     // lấy ra số lượng đã order ứng với từng purchas id
     @Override
-    public Map<Integer, Integer> getOrderedQuantityByPurchaseDetailId(List<Integer> purchaseDetailIds) {
+    public Map<Integer, Integer> getOrderedQuantityByPurchaseDetailId(List<PurchaseDetail> purchaseDetailIds) {
         if (purchaseDetailIds == null || purchaseDetailIds.isEmpty()) {
             return new HashMap<>();
         }
@@ -107,18 +222,17 @@ public class OrderDAOImpl implements OrderDAO {
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (int i = 0; i < purchaseDetailIds.size(); i++) {
-                ps.setInt(i + 1, purchaseDetailIds.get(i));
+                ps.setInt(i + 1, purchaseDetailIds.get(i).getId());
             }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 map.put(rs.getInt("purchase_request_detail_id"), rs.getInt("total_qty"));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to get ordered qty by purchase detail", e);
+            throw new RuntimeException(findOrderDetailErrorMsg, e);
         }
         return map;
     }
-
 
     // search cho màn purchase orderlisst
     @Override
@@ -130,7 +244,7 @@ public class OrderDAOImpl implements OrderDAO {
                         "s.supplier_name " +
                         "from purchase_orders po " +
                         "join supplier s on po.supplier_id = s.supplier_id " +
-                        "where 1=1 ");
+                        "where po.status <> 'DELETED' ");
 
         List<Object> params = new ArrayList<>();
 
@@ -198,15 +312,16 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() :
-                        null);
+                order.setUpdatedAt(
+                        rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
+
                 String supplierName = rs.getString("supplier_name");
                 results.add(new Object[] { order, supplierName });
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to search purchase orders", e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return results;
     }
@@ -217,7 +332,7 @@ public class OrderDAOImpl implements OrderDAO {
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by " +
                 "from purchase_orders " +
-                "where purchase_order_id = ?";
+                "where purchase_order_id = ? and status <> 'DELETED'";
 
         try (Connection conn = databaseConfig.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -236,24 +351,26 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() :
-                        null);
+                order.setUpdatedAt(
+                        rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
+
                 return Optional.of(order);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to find purchase order", e);
+            throw new RuntimeException(findErrorMsg, e);
         }
-        return java.util.Optional.empty();
+        return Optional.empty();
     }
 
-    // lấy ra các po gần đây theo giới hạn
+    // lấy ra các po
     @Override
     public List<Order> findRecent() {
         String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by " +
                 "from purchase_orders " +
+                "where status <> 'DELETED' " +
                 "order by created_at desc";
 
         List<Order> orders = new ArrayList<>();
@@ -273,14 +390,43 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-                order.setUpdatedAt(rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() :
-                        null);
+                order.setUpdatedAt(
+                        rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
                 order.setUpdatedBy(rs.getObject("updated_by") != null ? rs.getInt("updated_by") : null);
                 orders.add(order);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to find recent purchase orders", e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return orders;
     }
+
+    @Override
+    public void updateStatus(Integer orderId, OrderStatus orderStatus) {
+        String sql = "update purchase_orders set status = ? where order_id = ?";
+
+            try (Connection connection = databaseConfig.getConnection()) {
+
+                connection.setAutoCommit(false);
+
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+
+                    preparedStatement.setString(1, orderStatus.name());
+                    preparedStatement.setInt(2, orderId);
+                    connection.commit();
+
+                } catch (Exception e) {
+                    connection.rollback();
+                    throw new DataAccessException(insertErrorMsg, e);
+                } finally {
+                    connection.setAutoCommit(true);
+                }
+
+            } catch (Exception e) {
+                throw new DataAccessException("Update thất bại", e);
+            }
+        }
+
+
 }

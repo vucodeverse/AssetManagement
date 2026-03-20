@@ -3,7 +3,8 @@ package edu.fpt.groupfive.common;
 public enum OrderStatus {
     PENDING("Đang chờ"),
     COMPLETED("Đã hoàn thành"),
-    CANCELLED("Đã bị hủy");
+    CANCELLED("Đã bị hủy"),
+    DELETED("Đã xóa");
 
     private String description;
 

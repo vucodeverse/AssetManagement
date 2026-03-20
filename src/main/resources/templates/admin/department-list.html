@@ -11,86 +11,51 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
-    <style>
-        body {
-          background-color: #f4f7f6;
-        }
-        .sidebar {
-          height: 100vh;
-          width: 240px;
-          position: fixed;
-          top: 0;
-          left: 0;
-          background: #212529;
-          color: white;
-          padding-top: 20px;
-          z-index: 1000;
-        }
-        .sidebar a {
-          display: block;
-          color: rgba(255, 255, 255, 0.8);
-          padding: 12px 20px;
-          text-decoration: none;
-          transition: 0.3s;
-        }
-        .sidebar a:hover {
-          background: #343a40;
-          color: white;
-        }
-        .sidebar a.active {
-          background: #007bff;
-          color: white;
-          font-weight: bold;
-        }
 
-        /* Nội dung chính */
-        .content {
-          margin-left: 250px;
-          padding: 30px;
-        }
-        .header-title {
-          color: #007bff;
-          margin-bottom: 20px;
-          font-weight: bold;
-        }
+    <link rel="stylesheet" th:href="@{/css/admin/department.css}">
 
-        /* Card style cho form */
-        .detail-card {
-          background: white;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-        }
-        .form-label {
-          font-weight: 600;
-          color: #495057;
-        }
-    </style>
 </head>
 <body>
 <div class="sidebar">
     <h4 class="text-center mb-4">Admin Panel</h4>
-    <a href="/admin/home">Quản lí người dùng</a>
-    <a href="/admin/department" class="active">Quản lí phòng ban</a>
+    <div class="sidebar-nav">
+        <a href="/admin/users">Quản lí người dùng</a>
+        <a href="/admin/departments" class="active">Quản lí phòng ban</a>
+    </div>
+    <div class="sidebar-user">
+        <div class="user-avatar">A</div>
+
+        <div class="user-info">
+            <span class="user-name">Administrator</span>
+            <span class="user-role">Asset Manager</span>
+        </div>
+
+        <a th:href="@{/logout}" class="logout-link" title="Đăng xuất">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </div>
 </div>
 
 <div class="content">
-    <a th:href="@{/admin/department}" style="text-decoration: none;">
-        <h1 class="header-title">Department Management</h1>
+    <a th:href="@{/admin/departments}" style="text-decoration: none;">
+        <h1 class="header-title">Quản lí phòng ban</h1>
     </a>
 
     <hr/>
+
+    <div th:if="${successMsg}" class="alert alert-success" th:text="${successMsg}"></div>
+    <!--    <div th:if="${errorMsg}" class="alert alert-danger" th:text="${errorMsg}"></div>-->
 
     <div class="row">
         <div class="col-lg-7">
 
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <a th:href="@{/admin/department}" class="btn btn-primary">
+                <a th:href="@{/admin/departments}" class="btn btn-primary">
                     + Thêm phòng ban
                 </a>
 
 
-                <form th:action="@{/admin/department}" method="get" class="input-group w-50">
+                <form th:action="@{/admin/departments}" method="get" class="input-group w-50">
                     <input type="text"
                            name="keyword"
                            class="form-control"
@@ -119,7 +84,6 @@
                 <tbody>
                 <tr th:each="x : ${departments}">
                     <td th:text="${x.departmentName}"></td>
-                    <!--                    <td th:text="${x.managerId}"></td>-->
                     <td th:text="${x.managerName}"></td>
                     <td th:text="${staffCount[x.departmentId] != null ? staffCount[x.departmentId] : 0}"></td>
                     <td>
@@ -147,7 +111,7 @@
                     <!-- Nút Previous -->
                     <li class="page-item" th:classappend="${page <= 1} ? 'disabled'">
                         <a class="page-link"
-                           th:href="@{/admin/department(page=${page - 1}, keyword=${keyword})}">
+                           th:href="@{/admin/departments(page=${page - 1}, keyword=${keyword})}">
                             <
                         </a>
                     </li>
@@ -158,7 +122,7 @@
                         th:classappend="${i == page} ? 'active'">
 
                         <a class="page-link"
-                           th:href="@{/admin/department(page=${i}, keyword=${keyword})}"
+                           th:href="@{/admin/departments(page=${i}, keyword=${keyword})}"
                            th:text="${i}">
                         </a>
                     </li>
@@ -166,7 +130,7 @@
                     <!-- Trang kế tiếp -->
                     <li class="page-item">
                         <a class="page-link"
-                           th:href="@{/admin/department(page=${page + 1}, keyword=${keyword})}">
+                           th:href="@{/admin/departments(page=${page + 1}, keyword=${keyword})}">
                             >
                         </a>
                     </li>
@@ -183,52 +147,68 @@
                     <i class="fas fa-info-circle"></i> Chi tiết phòng ban
                 </h5>
 
-                <form th:action="@{
-                       ${mode == 'Add'}
-                       ? '/admin/department'
-                       : '/admin/department/update'
-                    }" method="post">
+                <form th:action="@{${mode == 'Add'
+                        ? '/admin/department/create'
+                        : '/admin/department/update'}}"
+                      method="post" th:object="${selected}">
 
-                    <input type="hidden"
-                           name="departmentId"
-                           th:value="${selected.departmentId}"/>
+                    <input type="hidden" name="departmentId" th:value="${selected.departmentId}"/>
                     <input type="hidden" name="page" th:value="${page}"/>
 
+                    <!-- MÃ PHÒNG BAN -->
                     <div class="form-group">
                         <label class="form-label">Mã phòng ban</label>
                         <input type="text"
                                class="form-control bg-light"
                                th:value="${selected.departmentId}"
+                               placeholder="Phục vụ hiển thị"
                                readonly/>
                     </div>
+
+                    <!-- TÊN PHÒNG BAN -->
                     <div class="form-group">
                         <label class="form-label">Tên phòng ban</label>
                         <input type="text"
                                name="departmentName"
                                class="form-control border-primary"
                                th:value="${selected.departmentName}"/>
+                        <div class="text-danger"
+                             th:if="${#fields.hasErrors('departmentName')}"
+                             th:errors="*{departmentName}">
+                        </div>
                     </div>
+
+                    <!-- TÊN QUẢN LÝ-->
                     <div class="form-group">
                         <label class="form-label">Quản lý</label>
                         <input type="text"
                                name="managerName"
                                class="form-control border-primary"
                                th:value="${selected.managerName}"
+                               placeholder="Hệ thống sẽ tự động cập nhật"
                                readonly/>
                     </div>
+
+                    <!-- MÔ TẢ VỀ PHÒNG BAN -->
                     <div class="form-group">
                         <label class="form-label">Mô tả</label>
                         <textarea class="form-control" rows="3"
                                   name="description"
                                   th:text="${selected.description}">
                         </textarea>
+                        <div class="text-danger"
+                             th:if="${#fields.hasErrors('description')}"
+                             th:errors="*{description}">
+                        </div>
                     </div>
 
+                    <!-- BUTTON -->
                     <div class="mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>

@@ -4,6 +4,7 @@ import edu.fpt.groupfive.common.Role;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -22,9 +23,13 @@ public class UserUpdateRequest {
     private String lastName;
 
     @Email(message = "Định dạng email không hợp lệ")
+    @NotBlank(message = "Email là bắt buộc")
     private String email;
 
-    @NotBlank(message = "Số điện thoại là bắt buộc")
+    @Pattern(
+            regexp = "^0\\d{9}$",
+            message = "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0"
+    )
     private String phoneNumber;
 
     @NotNull(message = "Vai trò là bắt buộc")

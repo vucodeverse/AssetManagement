@@ -14,26 +14,48 @@
     <th:block layout:fragment="content">
         <!-- Main Content -->
         <div class="director-dashboard-wrapper">
-            <header class="dashboard-header">
-                <div class="header-left">
-                    <h1>TỔNG QUAN HỆ THỐNG</h1>
-                    <p>Theo dõi hoạt động mua sắm và các nhiệm vụ phê duyệt của bạn.</p>
+            <!-- Summary Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon icon-pending">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">YÊU CẦU CHỜ DUYỆT</span>
+                        <h2 class="stat-value" th:text="${dashboard.totalPrPending}">0</h2>
+                    </div>
                 </div>
-                <div class="top-actions">
-                    <select class="fy-select">
-                        <option>FY 2024</option>
-                    </select>
-                    <i class="far fa-bell icon-btn"></i>
-                    <i class="fas fa-cog icon-btn"></i>
+
+                <div class="stat-card">
+                    <div class="stat-icon icon-quotation">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">BÁO GIÁ CHỜ PHÊ DUYỆT</span>
+                        <h2 class="stat-value" th:text="${dashboard.totalQuotationPending}">0</h2>
+                    </div>
                 </div>
-            </header>
+
+                <div class="stat-card stat-card-wide">
+                    <div class="stat-icon icon-spending">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">TỔNG CHI TIÊU NĂM NAY</span>
+                        <h2 class="stat-value" 
+                            th:text="${#numbers.formatDecimal(dashboard.totalPrTotalInYear, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
+                            0 VNĐ
+                        </h2>
+                    </div>
+                </div>
+            </div>
 
             <!-- Content Grid -->
             <div class="dashboard-grid">
                 <!-- Recent PRs -->
                 <div class="data-card">
                     <div class="card-header">
-                        <h2>YÊU CẦU MUA SẮM GẦN ĐÂY</h2>
+                        <h2><i class="fas fa-shopping-cart"></i> YÊU CẦU MUA SẮM GẦN ĐÂY</h2>
                         <a th:href="@{/purchases}" class="view-all">XEM TẤT CẢ</a>
                     </div>
                     <div class="table-responsive">
@@ -46,6 +68,7 @@
                                     <th>NGÀY CẦN</th>
                                     <th>ĐỘ ƯU TIÊN</th>
                                     <th>NGÀY TẠO</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -53,7 +76,7 @@
                                     th:data-href="@{/purchases/{id}(id=${p.purchaseId})}">
                                     <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
                                     <td>
-                                        <span th:if="${p.status != null}" class="badge"
+                                        <span th:if="${p.status != null}" class="badge-prem"
                                             th:classappend="'badge-' + ${p.status.name()}"
                                             th:text="${p.status.description}"></span>
                                         <span th:if="${p.status == null}">—</span>
@@ -75,17 +98,21 @@
                                             th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></span>
                                         <span th:if="${p.createdAt == null}">—</span>
                                     </td>
+                                    <td style="text-align: right;"><i class="fas fa-chevron-right arrow-icon"></i></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <footer>
+                        <p th:text="'Hiển thị các yêu cầu mua sắm mới nhất'"></p>
+                    </footer>
                 </div>
 
                 <!-- Recent Quotations -->
                 <div class="data-card">
                     <div class="card-header">
-                        <h2>BÁO GIÁ GẦN ĐÂY</h2>
-                        <a th:href="@{/quotations}" class="view-all">XEM TẤT CẢ</a>
+                        <h2><i class="fas fa-file-invoice-dollar"></i> BÁO GIÁ GẦN ĐÂY</h2>
+                        <a th:href="@{/purchases}" class="view-all">XEM TẤT CẢ</a>
                     </div>
                     <div class="table-responsive">
                         <table class="dashboard-table" id="quotationDB">
@@ -96,6 +123,7 @@
                                     <th>THAM CHIẾU YC</th>
                                     <th>TỔNG SỐ TIỀN</th>
                                     <th>TRẠNG THÁI</th>
+                                    <th>NGÀY TẠO</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -106,16 +134,20 @@
                                     <td th:text="${quo.supplierName}">Supplier Name</td>
                                     <td th:text="${'PR-' + quo.purchaseId}">PR-045</td>
                                     <td class="item-id"
-                                        th:text="${'$' + #numbers.formatDecimal(quo.totalAmount, 1, 'COMMA', 2, 'POINT')}">
-                                        $4,500.00</td>
-                                    <td><span class="status-badge"
-                                            th:classappend="${quo.quotationStatus.name().toLowerCase()}"
+                                        th:text="${#numbers.formatDecimal(quo.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
+                                        4.500 VNĐ</td>
+                                    <td><span class="badge-prem"
+                                            th:classappend="'quo-' + ${quo.quotationStatus.name().toLowerCase()}"
                                             th:text="${quo.quotationStatus.description}">PENDING</span></td>
+                                    <td th:text="${#temporals.format(quo.createdAt, 'dd-MM-yyyy')}">____</td>
                                     <td style="text-align: right;"><i class="fas fa-chevron-right arrow-icon"></i></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <footer>
+                        <p th:text="'Hiển thị các báo giá mới nhất đang xử lý'"></p>
+                    </footer>
                 </div>
             </div>
         </div>

@@ -21,7 +21,6 @@ public interface AllocationReqDao {
     void updateStatus(Integer id, String status, Integer amApprovedBy, String reasonReject);
 
     List<AllocationRequest> search(Integer departmentId, String requestId, String status,
-                                   String priority, LocalDate fromDate, LocalDate toDate /*int offset, int size*/
-    );
+                                   String priority, LocalDate fromDate, LocalDate toDate);
 
 }

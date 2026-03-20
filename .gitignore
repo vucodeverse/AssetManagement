@@ -1,55 +1,43 @@
+# --- Build artifacts ---
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-.kotlin
+build/
+out/
+/bin/
+*.class
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+# --- IDEs and Editors ---
+.idea/
 *.iws
 *.iml
 *.ipr
-
-### Eclipse ###
-.apt_generated
+.vscode/
+.settings/
 .classpath
-.factorypath
 .project
-.settings
+.factorypath
 .springBeans
 .sts4-cache
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
-.DS_Store
-/.idea/
-/target/
 /.smarttomcat/
-/tomcat.8080/
-/.target/
 /.cursor/
-
-
-/out/
 .cursor
 
-### Local docs ###
-docs/
-db-change-notes.md
-/.idea
+# --- OS specific ---
+.DS_Store
+Thumbs.db
 
+# --- Temporary/Log Files ---
+*.log
+tmp/
+temp/
+/tomcat.*/
+
+# --- Local scratch files / SQL ---
+# These appear to be local environment scripts or scratch queries
+SQLQuery*.sql
+SQLQuery_InitDB_New.sql
+db_asm*.ddl
+insert_mock_data.sql
+search_urls.txt
+
+# --- Maven Wrapper (Allow jar if needed, but usually ignored) ---
+!.mvn/wrapper/maven-wrapper.jar

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
 
@@ -29,7 +29,7 @@
                     <th:block>
                         <div sec:authorize="hasAuthority('DIRECTOR')">
                             <button type="button" class="btn-outline-prem"
-                                th:if="${quotation.quotationStatus.name() == 'PENDING'}"
+                                th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
                                 th:attr="data-action=@{/quotations/{id}/actions(id=${quotation.quotationId})}"
                                 onclick="openRejectModal(event,this)">
                                 TỪ CHỐI
@@ -51,10 +51,9 @@
             </header>
 
             <!-- Success Message -->
-            <div th:if="${message}" class="success-alert"
-                style="background-color: #f0fdf4; border: 1px solid #16a34a; color: #166534; padding: 16px; border-radius: 4px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+            <div th:if="${message}" class="alert-success-banner">
                 <i class="fas fa-check-circle"></i>
-                <span th:text="${message}" style="font-weight: 600; font-size: 14px;">Success message here</span>
+                <span th:text="${message}" style="font-weight: 600; font-size: 14px;"></span>
             </div>
 
             <div class="details-card">
@@ -67,14 +66,14 @@
                     <div class="info-item">
                         <label>NHÀ CUNG CẤP</label>
                         <p class="val-bold">
-                            <span th:text="${quotation.supplierName}">Global Tech Solutions Inc.</span>
+                            <span th:text="${quotation.supplierName}">Nhà cung cấp mẫu</span>
                         </p>
                     </div>
                     <div class="info-item">
                         <label>TRẠNG THÁI</label>
                         <div>
                             <span class="status-badge" th:classappend="${quotation.quotationStatus.name()}"
-                                th:text="${quotation.quotationStatus.description}">PENDING</span>
+                                th:text="${quotation.quotationStatus.description}">ĐANG CHỜ</span>
                         </div>
                     </div>
                     <div class="info-item">
@@ -113,15 +112,16 @@
                                     <th>THUẾ (%)</th>
                                     <th>CHIẾT KHẤU (%)</th>
                                     <th>BẢO HÀNH (THÁNG)</th>
+                                    <th>THỰC THI</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="item, stat : ${quotation.quotationDetails}">
                                     <td class="td-id" th:text="${stat.count}">1</td>
-                                    <td class="td-bold" th:text="${item.assetTypeName}">Asset Type</td>
+                                    <td class="td-bold" th:text="${item.assetTypeName}">Loại tài sản</td>
                                     <td th:text="${#numbers.formatInteger(item.quantity, 2)}">01</td>
-                                    <td th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}">
-                                        $0.00</td>
+                                    <td th:text="${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
+                                        0 VNĐ</td>
                                     <td
                                         th:text="${item.taxRate != null ? #numbers.formatDecimal(item.taxRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
                                         0%</td>
@@ -129,6 +129,29 @@
                                         th:text="${item.discountRate != null ? #numbers.formatDecimal(item.discountRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
                                         0%</td>
                                     <td th:text="${item.warrantyMonths + ' Tháng'}">12 Tháng</td>
+                                    <td class="td-action">
+                                        <!-- Director Actions for Pending Item in a Pending Quotation -->
+                                        <div sec:authorize="hasAuthority('DIRECTOR')" 
+                                             th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING' and item.status != null and item.status.name() == 'PENDING'}">
+                                            <form method="post"
+                                                  th:action="@{/quotations/details/{id}/actions(id=${item.quotationDetailId})}"
+                                                  style="margin:0;">
+                                                <button type="submit" class="btn-bw btn-bw-approve"
+                                                        name="actions" value="a">DUYỆT</button>
+                                                <button type="submit" class="btn-bw btn-bw-reject"
+                                                        name="actions" value="r">TỪ CHỐI</button>
+                                            </form>
+                                        </div>
+
+                                        <!-- Status Display for Non-Directors, Non-Pending Quotations, or Already Processed Items -->
+                                        <div th:if="${!#authorization.expression('hasAuthority(''DIRECTOR'')') or (quotation.quotationStatus != null and quotation.quotationStatus.name() != 'PENDING') or (item.status != null and item.status.name() != 'PENDING')}">
+                                            <span th:if="${item.status != null}"
+                                                  class="status-badge"
+                                                  th:classappend="'status-' + ${item.status.name()}"
+                                                  th:text="${item.status.description}">
+                                            </span>
+                                        </div>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -138,31 +161,29 @@
                 <!-- Khu vực tổng kết cuối trang -->
                 <div class="footer-summary">
                     <div class="terms-box">
-                        <!-- Vị trí dành cho Ghi chú hoặc Điều khoản báo giá -->
                         <label>GHI CHÚ BÁO GIÁ</label>
-                        <p>Báo giá này có giá trị trong 30 ngày. Thông số kỹ thuật cung cấp khớp với yêu cầu mua sắm.
-                            Bảo hành chỉ áp dụng cho các lỗi từ nhà sản xuất.</p>
+                        <p th:text="${quotation.quotationNote != null ? quotation.quotationNote : 'Không có ghi chú'}"></p>
                     </div>
                     <div class="total-summary">
                         <div class="summary-line">
                             <span>Tạm tính</span>
                             <span
-                                th:text="'$' + ${#numbers.formatDecimal(quotation.subtotal, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                th:text="${#numbers.formatDecimal(quotation.subtotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ</span>
                         </div>
                         <div class="summary-line">
                             <span>Tổng chiết khấu</span>
                             <span class="discount-val"
-                                th:text="'-$' + ${#numbers.formatDecimal(quotation.totalDiscount, 1, 'COMMA', 2, 'POINT')}">-$0.00</span>
+                                th:text="'-' + ${#numbers.formatDecimal(quotation.totalDiscount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">-0 VNĐ</span>
                         </div>
                         <div class="summary-line">
                             <span>Thuế dự kiến</span>
                             <span
-                                th:text="'$' + ${#numbers.formatDecimal(quotation.totalTax, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                th:text="${#numbers.formatDecimal(quotation.totalTax, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ</span>
                         </div>
                         <div class="grand-total-row">
                             <span>TỔNG CỘNG</span>
                             <span class="grand-total"
-                                th:text="'$' + ${#numbers.formatDecimal(quotation.grandTotal, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                th:text="${#numbers.formatDecimal(quotation.grandTotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ</span>
                         </div>
                     </div>
                 </div>

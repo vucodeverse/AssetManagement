@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.service;
 
+import edu.fpt.groupfive.common.OrderStatus;
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
@@ -18,4 +19,8 @@ public interface OrderService {
 
     void updateDeliveryDate(Integer orderId, String deliveryDate);
     List<PurchaseOrderDetailResponse> getAllOrderDetails();
+    List<PurchaseOrderDetailResponse> getAllOrderDetails(Integer orderId);
+    List<PurchaseOrderResponse> getOrderWithPending();
+    void updateStatus(Integer orderId, OrderStatus orderStatus);
+
 }

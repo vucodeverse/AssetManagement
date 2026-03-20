@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout/main-layout}">
 
@@ -58,7 +58,7 @@
                         </div>
 
                         <!-- note -->
-                        <div class="form-group full-width">
+                        <div class="form-group" style="grid-column: span 3;">
                             <label>GHI CHÚ THÊM</label>
                             <textarea th:field="*{purchaseNote}"
                                 placeholder="Cung cấp thêm chi tiết cho bộ phận xử lý..."></textarea>
@@ -76,12 +76,12 @@
                         <table class="pr-table">
                             <thead>
                                 <tr>
-                                    <th>LOẠI TÀI SẢN</th>
-                                    <th>SỐ LƯỢNG</th>
-                                    <th>GIÁ DỰ KIẾN(VNĐ)</th>
-                                    <th>YÊU CẦU KỸ THUẬT</th>
-                                    <th>GHI CHÚ MẶT HÀNG</th>
-                                    <th></th>
+                                    <th style="width: 22%;">LOẠI TÀI SẢN</th>
+                                    <th style="width: 8%;">SỐ LƯỢNG</th>
+                                    <th style="width: 15%;">GIÁ DỰ KIẾN (VNĐ)</th>
+                                    <th style="width: 25%;">YÊU CẦU KỸ THUẬT</th>
+                                    <th style="width: 25%;">GHI CHÚ MẶT HÀNG</th>
+                                    <th style="width: 5%;"></th>
                                 </tr>
                             </thead>
 

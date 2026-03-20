@@ -53,7 +53,7 @@
                                     </td>
                                     <td>
                                         <div class="deadline-cell"
-                                            th:text="${#temporals.format(pr.neededByDate, 'MMM dd, yyyy')}">Oct 24, 2024
+                                            th:text="${#temporals.format(pr.neededByDate, 'dd-MM-yyyy')}">24-10-2024
                                         </div>
                                     </td>
                                     <td>
@@ -74,7 +74,7 @@
                 <section class="dash-card">
                     <div class="card-header">
                         <h2>Báo giá của tôi</h2>
-                        <a th:href="@{/quotations}" class="view-all">Xem tất cả</a>
+                        <a th:href="@{/purchases}" class="view-all">Xem tất cả</a>
                     </div>
                     <div class="table-responsive">
                         <table class="pr-table quo-table-body" id="staff-quo-table">
@@ -135,9 +135,9 @@
                                 <td>
                                     <div class="po-ref" th:text="'#PO-' + ${po.orderId}">#PO-24-0012</div>
                                 </td>
-                                <td th:text="${#temporals.format(po.createdAt, 'MMM dd, yyyy')}">Oct 10, 2024</td>
-                                <td th:text="${po.supplierName}">Northern Energy</td>
-                                <td th:text="${#numbers.formatCurrency(po.totalAmount)}">$1,200.00</td>
+                                <td th:text="${#temporals.format(po.createdAt, 'dd-MM-yyyy')}">10-10-2024</td>
+                                <td>Northern Energy</td>
+                                <td th:text="${#numbers.formatDecimal(po.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">1.200 VNĐ</td>
                                 <td th:text="${po.getOrderNote}">Standard order</td>
                                 <td>
                                     <span class="status-badge po-status-badge" th:classappend="${po.getOrderStatus.toLowerCase()}"

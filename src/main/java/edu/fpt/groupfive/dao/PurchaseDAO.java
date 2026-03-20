@@ -26,4 +26,5 @@ public interface PurchaseDAO {
 
     Map<Integer, Object[]> searchQuotationSummary(QuotationSearchCriteria s);
 
+    List<Object[]> getItemOnDB();
 }

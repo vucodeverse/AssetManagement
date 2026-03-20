@@ -2,9 +2,12 @@ package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.dao.ReturnReqDAO;
 import edu.fpt.groupfive.dao.ReturnReqDetailDAO;
+import edu.fpt.groupfive.dao.impl.ReturnReqDAOImpl;
 import edu.fpt.groupfive.dto.request.ReturnRequestCreateRequest;
+import edu.fpt.groupfive.dto.request.ReturnRequestDetailRequest;
 import edu.fpt.groupfive.dto.response.ReturnRequestRespnse;
 import edu.fpt.groupfive.mapper.ReturnRequestMapper;
+import edu.fpt.groupfive.model.AllocationRequestDetail;
 import edu.fpt.groupfive.model.ReturnRequest;
 import edu.fpt.groupfive.model.ReturnRequestDetail;
 import edu.fpt.groupfive.service.ReturnRequestService;
@@ -105,8 +108,4 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
         return returnRequestMapper.toResponseList(returnReqDAO.search(departmentId, requestId, status, fromDate, toDate));
     }
 
-    @Override
-    public void updateStatus(Integer id, String status, Integer amApprovedBy) {
-        returnReqDAO.updateStatus(id, status, amApprovedBy);
-    }
 }

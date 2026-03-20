@@ -26,4 +26,6 @@ public interface QuotationService {
     List<QuotationResponse> searchQuotationsByPurchaseId(QuotationSearchCriteria quotationSearchCriteria);
 
     List<QuotationDetailCreateRequest> prepareQuotationForm(Integer purchaseId);
+
+    void processQuotationDetailAction(Integer id, String actions);
 }

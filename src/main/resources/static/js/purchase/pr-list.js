@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 ordering: true,
                 info: true,
                 searching: false,
-                order: [[5, "desc"]],
+                order: [[1, "desc"], [5, "desc"]],
                 columnDefs: [
                     { orderable: false, targets: 6 }
                 ],

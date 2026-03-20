@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.Role;
+import edu.fpt.groupfive.common.UserStatus;
 import edu.fpt.groupfive.dao.DepartmentDAO;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.dto.response.UserResponse;
@@ -37,7 +38,7 @@ public class UserServiceImpl implements UserService {
         // Mã hóa & Lưu mật khẩu
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         // Mặc định trạnh thái khi tạo
-        user.setStatus("ACTIVE");
+        user.setStatus(UserStatus.ACTIVE.name());
         // Lấy thời gian hiện tại
         user.setCreatedDate(LocalDateTime.now());
 
@@ -47,6 +48,29 @@ public class UserServiceImpl implements UserService {
         // Nếu vai trò là trưởng phòng cập nhật trưởng phòng cho phòng đấy luôn
         if (user.getRole() == Role.DEPARTMENT_MANAGER) {
             departmentDAO.updateManager(user.getDepartmentId(), user.getUserId());
+        }
+    }
+
+    // Xử lí thay đổi quản lí phòng ban
+    private void handleManagerChange(Role oldRole, Integer oldDepartmentId, Users existing) {
+        // Nếu trước là manager trong một phòng mà giờ không còn
+        if (oldRole == Role.DEPARTMENT_MANAGER && existing.getRole() != Role.DEPARTMENT_MANAGER) {
+            departmentDAO.updateManager(oldDepartmentId, null);
+        }
+
+        // Nếu trước không phải manager mà giờ là manager của phòng
+        if (oldRole != Role.DEPARTMENT_MANAGER && existing.getRole() == Role.DEPARTMENT_MANAGER) {
+            departmentDAO.updateManager(existing.getDepartmentId(), existing.getUserId());
+        }
+
+        // Nếu vẫn là manager nhưng đổi phòng
+        if (oldRole == Role.DEPARTMENT_MANAGER
+                && existing.getRole() == Role.DEPARTMENT_MANAGER
+                && !oldDepartmentId.equals(existing.getDepartmentId())) {
+            // Xóa manager phòng cũ
+            departmentDAO.updateManager(oldDepartmentId, null);
+            // Set manager phòng mới
+            departmentDAO.updateManager(existing.getDepartmentId(), existing.getUserId());
         }
     }
 
@@ -67,33 +91,11 @@ public class UserServiceImpl implements UserService {
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             existing.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
-
         // Lưu thời gian cập nhật
         existing.setUpdatedDate(LocalDateTime.now());
 
-        // Nếu trước là manager trong một phòng mà giờ không còn
-        if (oldRole == Role.DEPARTMENT_MANAGER && existing.getRole() != Role.DEPARTMENT_MANAGER) {
-            departmentDAO.updateManager(oldDepartmentId, null);
-        }
-
-        // Nếu trước không phải manager mà giờ là manager của phòng
-        if (oldRole != Role.DEPARTMENT_MANAGER && existing.getRole() == Role.DEPARTMENT_MANAGER) {
-            departmentDAO.updateManager(existing.getDepartmentId(), existing.getUserId());
-        }
-
-        // Nếu vẫn là manager nhưng đổi phòng
-        if (oldRole == Role.DEPARTMENT_MANAGER
-                && existing.getRole() == Role.DEPARTMENT_MANAGER
-                && !oldDepartmentId.equals(existing.getDepartmentId())) {
-
-            // Check phòng mới
-
-            // Xóa manager phòng cũ
-            departmentDAO.updateManager(oldDepartmentId, null);
-
-            // Set manager phòng mới
-            departmentDAO.updateManager(existing.getDepartmentId(), existing.getUserId());
-        }
+        //Xử lí nếu có trưởng phòng
+        handleManagerChange(oldRole, oldDepartmentId, existing);
 
         // Cập nhật thông tin
         userDAO.update(existing);
@@ -103,10 +105,15 @@ public class UserServiceImpl implements UserService {
     // Remove một user (Update status)
     @Override
     public void removeUser(Integer id) {
-        Users user = userDAO.findById(id)
+        userDAO.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         userDAO.delete(id);
+    }
+
+    @Override
+    public Integer getUserIdByUsername(String username) {
+        return userDAO.findUserIdByUsername(username);
     }
 
     // Tìm kiếm user theo keyword
@@ -122,6 +129,7 @@ public class UserServiceImpl implements UserService {
 
         return userMapper.toResponseList(users);
     }
+
 
     @Override
     public int getTotalPagesWithFilter(
@@ -147,18 +155,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Users> getAllUsers() {
-        return List.of();
+    public boolean existsManager(Integer departmentId, Integer userId) {
+        return userDAO.existsManagerByDepartment(departmentId, userId);
     }
 
     @Override
-    public List<UserResponse> getAllUsers2() {
-        return userDAO.findAll().stream().map(userMapper::toResponse).toList();
-    }
-
-    @Override
-    public Integer getUserIdByUsername(String username) {
-        return userDAO.findUserIdByUsername(username);
+    public boolean existsDirector(Integer userId) {
+        return userDAO.exitsDirector(Role.DIRECTOR, userId);
     }
 
     @Override
@@ -172,8 +175,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean existsManager(Integer departmentId, Integer userId) {
-        return userDAO.existsManagerByDepartment(departmentId, userId);
+    public boolean existsByPhone(String phone, Integer userId) {
+        return userDAO.existsByPhone(phone, userId);
     }
 
     @Override
@@ -186,20 +189,6 @@ public class UserServiceImpl implements UserService {
         }
 
         return userMap;
-    }
-
-    @Override
-    public Map<Integer, String> getAllWarehouseStaffName() {
-        Map<Integer, String> staffMap = new HashMap<>();
-        List<Users> allUsers = userDAO.findAll();
-        for (Users user : allUsers) {
-            if (user.getRole() == Role.WAREHOUSE_STAFF || user.getRole() == Role.ASSET_MANAGER) {
-                String fullName = user.getFirstName() + " " + user.getLastName()
-                        + " (" + user.getUsername() + ")";
-                staffMap.put(user.getUserId(), fullName);
-            }
-        }
-        return staffMap;
     }
 
 }

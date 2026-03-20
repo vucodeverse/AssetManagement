@@ -9,6 +9,7 @@ import edu.fpt.groupfive.model.QuotationDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.util.exception.DataAccessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -23,6 +24,36 @@ import java.util.Optional;
 public class QuotationDAOImpl implements QuotationDAO {
     private final DatabaseConfig databaseConfig;
     private final QuotationDetailDAO quotationDetailDAO;
+
+    @Value("${dao.common.insert_error}")
+    private String insertErrorMsg;
+
+    @Value("${purchase.create.failure}")
+    private String createFailureMsg;
+
+    @Value("${dao.common.find_error}")
+    private String findErrorMsg;
+
+    private Quotation mapResultSetToQuotation(ResultSet rs) throws SQLException {
+        Quotation quotation = new Quotation();
+
+        quotation.setId(rs.getInt("quotation_id"));
+        quotation.setPurchaseId(rs.getInt("purchase_request_id"));
+        quotation.setSupplierId(rs.getInt("supplier_id"));
+        quotation.setQuotationStatus(
+                QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
+        quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
+
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        quotation.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
+
+        Timestamp updatedAt = rs.getTimestamp("updated_at");
+        quotation.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
+
+        quotation.setRejectedReason(rs.getString("reject_reason"));
+
+        return quotation;
+    }
 
     @Override
     public Integer insert(Quotation quotation) {
@@ -39,7 +70,9 @@ public class QuotationDAOImpl implements QuotationDAO {
                 preparedStatement.setObject(2, quotation.getSupplierId());
                 preparedStatement.setString(3, quotation.getQuotationStatus().toString());
                 preparedStatement.setBigDecimal(4, quotation.getTotalAmount());
-                preparedStatement.setTimestamp(5, quotation.getCreatedAt() != null ? Timestamp.valueOf(quotation.getCreatedAt()) : Timestamp.valueOf(LocalDateTime.now()));
+                preparedStatement.setTimestamp(5,
+                        quotation.getCreatedAt() != null ? Timestamp.valueOf(quotation.getCreatedAt())
+                                : Timestamp.valueOf(LocalDateTime.now()));
                 preparedStatement.setString(6, quotation.getRejectedReason());
 
                 preparedStatement.executeUpdate();
@@ -63,12 +96,12 @@ public class QuotationDAOImpl implements QuotationDAO {
             } catch (SQLException e) {
                 connection.rollback();
 
-                throw new DataAccessException("Lỗi khi chèn dữ liệu", e);
+                throw new DataAccessException(insertErrorMsg, e);
             } finally {
                 connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Thêm yêu cầu mua sắm thất bại", e);
+            throw new DataAccessException(createFailureMsg, e);
         }
 
     }
@@ -77,7 +110,7 @@ public class QuotationDAOImpl implements QuotationDAO {
     @Override
     public void update(Quotation quotation) {
         String sql = "update quotation set supplier_id = ?, status = ?, total_amount = ?, updated_at = ? " +
-                "where quotation_id = ?";
+                "where quotation_id = ? and status in ('DRAFT', 'PENDING')";
 
         Connection connection = null;
         try {
@@ -133,10 +166,12 @@ public class QuotationDAOImpl implements QuotationDAO {
             connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, status.toString());
-            preparedStatement.setString(2, rejectedReason != null ? rejectedReason : null);
+            preparedStatement.setString(2, rejectedReason);
             preparedStatement.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
             preparedStatement.setInt(4, quotationId);
             preparedStatement.executeUpdate();
+
+            connection.commit();
         } catch (SQLException e) {
             if (connection != null) {
                 try {
@@ -166,27 +201,11 @@ public class QuotationDAOImpl implements QuotationDAO {
             preparedStatement.setInt(1, quotationId);
             ResultSet rs = preparedStatement.executeQuery();
             if (rs.next()) {
-
-                Quotation quotation = new Quotation();
-                quotation.setId(rs.getInt("quotation_id"));
-                quotation.setPurchaseId(rs.getInt("purchase_request_id"));
-                quotation.setSupplierId(rs.getInt("supplier_id"));
-                quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
-                quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                
-                Timestamp createdAt = rs.getTimestamp("created_at");
-                quotation.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
-                
-                Timestamp updatedAt = rs.getTimestamp("updated_at");
-                quotation.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
-                
-                quotation.setRejectedReason(rs.getString("reject_reason"));
-
-                return Optional.of(quotation);
+                return Optional.of(mapResultSetToQuotation(rs));
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
 
         return Optional.empty();
@@ -205,87 +224,34 @@ public class QuotationDAOImpl implements QuotationDAO {
             preparedStatement.setInt(1, purchaseId);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
-
-                Quotation quotation = new Quotation();
-                quotation.setId(rs.getInt("quotation_id"));
-                quotation.setPurchaseId(rs.getInt("purchase_request_id"));
-                quotation.setSupplierId(rs.getInt("supplier_id"));
-                quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
-                quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                
-                Timestamp createdAt = rs.getTimestamp("created_at");
-                quotation.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
-                
-                Timestamp updatedAt = rs.getTimestamp("updated_at");
-                quotation.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
-                
-                quotations.add(quotation);
+                quotations.add(mapResultSetToQuotation(rs));
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return quotations;
     }
-
-    // tìm theo quotationId
-    @Override
-    public Optional<Quotation> findWithDetailsById(Integer quotationId) {
-        String sql = "SELECT q.*, s.supplier_name " +
-                "FROM quotation q " +
-                "JOIN supplier s ON q.supplier_id = s.supplier_id " +
-                "WHERE q.quotation_id = ?";
-
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, quotationId);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                Quotation quotation = new Quotation();
-                quotation.setId(rs.getInt("quotation_id"));
-                quotation.setPurchaseId(rs.getInt("purchase_request_id"));
-                quotation.setSupplierId(rs.getInt("supplier_id"));
-                quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
-                quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                
-                Timestamp createdAt = rs.getTimestamp("created_at");
-                quotation.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
-                
-                Timestamp updatedAt = rs.getTimestamp("updated_at");
-                quotation.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
-                
-                quotation.setRejectedReason(rs.getString("reject_reason"));
-
-                return Optional.of(quotation);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return Optional.empty();
-    }
-
-
 
     // tinsh số lượng quotation theo từng purchase
     @Override
     public Integer countQuotationFromPurchaseId(Integer purchaseId) {
 
-        String sql = "select p.purchase_request_id, count(distinct q.quotation_id) from purchase_request p left join quotation q on p\n"
-                +
-                "    .purchase_request_id = q\n" +
-                "    .purchase_request_id where p\n" +
-                "    .purchase_request_id = ? group by p.purchase_request_id";
+        String sql = "select count(distinct q.quotation_id) from purchase_request p " +
+                "left join quotation q on p.purchase_request_id = q.purchase_request_id " +
+                "where p.purchase_request_id = ? and (q.status <> 'DELETED') " +
+                "group by p.purchase_request_id";
 
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, purchaseId);
             ResultSet rs = preparedStatement.executeQuery();
             if (rs.next()) {
-                return rs.getInt(2);
+                return rs.getInt(1);
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return 0;
     }
@@ -352,50 +318,37 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setSupplierId(rs.getInt("supplier_id"));
                 quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                
+
                 Timestamp createdAt = rs.getTimestamp("created_at");
                 quotation.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
-                
+
                 Timestamp updatedAt = rs.getTimestamp("updated_at");
                 quotation.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
-                
+
                 quotations.add(quotation);
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return quotations;
     }
 
-    // lấy ra những quotaiton đc thêm gần đây
+    // lấy ra những quotaiton đc thêm
     @Override
     public List<Quotation> findAll() {
         String sql = "select q.*, s.supplier_name from quotation q " +
                 "join supplier s on q.supplier_id = s.supplier_id " +
-                "where q.status <> 'DELETED' ";
+                "where q.status <> 'DELETED'";
         List<Quotation> quotations = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
-                Quotation quotation = new Quotation();
-                quotation.setId(rs.getInt("quotation_id"));
-                quotation.setPurchaseId(rs.getInt("purchase_request_id"));
-                quotation.setSupplierId(rs.getInt("supplier_id"));
-                quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
-                quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
-                
-                Timestamp createdAt = rs.getTimestamp("created_at");
-                quotation.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
-                
-                Timestamp updatedAt = rs.getTimestamp("updated_at");
-                quotation.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
-                
-                quotations.add(quotation);
+                quotations.add(mapResultSetToQuotation(rs));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(findErrorMsg, e);
         }
         return quotations;
     }
