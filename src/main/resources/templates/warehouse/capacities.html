@@ -5,6 +5,7 @@
 
 <head>
     <th:block layout:fragment="extra-css">
+        <title th:text="${pageTitle}"></title>
         <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
     </th:block>
 </head>
@@ -42,39 +43,7 @@
             </div>
         </div>
 
-        <!-- Main layout: Table + Create Form -->
-        <div class="wh-panel" style="margin-bottom: 2rem;">
-            <div class="wh-panel-header">
-                <span class="wh-panel-title"><i class="fa-solid fa-plus-circle"></i> Cấu hình Định mức Mới</span>
-            </div>
-            <div style="padding: 1.25rem 1.5rem;">
-                <form th:action="@{/wh/config/capacities/update}" method="post" class="inline-form" 
-                      style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap;">
-                    
-                    <div class="form-field" style="flex: 1; min-width: 250px; margin:0;">
-                        <label class="form-label">Chọn Loại Tài sản (Chưa cấu hình)</label>
-                        <select name="assetTypeId" class="form-input" required>
-                            <option value="">-- Chọn loại tài sản --</option>
-                            <option th:each="at : ${unconfiguredAssetTypes}" 
-                                    th:value="${at.assetTypeId}" 
-                                    th:text="${at.typeName} + ' (' + ${at.categoryName} + ')'"></option>
-                        </select>
-                    </div>
 
-                    <div class="form-field" style="width: 180px; margin:0;">
-                        <label class="form-label">Định mức (đv/món)</label>
-                        <input type="number" name="unitVolume" class="form-input" min="1" max="999" required placeholder="VD: 2">
-                    </div>
-
-                    <button type="submit" class="btn-primary" style="height:42px;">
-                        <i class="fa-solid fa-plus"></i> Thêm định mức
-                    </button>
-                </form>
-                <p th:if="${unconfiguredAssetTypes.isEmpty()}" style="font-size:0.8rem; color:#6b7280; margin-top:8px;">
-                    <i class="fa-solid fa-check-double"></i> Tất cả loại tài sản đã được cấu hình định mức.
-                </p>
-            </div>
-        </div>
 
         <div class="wh-panel">
                     <div class="wh-panel-header">
@@ -85,15 +54,15 @@
                     <table class="data-table">
                         <thead>
                         <tr>
-                            <th width="5%">#</th>
-                            <th width="35%">Loại Tài sản</th>
-                            <th width="20%">Danh mục</th>
-                            <th width="40%">Định mức (Đơn vị chiếm dụng)</th>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 35%;">Loại Tài sản</th>
+                            <th style="width: 20%;">Danh mục</th>
+                            <th style="width: 40%;">Định mức (Đơn vị chiếm dụng)</th>
                         </tr>
                         </thead>
                         <tbody>
                         <!-- Asset Types Rows -->
-                        <tr th:each="at : ${assetTypes}" th:if="${at.unitVolume != null}">
+                        <tr th:each="at : ${assetTypes}">
                             <!-- ID -->
                             <td style="color:#9ca3af; font-size:0.8rem;" th:text="${at.assetTypeId}">1</td>
 

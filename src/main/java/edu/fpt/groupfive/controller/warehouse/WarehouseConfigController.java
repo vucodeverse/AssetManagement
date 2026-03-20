@@ -162,12 +162,6 @@ public class WarehouseConfigController {
         List<AssetTypeVolumeDTO> allTypes = whAssetCapacityService.getAllAssetTypeVolumes();
         model.addAttribute("assetTypes", allTypes);
         
-        // Filter those without a volume set
-        List<AssetTypeVolumeDTO> unconfigured = allTypes.stream()
-                .filter(at -> at.getUnitVolume() == null)
-                .toList();
-        model.addAttribute("unconfiguredAssetTypes", unconfigured);
-
         if (!model.containsAttribute(VOLUME_FORM)) {
             model.addAttribute(VOLUME_FORM, new AssetVolumeUpdateRequestDTO());
         }
