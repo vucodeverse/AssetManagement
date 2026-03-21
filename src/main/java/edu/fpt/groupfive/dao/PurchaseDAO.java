@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao;
 
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.model.Purchase;
@@ -20,7 +20,7 @@ public interface PurchaseDAO {
 
     List<Purchase> search(PurchaseRequestSearchCriteria purchaseRequestSearchCriteria);
 
-    void updateStatus(Request request, Integer purchaseId, String reasonReject, Integer userId);
+    void updateStatus(PurchaseProcessStatus purchaseProcessStatus, Integer purchaseId, String reasonReject, Integer userId);
 
     void update(Purchase purchase);
 

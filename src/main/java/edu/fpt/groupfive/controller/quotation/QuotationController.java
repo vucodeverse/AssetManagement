@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.controller.quotation;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dto.request.*;
 import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
@@ -73,7 +73,7 @@ public class QuotationController {
                 .map(qr -> {
                     qr.setQuotationDetails(
                             qr.getQuotationDetails().stream()
-                                    .filter(qd -> qd.getStatus() != QuotationStatus.REJECTED)
+                                    .filter(qd -> qd.getStatus() != PurchaseProcessStatus.REJECTED)
                                     .toList());
                     return qr;
                 })
@@ -276,7 +276,7 @@ public class QuotationController {
     // filter
     private void prepareQuotationFilter(Model model) {
         prepareQuotationMenu(model);
-        model.addAttribute("statuses", QuotationStatus.values());
+        model.addAttribute("statuses", PurchaseProcessStatus.values());
         model.addAttribute("suppliers", supplierService.getAllSupplier());
     }
 
@@ -284,7 +284,7 @@ public class QuotationController {
     private void prepareQuotationSearchModel(Model model) {
         prepareQuotationMenu(model);
         model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", QuotationStatus.values());
+        model.addAttribute("status", PurchaseProcessStatus.values());
     }
 
     // thêm mới 1 dòng quotaton detail

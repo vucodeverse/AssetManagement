@@ -1,13 +1,9 @@
 package edu.fpt.groupfive.controller.director;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.QuotationStatus;
-import edu.fpt.groupfive.common.Request;
-import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
-import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.service.PurchaseService;
-import edu.fpt.groupfive.service.QuotationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,7 +31,7 @@ public class DirectorController {
         model.addAttribute("activeSub", "pr");
         model.addAttribute("purchases", purchaseService.getPurchaseRequests());
         model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", Request.values());
+        model.addAttribute("status", PurchaseProcessStatus.values());
         return "purchase/purchase-list";
     }
 

@@ -53,7 +53,7 @@
             <label>TRẠNG THÁI HIỆN TẠI</label>
             <div>
               <span class="status-badge" th:classappend="${order.getOrderStatus}"
-                th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(order.getOrderStatus).description}">PENDING
+                th:text="${T(edu.fpt.groupfive.common.PurchaseProcessStatus).valueOf(order.getOrderStatus).description}">PENDING
                 REVIEW</span>
             </div>
           </div>

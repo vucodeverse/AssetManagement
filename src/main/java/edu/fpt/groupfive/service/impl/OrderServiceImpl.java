@@ -1,8 +1,8 @@
 package edu.fpt.groupfive.service.impl;
 
-import edu.fpt.groupfive.common.OrderStatus;
-import edu.fpt.groupfive.common.QuotationStatus;
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
+
+
 import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
@@ -80,8 +80,8 @@ public class OrderServiceImpl implements OrderService {
 
         // lấy ra list quotation detiail
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
-                .filter(qd -> QuotationStatus.APPROVED == qd.getQuotationDetailStatus()
-                        || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
+                .filter(qd -> PurchaseProcessStatus.APPROVED == qd.getQuotationDetailStatus()
+                        || PurchaseProcessStatus.PENDING == qd.getQuotationDetailStatus())
                 .toList();
 
         // lấy ra assettype
@@ -120,8 +120,8 @@ public class OrderServiceImpl implements OrderService {
 
         // ly toàn bộ quotation detail lên trước
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
-                .filter(qd -> QuotationStatus.APPROVED == qd.getQuotationDetailStatus()
-                        || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
+                .filter(qd -> PurchaseProcessStatus.APPROVED == qd.getQuotationDetailStatus()
+                        || PurchaseProcessStatus.PENDING == qd.getQuotationDetailStatus())
                 .toList();
 
         // lưu id và quota detail của nó
@@ -144,7 +144,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setQuotationId(quotationId);
         order.setPurchaseId(quotation.getPurchaseId());
-        order.setOrderStatus(OrderStatus.PENDING);
+        order.setOrderStatus(PurchaseProcessStatus.PENDING);
         order.setOrderNote(purchaseOrderCreateRequest.getOrderNote());
         order.setSupplierId(quotation.getSupplierId());
         order.setApprovedBy(userDAO.findUserIdByUsername(username));
@@ -180,15 +180,19 @@ public class OrderServiceImpl implements OrderService {
 
         // update quotation detail sang APPROVED
         detailCreateRequests
-                .forEach(line -> quotationDetailDAO.update(line.getQuotationDetailId(), QuotationStatus.APPROVED));
+                .forEach(line -> quotationDetailDAO.update(line.getQuotationDetailId(), PurchaseProcessStatus.APPROVED));
 
         // update quotation sang APPROVED
-        quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED);
+        quotationDAO.updateStatus(quotationId, PurchaseProcessStatus.APPROVED);
 
-        // Update remaining quotation details to REJECTED
+        // chuyển những quotation detail khác sang reject
         updateQuotationDetail(detailCreateRequests, quotationDetails);
 
-        if(checkQuantityOfPO(quotation.getPurchaseId())) purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
+        if(checkQuantityOfPO(quotation.getPurchaseId())) {
+            purchaseDAO.updateStatus(PurchaseProcessStatus.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
+            // Reject all other pending quotations for this PR since it's fully fulfilled
+            rejectOtherQuotations(quotationId, quotation.getPurchaseId());
+        }
         return orderId;
     }
 
@@ -199,7 +203,29 @@ public class OrderServiceImpl implements OrderService {
 
         for (QuotationDetail qd : allCandidates) {
             if (!approvedIds.contains(qd.getId())) {
-                quotationDetailDAO.update(qd.getId(), QuotationStatus.REJECTED);
+                quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
+            }
+        }
+    }
+
+    private void rejectOtherQuotations(Integer currentQuotationId, Integer purchaseId) {
+        // Find all other quotations for this purchase request
+        List<Quotation> otherQuotations = quotationDAO.findByPurchaseId(purchaseId).stream()
+                .filter(q -> !q.getId().equals(currentQuotationId))
+                .filter(q -> q.getQuotationStatus() == PurchaseProcessStatus.PENDING 
+                        || q.getQuotationStatus() == PurchaseProcessStatus.DRAFT)
+                .toList();
+
+        for (Quotation q : otherQuotations) {
+            // Reject the quotation itself
+            quotationDAO.updateStatus(q.getId(), PurchaseProcessStatus.REJECTED);
+            
+            // Reject all its details
+            List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(q.getId());
+            for (QuotationDetail qd : details) {
+                if (qd.getQuotationDetailStatus() != PurchaseProcessStatus.REJECTED) {
+                    quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
+                }
             }
         }
     }
@@ -323,7 +349,7 @@ public class OrderServiceImpl implements OrderService {
 
         Map<Integer, String> map = userService.getUserIdToUsernameMap();
 
-        return (List<PurchaseOrderResponse>) orderDAO.findRecent().stream().filter(o -> OrderStatus.PENDING == o.getOrderStatus()).map(o -> PurchaseOrderResponse.builder()
+        return (List<PurchaseOrderResponse>) orderDAO.findRecent().stream().filter(o -> PurchaseProcessStatus.PENDING == o.getOrderStatus()).map(o -> PurchaseOrderResponse.builder()
                         .orderId(o.getId())
                 .orderNote(o.getOrderNote())
                 .createdAt(o.getCreatedAt())
@@ -334,7 +360,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void updateStatus(Integer orderId, OrderStatus orderStatus) {
+    public void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus) {
         orderDAO.findById(orderId).orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
 
         orderDAO.updateStatus(orderId, orderStatus);

@@ -1,16 +1,14 @@
 package edu.fpt.groupfive.service.impl;
 
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.dao.PurchaseDAO;
-import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.dao.QuotationDAO;
 import edu.fpt.groupfive.dto.request.PurchaseRequestCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseRequestDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
-import edu.fpt.groupfive.mapper.PurchaseDetailMapper;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.service.AssetTypeService;
@@ -20,9 +18,6 @@ import edu.fpt.groupfive.util.config.RoleLogin;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -62,16 +57,16 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Value("${purchase.edit.not_draft}")
     private String notDraftMsg;
 
-    // tạo 1 purchase request
+    // tạo 1 purchase purchaseProcessStatus
     @Override
     public Integer createPurchaseRequest(PurchaseRequestCreateRequest purchaseCreateRequest, int userId,
-            Request request) {
+            PurchaseProcessStatus purchaseProcessStatus) {
 
         // map từ dto sang purchase
         Purchase purchase = purchaseMapper.toPurchase(purchaseCreateRequest);
 
         // set status
-        purchase.setStatus(request);
+        purchase.setStatus(purchaseProcessStatus);
 
         Integer purchaseId;
 
@@ -189,11 +184,11 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         // Xử lý các hành động (actions) nhận được từ controller
         if ("a".equals(action)) {
-            purchaseDAO.updateStatus(Request.APPROVED, purchaseId, null, userId);
+            purchaseDAO.updateStatus(PurchaseProcessStatus.APPROVED, purchaseId, null, userId);
         } else if ("r".equals(action)) {
-            purchaseDAO.updateStatus(Request.REJECTED, purchaseId, reasonReject, userId);
+            purchaseDAO.updateStatus(PurchaseProcessStatus.REJECTED, purchaseId, reasonReject, userId);
         } else if ("d".equals(action)) {
-            purchaseDAO.updateStatus(Request.DELETED, purchaseId, null, userId);
+            purchaseDAO.updateStatus(PurchaseProcessStatus.DELETED, purchaseId, null, userId);
         } else {
             throw new InvalidDataException(invalidActionMsg);
         }
@@ -208,7 +203,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                 .orElseThrow(() -> new InvalidDataException(purchaseNotFoundMsg));
 
         // nếu ko phải draft thì ko thể sửa
-        if (Request.DRAFT != purchase.getStatus()) {
+        if (PurchaseProcessStatus.DRAFT != purchase.getStatus()) {
             throw new InvalidDataException(notDraftMsg);
         }
 
@@ -235,13 +230,13 @@ public class PurchaseServiceImpl implements PurchaseService {
     private List<Purchase> author(List<Purchase> purchases){
         if (!Role.ASSET_MANAGER.name().equals(roleLogin.getRole()))
             purchases = purchases.stream()
-                    .filter(p -> !Request.DRAFT.equals(p.getStatus()))
+                    .filter(p -> !PurchaseProcessStatus.DRAFT.equals(p.getStatus()))
                     .toList();
 
 
         if (Role.PURCHASE_STAFF.name().equals(roleLogin.getRole()))
             purchases = purchases.stream()
-                    .filter(p -> !Request.REJECTED.equals(p.getStatus()))
+                    .filter(p -> !PurchaseProcessStatus.REJECTED.equals(p.getStatus()))
                     .toList();
 
         return purchases;

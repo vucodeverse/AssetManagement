@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dto.response;
 
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +16,7 @@ import java.util.List;
 public class QuotationResponse {
     private Integer quotationId;
     private Integer purchaseId;
-    private QuotationStatus quotationStatus;
+    private PurchaseProcessStatus quotationStatus;
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
     private String supplierName;

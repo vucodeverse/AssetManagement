@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao.impl;
 
-import edu.fpt.groupfive.common.OrderStatus;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dao.OrderDAO;
 import edu.fpt.groupfive.dao.OrderDetailDAO;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
@@ -151,7 +151,7 @@ public class OrderDAOImpl implements OrderDAO {
                 ps.setBigDecimal(1, order.getTotalAmount());
                 ps.setString(2, order.getOrderNote());
                 ps.setString(3, order.getOrderStatus() != null ? order.getOrderStatus().name()
-                        : OrderStatus.PENDING.name());
+                        : PurchaseProcessStatus.PENDING.name());
                 ps.setTimestamp(4, order.getCreatedAt() != null ? Timestamp.valueOf(order.getCreatedAt())
                         : Timestamp.valueOf(LocalDateTime.now()));
                 ps.setObject(5, order.getPurchaseId());
@@ -237,11 +237,11 @@ public class OrderDAOImpl implements OrderDAO {
     public List<Object[]> search(PurchaseOrderSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder(
                 "select po.purchase_order_id, po.total_amount, po.note, po.status, " +
-                        "po.created_at, po.purchase_request_id, po.supplier_id, po.quotation_id, po.approved_by, " +
+                        "po.created_at, q.purchase_request_id, po.supplier_id, po.quotation_id, po.approved_by, " +
                         "po.updated_at, po.updated_by, " +
                         "s.supplier_name " +
                         "from purchase_orders po " +
-                        "join supplier s on po.supplier_id = s.supplier_id " +
+                        "join supplier s on po.supplier_id = s.supplier_id join quotation q on q.quotation_id = po.quotation_id " +
                         "where po.status <> 'DELETED' ");
 
         List<Object> params = new ArrayList<>();
@@ -303,10 +303,11 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setId(rs.getInt("purchase_order_id"));
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
-                order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
+                order.setOrderStatus(PurchaseProcessStatus.valueOf(rs.getString("status").toUpperCase()));
                 order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
+                order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
                 order.setUpdatedAt(
                         rs.getDate("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
@@ -340,7 +341,7 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setId(rs.getInt("purchase_order_id"));
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
-                order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
+                order.setOrderStatus(PurchaseProcessStatus.valueOf(rs.getString("status").toUpperCase()));
                 order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
@@ -378,7 +379,7 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setId(rs.getInt("purchase_order_id"));
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
-                order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
+                order.setOrderStatus(PurchaseProcessStatus.valueOf(rs.getString("status").toUpperCase()));
                 order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
@@ -396,7 +397,7 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public void updateStatus(Integer orderId, OrderStatus orderStatus) {
+    public void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus) {
         String sql = "update purchase_orders set status = ? where order_id = ?";
 
         try (Connection connection = databaseConfig.getConnection()) {

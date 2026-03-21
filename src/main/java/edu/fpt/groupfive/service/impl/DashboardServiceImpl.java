@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.service.impl;
 
-import edu.fpt.groupfive.common.QuotationStatus;
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
+
 import edu.fpt.groupfive.dao.OrderDAO;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.QuotationDAO;
@@ -12,12 +12,10 @@ import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.dao.SupplierDAO;
 import edu.fpt.groupfive.model.Supplier;
 import edu.fpt.groupfive.service.ISupplierService;
-import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +43,7 @@ public class DashboardServiceImpl implements DashboardService {
                 BigDecimal totalAmount = (BigDecimal)  row[2];
                 return DashboardDTO.builder()
                                 .recentPRs(fetchRecentPRs())
-                                .recentQuotations(fetchRecentQuotations(QuotationStatus.PENDING))
+                                .recentQuotations(fetchRecentQuotations(PurchaseProcessStatus.PENDING))
                         .totalPrPending(prPending)
                         .totalQuotationPending(qtPending)
                         .totalPrTotalInYear(totalAmount)
@@ -57,7 +55,7 @@ public class DashboardServiceImpl implements DashboardService {
                 Map<Integer, String> map  = userService.getUserIdToUsernameMap();
 
                 return purchaseDAO.findAll().stream()
-                                .filter(p -> Request.PENDING.equals(p.getStatus()))
+                                .filter(p -> PurchaseProcessStatus.PENDING.equals(p.getStatus()))
                                 .map(p ->{
                                         PurchaseRequestResponse response = purchaseMapper.toPurchaseResponse(p);
                                         response.setCreatorName(map.getOrDefault(p.getCreatedByUser(), "N/A"));
@@ -66,7 +64,7 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         // lấy ra toàn bộ quotation
-        private List<QuotationResponse> fetchRecentQuotations(QuotationStatus  status) {
+        private List<QuotationResponse> fetchRecentQuotations(PurchaseProcessStatus  status) {
                 return quotationDAO.findAll().stream()
                                 .filter(q -> status.equals(q.getQuotationStatus()))
                                 .map(q -> {
@@ -93,10 +91,10 @@ public class DashboardServiceImpl implements DashboardService {
             Map<Integer, String> mapUser = userService.getUserIdToUsernameMap();
 
                 return StaffDashboardDTO.builder()
-                                .approvedPRs(purchaseDAO.findAll().stream().filter(p -> Request.APPROVED.equals(p.getStatus()))
+                                .approvedPRs(purchaseDAO.findAll().stream().filter(p -> PurchaseProcessStatus.APPROVED.equals(p.getStatus()))
                                                 .map(purchaseMapper::toPurchaseResponse)
                                                 .toList())
-                                .recentQuotations(fetchRecentQuotations(QuotationStatus.DRAFT))
+                                .recentQuotations(fetchRecentQuotations(PurchaseProcessStatus.DRAFT))
                                 .activeOrders(orderDAO.findRecent().stream()
                                                 .map(o ->{
                                                     PurchaseOrderResponse or = orderMapper.toPurchaseOrderResponse(o);

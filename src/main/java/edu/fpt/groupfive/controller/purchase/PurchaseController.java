@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.controller.purchase;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dto.request.PurchaseRequestCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
@@ -10,7 +10,6 @@ import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.annotation.IsAssetManager;
-import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -177,7 +176,7 @@ public class PurchaseController {
 
         // check là draft hay pending
         boolean isDraft = "draft".equals(actions);
-        Request status = isDraft ? Request.DRAFT : Request.PENDING;
+        PurchaseProcessStatus status = isDraft ? PurchaseProcessStatus.DRAFT : PurchaseProcessStatus.PENDING;
 
         // gọi service lưu request
         Integer purchaseId = purchaseService.createPurchaseRequest(purchaseCreateRequest, getCurrentUserId(), status);
@@ -198,7 +197,7 @@ public class PurchaseController {
     // set các field cho filter
     private void prepareFilter(Model model) {
         model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", Request.values());
+        model.addAttribute("status", PurchaseProcessStatus.values());
         setNavbar(model);
     }
 
