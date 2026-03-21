@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+
+<head>
+    <title>Chi tiết Zone</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+        <style>
+            /* ── Zone Detail Page ── */
+            .zone-hero {
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+                border-radius: 16px;
+                padding: 2rem 2.5rem;
+                color: white;
+                display: flex;
+                align-items: center;
+                gap: 2rem;
+                margin-bottom: 1.5rem;
+                position: relative;
+                overflow: hidden;
+            }
+            .zone-hero::before {
+                content: '';
+                position: absolute;
+                top: -40px; right: -40px;
+                width: 180px; height: 180px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.04);
+            }
+            .zone-hero::after {
+                content: '';
+                position: absolute;
+                bottom: -60px; right: 80px;
+                width: 260px; height: 260px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.03);
+            }
+            .zone-hero-icon {
+                width: 72px; height: 72px;
+                background: rgba(255,255,255,0.1);
+                border-radius: 18px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 2rem;
+                flex-shrink: 0;
+                backdrop-filter: blur(4px);
+                border: 1px solid rgba(255,255,255,0.15);
+            }
+            .zone-hero-name {
+                font-size: 2.25rem;
+                font-weight: 900;
+                letter-spacing: -0.03em;
+                line-height: 1;
+                margin-bottom: 0.5rem;
+            }
+            .zone-hero-meta {
+                display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
+            }
+            .hero-badge {
+                display: inline-flex; align-items: center; gap: 5px;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+            }
+            .hero-badge.active   { background: rgba(34,197,94,0.2);  color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+            .hero-badge.inactive { background: rgba(148,163,184,0.2); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+            .hero-badge.in-use   { background: rgba(245,158,11,0.2);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+            .hero-badge.empty    { background: rgba(148,163,184,0.15); color: #cbd5e1; border: 1px solid rgba(148,163,184,0.2); }
+            .hero-badge.full     { background: rgba(239,68,68,0.2);   color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+            /* ── Metric Cards ── */
+            .metric-row {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+            }
+            .metric-card {
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                padding: 1.25rem 1.5rem;
+                display: flex; flex-direction: column; gap: 0.25rem;
+            }
+            .metric-card-label {
+                font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+                letter-spacing: 0.06em; color: #9ca3af;
+            }
+            .metric-card-value {
+                font-size: 1.75rem; font-weight: 900; color: #0f172a; line-height: 1.1;
+            }
+            .metric-card-sub {
+                font-size: 0.75rem; color: #6b7280;
+            }
+
+            /* ── Info Card ── */
+            .info-card {
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                overflow: hidden;
+                margin-bottom: 1.5rem;
+            }
+            .info-card-header {
+                padding: 1rem 1.5rem;
+                background: #f9fafb;
+                border-bottom: 1px solid #f3f4f6;
+                font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+                letter-spacing: 0.07em; color: #374151;
+                display: flex; align-items: center; gap: 0.5rem;
+            }
+            .info-row {
+                display: flex; align-items: center;
+                padding: 1rem 1.5rem;
+                border-bottom: 1px solid #f9fafb;
+                gap: 1rem;
+            }
+            .info-row:last-child { border-bottom: none; }
+            .info-row-icon {
+                width: 32px; height: 32px;
+                border-radius: 8px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 0.875rem; flex-shrink: 0;
+            }
+            .info-row-icon.blue   { background: #eff6ff; color: #3b82f6; }
+            .info-row-icon.green  { background: #f0fdf4; color: #16a34a; }
+            .info-row-icon.amber  { background: #fef3c7; color: #d97706; }
+            .info-row-icon.purple { background: #f5f3ff; color: #7c3aed; }
+            .info-row-icon.slate  { background: #f1f5f9; color: #475569; }
+            .info-row-label {
+                font-size: 0.775rem; color: #6b7280; min-width: 150px; flex-shrink: 0;
+            }
+            .info-row-value {
+                font-size: 0.9rem; font-weight: 600; color: #0f172a;
+            }
+
+            /* ── Capacity Section ── */
+            .capacity-section {
+                padding: 1.25rem 1.5rem;
+                border-top: 1px solid #f3f4f6;
+            }
+            .capacity-section-label {
+                font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+                letter-spacing: 0.07em; color: #9ca3af; margin-bottom: 1rem;
+                display: flex; align-items: center; gap: 0.5rem;
+            }
+            .big-bar-wrap {
+                display: flex; align-items: center; gap: 1rem;
+            }
+            .big-bar {
+                flex: 1; height: 14px; background: #f1f5f9; border-radius: 99px; overflow: hidden;
+            }
+            .big-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+            .big-bar-fill.low  { background: linear-gradient(90deg, #22c55e, #4ade80); }
+            .big-bar-fill.mid  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+            .big-bar-fill.high { background: linear-gradient(90deg, #ef4444, #f87171); }
+            .big-bar-fill.empty { background: #e2e8f0; }
+            .big-bar-pct {
+                font-size: 1.25rem; font-weight: 900; min-width: 56px; text-align: right;
+            }
+            .big-bar-pct.low  { color: #16a34a; }
+            .big-bar-pct.mid  { color: #d97706; }
+            .big-bar-pct.high { color: #dc2626; }
+            .big-bar-pct.empty { color: #94a3b8; }
+            .capacity-fraction {
+                font-size: 0.8rem; color: #9ca3af; margin-top: 0.5rem;
+                text-align: right;
+            }
+
+            /* Sidebar card */
+            .side-note {
+                background: #f0f9ff;
+                border: 1px solid #bae6fd;
+                border-radius: 12px;
+                padding: 1.25rem;
+                margin-bottom: 1rem;
+            }
+            .side-note-title {
+                font-size: 0.775rem; font-weight: 800; color: #0369a1;
+                margin-bottom: 0.75rem;
+                display: flex; align-items: center; gap: 0.4rem;
+            }
+            .side-note ul {
+                margin: 0; padding-left: 1.1rem;
+                font-size: 0.8rem; color: #0c4a6e; line-height: 1.9;
+            }
+
+            @media (max-width: 900px) {
+                .metric-row { grid-template-columns: 1fr 1fr; }
+                .zone-hero-name { font-size: 1.75rem; }
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fa-solid fa-cubes-stacked" style="margin-right:8px; color:#3b82f6;"></i>
+                Chi tiết Zone
+            </h1>
+            <p class="page-subtitle">
+                <a href="/wh/config/zones" style="color:#6b7280; text-decoration:none;">
+                    <i class="fa-solid fa-arrow-left" style="margin-right:4px;"></i>Quay lại danh sách
+                </a>
+            </p>
+        </div>
+
+    </header>
+
+    <div class="content-wrapper">
+
+        <!-- Flash messages -->
+        <div th:if="${successMessage}" class="flash-message success" style="margin-bottom:1.25rem;">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <!-- Hero banner -->
+        <div class="zone-hero"
+             th:with="pct=${zone.fillPercentage}">
+            <div class="zone-hero-icon">
+                <i class="fa-solid fa-warehouse"></i>
+            </div>
+            <div>
+                <div class="zone-hero-name" th:text="${zone.zoneName}">A-01</div>
+                <div class="zone-hero-meta">
+                    <!-- Active/Inactive -->
+                    <span th:if="${zone.status == 'ACTIVE'}" class="hero-badge active">
+                        <i class="fa-solid fa-circle" style="font-size:5px;"></i> Active
+                    </span>
+                    <span th:if="${zone.status != 'ACTIVE'}" class="hero-badge inactive">
+                        <i class="fa-solid fa-circle" style="font-size:5px;"></i> Inactive
+                    </span>
+                    <!-- Status flag -->
+                    <span th:switch="${zone.statusFlag}">
+                        <span th:case="'EMPTY'"  class="hero-badge empty"><i class="fa-regular fa-circle"></i> Trống</span>
+                        <span th:case="'IN_USE'" class="hero-badge in-use"><i class="fa-solid fa-circle-half-stroke"></i> Đang dùng</span>
+                        <span th:case="'FULL'"   class="hero-badge full"><i class="fa-solid fa-circle"></i> Đầy</span>
+                    </span>
+                    <!-- Asset type -->
+                    <span th:if="${zone.assetTypeName != null}"
+                          style="background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.3);
+                                 padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:700;
+                                 display:inline-flex; align-items:center; gap:5px;">
+                        <i class="fa-solid fa-tag"></i>
+                        <span th:text="${zone.assetTypeName}"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="wh-layout">
+            <!-- LEFT COLUMN -->
+            <div>
+                <!-- Metric cards row -->
+                <div class="metric-row"
+                     th:with="pct=${zone.fillPercentage}, remaining=${zone.maxCapacity - zone.currentCapacity}">
+                    <div class="metric-card">
+                        <div class="metric-card-label"><i class="fa-solid fa-maximize" style="margin-right:4px;"></i>Sức chứa tối đa</div>
+                        <div class="metric-card-value" th:text="${zone.maxCapacity}">20</div>
+                        <div class="metric-card-sub">đơn vị</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-label"><i class="fa-solid fa-box" style="margin-right:4px;"></i>Đang chiếm dụng</div>
+                        <div class="metric-card-value" th:text="${zone.currentCapacity}">18</div>
+                        <div class="metric-card-sub">đơn vị</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-label"><i class="fa-solid fa-circle-plus" style="margin-right:4px;"></i>Còn trống</div>
+                        <div class="metric-card-value"
+                             th:classappend="${remaining == 0} ? ' ' : ''"
+                             th:style="${remaining == 0} ? 'color:#dc2626' : (${remaining < zone.maxCapacity * 0.2} ? 'color:#d97706' : 'color:#16a34a')"
+                             th:text="${remaining}">2</div>
+                        <div class="metric-card-sub">đơn vị còn lại</div>
+                    </div>
+                </div>
+
+                <!-- Info rows -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-circle-info"></i> Thông tin chi tiết
+                    </div>
+
+                    <!-- Tên zone -->
+                    <div class="info-row">
+                        <div class="info-row-icon blue"><i class="fa-solid fa-tag"></i></div>
+                        <div class="info-row-label">Tên Zone</div>
+                        <div class="info-row-value zone-name" th:text="${zone.zoneName}">A-01</div>
+                    </div>
+
+                    <!-- Trạng thái hoạt động -->
+                    <div class="info-row">
+                        <div class="info-row-icon" th:classappend="${zone.status == 'ACTIVE'} ? 'green' : 'slate'">
+                            <i class="fa-solid fa-power-off"></i>
+                        </div>
+                        <div class="info-row-label">Trạng thái hoạt động</div>
+                        <div>
+                            <span th:if="${zone.status == 'ACTIVE'}" class="badge badge-active">
+                                <i class="fa-solid fa-circle" style="font-size:5px;"></i> Active
+                            </span>
+                            <span th:if="${zone.status != 'ACTIVE'}" class="badge badge-inactive">
+                                <i class="fa-solid fa-circle" style="font-size:5px;"></i> Inactive
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Tình trạng zone -->
+                    <div class="info-row">
+                        <div class="info-row-icon amber"><i class="fa-solid fa-chart-pie"></i></div>
+                        <div class="info-row-label">Tình trạng Zone</div>
+                        <div>
+                            <span th:switch="${zone.statusFlag}">
+                                <span th:case="'EMPTY'"  class="badge badge-empty"><i class="fa-regular fa-circle"></i> Trống</span>
+                                <span th:case="'IN_USE'" class="badge badge-in-use"><i class="fa-solid fa-circle-half-stroke"></i> Đang dùng</span>
+                                <span th:case="'FULL'"   class="badge badge-full"><i class="fa-solid fa-circle"></i> Đầy</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Loại tài sản -->
+                    <div class="info-row">
+                        <div class="info-row-icon purple"><i class="fa-solid fa-boxes-stacked"></i></div>
+                        <div class="info-row-label">Loại tài sản đang chứa</div>
+                        <div>
+                            <span th:if="${zone.assetTypeName != null}" class="asset-type-chip">
+                                <i class="fa-solid fa-tag"></i>
+                                <span th:text="${zone.assetTypeName}"></span>
+                            </span>
+                            <span th:if="${zone.assetTypeName == null}" class="no-asset">— Chưa có hàng —</span>
+                        </div>
+                    </div>
+
+                    <!-- Capacity bar -->
+                    <div class="capacity-section"
+                         th:with="pct=${zone.fillPercentage},
+                                  barClass=${pct == 0 ? 'empty' : (pct < 50 ? 'low' : (pct < 85 ? 'mid' : 'high'))}">
+                        <div class="capacity-section-label">
+                            <i class="fa-solid fa-gauge-high"></i> Mức lấp đầy
+                        </div>
+                        <div class="big-bar-wrap">
+                            <div class="big-bar">
+                                <div class="big-bar-fill" th:classappend="${barClass}" th:style="'width:' + ${pct} + '%'"></div>
+                            </div>
+                            <span class="big-bar-pct" th:classappend="${barClass}" th:text="${pct} + '%'">90%</span>
+                        </div>
+                        <div class="capacity-fraction"
+                             th:text="${zone.currentCapacity} + ' / ' + ${zone.maxCapacity} + ' đơn vị sử dụng'"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div>
+                <!-- Side note -->
+                <div class="side-note">
+                    <div class="side-note-title">
+                        <i class="fa-solid fa-circle-info"></i> Thông tin vận hành
+                    </div>
+                    <ul>
+                        <li th:with="sf=${zone.statusFlag}">
+                            Zone
+                            <strong th:text="${sf == 'EMPTY'} ? 'đang trống' : (${sf == 'FULL'} ? 'đã đầy' : 'đang sử dụng')"></strong>.
+                        </li>
+                        <li>Sức chứa còn lại:
+                            <strong th:text="${zone.maxCapacity - zone.currentCapacity} + ' đơn vị'"></strong>.
+                        </li>
+                        <li th:if="${zone.assetTypeId != null}">
+                            Zone gán cho loại: <strong th:text="${zone.assetTypeName}"></strong>.
+                        </li>
+                        <li th:if="${zone.assetTypeId == null}">
+                            Loại tài sản sẽ được gán khi nhập kho lần đầu.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Actions -->
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <a th:href="@{'/wh/config/zones/' + ${zone.zoneId} + '/edit'}"
+                       style="display:flex; align-items:center; justify-content:center; gap:0.5rem;
+                              padding:0.75rem; background:#0f172a; color:white; border-radius:10px;
+                              text-decoration:none; font-size:0.8rem; font-weight:800;
+                              text-transform:uppercase; letter-spacing:0.06em; transition:background 0.15s;">
+                        <i class="fa-solid fa-pen-to-square"></i> Cập nhật thông tin
+                    </a>
+                    <a href="/wh/config/zones"
+                       style="display:flex; align-items:center; justify-content:center; gap:0.5rem;
+                              padding:0.75rem; background:white; color:#374151; border:1px solid #e5e7eb;
+                              border-radius:10px; text-decoration:none; font-size:0.8rem; font-weight:700;
+                              text-transform:uppercase; letter-spacing:0.06em; transition:background 0.15s;">
+                        <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</th:block>
+</body>
+</html>

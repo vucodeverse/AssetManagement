@@ -22,7 +22,7 @@ public class AssetDAOImpl implements AssetDAO {
     private final DatabaseConfig databaseConfig;
 
     @Override
-    public void insert(Asset asset) {
+    public int insert(Asset asset) {
 
         String sql = """
                     INSERT INTO asset
@@ -53,6 +53,13 @@ public class AssetDAOImpl implements AssetDAO {
             setDate(ps, 8, asset.getAcquisitionDate());
 
             ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+            return 0;
 
         } catch (Exception e) {
             throw new RuntimeException("Lỗi không tạo được tài sản.", e);

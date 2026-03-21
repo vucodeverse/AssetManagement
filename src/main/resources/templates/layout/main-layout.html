@@ -20,6 +20,8 @@
             th:replace="~{fragment/staff-sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
         <div sec:authorize="hasAuthority('ASSET_MANAGER')"
             th:replace="~{fragment/manager-sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
+        <div sec:authorize="hasAuthority('WAREHOUSE_STAFF')"
+            th:replace="~{fragment/warehouse-sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
         <div sec:authorize="!isAuthenticated()"
             th:replace="~{fragment/sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
 

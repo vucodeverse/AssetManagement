@@ -1,0 +1,242 @@
+-- =============================================
+-- FULL DUMMY DATA FOR PROCUREMENT FLOW TESTING
+-- =============================================
+
+USE AssetManagement; 
+GO
+
+-- 1. Thêm Nhà cung cấp (Suppliers)
+IF NOT EXISTS (SELECT 1 FROM supplier WHERE supplier_name = N'Phong Vũ IT')
+    INSERT INTO supplier (supplier_name, phone_number, email, address, supplier_code, tax_code, status)
+    VALUES (N'Phong Vũ IT', '028111222', 'contact@phongvu.vn', N'264 Nguyễn Thị Minh Khai, Q3, HCM', 'SUP001', 'TAX001', 'ACTIVE');
+
+IF NOT EXISTS (SELECT 1 FROM supplier WHERE supplier_name = N'Hòa Phát Furniture')
+    INSERT INTO supplier (supplier_name, phone_number, email, address, supplier_code, tax_code, status)
+    VALUES (N'Hòa Phát Furniture', '028333444', 'sales@hoaphat.vn', N'120 Nguyễn Thái Học, Q1, HCM', 'SUP002', 'TAX002', 'ACTIVE');
+
+-- 2. Thêm Danh mục (Categories)
+DECLARE @CatIT INT, @CatFur INT, @CatNet INT;
+
+IF NOT EXISTS (SELECT 1 FROM category WHERE category_name = N'Thiết bị IT')
+BEGIN
+    INSERT INTO category (category_name, description, status) VALUES (N'Thiết bị IT', N'Máy tính, laptop, linh kiện', 'ACTIVE');
+    SET @CatIT = SCOPE_IDENTITY();
+END ELSE SELECT @CatIT = category_id FROM category WHERE category_name = N'Thiết bị IT';
+
+IF NOT EXISTS (SELECT 1 FROM category WHERE category_name = N'Nội thất văn phòng')
+BEGIN
+    INSERT INTO category (category_name, description, status) VALUES (N'Nội thất văn phòng', N'Bàn, ghế, tủ văn phòng', 'ACTIVE');
+    SET @CatFur = SCOPE_IDENTITY();
+END ELSE SELECT @CatFur = category_id FROM category WHERE category_name = N'Nội thất văn phòng';
+
+IF NOT EXISTS (SELECT 1 FROM category WHERE category_name = N'Thiết bị Mạng')
+BEGIN
+    INSERT INTO category (category_name, description, status) VALUES (N'Thiết bị Mạng', N'Switch, Router, Access Point', 'ACTIVE');
+    SET @CatNet = SCOPE_IDENTITY();
+END ELSE SELECT @CatNet = category_id FROM category WHERE category_name = N'Thiết bị Mạng';
+
+-- 3. Thêm Loại tài sản (Asset Types)
+DECLARE @AT_MBP INT, @AT_DELL INT, @AT_AERON INT, @AT_DESK INT, @AT_CISCO INT, @AT_UBI INT;
+
+-- IT
+IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'MacBook Pro 14 M3')
+BEGIN
+    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
+    VALUES (N'MacBook Pro 14 M3', N'Laptop Apple 2024', 'FIXED_ASSET', 'ACTIVE', 'STRAIGHT_LINE', 36, 'M3, 16GB, 512GB', @CatIT, 'MBP14-M3');
+    SET @AT_MBP = SCOPE_IDENTITY();
+END ELSE SELECT @AT_MBP = asset_type_id FROM asset_type WHERE type_name = N'MacBook Pro 14 M3';
+
+IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'Dell Precision 3660')
+BEGIN
+    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
+    VALUES (N'Dell Precision 3660', N'Máy trạm cấu hình cao', 'FIXED_ASSET', 'ACTIVE', 'STRAIGHT_LINE', 48, 'i9, 64GB, RTX A2000', @CatIT, 'P3660-WS');
+    SET @AT_DELL = SCOPE_IDENTITY();
+END ELSE SELECT @AT_DELL = asset_type_id FROM asset_type WHERE type_name = N'Dell Precision 3660';
+
+-- Furniture
+IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'Herman Miller Aeron')
+BEGIN
+    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
+    VALUES (N'Herman Miller Aeron', N'Ghế công thái học cao cấp', 'EQUIPMENT', 'ACTIVE', 'STRAIGHT_LINE', 60, 'Size B, Pellicle Mesh', @CatFur, 'HM-AERON-V2');
+    SET @AT_AERON = SCOPE_IDENTITY();
+END ELSE SELECT @AT_AERON = asset_type_id FROM asset_type WHERE type_name = N'Herman Miller Aeron';
+
+IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'Standing Desk 140x70')
+BEGIN
+    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
+    VALUES (N'Standing Desk 140x70', N'Bàn làm việc thay đổi chiều cao', 'EQUIPMENT', 'ACTIVE', 'STRAIGHT_LINE', 48, 'Dual Motor, Wood Top', @CatFur, 'SD-14070');
+    SET @AT_DESK = SCOPE_IDENTITY();
+END ELSE SELECT @AT_DESK = asset_type_id FROM asset_type WHERE type_name = N'Standing Desk 140x70';
+
+-- Networking
+IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'Cisco Switch 2960')
+BEGIN
+    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
+    VALUES (N'Cisco Switch 2960', N'Switch layer 2 manager', 'FIXED_ASSET', 'ACTIVE', 'STRAIGHT_LINE', 60, '24 Port Gigabit, POE+', @CatNet, 'C2960-24P');
+    SET @AT_CISCO = SCOPE_IDENTITY();
+END ELSE SELECT @AT_CISCO = asset_type_id FROM asset_type WHERE type_name = N'Cisco Switch 2960';
+
+IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'Ubiquiti AP AC Pro')
+BEGIN
+    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
+    VALUES (N'Ubiquiti AP AC Pro', N'Access Point Wifi chuyên dụng', 'EQUIPMENT', 'ACTIVE', 'STRAIGHT_LINE', 36, '802.11ac, Dual-Band', @CatNet, 'UAP-AC-PRO');
+    SET @AT_UBI = SCOPE_IDENTITY();
+END ELSE SELECT @AT_UBI = asset_type_id FROM asset_type WHERE type_name = N'Ubiquiti AP AC Pro';
+
+-- 4. Thông tin User & Department
+DECLARE @AdminID INT, @DirectorID INT, @AssetMgrID INT, @StaffMgrID INT, @DeptID INT;
+SELECT @AdminID = user_id FROM users WHERE username = 'admin';
+SELECT @DirectorID = user_id FROM users WHERE username = 'director';
+SELECT @AssetMgrID = user_id FROM users WHERE username = 'assetmanager';
+SELECT @StaffMgrID = user_id FROM users WHERE username = 'purchasestaff';
+SELECT TOP 1 @DeptID = department_id FROM departments;
+
+-- 5. PHIÊN MUA SẮM 1: Đơn hàng IT (Phong Vũ)
+DECLARE @PR1 INT, @QUO1 INT, @PO1 INT, @Supp1 INT;
+SELECT @Supp1 = supplier_id FROM supplier WHERE supplier_name = N'Phong Vũ IT';
+
+-- PR 1
+INSERT INTO purchase_request (status, request_reason, note, creator_id, requesting_department_id, priority, approved_by_director_id, approved_by_director_at, created_at)
+VALUES ('APPROVED', N'Trang bị máy tính cho nhân viên mới', N'Cần gấp trong tuần này', @AssetMgrID, @DeptID, 'CRITICAL', @DirectorID, GETDATE(), GETDATE());
+SET @PR1 = SCOPE_IDENTITY();
+
+-- PR details 1
+INSERT INTO purchase_request_detail (estimated_price, quantity, purchase_request_id, asset_type_id, spec_requirement)
+VALUES (45000000, 5, @PR1, @AT_MBP, N'16GB RAM tối thiểu');
+DECLARE @PRD1_1 INT = SCOPE_IDENTITY();
+INSERT INTO purchase_request_detail (estimated_price, quantity, purchase_request_id, asset_type_id, spec_requirement)
+VALUES (35000000, 2, @PR1, @AT_DELL, N'Card đồ họa rời');
+DECLARE @PRD1_2 INT = SCOPE_IDENTITY();
+
+-- Quotation 1
+INSERT INTO quotation (purchase_request_id, supplier_id, status, total_amount, created_at)
+VALUES (@PR1, @Supp1, 'APPROVED', 295000000, GETDATE());
+SET @QUO1 = SCOPE_IDENTITY();
+
+-- Quotation details 1
+INSERT INTO quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, quantity, price, tax_rate, status)
+VALUES (@QUO1, @PRD1_1, @AT_MBP, 5, 44000000, 10, 'APPROVED');
+DECLARE @QD1_1 INT = SCOPE_IDENTITY();
+INSERT INTO quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, quantity, price, tax_rate, status)
+VALUES (@QUO1, @PRD1_2, @AT_DELL, 2, 34500000, 10, 'APPROVED');
+DECLARE @QD1_2 INT = SCOPE_IDENTITY();
+
+-- PO 1 (PENDING for Inbound)
+INSERT INTO purchase_orders (total_amount, note, status, created_at, purchase_request_id, supplier_id, quotation_id, approved_by)
+VALUES (295000000, N'PO Mua máy tính thiết kế', 'PENDING', GETDATE(), @PR1, @Supp1, @QUO1, @DirectorID);
+SET @PO1 = SCOPE_IDENTITY();
+
+INSERT INTO purchase_order_details (quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, quotation_detail_id, delivery_date)
+VALUES (5, 44000000, 10, @PO1, @AT_MBP, @QD1_1, DATEADD(DAY, 3, GETDATE()));
+INSERT INTO purchase_order_details (quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, quotation_detail_id, delivery_date)
+VALUES (2, 34500000, 10, @PO1, @AT_DELL, @QD1_2, DATEADD(DAY, 3, GETDATE()));
+
+
+-- 6. PHIÊN MUA SẮM 2: Đơn hàng Nội thất (Hòa Phát)
+DECLARE @PR2 INT, @QUO2 INT, @PO2 INT, @Supp2 INT;
+SELECT @Supp2 = supplier_id FROM supplier WHERE supplier_name = N'Hòa Phát Furniture';
+
+-- PR 2
+INSERT INTO purchase_request (status, request_reason, note, creator_id, requesting_department_id, priority, approved_by_director_id, approved_by_director_at, created_at)
+VALUES ('APPROVED', N'Setup lại khu vực làm việc lầu 2', N'Theo phong cách hiện đại', @AssetMgrID, @DeptID, 'MEDIUM', @DirectorID, GETDATE(), GETDATE());
+SET @PR2 = SCOPE_IDENTITY();
+
+-- PR details 2
+INSERT INTO purchase_request_detail (estimated_price, quantity, purchase_request_id, asset_type_id, spec_requirement)
+VALUES (25000000, 8, @PR2, @AT_AERON, N'Size B');
+DECLARE @PRD2_1 INT = SCOPE_IDENTITY();
+INSERT INTO purchase_request_detail (estimated_price, quantity, purchase_request_id, asset_type_id, spec_requirement)
+VALUES (7000000, 8, @PR2, @AT_DESK, N'Màu sồi');
+DECLARE @PRD2_2 INT = SCOPE_IDENTITY();
+
+-- Quotation 2
+INSERT INTO quotation (purchase_request_id, supplier_id, status, total_amount, created_at)
+VALUES (@PR2, @Supp2, 'APPROVED', 256000000, GETDATE());
+SET @QUO2 = SCOPE_IDENTITY();
+
+-- Quotation details 2
+INSERT INTO quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, quantity, price, tax_rate, status)
+VALUES (@QUO2, @PRD2_1, @AT_AERON, 8, 24500000, 10, 'APPROVED');
+DECLARE @QD2_1 INT = SCOPE_IDENTITY();
+INSERT INTO quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, quantity, price, tax_rate, status)
+VALUES (@QUO2, @PRD2_2, @AT_DESK, 8, 7000000, 10, 'APPROVED');
+DECLARE @QD2_2 INT = SCOPE_IDENTITY();
+
+-- PO 2 (PENDING for Inbound)
+INSERT INTO purchase_orders (total_amount, note, status, created_at, purchase_request_id, supplier_id, quotation_id, approved_by)
+VALUES (256000000, N'Đơn hàng nội thất văn phòng', 'PENDING', GETDATE(), @PR2, @Supp2, @QUO2, @DirectorID);
+SET @PO2 = SCOPE_IDENTITY();
+
+INSERT INTO purchase_order_details (quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, quotation_detail_id, delivery_date)
+VALUES (8, 24500000, 10, @PO2, @AT_AERON, @QD2_1, DATEADD(DAY, 5, GETDATE()));
+INSERT INTO purchase_order_details (quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, quotation_detail_id, delivery_date)
+VALUES (8, 7000000, 10, @PO2, @AT_DESK, @QD2_2, DATEADD(DAY, 5, GETDATE()));
+
+
+-- 7. PHIÊN MUA SẮM 3: Đơn hàng hỗn hợp (Phong Vũ)
+DECLARE @PR3 INT, @QUO3 INT, @PO3 INT;
+
+-- PR 3
+INSERT INTO purchase_request (status, request_reason, note, creator_id, requesting_department_id, priority, approved_by_director_id, approved_by_director_at, created_at)
+VALUES ('APPROVED', N'Nâng cấp hạ tầng mạng & Server', N'Phục vụ dự án mới', @AssetMgrID, @DeptID, 'HIGH', @DirectorID, GETDATE(), GETDATE());
+SET @PR3 = SCOPE_IDENTITY();
+
+-- PR details 3
+INSERT INTO purchase_request_detail (estimated_price, quantity, purchase_request_id, asset_type_id, spec_requirement)
+VALUES (15000000, 2, @PR3, @AT_CISCO, N'Chịu tải tốt');
+DECLARE @PRD3_1 INT = SCOPE_IDENTITY();
+INSERT INTO purchase_request_detail (estimated_price, quantity, purchase_request_id, asset_type_id, spec_requirement)
+VALUES (4000000, 4, @PR3, @AT_UBI, N'Chuẩn AC');
+DECLARE @PRD3_2 INT = SCOPE_IDENTITY();
+
+-- Quotation 3
+INSERT INTO quotation (purchase_request_id, supplier_id, status, total_amount, created_at)
+VALUES (@PR3, @Supp1, 'APPROVED', 46000000, GETDATE());
+SET @QUO3 = SCOPE_IDENTITY();
+
+-- Quotation details 3
+INSERT INTO quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, quantity, price, tax_rate, status)
+VALUES (@QUO3, @PRD3_1, @AT_CISCO, 2, 14500000, 10, 'APPROVED');
+DECLARE @QD3_1 INT = SCOPE_IDENTITY();
+INSERT INTO quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, quantity, price, tax_rate, status)
+VALUES (@QUO3, @PRD3_2, @AT_UBI, 4, 3800000, 10, 'APPROVED');
+DECLARE @QD3_2 INT = SCOPE_IDENTITY();
+
+-- PO 3 (PENDING for Inbound)
+INSERT INTO purchase_orders (total_amount, note, status, created_at, purchase_request_id, supplier_id, quotation_id, approved_by)
+VALUES (46000000, N'Hạ tầng mạng tháng 3', 'PENDING', GETDATE(), @PR3, @Supp1, @QUO3, @DirectorID);
+SET @PO3 = SCOPE_IDENTITY();
+
+INSERT INTO purchase_order_details (quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, quotation_detail_id, delivery_date)
+VALUES (2, 14500000, 10, @PO3, @AT_CISCO, @QD3_1, DATEADD(DAY, 2, GETDATE()));
+INSERT INTO purchase_order_details (quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, quotation_detail_id, delivery_date)
+VALUES (4, 3800000, 10, @PO3, @AT_UBI, @QD3_2, DATEADD(DAY, 2, GETDATE()));
+
+
+-- 8. Setup Kho (WAREHOUSE & ZONES)
+DECLARE @WH_ID INT;
+SELECT @WH_ID = warehouse_id FROM wh_warehouses WHERE name = N'Main Warehouse';
+IF @WH_ID IS NULL
+BEGIN
+    INSERT INTO wh_warehouses (name, address, manager_user_id, status)
+    VALUES (N'Main Warehouse', N'123 Logistics St.', @AdminID, 'ACTIVE');
+    SET @WH_ID = SCOPE_IDENTITY();
+END
+
+-- Zone cho IT
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Zone IT - Tầng 1')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, status)
+    VALUES (@WH_ID, N'Zone IT - Tầng 1', 500, 0, 'ACTIVE');
+
+-- Zone cho Furniture
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Zone Nội thất - Lầu 2')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, status)
+    VALUES (@WH_ID, N'Zone Nội thất - Lầu 2', 200, 0, 'ACTIVE');
+
+-- Zone cho Networking
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Phòng Kỹ thuật - Rack A')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, status)
+    VALUES (@WH_ID, N'Phòng Kỹ thuật - Rack A', 100, 0, 'ACTIVE');
+
+PRINT 'Full Procurement dummy data created successfully.';
+GO
