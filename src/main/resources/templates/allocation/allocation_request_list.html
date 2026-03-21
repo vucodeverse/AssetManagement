@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/department-layout}">
 
 <head>
     <meta charset="UTF-8">
@@ -18,6 +20,7 @@
 </head>
 
 <body>
+<th:block layout:fragment="content">
     <div class="purchase-content-wrapper">
         <form method="get" th:action="@{/department/allocation-request/search}">
 
@@ -204,6 +207,7 @@
         });
     </script>
 
+</th:block>
 </body>
 
 </html>
