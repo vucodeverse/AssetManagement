@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.service.impl;
 
+import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.dao.AllocationReqDao;
 import edu.fpt.groupfive.dao.AllocationReqDetailDao;
 import edu.fpt.groupfive.dto.request.AllocationRequestCreateRequest;
@@ -26,8 +27,13 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
     private final UserDAO userDao;
 
     @Override
-    public List<AllocationRequest> getAllAllocationRequest(Integer departmentId) {
-        return allocationReqDao.findAll(departmentId);
+    public List<AllocationRequest> getAllAllocationRequest() {
+        return allocationReqDao.findAll();
+    }
+
+    @Override
+    public List<AllocationRequest> getAllAllocationRequestByDepartmentId(Integer departmentId) {
+        return allocationReqDao.findAllByDepartmentId(departmentId);
     }
 
     @Override
@@ -146,10 +152,9 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
 
     @Override
     public List<AllocationRequest> search(Integer departmentId, String requestId,
-            String status, String priority, LocalDate fromDate,
-            LocalDate toDate/* int offset, int size */) {
+                                          String status, Priority priority, LocalDate fromDate, LocalDate toDate) {
         return allocationReqDao.search(departmentId, requestId, status, priority, fromDate,
-                toDate/* offset, size */);
+                toDate);
     }
 
 

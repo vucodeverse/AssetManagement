@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao.impl;
 
+import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.dao.AllocationReqDao;
 import edu.fpt.groupfive.model.AllocationRequest;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
@@ -26,7 +27,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         Date neededDate = rs.getDate("needed_by_date");
         if (neededDate != null)
             request.setNeededByDate(neededDate.toLocalDate());
-        request.setPriority(rs.getString("priority"));
+        request.setPriority(Priority.valueOf(rs.getString("priority").trim().toUpperCase()));
         request.setRequestReason(rs.getString("reason"));
         request.setStatus(rs.getString("status"));
 
@@ -58,15 +59,13 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
     }
 
 
-
     /**
      * Hàm tìm kiếm tất cả yêu cầu cấp phát trong phòng ban
      *
-     * @param departmentId lấy id của phòng ban
      * @return trả về danh sách yêu cầu cấp phát
      */
     @Override
-    public List<AllocationRequest> findAll(Integer departmentId) {
+    public List<AllocationRequest> findAll() {
         String query = """
                 SELECT a.*,
                        u.first_name + ' ' + u.last_name AS full_name,
@@ -74,14 +73,45 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                 FROM allocation_request a
                          JOIN users u on u.user_id = a.requester_id
                          JOIN departments d ON u.department_id = d.department_id
-                WHERE requested_department_id = ?
                 ORDER BY request_id ASC
                 """;
 
         List<AllocationRequest> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+//            ps.setInt(1, departmentId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapRowToRequest(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public List<AllocationRequest> findAllByDepartmentId(Integer departmentId) {
+        String query = """
+                SELECT a.*,
+                       u.first_name + ' ' + u.last_name AS full_name,
+                       d.department_name
+                FROM allocation_request a
+                         JOIN users u on u.user_id = a.requester_id
+                         JOIN departments d ON u.department_id = d.department_id
+                WHERE  requested_department_id = ?
+                ORDER BY request_id ASC
+                """;
+
+        List<AllocationRequest> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, departmentId);
             ResultSet rs = ps.executeQuery();
@@ -96,7 +126,6 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
 
         return list;
     }
-
 
 
     /**
@@ -118,7 +147,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                  ORDER BY request_id ASC
                 """;
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -150,13 +179,13 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                 """;
 
         try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement ps = connection.prepareStatement(query,
-                        PreparedStatement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = connection.prepareStatement(query,
+                     PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, request.getRequesterId());
             ps.setInt(2, request.getRequestedDepartmentId());
             ps.setTimestamp(3, Timestamp.valueOf(request.getRequestDate()));
             ps.setObject(4, request.getNeededByDate());
-            ps.setString(5, request.getPriority());
+            ps.setString(5, request.getPriority().name());
             ps.setString(6, request.getRequestReason());
             ps.setString(7, request.getStatus());
 
@@ -188,10 +217,10 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                 WHERE request_id = ?
                 """;
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setObject(1, request.getNeededByDate());
-            ps.setString(2, request.getPriority());
+            ps.setString(2, request.getPriority().name());
             ps.setString(3, request.getRequestReason());
             ps.setInt(4, request.getRequestId());
 
@@ -208,7 +237,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                 DELETE FROM allocation_request WHERE request_id = ?
                 """;
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();
@@ -231,7 +260,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setString(1, status);
             ps.setInt(2, amApprovedBy);
@@ -246,8 +275,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
 
     @Override
     public List<AllocationRequest> search(Integer departmentId, String keyword, String status,
-            String priority, LocalDate fromDate, LocalDate toDate
-    /* int offset, int size */) {
+                                          Priority priority, LocalDate fromDate, LocalDate toDate) {
         StringBuilder query = new StringBuilder("""
                     SELECT a.*,
                        u.first_name + ' ' + u.last_name AS full_name,
@@ -255,11 +283,15 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
                     FROM allocation_request a
                              JOIN users u on u.user_id = a.requester_id
                              JOIN departments d ON u.department_id = d.department_id
-                    WHERE requested_department_id = ?
+                    WHERE 1=1
                 """);
 
         List<Object> params = new ArrayList<>();
-        params.add(departmentId);
+
+        if (departmentId != null) {
+            query.append(" AND requested_department_id = ?");
+            params.add(departmentId);
+        }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             query.append(" AND (a.request_id  LIKE ? OR (u.first_name + ' ' + u.last_name) LIKE ?)");
@@ -273,9 +305,9 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
             params.add(status);
         }
 
-        if (priority != null && !priority.isEmpty()) {
+        if (priority != null) {
             query.append(" AND priority = ?");
-            params.add(priority);
+            params.add(priority.name());
         }
 
         if (fromDate != null) {
@@ -293,7 +325,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         List<AllocationRequest> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(query.toString())) {
+             PreparedStatement ps = conn.prepareStatement(query.toString())) {
 
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
@@ -311,5 +343,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
 
         return list;
     }
+
+
 
 }

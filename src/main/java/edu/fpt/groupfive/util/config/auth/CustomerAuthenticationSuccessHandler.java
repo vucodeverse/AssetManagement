@@ -35,6 +35,7 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
         session.setAttribute("userId", user.getUserId());
         session.setAttribute("departmentId", user.getDepartmentId());
         session.setAttribute("fullName", user.getFullName());
+        session.setAttribute("role", user.getRole().name());
 
 
         String redirectUrl = request.getContextPath();
@@ -45,16 +46,24 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
             redirectUrl += "/director/dashboard";
         }
 
-        if(authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("PURCHASE_STAFF"))) {
+        if(authentication.getAuthorities().stream().
+                anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("PURCHASE_STAFF"))) {
             redirectUrl += "/purchase-staff/dashboard";
         }
 
-        if(authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
+        if(authentication.getAuthorities().stream().
+                anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
             redirectUrl += "/admin/users";
         }
 
-        if(authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DEPARTMENT_MANAGER"))) {
+        if(authentication.getAuthorities().stream().
+                anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DEPARTMENT_MANAGER"))) {
             redirectUrl += "/department/allocation-request/list";
+        }
+
+        if(authentication.getAuthorities().stream().
+                anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
+            redirectUrl += "/asset-manager/allocation-request/list";
         }
 
         response.sendRedirect(redirectUrl);

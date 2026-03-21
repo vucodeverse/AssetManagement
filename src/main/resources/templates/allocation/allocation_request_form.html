@@ -26,7 +26,7 @@
     <form th:action="@{${requestDto.requestId != null
             ? '/department/allocation-request/update/' + requestDto.requestId
             : '/department/allocation-request/save'}}" th:object="${requestDto}" method="post">
-        <!-- ================= Thông tin chung ================= -->
+        <!-------------------- Thông tin chung ------------------->
         <section class="form-section">
             <div class="section-title">THÔNG TIN CHUNG</div>
 
@@ -39,8 +39,8 @@
                            placeholder="VD: Cấp máy cho nhân viên mới"/>
                     <!-- ERROR -->
                     <span style="color:red"
-                         th:if="${#fields.hasErrors('requestReason')}"
-                         th:errors="*{requestReason}">
+                          th:if="${#fields.hasErrors('requestReason')}"
+                          th:errors="*{requestReason}">
                     </span>
                 </div>
 
@@ -48,14 +48,16 @@
                 <div class="form-group">
                     <label>MỨC ĐỘ ƯU TIÊN</label>
                     <select th:field="*{priority}" th:disabled="${canEdit != null && !canEdit}">
-                        <option value="LOW">Thấp</option>
-                        <option value="MEDIUM">Trung bình</option>
-                        <option value="HIGH">Cao</option>
+                        <option value="">-- Chọn --</option>
+                        <option th:each="p : ${T(edu.fpt.groupfive.common.Priority).values()}"
+                                th:value="${p}"
+                                th:text="${p.description}">
+                        </option>
                     </select>
                     <!-- ERROR -->
                     <span style="color:red"
-                         th:if="${#fields.hasErrors('priority')}"
-                         th:errors="*{priority}">
+                          th:if="${#fields.hasErrors('priority')}"
+                          th:errors="*{priority}">
                     </span>
 
                     <input type="hidden"
@@ -110,11 +112,9 @@
                 </div>
             </div>
 
-<!--            <input type="hidden" name="requesterId" value="1"/>-->
-<!--            <input type="hidden" name="requestedDepartmentId" value="1"/>-->
         </section>
 
-        <!-- ================= DETAILS ================= -->
+        <!----------------------- CHI TIẾT -------------------------->
         <section class="form-section">
             <div class="section-title">DANH SÁCH THIẾT BỊ</div>
 
@@ -224,8 +224,9 @@
                         <td><input type="text" name="details[0].note" class="table-input"/></td>
 
                         <!-- Nút buttom -->
-                        <td><button type="button" class="btn-remove" onclick="removeRow(this)"> ×
-                        </button>
+                        <td>
+                            <button type="button" class="btn-remove" onclick="removeRow(this)"> ×
+                            </button>
                         </td>
                     </tr>
 

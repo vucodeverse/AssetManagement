@@ -166,7 +166,9 @@
                     </div>
                     <form th:action="@{/asset-manager/allocation-request/reject/{id}(id=${x.requestId})}" method="post">
                         <div class="reject-dialog-body">
-                            <textarea name="reasonReject" placeholder="Nhập lý do từ chối..." required></textarea>
+                            <label>
+                                <textarea name="reasonReject" placeholder="Nhập lý do từ chối..." required></textarea>
+                            </label>
                         </div>
                         <div class="modal-actions">
                             <a href="#" class="btn-cancel">Cancel</a>

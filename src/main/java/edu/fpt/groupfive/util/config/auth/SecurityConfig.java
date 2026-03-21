@@ -60,8 +60,7 @@ public class SecurityConfig {
                                 // Domain URLs: không gắn với role
                                 .requestMatchers("/purchases/**")
                                 .hasAnyAuthority("ASSET_MANAGER", "DIRECTOR",
-                                        "PURCHASE_STAFF", "ASSET-MANAGER",
-                                        "ADMIN")
+                                        "PURCHASE_STAFF", "ADMIN")
                                 .requestMatchers("/quotations/**")
                                 .hasAnyAuthority("PURCHASE_STAFF", "DIRECTOR", "ADMIN")
                                 .requestMatchers("/purchase-orders/**")
