@@ -190,7 +190,7 @@ public class OrderServiceImpl implements OrderService {
 
         if(checkQuantityOfPO(quotation.getPurchaseId())) {
             purchaseDAO.updateStatus(PurchaseProcessStatus.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
-            // Reject all other pending quotations for this PR since it's fully fulfilled
+
             rejectOtherQuotations(quotationId, quotation.getPurchaseId());
         }
         return orderId;
@@ -208,8 +208,8 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    // hủy những quotation khác khi hàng đã đủ
     private void rejectOtherQuotations(Integer currentQuotationId, Integer purchaseId) {
-        // Find all other quotations for this purchase request
         List<Quotation> otherQuotations = quotationDAO.findByPurchaseId(purchaseId).stream()
                 .filter(q -> !q.getId().equals(currentQuotationId))
                 .filter(q -> q.getQuotationStatus() == PurchaseProcessStatus.PENDING 
