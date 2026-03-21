@@ -4,7 +4,6 @@ import edu.fpt.groupfive.dto.request.warehouse.TransactionFilterRequestDTO;
 import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.DashboardResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.LedgerRecordResponseDTO;
-import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
 import edu.fpt.groupfive.service.warehouse.WhZoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

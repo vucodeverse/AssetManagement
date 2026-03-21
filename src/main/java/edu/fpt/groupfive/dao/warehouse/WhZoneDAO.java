@@ -14,4 +14,6 @@ public interface WhZoneDAO {
     void updateZone(int zoneId, String zoneName, int maxCapacity);
     
     void createZone(WarehouseZone zone);
+
+    void updateCurrentCapacity(int assetTypeId, int unitVolume);
 }
