@@ -58,4 +58,15 @@ public class WhZoneDAOImpl implements WhZoneDAO {
         String sql = "INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, status) VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(sql, zone.getWarehouseId(), zone.getZoneName(), zone.getMaxCapacity(), zone.getStatus());
     }
+
+    @Override
+    public void updateCurrentCapacity(int assetTypeId, int unitVolume) {
+        String sql = "UPDATE wh_zones " +
+                     "SET current_capacity = (" +
+                     "    SELECT COUNT(*) FROM wh_asset_placement ap " +
+                     "    WHERE ap.zone_id = wh_zones.zone_id" +
+                     ") * ? " +
+                     "WHERE asset_type_id = ?";
+        jdbcTemplate.update(sql, unitVolume, assetTypeId);
+    }
 }

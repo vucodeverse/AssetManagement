@@ -41,4 +41,9 @@ public class WhZoneServiceImpl implements WhZoneService {
         zone.setStatus("ACTIVE");
         whZoneDAO.createZone(zone);
     }
+
+    @Override
+    public void recalculateCapacityByAssetType(int assetTypeId, int unitVolume) {
+        whZoneDAO.updateCurrentCapacity(assetTypeId, unitVolume);
+    }
 }
