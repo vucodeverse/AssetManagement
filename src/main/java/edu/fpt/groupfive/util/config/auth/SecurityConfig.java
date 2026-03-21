@@ -73,6 +73,8 @@ public class SecurityConfig {
                                                                 .hasAnyAuthority("PURCHASE_STAFF", "ADMIN")
                                                                 .requestMatchers("/asset-manager/**")
                                                                 .hasAnyAuthority("ASSET_MANAGER", "ADMIN")
+                                                                .requestMatchers("/wh/**")
+                                                                .hasAnyAuthority("WAREHOUSE_STAFF")
                                                                 .anyRequest()
                                                                 .authenticated())
                                 .authenticationProvider(authenticationProvider())
