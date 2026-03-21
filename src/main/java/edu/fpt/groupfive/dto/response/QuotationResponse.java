@@ -20,7 +20,6 @@ public class QuotationResponse {
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
     private String supplierName;
-    private String rejectedReason;
     private String quotationNote;
 
     private BigDecimal subtotal;

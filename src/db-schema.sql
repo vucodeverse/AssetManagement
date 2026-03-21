@@ -157,7 +157,6 @@ CREATE TABLE quotation (
                            supplier_id         INT NOT NULL REFERENCES supplier(supplier_id),
                            status              NVARCHAR(255) NOT NULL,
                            total_amount        NUMERIC(19) NULL,
-                           reject_reason       NVARCHAR(255) NULL,
                            created_at          DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
                            updated_at          DATETIME2(0) NULL
 );

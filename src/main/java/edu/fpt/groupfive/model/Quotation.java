@@ -17,6 +17,5 @@ public class Quotation extends AbstractEntity<Integer>{
     private Integer supplierId;
     private Integer purchaseId;
     private BigDecimal totalAmount;
-    private String rejectedReason;
     private List<QuotationDetail> quotationDetails = new ArrayList<>();
 }

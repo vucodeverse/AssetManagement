@@ -124,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
                         || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
                 .toList();
 
-        // map dùng để lấy đơn giá, thuế... từ báo giá
+        // lưu id và quota detail của nó
         Map<Integer, QuotationDetail> quotationDetailMap = quotationDetails.stream()
                 .collect(Collectors.toMap(QuotationDetail::getId, qd -> qd));
 
@@ -183,10 +183,25 @@ public class OrderServiceImpl implements OrderService {
                 .forEach(line -> quotationDetailDAO.update(line.getQuotationDetailId(), QuotationStatus.APPROVED));
 
         // update quotation sang APPROVED
-        quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED, null);
+        quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED);
+
+        // Update remaining quotation details to REJECTED
+        updateQuotationDetail(detailCreateRequests, quotationDetails);
 
         if(checkQuantityOfPO(quotation.getPurchaseId())) purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
         return orderId;
+    }
+
+    private void updateQuotationDetail(List<PurchaseOrderDetailCreateRequest> approvedRequests, List<QuotationDetail> allCandidates) {
+        Set<Integer> approvedIds = approvedRequests.stream()
+                .map(PurchaseOrderDetailCreateRequest::getQuotationDetailId)
+                .collect(Collectors.toSet());
+
+        for (QuotationDetail qd : allCandidates) {
+            if (!approvedIds.contains(qd.getId())) {
+                quotationDetailDAO.update(qd.getId(), QuotationStatus.REJECTED);
+            }
+        }
     }
 
     // lấy ra toàn bộ po và pr id tương ứng

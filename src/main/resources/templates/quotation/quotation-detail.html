@@ -28,12 +28,13 @@
                     <!-- Các hành động của Director -->
                     <th:block>
                         <div sec:authorize="hasAuthority('DIRECTOR')">
-                            <button type="button" class="btn-outline-prem"
-                                th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
-                                th:attr="data-action=@{/quotations/{id}/actions(id=${quotation.quotationId})}"
-                                onclick="openRejectModal(event,this)">
-                                TỪ CHỐI
-                            </button>
+                            <form th:action="@{/quotations/{id}/actions(id=${quotation.quotationId})}" method="post" style="display: inline-block;">
+                                <input type="hidden" name="action" value="r">
+                                <button type="submit" class="btn-outline-prem"
+                                    th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}">
+                                    TỪ CHỐI
+                                </button>
+                            </form>
                             <a th:href="@{/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
                                 th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
                                 class="btn-approve">
@@ -84,17 +85,6 @@
                     </div>
                 </div>
 
-                <!-- Lý do từ chối -->
-                <div th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'REJECTED' and quotation.rejectedReason != null}"
-                    class="rejection-reason-box"
-                    style="margin-top: 20px; padding: 16px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
-                    <label
-                        style="color: #b91c1c; font-weight: 700; font-size: 13px; display: block; margin-bottom: 8px;">LÝ
-                        DO TỪ CHỐI</label>
-                    <p th:text="${quotation.rejectedReason}"
-                        style="color: #7f1d1d; margin: 0; font-size: 14px; line-height: 1.5;">Lý do sẽ hiển thị ở đây...
-                    </p>
-                </div>
 
                 <hr class="divider">
 
@@ -187,35 +177,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <!-- Modal Reject -->
-        <div id="rejectModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>TỪ CHỐI BÁO GIÁ</h2>
-                </div>
-
-                <form id="rejectForm" method="post" th:action="'#'">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <div class="modal-body">
-                        <p style="font-size: 14px; margin-bottom: 16px; color: #666;">
-                            Vui lòng cung cấp lý do từ chối báo giá này.
-                        </p>
-                        <textarea name="reason" placeholder="Nhập lý do từ chối ở đây..." required></textarea>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn-outline-prem" onclick="closeRejectModal()">
-                            HỦY
-                        </button>
-
-                        <button type="submit" name="action" value="r" class="btn-solid-prem" style="background:#ff0000;
-                        border-color:#ff0000;">
-                            XÁC NHẬN TỪ CHỐI
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </th:block>

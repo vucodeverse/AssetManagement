@@ -16,7 +16,7 @@ public interface QuotationService {
 
     QuotationCreateRequest prepareQuotationUpdateForm(Integer id);
 
-    void processQuotationAction(Integer quotationId, String action, String reason);
+    void processQuotationAction(Integer quotationId, String action);
 
 
     List<QuotationResponse> searchQuotationsByPurchaseId(QuotationSearchCriteria quotationSearchCriteria);

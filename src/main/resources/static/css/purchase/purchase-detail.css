@@ -201,6 +201,33 @@ body {
     }
 }
 
+/* ───── REJECT REASON ───── */
+.reject-reason-box {
+    margin-top: 24px;
+    padding: 16px 22px;
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-left: 4px solid #f56565;
+    border-radius: 8px;
+}
+
+.reject-reason-label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #c53030;
+    margin-bottom: 8px;
+}
+
+.reject-reason-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e53e3e;
+    line-height: 1.5;
+}
+
 .separator {
     border: none;
     border-top: 1px solid var(--border2);

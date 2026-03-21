@@ -185,13 +185,12 @@ public class QuotationController {
     @PostMapping("/{id}/actions")
     public String processActions(@PathVariable("id") Integer id,
             @RequestParam("action") String action,
-            @RequestParam(value = "reason", required = false) String reason,
             RedirectAttributes redirectAttributes) {
 
         // lấy ra purchase id của quotation.
         int purchaseId = quotationService.getQuotationById(id).getPurchaseId();
         try {
-            quotationService.processQuotationAction(id, action, reason);
+            quotationService.processQuotationAction(id, action);
             redirectAttributes.addFlashAttribute("message", successActionMsg);
         } catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

@@ -96,7 +96,6 @@ public class QuotationServiceImpl implements QuotationService {
                 .totalAmount(q.getTotalAmount())
                 .createdAt(q.getCreatedAt())
                 .supplierName(supplierMap.getOrDefault(q.getSupplierId(), supplierNotFoundMsg))
-                .rejectedReason(q.getRejectedReason())
                 .build();
     }
 
@@ -224,7 +223,7 @@ public class QuotationServiceImpl implements QuotationService {
 
     // update quotation
     @Override
-    public void processQuotationAction(Integer id, String action, String reason) {
+    public void processQuotationAction(Integer id, String action) {
 
         Quotation quotation = quotationDAO.findById(id)
                 .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
@@ -236,10 +235,10 @@ public class QuotationServiceImpl implements QuotationService {
 
         if ("r".equals(action)) {
             detailsList.forEach(qd -> quotationDetailDAO.update(qd.getId(), QuotationStatus.REJECTED));
-            quotationDAO.updateStatus(id, QuotationStatus.REJECTED, reason);
+            quotationDAO.updateStatus(id, QuotationStatus.REJECTED);
         } else if ("d".equals(action)) {
             detailsList.forEach(qd -> quotationDetailDAO.update(qd.getId(), QuotationStatus.DELETED));
-            quotationDAO.updateStatus(id, QuotationStatus.DELETED, null);
+            quotationDAO.updateStatus(id, QuotationStatus.DELETED);
         }
 
     }
@@ -320,7 +319,6 @@ public class QuotationServiceImpl implements QuotationService {
                 .totalTax(totalTax)
                 .grandTotal(grandTotal)
                 .quotationDetails(quotationDetailResponses)
-                .rejectedReason(q.getRejectedReason())
                 .build();
     }
 

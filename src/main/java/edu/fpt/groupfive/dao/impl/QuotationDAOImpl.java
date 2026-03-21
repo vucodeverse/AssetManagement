@@ -50,8 +50,6 @@ public class QuotationDAOImpl implements QuotationDAO {
         Timestamp updatedAt = rs.getTimestamp("updated_at");
         quotation.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
 
-        quotation.setRejectedReason(rs.getString("reject_reason"));
-
         return quotation;
     }
 
@@ -59,7 +57,7 @@ public class QuotationDAOImpl implements QuotationDAO {
     public Integer insert(Quotation quotation) {
 
         String sql = "insert into quotation (purchase_request_id, supplier_id, status, total_amount, " +
-                "created_at, reject_reason) values (?,?,?,?,?,?)";
+                "created_at) values (?,?,?,?,?)";
 
         try (Connection connection = databaseConfig.getConnection()) {
             connection.setAutoCommit(false);
@@ -73,7 +71,6 @@ public class QuotationDAOImpl implements QuotationDAO {
                 preparedStatement.setTimestamp(5,
                         quotation.getCreatedAt() != null ? Timestamp.valueOf(quotation.getCreatedAt())
                                 : Timestamp.valueOf(LocalDateTime.now()));
-                preparedStatement.setString(6, quotation.getRejectedReason());
 
                 preparedStatement.executeUpdate();
                 ResultSet rs = preparedStatement.getGeneratedKeys();
@@ -154,10 +151,9 @@ public class QuotationDAOImpl implements QuotationDAO {
         }
     }
 
-    // update khi reject
     @Override
-    public void updateStatus(Integer quotationId, QuotationStatus status, String rejectedReason) {
-        String sql = "update quotation set status = ?, reject_reason = ?, updated_at = ? WHERE quotation_id =" +
+    public void updateStatus(Integer quotationId, QuotationStatus status) {
+        String sql = "update quotation set status = ?, updated_at = ? WHERE quotation_id =" +
                 " ?";
 
         Connection connection = null;
@@ -166,9 +162,8 @@ public class QuotationDAOImpl implements QuotationDAO {
             connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, status.toString());
-            preparedStatement.setString(2, rejectedReason);
-            preparedStatement.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
-            preparedStatement.setInt(4, quotationId);
+            preparedStatement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            preparedStatement.setInt(3, quotationId);
             preparedStatement.executeUpdate();
 
             connection.commit();
