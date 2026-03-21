@@ -13,4 +13,6 @@ public interface WhZoneService {
     void updateZone(int zoneId, ZoneCreateRequestDTO dto);
     
     void createZone(ZoneCreateRequestDTO dto);
+
+    void recalculateCapacityByAssetType(int assetTypeId, int unitVolume);
 }
