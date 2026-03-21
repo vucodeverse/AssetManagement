@@ -29,8 +29,6 @@ public class OrderDAOImpl implements OrderDAO {
     private final DatabaseConfig databaseConfig;
     private final OrderDetailDAO orderDetailDAO;
 
-
-
     @Value("${dao.common.insert_error}")
     private String insertErrorMsg;
     @Value("${order.create.excess_quantity_basic}")
@@ -48,16 +46,17 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public Integer insert(Order order) {
         String sql = "insert into purchase_orders " +
-                "(order_date, total_amount, note, status, created_at, purchase_request_id, supplier_id, quotation_id, approved_by, updated_at, updated_by) "
+                "(total_amount, note, status, created_at, purchase_request_id, supplier_id, quotation_id, approved_by, updated_at, updated_by) "
                 +
-                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection connection = null;
         try {
             connection = databaseConfig.getConnection();
             connection.setAutoCommit(false);
 
-            // tạm khóa yeee cầu mua sắm chi tiết và số lượng yêu cầu mua ko cho các thread khác thay đổi
+            // tạm khóa yeee cầu mua sắm chi tiết và số lượng yêu cầu mua ko cho các thread
+            // khác thay đổi
             String lockSql = "SELECT purchase_request_detail_id, quantity FROM purchase_request_detail WITH (UPDLOCK, HOLDLOCK) WHERE purchase_request_id = ?";
 
             // lưu lại id yc detail và số lượng của nó
@@ -149,19 +148,18 @@ public class OrderDAOImpl implements OrderDAO {
 
             try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-                ps.setTimestamp(1, order.getCreatedAt() != null ? Timestamp.valueOf(order.getCreatedAt())
+                ps.setBigDecimal(1, order.getTotalAmount());
+                ps.setString(2, order.getOrderNote());
+                ps.setString(3, order.getOrderStatus() != null ? order.getOrderStatus().name()
+                        : OrderStatus.PENDING.name());
+                ps.setTimestamp(4, order.getCreatedAt() != null ? Timestamp.valueOf(order.getCreatedAt())
                         : Timestamp.valueOf(LocalDateTime.now()));
-                ps.setBigDecimal(2, order.getTotalAmount());
-                ps.setString(3, order.getOrderNote());
-                ps.setString(4, order.getOrderStatus() != null ? order.getOrderStatus().toString()
-                        : OrderStatus.PENDING.toString());
-                ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-                ps.setObject(6, order.getPurchaseId());
-                ps.setObject(7, order.getSupplierId());
-                ps.setObject(8, order.getQuotationId());
-                ps.setObject(9, order.getApprovedBy());
-                ps.setTimestamp(10, Timestamp.valueOf(LocalDateTime.now()));
-                ps.setObject(11, order.getUpdatedBy());
+                ps.setObject(5, order.getPurchaseId());
+                ps.setObject(6, order.getSupplierId());
+                ps.setObject(7, order.getQuotationId());
+                ps.setObject(8, order.getApprovedBy());
+                ps.setTimestamp(9, Timestamp.valueOf(LocalDateTime.now()));
+                ps.setObject(10, order.getUpdatedBy());
 
                 ps.executeUpdate();
 
@@ -238,7 +236,7 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public List<Object[]> search(PurchaseOrderSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder(
-                "select po.purchase_order_id, po.order_date, po.total_amount, po.note, po.status, " +
+                "select po.purchase_order_id, po.total_amount, po.note, po.status, " +
                         "po.created_at, po.purchase_request_id, po.supplier_id, po.quotation_id, po.approved_by, " +
                         "po.updated_at, po.updated_by, " +
                         "s.supplier_name " +
@@ -306,9 +304,7 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
-                        : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
-                order.setPurchaseId(rs.getInt("purchase_request_id"));
+                order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
                 order.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
@@ -328,7 +324,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public Optional<Order> findById(Integer orderId) {
-        String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
+        String sql = "select purchase_order_id, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by " +
                 "from purchase_orders " +
@@ -345,8 +341,7 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
-                        : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
+                order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
@@ -366,7 +361,7 @@ public class OrderDAOImpl implements OrderDAO {
     // lấy ra các po
     @Override
     public List<Order> findRecent() {
-        String sql = "select purchase_order_id, order_date, total_amount, note, status, " +
+        String sql = "select purchase_order_id, total_amount, note, status, " +
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by " +
                 "from purchase_orders " +
@@ -384,8 +379,7 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setTotalAmount(rs.getBigDecimal("total_amount"));
                 order.setOrderNote(rs.getString("note"));
                 order.setOrderStatus(OrderStatus.valueOf(rs.getString("status").toUpperCase()));
-                order.setCreatedAt(rs.getDate("order_date") != null ? rs.getTimestamp("order_date").toLocalDateTime()
-                        : (rs.getDate("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null));
+                order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 order.setPurchaseId(rs.getInt("purchase_request_id"));
                 order.setSupplierId(rs.getInt("supplier_id"));
                 order.setQuotationId(rs.getInt("quotation_id"));
@@ -405,28 +399,26 @@ public class OrderDAOImpl implements OrderDAO {
     public void updateStatus(Integer orderId, OrderStatus orderStatus) {
         String sql = "update purchase_orders set status = ? where order_id = ?";
 
-            try (Connection connection = databaseConfig.getConnection()) {
+        try (Connection connection = databaseConfig.getConnection()) {
 
-                connection.setAutoCommit(false);
+            connection.setAutoCommit(false);
 
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-
-                    preparedStatement.setString(1, orderStatus.name());
-                    preparedStatement.setInt(2, orderId);
-                    connection.commit();
-
-                } catch (Exception e) {
-                    connection.rollback();
-                    throw new DataAccessException(insertErrorMsg, e);
-                } finally {
-                    connection.setAutoCommit(true);
-                }
+                preparedStatement.setString(1, orderStatus.name());
+                preparedStatement.setInt(2, orderId);
+                connection.commit();
 
             } catch (Exception e) {
-                throw new DataAccessException("Update thất bại", e);
+                connection.rollback();
+                throw new DataAccessException(insertErrorMsg, e);
+            } finally {
+                connection.setAutoCommit(true);
             }
-        }
 
+        } catch (Exception e) {
+            throw new DataAccessException("Update thất bại", e);
+        }
+    }
 
 }

@@ -2,6 +2,7 @@ package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.QuotationStatus;
 import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dto.request.QuotationDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
@@ -17,6 +18,7 @@ import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.QuotationService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
+import edu.fpt.groupfive.util.config.RoleLogin;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +46,7 @@ public class QuotationServiceImpl implements QuotationService {
     private final RangeAmount rangeAmount;
     private final AssetTypeService assetTypeService;
     private final OrderCalculationUtil orderCalculationUtil;
+    private final RoleLogin roleLogin;
 
     @Value("${quotation.supplier_not_found}")
     private String supplierNotFoundMsg;
@@ -249,9 +252,14 @@ public class QuotationServiceImpl implements QuotationService {
 
         // lấy ra supplier
         Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
+        List<Quotation> quotations = quotationDAO.findByPurchaseId(purchaseId);
+
+        if (!Role.PURCHASE_STAFF.name().equals(roleLogin.getRole()))
+            quotations = quotations.stream().filter(q -> !QuotationStatus.DRAFT.equals(q.getQuotationStatus()))
+                    .toList();
 
         // map về response
-        return quotationDAO.findByPurchaseId(purchaseId).stream()
+        return quotations.stream()
                 .map(q -> toQuotationResponse(q, supplierMap))
                 .toList();
     }

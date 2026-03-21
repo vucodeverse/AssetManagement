@@ -60,7 +60,7 @@ public class QuotationController {
         model.addAttribute("purchaseId", purchaseId);
 
         if (ids == null || ids.isBlank()) {
-            return "redirect:/quotations/purchase/" + purchaseId;
+            return "redirect:/quotations/of-purchase/" + purchaseId;
         }
 
         List<Integer> idList = Arrays.stream(ids.split(","))
@@ -70,18 +70,16 @@ public class QuotationController {
                 .collect(Collectors.toList());
 
         // chỉ lấy ra các quotation detial ko bị reject
-        List<QuotationResponse> quotationResponses =
-                idList.stream()
-                        .map(quotationService::getQuotationById)
-                        .map(qr -> {
-                            qr.setQuotationDetails(
-                                    qr.getQuotationDetails().stream()
-                                            .filter(qd -> qd.getStatus() != QuotationStatus.REJECTED)
-                                            .toList()
-                            );
-                            return qr;
-                        })
-                        .toList();
+        List<QuotationResponse> quotationResponses = idList.stream()
+                .map(quotationService::getQuotationById)
+                .map(qr -> {
+                    qr.setQuotationDetails(
+                            qr.getQuotationDetails().stream()
+                                    .filter(qd -> qd.getStatus() != QuotationStatus.REJECTED)
+                                    .toList());
+                    return qr;
+                })
+                .toList();
         model.addAttribute("quotations", quotationResponses);
         model.addAttribute("purchaseModel", "PR-" + purchaseId);
 
@@ -258,7 +256,6 @@ public class QuotationController {
 
         return URL_QUO_OF_PURCHASE;
     }
-
 
     // khởi tọa bind object
     @ModelAttribute("searchForQuotation")
