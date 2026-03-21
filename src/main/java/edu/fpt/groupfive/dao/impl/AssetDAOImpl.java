@@ -265,7 +265,7 @@ public class AssetDAOImpl implements AssetDAO {
                     t.type_name,
                     d.department_name,
                     po.purchase_order_id,
-                    po.order_date,
+                    po.created_at,
                     s.supplier_name
                 FROM asset a
 
@@ -310,7 +310,7 @@ public class AssetDAOImpl implements AssetDAO {
                     dto.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
 
                     dto.setPurchaseOrderId(rs.getInt("purchase_order_id"));
-                    dto.setOrderDate(toLocalDate(rs.getDate("order_date")));
+                    dto.setOrderDate(toLocalDate(rs.getDate("created_at")));
                     dto.setSupplierName(rs.getString("supplier_name"));
                     return Optional.of(dto);
 

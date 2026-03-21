@@ -284,7 +284,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<PurchaseOrderDetailResponse> getAllOrderDetails() {
-        throw new UnsupportedOperationException("getAllOrderDetails() chua duoc implement");
+        List<OrderDetail> list=orderDetailDAO.findAll();
+        return orderDetailMapper.toListOrderDetailResponse(list);
     }
 
     @Override
