@@ -366,8 +366,7 @@ public class OrderDAOImpl implements OrderDAO {
                 "created_at, purchase_request_id, supplier_id, quotation_id, approved_by, " +
                 "updated_at, updated_by " +
                 "from purchase_orders " +
-                "where status <> 'DELETED' " +
-                "order by created_at desc";
+                "where status <> 'DELETED' ";
 
         List<Order> orders = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();

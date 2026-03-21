@@ -356,7 +356,7 @@ public class OrderServiceImpl implements OrderService {
                 .orderStatus(o.getOrderStatus().name())
                 .purchaseId(o.getPurchaseId())
                 .approvedByName(map.getOrDefault(o.getUpdatedBy(), "Hiện chưa được chấp nhận"))
-                .totalAmount(o.getTotalAmount())).toList();
+                .totalAmount(o.getTotalAmount()).build()).toList();
     }
 
     @Override

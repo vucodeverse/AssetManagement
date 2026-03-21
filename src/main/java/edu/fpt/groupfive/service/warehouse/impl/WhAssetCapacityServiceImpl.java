@@ -33,10 +33,10 @@ public class WhAssetCapacityServiceImpl implements WhAssetCapacityService {
         // Merge them into DTOs
         return assetTypes.stream()
                 .map(at -> AssetTypeVolumeDTO.builder()
-                        .assetTypeId(at.getAssetTypeId())
+                        .assetTypeId(at.getTypeId())
                         .typeName(at.getTypeName())
                         .categoryName(at.getCategoryName())
-                        .unitVolume(capacityMap.get(at.getAssetTypeId())) // might be NULL
+                        .unitVolume(capacityMap.get(at.getTypeId())) // might be NULL
                         .build())
                 .toList();
     }

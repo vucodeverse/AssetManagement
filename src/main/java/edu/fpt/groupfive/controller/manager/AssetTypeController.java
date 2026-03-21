@@ -114,7 +114,7 @@ public class AssetTypeController {
         AssetTypeResponse response = assetTypeService.getById(id);
 
         AssetTypeUpdateRequest updateRequest = new AssetTypeUpdateRequest();
-        updateRequest.setTypeId(response.getAssetTypeId());
+        updateRequest.setTypeId(response.getTypeId());
         updateRequest.setTypeName(response.getTypeName());
         updateRequest.setTypeClass(response.getTypeClass());
         updateRequest.setDescription(response.getDescription());

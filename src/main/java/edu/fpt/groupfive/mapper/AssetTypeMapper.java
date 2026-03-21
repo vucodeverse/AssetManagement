@@ -15,7 +15,6 @@ import java.util.List;
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AssetTypeMapper {
 
-    @Mapping(source = "typeId", target = "assetTypeId")
     AssetTypeResponse toAssetTypeResponse(AssetType assetType);
 
     AssetType toAssetType(AssetTypeCreateRequest request);

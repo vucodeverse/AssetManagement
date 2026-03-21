@@ -35,7 +35,7 @@ public class AssetTypeServiceImpl implements AssetTypeService {
     @Override
     public List<AssetTypeResponse> getAllAssetType() {
         return assetTypeDAO.findAll().stream().map(assetType -> AssetTypeResponse.builder()
-                .assetTypeId(assetType.getTypeId())
+                .typeId(assetType.getTypeId())
                 .typeName(assetType.getTypeName()).build()).toList();
     }
 
