@@ -2,9 +2,7 @@ package edu.fpt.groupfive.controller.warehouse;
 
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
-import edu.fpt.groupfive.dto.response.warehouse.PODetailResponseDTO;
-import edu.fpt.groupfive.dto.response.warehouse.POItemDetailDTO;
-import edu.fpt.groupfive.dto.response.warehouse.POResponseDTO;
+import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.service.OrderService;
@@ -31,6 +29,8 @@ public class WarehouseInboundController {
     private static final String SUMMARY_ATTR = "summary";
 
     private final OrderService orderService;
+    private final edu.fpt.groupfive.dao.warehouse.WhTransactionDAO whTransactionDAO;
+    private final edu.fpt.groupfive.dao.UserDAO userDAO;
 
     // =========================================================
     //  PO LIST  —  GET /wh/inbound/po
@@ -44,18 +44,7 @@ public class WarehouseInboundController {
         // Fetch real pending POs
         List<PurchaseOrderResponse> pendingOrders = orderService.getOrderWithPending();
         
-        // Map to POResponseDTO for template compatibility
-        List<POResponseDTO> pos = pendingOrders.stream()
-                .map(order -> POResponseDTO.builder()
-                        .purchaseOrderId(order.getOrderId())
-                        .supplierName(order.getSupplierName())
-                        .totalAmount(order.getTotalAmount() != null ? order.getTotalAmount().longValue() : 0L)
-                        .createdAt(order.getCreatedAt())
-                        .status(order.getOrderStatus())
-                        .build())
-                .toList();
-        
-        model.addAttribute("pos", pos);
+        model.addAttribute("pos", pendingOrders);
         return "warehouse/inbound/po_list";
     }
 
@@ -68,7 +57,7 @@ public class WarehouseInboundController {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Chi tiết Nhận hàng PO #" + poId);
         
-        PODetailResponseDTO poDetail = buildDummyPODetail(poId);
+        PurchaseOrderResponse poDetail = orderService.getPurchaseOrderById(poId);
         model.addAttribute("po", poDetail);
         
         return "warehouse/inbound/po_detail";
@@ -79,24 +68,37 @@ public class WarehouseInboundController {
     // =========================================================
 
     @PostMapping("/po/{po_id}/confirm")
-    public String confirmPO(@PathVariable("po_id") Integer poId, RedirectAttributes ra) {
-        PODetailResponseDTO poDetail = buildDummyPODetail(poId);
+    public String confirmPO(@PathVariable("po_id") Integer poId, RedirectAttributes ra, java.security.Principal principal) {
+        String username = principal != null ? principal.getName() : "admin";
+        Integer executedBy = userDAO.findUserIdByUsername(username);
+        
+        PurchaseOrderResponse poDetail = orderService.getPurchaseOrderById(poId);
+        
+        List<edu.fpt.groupfive.dao.warehouse.WhTransactionDAO.InboundAssetData> assetsToInbound = new ArrayList<>();
+        for (PurchaseOrderDetailResponse item : poDetail.getOrderDetails()) {
+            if (item.getQuantity() > 0) {
+                assetsToInbound.add(new edu.fpt.groupfive.dao.warehouse.WhTransactionDAO.InboundAssetData(
+                    item.getAssetTypeId(),
+                    item.getAssetTypeName(),
+                    item.getQuantity(),
+                    item.getPurchaseOrderDetailId(),
+                    item.getPrice()
+                ));
+            }
+        }
+        
+        java.util.Map<Integer, List<Integer>> generatedIds = whTransactionDAO.processInboundPO(poId, executedBy, assetsToInbound);
         
         List<InboundSummaryResponseDTO.AssetGroupDTO> groups = new ArrayList<>();
-        int nextId = 1001; // Base ID for demo
-        for (POItemDetailDTO item : poDetail.getItems()) {
-            int qty = item.getQuantity() - item.getReceivedQuantity();
-            if (qty > 0) {
-                List<Integer> ids = new ArrayList<>();
-                for (int i = 0; i < qty; i++) {
-                    ids.add(nextId++);
-                }
-                groups.add(InboundSummaryResponseDTO.AssetGroupDTO.builder()
+        for (PurchaseOrderDetailResponse item : poDetail.getOrderDetails()) {
+             int qty = item.getQuantity();
+             if (qty > 0 && generatedIds.containsKey(item.getAssetTypeId())) {
+                 groups.add(InboundSummaryResponseDTO.AssetGroupDTO.builder()
                         .assetTypeName(item.getAssetTypeName())
                         .quantity(qty)
-                        .assetIds(ids)
+                        .assetIds(generatedIds.get(item.getAssetTypeId()))
                         .build());
-            }
+             }
         }
         
         InboundSummaryResponseDTO summary = InboundSummaryResponseDTO.builder()
@@ -107,7 +109,7 @@ public class WarehouseInboundController {
                 .build();
         
         ra.addFlashAttribute(SUMMARY_ATTR, summary);
-        ra.addFlashAttribute(SUCCESS_MSG, "Đã dán mã và nhập kho thành công toàn bộ PO #" + poId);
+        ra.addFlashAttribute(SUCCESS_MSG, "Đã tạo tài sản và nhập kho thành công cho PO #" + poId);
         return "redirect:/wh/inbound/po/" + poId + "/summary";
     }
 
@@ -121,23 +123,7 @@ public class WarehouseInboundController {
         model.addAttribute(PAGE_TITLE, "Kết quả Nhập kho PO #" + poId);
         
         if (!model.containsAttribute(SUMMARY_ATTR)) {
-             // Fallback for demo if flash attribute is lost
-             PODetailResponseDTO poDetail = buildDummyPODetail(poId);
-             List<InboundSummaryResponseDTO.AssetGroupDTO> groups = new ArrayList<>();
-             int nextId = 2001;
-             for (POItemDetailDTO item : poDetail.getItems()) {
-                 groups.add(InboundSummaryResponseDTO.AssetGroupDTO.builder()
-                         .assetTypeName(item.getAssetTypeName())
-                         .quantity(item.getQuantity())
-                         .assetIds(List.of(nextId++, nextId++))
-                         .build());
-             }
-             model.addAttribute(SUMMARY_ATTR, InboundSummaryResponseDTO.builder()
-                     .purchaseOrderId(poId)
-                     .supplierName(poDetail.getSupplierName())
-                     .inboundDate(LocalDateTime.now())
-                     .assetGroups(groups)
-                     .build());
+             return "redirect:/wh/inbound/po";
         }
         
         return "warehouse/inbound/summary";
@@ -190,32 +176,4 @@ public class WarehouseInboundController {
     }
 
 
-    // =========================================================
-    //  DUMMY DATA
-    // =========================================================
-
-    private PODetailResponseDTO buildDummyPODetail(Integer poId) {
-        if (poId == 101) {
-            return PODetailResponseDTO.builder()
-                .purchaseOrderId(101)
-                .supplierName("Phong Vũ IT")
-                .status("APPROVED")
-                .items(List.of(
-                    POItemDetailDTO.builder().assetTypeId(1).assetTypeName("Laptop Dell XPS").quantity(5).receivedQuantity(2).build(),
-                    POItemDetailDTO.builder().assetTypeId(2).assetTypeName("Màn hình Dell 24 inch").quantity(10).receivedQuantity(0).build(),
-                    POItemDetailDTO.builder().assetTypeId(3).assetTypeName("Bàn phím Logitech K120").quantity(20).receivedQuantity(5).build(),
-                    POItemDetailDTO.builder().assetTypeId(4).assetTypeName("Chuột không dây Silent").quantity(15).receivedQuantity(10).build()
-                ))
-                .build();
-        }
-        
-        return PODetailResponseDTO.builder()
-            .purchaseOrderId(poId)
-            .supplierName("Nhà cung cấp demo")
-            .status("APPROVED")
-            .items(List.of(
-                POItemDetailDTO.builder().assetTypeId(5).assetTypeName("Máy in Canon LBP").quantity(3).receivedQuantity(0).build()
-            ))
-            .build();
-    }
 }

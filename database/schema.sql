@@ -3,10 +3,11 @@
 -- =============================================
 SET NOCOUNT ON;
 
--- Module Kho (Warehouse) - Xóa trước do có FK tham chiếu các bảng cơ bản
+-- Module Kho (Warehouse) & Giao dịch mapping
+DROP TABLE IF EXISTS map_handover_transactions;
+DROP TABLE IF EXISTS map_po_transactions;
 DROP TABLE IF EXISTS map_allocation_transactions;
 DROP TABLE IF EXISTS map_return_transactions;
-DROP TABLE IF EXISTS map_po_transactions;
 DROP TABLE IF EXISTS wh_transactions;
 DROP TABLE IF EXISTS wh_asset_placement;
 DROP TABLE IF EXISTS wh_zones;
@@ -14,8 +15,8 @@ DROP TABLE IF EXISTS wh_asset_capacity;
 DROP TABLE IF EXISTS wh_warehouses;
 
 -- Module Giao dịch & Cấp phát
-DROP TABLE IF EXISTS transfer_order_detail;
-DROP TABLE IF EXISTS transfer_order;
+DROP TABLE IF EXISTS transfer_request_detail;
+DROP TABLE IF EXISTS transfer_request;
 DROP TABLE IF EXISTS asset_handover_detail;
 DROP TABLE IF EXISTS asset_handover;
 DROP TABLE IF EXISTS return_request_detail;
@@ -35,7 +36,6 @@ DROP TABLE IF EXISTS purchase_request;
 DROP TABLE IF EXISTS supplier;
 
 -- Danh mục & Người dùng
--- Lưu ý: Xóa FK vòng trước khi xóa bảng departments/users
 IF OBJECT_ID('departments', 'U') IS NOT NULL 
     ALTER TABLE departments DROP CONSTRAINT IF EXISTS FK_departments_manager;
 

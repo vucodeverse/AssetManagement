@@ -246,6 +246,7 @@ public class OrderServiceImpl implements OrderService {
         List<PurchaseOrderDetailResponse> items = poDetails.stream()
                 .map(detail -> {
                     PurchaseOrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
+                    itemDto.setAssetTypeId(detail.getAssetTypeId());
                     itemDto.setAssetTypeName(assetTypeNames.getOrDefault(detail.getAssetTypeId(), notFoundFallbackMsg));
                     itemDto.setPurchaseRequestDetailId(qDetailIdToPurchaseDetailId.get(detail.getQuotationDetailId()));
                     return itemDto;
@@ -256,6 +257,7 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal[] calculated = orderCalculationUtil.calculatePoDetail(poDetails);
 
         PurchaseOrderResponse response = orderMapper.toPurchaseOrderResponse(order);
+        response.setApprovedByName(userService.getUserIdToUsernameMap().getOrDefault(order.getApprovedBy(), notFoundFallbackMsg));
         response.setSupplierName(map.getOrDefault(order.getSupplierId(), notFoundFallbackMsg));
         response.setOrderDetails(items);
         response.setSubtotal(calculated[0]);
@@ -300,6 +302,7 @@ public class OrderServiceImpl implements OrderService {
                         .deliveryDate(pod.getDeliveryDate())
                         .discountRate(pod.getDiscountRate())
                         .quantity(pod.getQuantity())
+                        .assetTypeId(pod.getAssetTypeId())
                         .assetTypeName(map.getOrDefault(pod.getAssetTypeId(), "Không có loại tài sản"))
                         .build())
                 .toList();
@@ -315,14 +318,16 @@ public class OrderServiceImpl implements OrderService {
                 .map(o -> mapToPoResponse(o, map)).toList();
     }
 
-    private static PurchaseOrderResponse mapToPoResponse(Order o, Map<Integer, String> map) {
+    private PurchaseOrderResponse mapToPoResponse(Order o, Map<Integer, String> map) {
+        String supplierName = supplierService.getSupplierIdToNameMap().getOrDefault(o.getSupplierId(), notFoundFallbackMsg);
         return PurchaseOrderResponse.builder()
                 .orderId(o.getId())
                 .orderNote(o.getOrderNote())
                 .createdAt(o.getCreatedAt())
                 .orderStatus(o.getOrderStatus().name())
                 .purchaseId(o.getPurchaseId())
-                .approvedByName(map.getOrDefault(o.getUpdatedBy(), "Hiện chưa được chấp nhận"))
+                .supplierName(supplierName)
+                .approvedByName(map.getOrDefault(o.getApprovedBy(), "Hiện chưa được chấp nhận"))
                 .totalAmount(o.getTotalAmount())
                 .build();
     }
@@ -334,7 +339,7 @@ public class OrderServiceImpl implements OrderService {
         orderDAO.updateStatus(orderId, orderStatus);
     }
 
-    private Boolean checkQuantityOfPO(Integer purchaseId) {
+    private boolean checkQuantityOfPO(Integer purchaseId) {
 
         List<PurchaseDetail> purchaseDetails = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
 

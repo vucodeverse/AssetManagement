@@ -30,8 +30,10 @@
                 <thead>
                     <tr>
                         <th>Mã PO</th>
+                        <th>Mã PR</th>
                         <th>Nhà cung cấp</th>
                         <th>Ngày tạo</th>
+                        <th>Người duyệt</th>
                         <th>Tổng tiền</th>
                         <th>Trạng thái</th>
                         <th class="action-cell">Chi tiết</th>
@@ -39,13 +41,15 @@
                 </thead>
                 <tbody>
                     <tr th:each="p : ${pos}">
-                        <td th:text="'#PO-' + ${p.purchaseOrderId}">101</td>
+                        <td th:text="'#PO-' + ${p.orderId}">101</td>
+                        <td th:text="'#PR-' + ${p.purchaseId}"></td>
                         <td th:text="${p.supplierName}">Phong Vũ</td>
                         <td th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${p.approvedByName}"></td>
                         <td th:text="${#numbers.formatDecimal(p.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                        <td><span class="badge badge-active">APPROVED</span></td>
+                        <td><span class="badge badge-active" th:text="${p.orderStatus}">APPROVED</span></td>
                         <td class="action-cell">
-                            <a th:href="@{'/wh/inbound/po/' + ${p.purchaseOrderId}}" class="btn-sm primary">
+                            <a th:href="@{'/wh/inbound/po/' + ${p.orderId}}" class="btn-sm primary">
                                 <i class="fa-solid fa-eye"></i> Xem & Nhập
                             </a>
                         </td>

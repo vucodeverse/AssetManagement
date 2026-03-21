@@ -27,22 +27,22 @@ public class WhZoneDAOImpl implements WhZoneDAO {
         dto.setAssetTypeId(rs.getObject("asset_type_id", Integer.class));
         dto.setStatus(rs.getString("status"));
         
-        // Cần join thêm asset_type để lấy tên loại tài sản nếu cần, hoặc xử lý ở service
-        // Hiện tại DTO này đang dùng cho list zone tổng quát
+        dto.setAssetTypeName(rs.getString("asset_type_name"));
+        
         return dto;
     };
 
     @Override
     @SuppressWarnings("null")
     public List<ZoneCapacityResponseDTO> getAllZonesWithCapacity() {
-        String sql = "SELECT * FROM wh_zones WHERE status = 'ACTIVE'";
+        String sql = "SELECT z.*, t.type_name as asset_type_name FROM wh_zones z LEFT JOIN asset_type t ON z.asset_type_id = t.asset_type_id WHERE z.status = 'ACTIVE'";
         return jdbcTemplate.query(sql, zoneMapper);
     }
 
     @Override
     @SuppressWarnings("null")
     public Optional<ZoneCapacityResponseDTO> getZoneById(int zoneId) {
-        String sql = "SELECT * FROM wh_zones WHERE zone_id = ?";
+        String sql = "SELECT z.*, t.type_name as asset_type_name FROM wh_zones z LEFT JOIN asset_type t ON z.asset_type_id = t.asset_type_id WHERE z.zone_id = ?";
         List<ZoneCapacityResponseDTO> results = jdbcTemplate.query(sql, zoneMapper, zoneId);
         return results.stream().findFirst();
     }
