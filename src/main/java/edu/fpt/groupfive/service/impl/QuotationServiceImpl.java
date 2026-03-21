@@ -8,7 +8,6 @@ import edu.fpt.groupfive.dto.request.QuotationDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
-import edu.fpt.groupfive.dto.response.QuotationSummaryResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.mapper.QuotationDetailMapper;
 import edu.fpt.groupfive.mapper.QuotationMapper;
@@ -25,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,6 +63,8 @@ public class QuotationServiceImpl implements QuotationService {
 
     @Value("${quotation.asset_type_not_found}")
     private String assetTypeNotFoundMsg;
+    @Value("${quotation.detail.not_found}")
+    private String quotationDetailNotFoundMsg;
 
     @Value("${quotation.pr_not_approved}")
     private String prNotApprovedMsg;
@@ -254,9 +254,8 @@ public class QuotationServiceImpl implements QuotationService {
         Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
         List<Quotation> quotations = quotationDAO.findByPurchaseId(purchaseId);
 
-        if (!Role.PURCHASE_STAFF.name().equals(roleLogin.getRole()))
-            quotations = quotations.stream().filter(q -> !QuotationStatus.DRAFT.equals(q.getQuotationStatus()))
-                    .toList();
+
+        quotations = author(quotations);
 
         // map về response
         return quotations.stream()
@@ -325,57 +324,6 @@ public class QuotationServiceImpl implements QuotationService {
                 .build();
     }
 
-    // thực hiện search và filter cho màn quotation list
-    @Override
-    public List<QuotationSummaryResponse> searchQuotations(QuotationSearchCriteria s) {
-
-        // ktra from và to có khớp ko
-        if (s.getFrom() != null && s.getTo() != null && s.getFrom().isAfter(s.getTo())) {
-            throw new InvalidDataException(searchInvalidDateMsg);
-        }
-
-        // mặc định null
-        s.setMinAmount(null);
-        s.setMaxAmount(null);
-
-        if (s.getAmountRange() != null && !s.getAmountRange().isBlank()) {
-
-            // tách min và max amount
-            List<BigDecimal> list = rangeAmount.applyRangeAMount(s.getAmountRange());
-            if (list.size() == 1) {
-                s.setMinAmount(list.get(0));
-            } else if (list.size() == 2) {
-                s.setMinAmount(list.get(0));
-                s.setMaxAmount(list.get(1));
-            }
-        }
-
-        // Khóa: ID yêu cầu mua sắm - Giá trị: mảng các đối tượng chứa thông tin tóm tắt
-        // của quotaiton
-        Map<Integer, Object[]> summaryMap = purchaseDAO.searchQuotationSummary(s);
-
-        List<QuotationSummaryResponse> out = new ArrayList<>();
-        for (Map.Entry<Integer, Object[]> entry : summaryMap.entrySet()) {
-            Object[] data = entry.getValue();
-
-            // trả về list QuotationForPurchase
-            out.add(QuotationSummaryResponse.builder()
-                    .purchaseId(entry.getKey())
-                    .needByDate((LocalDate) data[0])
-                    .priority((String) data[1])
-                    .numberOfQuotation((Integer) data[2])
-                    .estPrice((BigDecimal) data[3])
-                    .build());
-        }
-        return out;
-    }
-
-    // mặc định của màn quotation list
-    @Override
-    public List<QuotationSummaryResponse> getQuotationAndPurchase() {
-        return searchQuotations(new QuotationSearchCriteria());
-    }
-
     // method search cho màn qop
     @Override
     public List<QuotationResponse> searchQuotationsByPurchaseId(QuotationSearchCriteria criteria) {
@@ -441,8 +389,6 @@ public class QuotationServiceImpl implements QuotationService {
                 .toList();
     }
 
-    @Value("${quotation.detail.not_found}")
-    private String quotationDetailNotFoundMsg;
 
     @Override
     public void processQuotationDetailAction(Integer id, String actions) {
@@ -453,6 +399,15 @@ public class QuotationServiceImpl implements QuotationService {
         } else if ("r".equals(actions)) {
             quotationDetailDAO.update(id, QuotationStatus.REJECTED);
         }
+    }
+
+    private List<Quotation> author(List<Quotation> quotations){
+        if (!Role.PURCHASE_STAFF.name().equals(roleLogin.getRole()))
+            quotations = quotations.stream().filter(q -> !QuotationStatus.DRAFT.equals(q.getQuotationStatus()))
+                    .toList();
+
+
+        return quotations;
     }
 
 }

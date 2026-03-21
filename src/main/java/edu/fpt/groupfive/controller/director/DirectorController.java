@@ -19,17 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class DirectorController {
     private final DashboardService dashboardService;
     private final PurchaseService purchaseService;
-    private final QuotationService quotationService;
-
-    @ModelAttribute("searchAndFilter")
-    public PurchaseRequestSearchCriteria initSearchAndFilter() {
-        return new PurchaseRequestSearchCriteria();
-    }
-
-    @ModelAttribute("searchForQuotation")
-    public QuotationSearchCriteria initSearchForQuotation() {
-        return new QuotationSearchCriteria();
-    }
 
     // hiển thị dashboard
     @GetMapping("/dashboard")
@@ -50,14 +39,4 @@ public class DirectorController {
         return "purchase/purchase-list";
     }
 
-    // hiển thị list quotation để duyệt
-    @GetMapping("/quotations")
-    public String showQuotations(Model model) {
-        model.addAttribute("activeMenu", "approval");
-        model.addAttribute("activeSub", "qt");
-        model.addAttribute("quotations", quotationService.getQuotationAndPurchase());
-        model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", QuotationStatus.values());
-        return "quotation/quotation-list";
-    }
 }

@@ -141,12 +141,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         List<Purchase> purchases = purchaseDAO.findAll();
 
-        if (!Role.ASSET_MANAGER.name().equals(roleLogin.getRole())) {
-            purchases = purchases.stream()
-                    .filter(p -> !Request.DRAFT.equals(p.getStatus()))
-                    .toList();
-        }
-
+        purchases = author(purchases);
         return purchases.stream().map(p -> {
 
             // map sang response để trả về client
@@ -170,8 +165,11 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         // lấy ra user
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
+        List<Purchase> purchases = purchaseDAO.search(p);
 
-        return purchaseDAO.search(p).stream()
+        purchases = author(purchases);
+
+        return purchases.stream()
                 .map(pr -> {
 
                     // Chuyển đổi sang PurchaseRequestResponse để hiển thị trên giao diện
@@ -234,6 +232,19 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     }
 
+    private List<Purchase> author(List<Purchase> purchases){
+        if (!Role.ASSET_MANAGER.name().equals(roleLogin.getRole()))
+            purchases = purchases.stream()
+                    .filter(p -> !Request.DRAFT.equals(p.getStatus()))
+                    .toList();
 
+
+        if (Role.PURCHASE_STAFF.name().equals(roleLogin.getRole()))
+            purchases = purchases.stream()
+                    .filter(p -> !Request.REJECTED.equals(p.getStatus()))
+                    .toList();
+
+        return purchases;
+    }
 
 }

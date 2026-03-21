@@ -144,21 +144,19 @@
                                     class="rejected-reason-mini" th:title="${q.rejectedReason}"></span>
                             </td>
                             <td class="cell-actions" onclick="event.stopPropagation()">
-
-                                <!-- Navigation actions -->
-                                <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                                <th:block sec:authorize="hasAuthority('PURCHASE_STAFF')">
                                     <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
                                         th:href="@{/quotations/{id}/edit(id=${q.quotationId})}" title="Chỉnh sửa">
                                         <i class="far fa-edit action-icon"></i>
                                     </a>
-                                </div>
+                                </th:block>
 
-                                <div sec:authorize="hasAuthority('DIRECTOR')">
+                                <th:block sec:authorize="hasAuthority('DIRECTOR')">
                                     <a th:if="${q.quotationStatus.name() == 'PENDING'}" class="btn-approve-sm"
                                         th:href="@{/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}">
-                                        DUYỆT & TẠO ĐƠN HÀNG
+                                        DUYỆT & TẠO ĐƠN
                                     </a>
-                                </div>
+                                </th:block>
 
                                 <!-- POST actions -->
                                 <form
@@ -166,23 +164,21 @@
                                     method="post" th:action="@{/quotations/{id}/actions(id=${q.quotationId})}"
                                     class="inline-form">
 
-                                    <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                                    <th:block sec:authorize="hasAuthority('PURCHASE_STAFF')">
                                         <button type="submit" name="action" value="d" class="btn-reject-sm">
                                             XÓA
                                         </button>
-                                    </div>
+                                    </th:block>
 
-                                    <div sec:authorize="hasAuthority('DIRECTOR')">
+                                    <th:block sec:authorize="hasAuthority('DIRECTOR')">
                                         <button type="button" class="btn-reject-sm"
                                             th:if="${q.quotationStatus.name() == 'PENDING'}"
                                             th:attr="data-action=@{/quotations/{id}/actions(id=${q.quotationId})}"
                                             onclick="openRejectModal(event,this)">
                                             TỪ CHỐI
                                         </button>
-                                    </div>
-
+                                    </th:block>
                                 </form>
-
                             </td>
                         </tr>
                     </tbody>

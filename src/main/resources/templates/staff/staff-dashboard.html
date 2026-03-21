@@ -51,7 +51,7 @@
                                             <strong th:text="'#PR-' + ${pr.getPurchaseId}">#PR-2024-001</strong>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td th:data-order="${pr.neededByDate}">
                                         <div class="deadline-cell"
                                             th:text="${#temporals.format(pr.neededByDate, 'dd-MM-yyyy')}">24-10-2024
                                         </div>

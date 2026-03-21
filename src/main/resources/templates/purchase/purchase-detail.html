@@ -153,7 +153,9 @@
                     </div>
 
                     <!-- Phần tóm tắt báo giá liên quan -->
-                    <div class="quotations-summary-section" th:if="${purchase.status != null and purchase.status.name() == 'APPROVED'}">
+                    <div class="quotations-summary-section"
+                         th:if="${purchase.status != null and purchase.status.name() == 'APPROVED'}"
+                         sec:authorize="hasAnyAuthority('DIRECTOR', 'PURCHASE_STAFF')">
                         <hr class="separator">
                         <div class="quotation-header">
                             <div class="q-title">

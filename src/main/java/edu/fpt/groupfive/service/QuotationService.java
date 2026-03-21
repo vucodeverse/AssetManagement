@@ -3,7 +3,6 @@ package edu.fpt.groupfive.service;
 import edu.fpt.groupfive.dto.request.QuotationDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
-import edu.fpt.groupfive.dto.response.QuotationSummaryResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 
 import java.util.List;
@@ -19,9 +18,6 @@ public interface QuotationService {
 
     void processQuotationAction(Integer quotationId, String action, String reason);
 
-    List<QuotationSummaryResponse> searchQuotations(QuotationSearchCriteria quotationSearchCriteria);
-
-    List<QuotationSummaryResponse> getQuotationAndPurchase();
 
     List<QuotationResponse> searchQuotationsByPurchaseId(QuotationSearchCriteria quotationSearchCriteria);
 
