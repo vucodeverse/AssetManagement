@@ -44,7 +44,7 @@
 <div class="content">
 
     <a th:href="@{/admin/users}" style="text-decoration: none;">
-        <h1 class="header-title">Quản lí người dùng</h1>
+        <h2 class="header-title"><i class="fas fa-users"></i> Quản lí người dùng</h2>
     </a>
 
     <hr/>
@@ -52,7 +52,7 @@
     <div class="card-container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <a th:href="@{/admin/user/add}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Thêm người dùng
+                <i class="fas fa-user-plus"></i> Thêm người dùng
             </a>
 
             <form th:action="@{/admin/users}" method="get" class="form-inline">

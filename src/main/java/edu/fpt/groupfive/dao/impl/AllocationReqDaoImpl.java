@@ -57,6 +57,27 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
         return request;
     }
 
+    private AllocationRequest mapRowBasic(ResultSet rs) throws Exception {
+        AllocationRequest request = new AllocationRequest();
+
+        request.setRequestId(rs.getInt("request_id"));
+        request.setRequesterId(rs.getInt("requester_id"));
+        request.setRequestedDepartmentId(rs.getInt("requested_department_id"));
+
+        Date neededDate = rs.getDate("needed_by_date");
+        if (neededDate != null)
+            request.setNeededByDate(neededDate.toLocalDate());
+
+        request.setPriority(rs.getString("priority"));
+        request.setRequestReason(rs.getString("reason"));
+        request.setStatus(rs.getString("status"));
+
+        Timestamp created = rs.getTimestamp("created_at");
+        if (created != null)
+            request.setCreatedAt(created.toLocalDateTime());
+
+        return request;
+    }
 
 
     /**
@@ -311,5 +332,57 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
 
         return list;
     }
+    @Override
+    public List<AllocationRequest> findAll() {
+        String sql = "select * from allocation_request order by request_id asc";
+        List<AllocationRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRowBasic(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+
+        }
+        return list;
+    }
+
+    @Override
+    public List<AllocationRequest> findAllPending() {
+        String sql = "select * from allocation_request where status in ('PENDING', 'SUBMITTED') order by created_at desc";
+
+        List<AllocationRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRowBasic(rs));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<AllocationRequest> findAllOrderByCreatedAtDesc() {
+        String sql = "select * from allocation_request order by created_at desc";
+
+        List<AllocationRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRowBasic(rs));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
 
 }

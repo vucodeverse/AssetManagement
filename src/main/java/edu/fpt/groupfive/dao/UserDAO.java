@@ -40,4 +40,7 @@ public interface UserDAO {
 
     int countUsersWithFilter(String status, Integer departmentId,
                              Role role, String keyword);
+
+    String findFullNameByUserId(Integer userId);
+
 }

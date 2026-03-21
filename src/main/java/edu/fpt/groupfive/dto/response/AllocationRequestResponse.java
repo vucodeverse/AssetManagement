@@ -11,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class AllocationRequestResponse {
     private Integer requestId;
     private Integer requesterId;

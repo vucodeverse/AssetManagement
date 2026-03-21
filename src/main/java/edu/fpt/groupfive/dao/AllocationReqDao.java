@@ -23,4 +23,8 @@ public interface AllocationReqDao {
     List<AllocationRequest> search(Integer departmentId, String requestId, String status,
                                    String priority, LocalDate fromDate, LocalDate toDate);
 
+
+    List<AllocationRequest> findAll();
+    List<AllocationRequest> findAllPending();
+    List<AllocationRequest> findAllOrderByCreatedAtDesc();
 }
