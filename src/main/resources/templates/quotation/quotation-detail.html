@@ -29,19 +29,19 @@
                     <th:block>
                         <div sec:authorize="hasAuthority('DIRECTOR')">
                             <button type="button" class="btn-outline-prem"
-                                th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
+                                th:if="${quotation.status != null and quotation.status.name() == 'PENDING'}"
                                 th:attr="data-action=@{/quotations/{id}/actions(id=${quotation.quotationId})}"
                                 onclick="openRejectModal(event,this)">
                                 TỪ CHỐI
                             </button>
                             <a th:href="@{/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
-                                th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
+                                th:if="${quotation.status != null and quotation.status.name() == 'PENDING'}"
                                 class="btn-approve">
                                 DUYỆT & TẠO ĐƠN HÀNG
                             </a>
                         </div>
                         <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
-                            <a th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT'}"
+                            <a th:if="${quotation.status != null and quotation.status.name() == 'DRAFT'}"
                                 class="btn-solid-prem" th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
                                 CẬP NHẬT BÁO GIÁ
                             </a>
@@ -72,8 +72,8 @@
                     <div class="info-item">
                         <label>TRẠNG THÁI</label>
                         <div>
-                            <span class="status-badge" th:classappend="${quotation.quotationStatus.name()}"
-                                th:text="${quotation.quotationStatus.description}">ĐANG CHỜ</span>
+                            <span class="status-badge" th:classappend="${quotation.status.name()}"
+                                th:text="${quotation.status.description}">ĐANG CHỜ</span>
                         </div>
                     </div>
                     <div class="info-item">
@@ -85,7 +85,7 @@
                 </div>
 
                 <!-- Lý do từ chối -->
-                <div th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'REJECTED' and quotation.rejectedReason != null}"
+                <div th:if="${quotation.status != null and quotation.status.name() == 'REJECTED' and quotation.rejectedReason != null}"
                     class="rejection-reason-box"
                     style="margin-top: 20px; padding: 16px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
                     <label
@@ -132,7 +132,7 @@
                                     <td class="td-action">
                                         <!-- Director Actions for Pending Item in a Pending Quotation -->
                                         <div sec:authorize="hasAuthority('DIRECTOR')" 
-                                             th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING' and item.status != null and item.status.name() == 'PENDING'}">
+                                             th:if="${quotation.status != null and quotation.status.name() == 'PENDING' and item.status != null and item.status.name() == 'PENDING'}">
                                             <form method="post"
                                                   th:action="@{/quotations/details/{id}/actions(id=${item.quotationDetailId})}"
                                                   style="margin:0;">
@@ -144,7 +144,7 @@
                                         </div>
 
                                         <!-- Status Display for Non-Directors, Non-Pending Quotations, or Already Processed Items -->
-                                        <div th:if="${!#authorization.expression('hasAuthority(''DIRECTOR'')') or (quotation.quotationStatus != null and quotation.quotationStatus.name() != 'PENDING') or (item.status != null and item.status.name() != 'PENDING')}">
+                                        <div th:if="${!#authorization.expression('hasAuthority(''DIRECTOR'')') or (quotation.status != null and quotation.status.name() != 'PENDING') or (item.status != null and item.status.name() != 'PENDING')}">
                                             <span th:if="${item.status != null}"
                                                   class="status-badge"
                                                   th:classappend="'status-' + ${item.status.name()}"

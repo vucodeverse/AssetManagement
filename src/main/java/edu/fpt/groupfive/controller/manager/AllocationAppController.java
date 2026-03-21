@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.controller.department;
+package edu.fpt.groupfive.controller.manager;
 
 import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
@@ -103,11 +103,11 @@ public class AllocationAppController {
 
         Integer userId = (Integer) session.getAttribute("userId");
 
-        allocationRequestService.updateStatus(
-                id, "APPROVED", userId, null);
+        allocationRequestService.updateStatus(id, "APPROVED", userId, null);
 
         return "redirect:/asset-manager/allocation-request/list";
     }
+
 
     @PostMapping("/reject/{id}")
     public String rejectRequest(@PathVariable("id") Integer id,

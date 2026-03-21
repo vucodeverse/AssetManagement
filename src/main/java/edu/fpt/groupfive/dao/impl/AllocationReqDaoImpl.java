@@ -274,6 +274,27 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
     }
 
     @Override
+    public void updateStatusWh(Integer id, String status) {
+        String query = """
+                UPDATE allocation_request
+                SET status = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE request_id = ?
+                """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, status);
+            ps.setInt(4, id);
+
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public List<AllocationRequest> search(Integer departmentId, String keyword, String status,
                                           Priority priority, LocalDate fromDate, LocalDate toDate) {
         StringBuilder query = new StringBuilder("""
@@ -343,7 +364,6 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
 
         return list;
     }
-
 
 
 }

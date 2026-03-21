@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.controller.director;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.Status;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
@@ -57,7 +57,7 @@ public class DirectorController {
         model.addAttribute("activeSub", "qt");
         model.addAttribute("quotations", quotationService.getQuotationAndPurchase());
         model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", QuotationStatus.values());
+        model.addAttribute("status", Status.values());
         return "quotation/quotation-list";
     }
 }

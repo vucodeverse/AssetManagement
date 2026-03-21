@@ -134,32 +134,32 @@
 
                             </td>
                             <td>
-                                <span th:class="'status-tag ' + ${#strings.toLowerCase(q.quotationStatus.name())}"
-                                    th:text="${q.quotationStatus.description}">ĐANG CHỜ DUYỆT</span>
+                                <span th:class="'status-tag ' + ${#strings.toLowerCase(q.status.name())}"
+                                    th:text="${q.status.description}">ĐANG CHỜ DUYỆT</span>
                                 <span
-                                    th:if="${q.quotationStatus == T(edu.fpt.groupfive.common.QuotationStatus).REJECTED and q.rejectedReason != null}"
+                                    th:if="${q.status == T(edu.fpt.groupfive.common.Status).REJECTED and q.rejectedReason != null}"
                                     class="rejected-reason-mini" th:title="${q.rejectedReason}"></span>
                             </td>
                             <td class="cell-actions" onclick="event.stopPropagation()">
 
                                 <!-- Navigation actions -->
                                 <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
-                                    <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
+                                    <a th:if="${q.status.name() == 'DRAFT'}"
                                         th:href="@{/quotations/{id}/edit(id=${q.quotationId})}" title="Chỉnh sửa">
                                         <i class="far fa-edit action-icon"></i>
                                     </a>
                                 </div>
 
                                 <div sec:authorize="hasAuthority('DIRECTOR')">
-                                    <a th:if="${q.quotationStatus.name() == 'PENDING'}" class="btn-approve-sm"
-                                        th:href="@{/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}">
+                                    <a th:if="${q.status.name() == 'PENDING'}" class="btn-approve-sm"
+                                       th:href="@{/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}">
                                         DUYỆT & TẠO ĐƠN HÀNG
                                     </a>
                                 </div>
 
                                 <!-- POST actions -->
                                 <form
-                                    th:if="${q.quotationStatus.name() == 'DRAFT' || q.quotationStatus.name() == 'PENDING'}"
+                                    th:if="${q.status.name() == 'DRAFT' || q.status.name() == 'PENDING'}"
                                     method="post" th:action="@{/quotations/{id}/actions(id=${q.quotationId})}"
                                     class="inline-form">
 
@@ -171,7 +171,7 @@
 
                                     <div sec:authorize="hasAuthority('DIRECTOR')">
                                         <button type="button" class="btn-reject-sm"
-                                            th:if="${q.quotationStatus.name() == 'PENDING'}"
+                                            th:if="${q.status.name() == 'PENDING'}"
                                             th:attr="data-action=@{/quotations/{id}/actions(id=${q.quotationId})}"
                                             onclick="openRejectModal(event,this)">
                                             TỪ CHỐI

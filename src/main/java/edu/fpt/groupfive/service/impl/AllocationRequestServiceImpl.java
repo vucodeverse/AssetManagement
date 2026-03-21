@@ -1,13 +1,16 @@
 package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.Priority;
+import edu.fpt.groupfive.common.Status;
 import edu.fpt.groupfive.dao.AllocationReqDao;
 import edu.fpt.groupfive.dao.AllocationReqDetailDao;
+import edu.fpt.groupfive.dao.AssetHandoverDao;
 import edu.fpt.groupfive.dto.request.AllocationRequestCreateRequest;
 import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
 import edu.fpt.groupfive.mapper.AllocationRequestMapper;
 import edu.fpt.groupfive.model.AllocationRequest;
 import edu.fpt.groupfive.model.AllocationRequestDetail;
+import edu.fpt.groupfive.model.AssetHandover;
 import edu.fpt.groupfive.service.AllocationRequestService;
 import edu.fpt.groupfive.dao.UserDAO;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,8 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
     private final AllocationReqDetailDao allocationReqDetailDao;
     private final AllocationRequestMapper allocationRequestMapper;
     private final UserDAO userDao;
+    private final AssetHandoverDao assetHandoverDao;
+
 
     @Override
     public List<AllocationRequest> getAllAllocationRequest() {
@@ -103,8 +108,7 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
         allocationReqDetailDao.deleteByRequestId(id);
 
         // Duyệt allocation detail
-        List<AllocationRequestDetail> details = allocationRequestMapper
-                .toListAllocationRequestDetail(dto.getDetails());
+        List<AllocationRequestDetail> details = allocationRequestMapper.toListAllocationRequestDetail(dto.getDetails());
 
         for (AllocationRequestDetail x : details) {
             x.setRequestId(id);
@@ -140,21 +144,43 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
             throw new RuntimeException("Yêu cầu cấp phát không tồn tại!");
         }
 
-        // Kiểm tra trạng thái hiện tại. Nếu KHÔNG PHẢI là "PENDING_AM" (nghĩa là đã APPROVED hoặc REJECTED rồi)
-        // thì ném ra lỗi, block không cho cập nhật nữa
+        // Kiểm tra trạng thái hiện tại
         if (!"PENDING_AM".equals(req.getStatus())) {
-            throw new RuntimeException("Yêu cầu này đã được xử lý (Chấp nhận/Từ chối) " +
-                    "trước đó, không thể thay đổi trạng thái!");
+            throw new RuntimeException("yêu cầu đã được duyệt");
         }
 
         allocationReqDao.updateStatus(id, status, amApprovedBy, reasonReject);
+
+
+        //=================================================================================
+        //============================ Xuống kho cho khánh ================================
+        //=================================================================================
+
+        if ("APPROVED".equals(status)) {
+            AssetHandover handover = new AssetHandover();
+            handover.setHandoverType("ALLOCATION");
+            //lấy id từ trên
+            handover.setAllocationRequestId(id);
+            handover.setReturnRequestId(null);
+            // Từ kho nên là null
+            handover.setFromDepartmentId(null);
+            // Tới phòng ban nào
+            handover.setToDepartmentId(req.getRequestedDepartmentId());
+            handover.setFromDepartmentId(null);
+            // Setup trạng thái khởi tạo
+            handover.setStatus(Status.PENDING);
+            // Set thông tin ghi chú tương ứng
+            handover.setNote("Bản ghi lệnh cấp phát được tạo tự động từ yêu cầu cấp phát #" + id);
+            // Lưu trực tiếp vào Database
+            assetHandoverDao.insert(handover);
+        }
+
     }
 
     @Override
     public List<AllocationRequest> search(Integer departmentId, String requestId,
                                           String status, Priority priority, LocalDate fromDate, LocalDate toDate) {
-        return allocationReqDao.search(departmentId, requestId, status, priority, fromDate,
-                toDate);
+        return allocationReqDao.search(departmentId, requestId, status, priority, fromDate, toDate);
     }
 
 

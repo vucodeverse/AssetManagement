@@ -1,8 +1,7 @@
 package edu.fpt.groupfive.dao.impl;
 
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.Status;
 import edu.fpt.groupfive.dao.QuotationDetailDAO;
-import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
 import edu.fpt.groupfive.model.QuotationDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.util.exception.DataAccessException;
@@ -63,7 +62,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
             preparedStatement.setString(12,
                     quotationDetail.getQuotationDetailStatus() != null
                             ? quotationDetail.getQuotationDetailStatus().name()
-                            : QuotationStatus.PENDING.name());
+                            : Status.PENDING.name());
 
             preparedStatement.executeUpdate();
             ResultSet rs = preparedStatement.getGeneratedKeys();
@@ -103,7 +102,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
 
                 String statusStr = rs.getString("status");
                 if (statusStr != null) {
-                    q.setQuotationDetailStatus(QuotationStatus.valueOf(statusStr));
+                    q.setQuotationDetailStatus(Status.valueOf(statusStr));
                 }
 
                 return Optional.of(q);
@@ -128,12 +127,12 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
     }
 
     @Override
-    public void update(Integer quotationDetailId, QuotationStatus quotationStatus) {
+    public void update(Integer quotationDetailId, Status status) {
         String sql = "update quotation_detail set status = ? where quotation_detail_id = ?";
 
         try (Connection connection = databaseConfig.getConnection()) {
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                ps.setString(1, quotationStatus.name());
+                ps.setString(1, status.name());
                 ps.setInt(2, quotationDetailId);
                 ps.executeUpdate();
             }
@@ -173,7 +172,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
 
                 String statusStr = rs.getString("status");
                 if (statusStr != null) {
-                    q.setQuotationDetailStatus(QuotationStatus.valueOf(statusStr));
+                    q.setQuotationDetailStatus(Status.valueOf(statusStr));
                 }
 
                 quotationDetails.add(q);

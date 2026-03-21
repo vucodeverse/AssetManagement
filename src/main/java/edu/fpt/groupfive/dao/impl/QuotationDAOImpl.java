@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao.impl;
 
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.Status;
 import edu.fpt.groupfive.dao.QuotationDAO;
 import edu.fpt.groupfive.dao.QuotationDetailDAO;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,8 +39,8 @@ public class QuotationDAOImpl implements QuotationDAO {
         quotation.setId(rs.getInt("quotation_id"));
         quotation.setPurchaseId(rs.getInt("purchase_request_id"));
         quotation.setSupplierId(rs.getInt("supplier_id"));
-        quotation.setQuotationStatus(
-                QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
+        quotation.setStatus(
+                Status.valueOf(rs.getString("status").toUpperCase()));
         quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
 
         Timestamp createdAt = rs.getTimestamp("created_at");
@@ -68,7 +67,7 @@ public class QuotationDAOImpl implements QuotationDAO {
                     Statement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setObject(1, quotation.getPurchaseId());
                 preparedStatement.setObject(2, quotation.getSupplierId());
-                preparedStatement.setString(3, quotation.getQuotationStatus().toString());
+                preparedStatement.setString(3, quotation.getStatus().toString());
                 preparedStatement.setBigDecimal(4, quotation.getTotalAmount());
                 preparedStatement.setTimestamp(5,
                         quotation.getCreatedAt() != null ? Timestamp.valueOf(quotation.getCreatedAt())
@@ -119,7 +118,7 @@ public class QuotationDAOImpl implements QuotationDAO {
             connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setObject(1, quotation.getSupplierId());
-            preparedStatement.setString(2, quotation.getQuotationStatus().toString());
+            preparedStatement.setString(2, quotation.getStatus().toString());
             preparedStatement.setBigDecimal(3, quotation.getTotalAmount());
             preparedStatement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
             preparedStatement.setInt(5, quotation.getId());
@@ -156,7 +155,7 @@ public class QuotationDAOImpl implements QuotationDAO {
 
     // update khi reject
     @Override
-    public void updateStatus(Integer quotationId, QuotationStatus status, String rejectedReason) {
+    public void updateStatus(Integer quotationId, Status status, String rejectedReason) {
         String sql = "update quotation set status = ?, reject_reason = ?, updated_at = ? WHERE quotation_id =" +
                 " ?";
 
@@ -316,7 +315,7 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setId(rs.getInt("quotation_id"));
                 quotation.setPurchaseId(rs.getInt("purchase_request_id"));
                 quotation.setSupplierId(rs.getInt("supplier_id"));
-                quotation.setQuotationStatus(QuotationStatus.valueOf(rs.getString("status").toUpperCase()));
+                quotation.setStatus(Status.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
 
                 Timestamp createdAt = rs.getTimestamp("created_at");

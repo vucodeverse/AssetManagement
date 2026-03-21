@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.common;
 
-public enum QuotationStatus {
+public enum Status {
     DRAFT("Tạm thời"),
     PENDING("Đang chờ"),
     APPROVED("Đã chấp nhận"),
@@ -9,13 +9,14 @@ public enum QuotationStatus {
 
     private String description;
 
-    QuotationStatus(String s) {
+    Status(String s) {
         this.description = s;
     }
 
     public String getDescription() {
         return description;
     }
+
 
 
 }

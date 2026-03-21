@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.OrderStatus;
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.Status;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
@@ -80,8 +80,8 @@ public class OrderServiceImpl implements OrderService {
 
         // lấy ra list quotation detiail
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
-                .filter(qd -> QuotationStatus.APPROVED == qd.getQuotationDetailStatus()
-                        || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
+                .filter(qd -> Status.APPROVED == qd.getQuotationDetailStatus()
+                        || Status.PENDING == qd.getQuotationDetailStatus())
                 .toList();
 
         // lấy ra assettype
@@ -120,8 +120,8 @@ public class OrderServiceImpl implements OrderService {
 
         // ly toàn bộ quotation detail lên trước
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
-                .filter(qd -> QuotationStatus.APPROVED == qd.getQuotationDetailStatus()
-                        || QuotationStatus.PENDING == qd.getQuotationDetailStatus())
+                .filter(qd -> Status.APPROVED == qd.getQuotationDetailStatus()
+                        || Status.PENDING == qd.getQuotationDetailStatus())
                 .toList();
 
         // map dùng để lấy đơn giá, thuế... từ báo giá
@@ -180,10 +180,10 @@ public class OrderServiceImpl implements OrderService {
 
         // update quotation detail sang APPROVED
         detailCreateRequests
-                .forEach(line -> quotationDetailDAO.update(line.getQuotationDetailId(), QuotationStatus.APPROVED));
+                .forEach(line -> quotationDetailDAO.update(line.getQuotationDetailId(), Status.APPROVED));
 
         // update quotation sang APPROVED
-        quotationDAO.updateStatus(quotationId, QuotationStatus.APPROVED, null);
+        quotationDAO.updateStatus(quotationId, Status.APPROVED, null);
 
         if(checkQuantityOfPO(quotation.getPurchaseId())) purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
         return orderId;

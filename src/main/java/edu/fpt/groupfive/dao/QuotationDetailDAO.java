@@ -1,7 +1,6 @@
 package edu.fpt.groupfive.dao;
 
-import edu.fpt.groupfive.common.QuotationStatus;
-import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
+import edu.fpt.groupfive.common.Status;
 import edu.fpt.groupfive.model.QuotationDetail;
 
 import java.sql.Connection;
@@ -18,6 +17,6 @@ public interface QuotationDetailDAO {
 
     void deleteByQuotationId(Integer quotationId, Connection connection);
 
-    void update(Integer quotationId, QuotationStatus quotationStatus);
+    void update(Integer quotationId, Status status);
 
 }

@@ -1,16 +1,14 @@
 package edu.fpt.groupfive.controller.quotation;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.Status;
 import edu.fpt.groupfive.dto.request.*;
 import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
-import edu.fpt.groupfive.dto.response.QuotationSummaryResponse;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.QuotationService;
-import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
@@ -76,7 +74,7 @@ public class QuotationController {
                         .map(qr -> {
                             qr.setQuotationDetails(
                                     qr.getQuotationDetails().stream()
-                                            .filter(qd -> qd.getStatus() != QuotationStatus.REJECTED)
+                                            .filter(qd -> qd.getStatus() != Status.REJECTED)
                                             .toList()
                             );
                             return qr;
@@ -282,7 +280,7 @@ public class QuotationController {
     // filter
     private void prepareQuotationFilter(Model model) {
         prepareQuotationMenu(model);
-        model.addAttribute("statuses", QuotationStatus.values());
+        model.addAttribute("statuses", Status.values());
         model.addAttribute("suppliers", supplierService.getAllSupplier());
     }
 
@@ -290,7 +288,7 @@ public class QuotationController {
     private void prepareQuotationSearchModel(Model model) {
         prepareQuotationMenu(model);
         model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", QuotationStatus.values());
+        model.addAttribute("status", Status.values());
     }
 
     // thêm mới 1 dòng quotaton detail

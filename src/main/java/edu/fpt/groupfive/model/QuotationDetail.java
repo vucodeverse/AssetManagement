@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.model;
 
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.Status;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,5 +20,5 @@ public class QuotationDetail extends AbstractEntity<Integer>{
     private Integer purchaseDetailId;
     private String rejectedReason;
     private String specificationRequirement;
-    private QuotationStatus quotationDetailStatus;
+    private Status quotationDetailStatus;
 }

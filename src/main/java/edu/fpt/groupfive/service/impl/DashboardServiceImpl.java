@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.service.impl;
 
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.Status;
 import edu.fpt.groupfive.common.Request;
 import edu.fpt.groupfive.dao.OrderDAO;
 import edu.fpt.groupfive.dao.PurchaseDAO;
@@ -12,12 +12,10 @@ import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.dao.SupplierDAO;
 import edu.fpt.groupfive.model.Supplier;
 import edu.fpt.groupfive.service.ISupplierService;
-import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +43,7 @@ public class DashboardServiceImpl implements DashboardService {
                 BigDecimal totalAmount = (BigDecimal)  row[2];
                 return DashboardDTO.builder()
                                 .recentPRs(fetchRecentPRs())
-                                .recentQuotations(fetchRecentQuotations(QuotationStatus.PENDING))
+                                .recentQuotations(fetchRecentQuotations(Status.PENDING))
                         .totalPrPending(prPending)
                         .totalQuotationPending(qtPending)
                         .totalPrTotalInYear(totalAmount)
@@ -66,9 +64,9 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         // lấy ra toàn bộ quotation
-        private List<QuotationResponse> fetchRecentQuotations(QuotationStatus  status) {
+        private List<QuotationResponse> fetchRecentQuotations(Status status) {
                 return quotationDAO.findAll().stream()
-                                .filter(q -> status.equals(q.getQuotationStatus()))
+                                .filter(q -> status.equals(q.getStatus()))
                                 .map(q -> {
                                         String supplierName = supplierDAO.findById(q.getSupplierId())
                                                         .map(Supplier::getSupplierName)
@@ -76,7 +74,7 @@ public class DashboardServiceImpl implements DashboardService {
                                         return QuotationResponse.builder()
                                                         .quotationId(q.getId())
                                                         .purchaseId(q.getPurchaseId())
-                                                        .quotationStatus(q.getQuotationStatus())
+                                                        .status(q.getStatus())
                                                         .totalAmount(q.getTotalAmount())
                                                         .createdAt(q.getCreatedAt())
                                                         .supplierName(supplierName)
@@ -96,7 +94,7 @@ public class DashboardServiceImpl implements DashboardService {
                                 .approvedPRs(purchaseDAO.findAll().stream().filter(p -> Request.APPROVED.equals(p.getStatus()))
                                                 .map(purchaseMapper::toPurchaseResponse)
                                                 .toList())
-                                .recentQuotations(fetchRecentQuotations(QuotationStatus.DRAFT))
+                                .recentQuotations(fetchRecentQuotations(Status.DRAFT))
                                 .activeOrders(orderDAO.findRecent().stream()
                                                 .map(o ->{
                                                     PurchaseOrderResponse or = orderMapper.toPurchaseOrderResponse(o);
