@@ -68,6 +68,9 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
         if(authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DEPARTMENT_MANAGER"))) {
             redirectUrl += "/department/allocation-request/list";
         }
+        if(authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
+            redirectUrl += "/manager/dashboard";
+        }
 
         response.sendRedirect(redirectUrl);
     }

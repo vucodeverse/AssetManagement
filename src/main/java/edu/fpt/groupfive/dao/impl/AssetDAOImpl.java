@@ -38,7 +38,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
             ps.setString(3, asset.getCurrentStatus().name());

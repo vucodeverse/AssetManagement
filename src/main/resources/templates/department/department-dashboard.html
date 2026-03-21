@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/main-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bảng điều khiển Trưởng phòng - ProcureOS</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/staff/staff-dashboard.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <div class="staff-dashboard-wrapper">
+            <!-- Header section -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>BẢNG ĐIỀU KHIỂN TRƯỞNG PHÒNG</h1>
+                    <p>Chào mừng bạn quay trở lại. Hãy quản lý các yêu cầu của phòng ban bạn.</p>
+                </div>
+                <div class="top-actions">
+                    <i class="far fa-bell icon-btn header-icon-btn"></i>
+                    <i class="fas fa-cog icon-btn header-icon-btn"></i>
+                </div>
+            </header>
+
+            <div class="top-section-grid">
+                <!-- Placeholder for requests or overview if needed -->
+                <section class="dash-card">
+                    <div class="card-header">
+                        <h2>Thông tin nhanh</h2>
+                    </div>
+                    <div class="p-4">
+                        <p>Đây là khu vực hiển thị các thông báo hoặc chỉ số nhanh của phòng ban.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </th:block>
+
+    <th:block layout:fragment="extra-js">
+    </th:block>
+</body>
+
+</html>
