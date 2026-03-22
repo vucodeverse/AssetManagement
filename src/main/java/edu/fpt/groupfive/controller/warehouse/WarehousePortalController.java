@@ -38,7 +38,8 @@ public class WarehousePortalController {
                 .pendingInboundReturn(5)
                 .pendingOutboundAllocation(2)
                 .capacityHeatmap(whZoneService.getAllZones())
-                .recentActivities(whTransactionService.getAllTransactions(new TransactionFilterRequestDTO()).stream().limit(5).collect(Collectors.toList()))
+                .recentActivities(whTransactionService.getAllTransactions(new TransactionFilterRequestDTO()).stream()
+                        .limit(5).toList())
                 .build();
 
         model.addAttribute("dashboard", dashboard);
