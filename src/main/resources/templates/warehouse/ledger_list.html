@@ -24,18 +24,18 @@
                 <form th:action="@{/wh/ledger}" method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                     <div class="form-field">
                         <label class="form-label">Từ ngày</label>
-                        <input type="date" name="fromDate" class="form-input">
+                        <input type="date" name="fromDate" class="form-input" th:value="${filter.fromDate}">
                     </div>
                     <div class="form-field">
                         <label class="form-label">Đến ngày</label>
-                        <input type="date" name="toDate" class="form-input">
+                        <input type="date" name="toDate" class="form-input" th:value="${filter.toDate}">
                     </div>
                     <div class="form-field">
                         <label class="form-label">Loại giao dịch</label>
                         <select name="transactionType" class="form-input">
-                            <option value="">Tất cả</option>
-                            <option value="INBOUND">Nhập kho (Inbound)</option>
-                            <option value="OUTBOUND">Xuất kho (Outbound)</option>
+                            <option value="" th:selected="${filter.transactionType == null or filter.transactionType == ''}">Tất cả</option>
+                            <option value="INBOUND" th:selected="${filter.transactionType == 'INBOUND'}">Nhập kho (Inbound)</option>
+                            <option value="OUTBOUND" th:selected="${filter.transactionType == 'OUTBOUND'}">Xuất kho (Outbound)</option>
                         </select>
                     </div>
                     <div style="display: flex; align-items: flex-end;">

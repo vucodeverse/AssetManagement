@@ -3,7 +3,6 @@ package edu.fpt.groupfive.controller.warehouse;
 import edu.fpt.groupfive.dto.request.warehouse.TransactionFilterRequestDTO;
 import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.DashboardResponseDTO;
-import edu.fpt.groupfive.dto.response.warehouse.LedgerRecordResponseDTO;
 import edu.fpt.groupfive.service.warehouse.WhTransactionService;
 import edu.fpt.groupfive.service.warehouse.WhZoneService;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
@@ -41,7 +38,7 @@ public class WarehousePortalController {
                 .pendingInboundReturn(5)
                 .pendingOutboundAllocation(2)
                 .capacityHeatmap(whZoneService.getAllZones())
-                .recentActivities(whTransactionService.getAllTransactions().stream().limit(5).collect(Collectors.toList()))
+                .recentActivities(whTransactionService.getAllTransactions(new TransactionFilterRequestDTO()).stream().limit(5).collect(Collectors.toList()))
                 .build();
 
         model.addAttribute("dashboard", dashboard);
@@ -74,7 +71,8 @@ public class WarehousePortalController {
     public String ledger(TransactionFilterRequestDTO filter, Model model) {
         model.addAttribute("activeMenu", "ledger");
         model.addAttribute("pageTitle", "Sổ cái Giao dịch - Warehouse");
-        model.addAttribute("transactions", whTransactionService.getAllTransactions());
+        model.addAttribute("transactions", whTransactionService.getAllTransactions(filter));
+        model.addAttribute("filter", filter);
         return "warehouse/ledger_list";
     }
 }

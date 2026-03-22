@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import edu.fpt.groupfive.dto.response.warehouse.LedgerRecordResponseDTO;
+import edu.fpt.groupfive.dto.request.warehouse.TransactionFilterRequestDTO;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -178,8 +179,8 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
     }
 
     @Override
-    public List<LedgerRecordResponseDTO> getAllTransactions() {
-        String sql = """
+    public List<LedgerRecordResponseDTO> getAllTransactions(TransactionFilterRequestDTO filter) {
+        StringBuilder sql = new StringBuilder("""
             SELECT 
                 t.transaction_id, 
                 t.transaction_type, 
@@ -199,31 +200,55 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
             JOIN users u ON t.executed_by = u.user_id
             LEFT JOIN map_po_transactions po ON t.transaction_id = po.transaction_id
             LEFT JOIN map_handover_transactions ho ON t.transaction_id = ho.transaction_id
-            ORDER BY t.executed_at DESC
-        """;
+            WHERE 1=1
+        """);
+
+        List<Object> params = new ArrayList<>();
+
+        if (filter != null) {
+            if (filter.getFromDate() != null) {
+                sql.append(" AND CAST(t.executed_at AS DATE) >= ?");
+                params.add(java.sql.Date.valueOf(filter.getFromDate()));
+            }
+            if (filter.getToDate() != null) {
+                sql.append(" AND CAST(t.executed_at AS DATE) <= ?");
+                params.add(java.sql.Date.valueOf(filter.getToDate()));
+            }
+            if (filter.getTransactionType() != null && !filter.getTransactionType().isBlank()) {
+                sql.append(" AND t.transaction_type = ?");
+                params.add(filter.getTransactionType());
+            }
+        }
+
+        sql.append(" ORDER BY t.executed_at DESC");
 
         List<LedgerRecordResponseDTO> result = new ArrayList<>();
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+             
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
 
-            while (rs.next()) {
-                LedgerRecordResponseDTO dto = LedgerRecordResponseDTO.builder()
-                        .transactionId(rs.getInt("transaction_id"))
-                        .transactionType(rs.getString("transaction_type"))
-                        .assetName(rs.getString("asset_name"))
-                        .zoneName(rs.getString("zone_name"))
-                        .executedBy(rs.getString("executed_by"))
-                        .executedAt(rs.getTimestamp("executed_at") != null 
-                                ? rs.getTimestamp("executed_at").toLocalDateTime() 
-                                : null)
-                        .referenceId(rs.getObject("reference_id") != null 
-                                ? rs.getInt("reference_id") 
-                                : null)
-                        .referenceType(rs.getString("reference_type"))
-                        .build();
-                result.add(dto);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    LedgerRecordResponseDTO dto = LedgerRecordResponseDTO.builder()
+                            .transactionId(rs.getInt("transaction_id"))
+                            .transactionType(rs.getString("transaction_type"))
+                            .assetName(rs.getString("asset_name"))
+                            .zoneName(rs.getString("zone_name"))
+                            .executedBy(rs.getString("executed_by"))
+                            .executedAt(rs.getTimestamp("executed_at") != null 
+                                    ? rs.getTimestamp("executed_at").toLocalDateTime() 
+                                    : null)
+                            .referenceId(rs.getObject("reference_id") != null 
+                                    ? rs.getInt("reference_id") 
+                                    : null)
+                            .referenceType(rs.getString("reference_type"))
+                            .build();
+                    result.add(dto);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Lỗi khi tải danh sách giao dịch kho: " + e.getMessage(), e);
