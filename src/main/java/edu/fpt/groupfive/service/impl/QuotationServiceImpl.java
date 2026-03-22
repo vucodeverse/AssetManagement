@@ -400,8 +400,13 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     private List<Quotation> author(List<Quotation> quotations){
+        List<PurchaseProcessStatus> excludedStatuses = List.of(
+                PurchaseProcessStatus.DRAFT,
+                PurchaseProcessStatus.DELETED
+        );
+
         if (!Role.PURCHASE_STAFF.name().equals(roleLogin.getRole()))
-            quotations = quotations.stream().filter(q -> !PurchaseProcessStatus.DRAFT.equals(q.getQuotationStatus()))
+            quotations = quotations.stream().filter(q -> !excludedStatuses.contains(q.getQuotationStatus()))
                     .toList();
 
 

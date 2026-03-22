@@ -28,7 +28,8 @@
                     <!-- Các hành động của Director -->
                     <th:block>
                         <div sec:authorize="hasAuthority('DIRECTOR')">
-                            <form th:action="@{/quotations/{id}/actions(id=${quotation.quotationId})}" method="post" style="display: inline-block;">
+                            <form th:action="@{/quotations/{id}/actions(id=${quotation.quotationId})}" method="post"
+                                style="display: inline-block;">
                                 <input type="hidden" name="action" value="r">
                                 <button type="submit" class="btn-outline-prem"
                                     th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}">
@@ -41,11 +42,20 @@
                                 DUYỆT & TẠO ĐƠN HÀNG
                             </a>
                         </div>
-                        <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                        <div sec:authorize="hasAuthority('PURCHASE_STAFF')" class="header-actions">
                             <a th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT'}"
                                 class="btn-solid-prem" th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
                                 CẬP NHẬT BÁO GIÁ
                             </a>
+                            <form
+                                th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT' and quotation.quotationStatus.name() == 'PENDING'}"
+                                th:action="@{/quotations/{id}/actions(id=${quotation.quotationId})}" method="post"
+                                id="deleteQuotationForm" style="display: inline-block;">
+                                <input type="hidden" name="action" value="d">
+                                <button type="button" class="btn-danger-outline" onclick="confirmDeleteQuotation()">
+                                    XÓA BÁO GIÁ
+                                </button>
+                            </form>
                         </div>
                     </th:block>
                 </div>
@@ -96,6 +106,7 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>MÃ YCCT</th>
                                     <th>LOẠI TÀI SẢN</th>
                                     <th>SỐ LƯỢNG</th>
                                     <th>ĐƠN GIÁ</th>
@@ -108,9 +119,11 @@
                             <tbody>
                                 <tr th:each="item, stat : ${quotation.quotationDetails}">
                                     <td class="td-id" th:text="${stat.count}">1</td>
+                                    <td class="td-id" th:text="'#DET-' + ${item.purchaseDetailId}">#DET-101</td>
                                     <td class="td-bold" th:text="${item.assetTypeName}">Loại tài sản</td>
                                     <td th:text="${#numbers.formatInteger(item.quantity, 2)}">01</td>
-                                    <td th:text="${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
+                                    <td
+                                        th:text="${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
                                         0 VNĐ</td>
                                     <td
                                         th:text="${item.taxRate != null ? #numbers.formatDecimal(item.taxRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
@@ -121,24 +134,24 @@
                                     <td th:text="${item.warrantyMonths + ' Tháng'}">12 Tháng</td>
                                     <td class="td-action">
                                         <!-- Director Actions for Pending Item in a Pending Quotation -->
-                                        <div sec:authorize="hasAuthority('DIRECTOR')" 
-                                             th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING' and item.status != null and item.status.name() == 'PENDING'}">
+                                        <div sec:authorize="hasAuthority('DIRECTOR')"
+                                            th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING' and item.status != null and item.status.name() == 'PENDING'}">
                                             <form method="post"
-                                                  th:action="@{/quotations/details/{id}/actions(id=${item.quotationDetailId})}"
-                                                  style="margin:0;">
-                                                <button type="submit" class="btn-bw btn-bw-approve"
-                                                        name="actions" value="a">DUYỆT</button>
-                                                <button type="submit" class="btn-bw btn-bw-reject"
-                                                        name="actions" value="r">TỪ CHỐI</button>
+                                                th:action="@{/quotations/details/{id}/actions(id=${item.quotationDetailId})}"
+                                                style="margin:0;">
+                                                <button type="submit" class="btn-bw btn-bw-approve" name="actions"
+                                                    value="a">DUYỆT</button>
+                                                <button type="submit" class="btn-bw btn-bw-reject" name="actions"
+                                                    value="r">TỪ CHỐI</button>
                                             </form>
                                         </div>
 
                                         <!-- Status Display for Non-Directors, Non-Pending Quotations, or Already Processed Items -->
-                                        <div th:if="${!#authorization.expression('hasAuthority(''DIRECTOR'')') or (quotation.quotationStatus != null and quotation.quotationStatus.name() != 'PENDING') or (item.status != null and item.status.name() != 'PENDING')}">
-                                            <span th:if="${item.status != null}"
-                                                  class="status-badge"
-                                                  th:classappend="'status-' + ${item.status.name()}"
-                                                  th:text="${item.status.description}">
+                                        <div
+                                            th:if="${!#authorization.expression('hasAuthority(''DIRECTOR'')') or (quotation.quotationStatus != null and quotation.quotationStatus.name() != 'PENDING') or (item.status != null and item.status.name() != 'PENDING')}">
+                                            <span th:if="${item.status != null}" class="status-badge"
+                                                th:classappend="'status-' + ${item.status.name()}"
+                                                th:text="${item.status.description}">
                                             </span>
                                         </div>
                                     </td>
@@ -152,28 +165,33 @@
                 <div class="footer-summary">
                     <div class="terms-box">
                         <label>GHI CHÚ BÁO GIÁ</label>
-                        <p th:text="${quotation.quotationNote != null ? quotation.quotationNote : 'Không có ghi chú'}"></p>
+                        <p th:text="${quotation.quotationNote != null ? quotation.quotationNote : 'Không có ghi chú'}">
+                        </p>
                     </div>
                     <div class="total-summary">
                         <div class="summary-line">
                             <span>Tạm tính</span>
                             <span
-                                th:text="${#numbers.formatDecimal(quotation.subtotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ</span>
+                                th:text="${#numbers.formatDecimal(quotation.subtotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0
+                                VNĐ</span>
                         </div>
                         <div class="summary-line">
                             <span>Tổng chiết khấu</span>
                             <span class="discount-val"
-                                th:text="'-' + ${#numbers.formatDecimal(quotation.totalDiscount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">-0 VNĐ</span>
+                                th:text="'-' + ${#numbers.formatDecimal(quotation.totalDiscount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">-0
+                                VNĐ</span>
                         </div>
                         <div class="summary-line">
                             <span>Thuế dự kiến</span>
                             <span
-                                th:text="${#numbers.formatDecimal(quotation.totalTax, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ</span>
+                                th:text="${#numbers.formatDecimal(quotation.totalTax, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0
+                                VNĐ</span>
                         </div>
                         <div class="grand-total-row">
                             <span>TỔNG CỘNG</span>
                             <span class="grand-total"
-                                th:text="${#numbers.formatDecimal(quotation.grandTotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ</span>
+                                th:text="${#numbers.formatDecimal(quotation.grandTotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0
+                                VNĐ</span>
                         </div>
                     </div>
                 </div>
