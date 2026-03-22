@@ -1,14 +1,19 @@
 package edu.fpt.groupfive.controller.warehouse;
 
+import edu.fpt.groupfive.common.Priority;
+import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
+import edu.fpt.groupfive.dto.response.warehouse.QCReportRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -17,47 +22,127 @@ import java.util.List;
 public class WarehouseOutboundController {
 
     private static final String SUCCESS_MSG = "successMessage";
+    private static final String ERROR_MSG = "errorMessage";
+    private static final String ACTIVE_MENU = "activeMenu";
+    private static final String OUTBOUND = "outbound";
+    private static final String PAGE_TITLE = "pageTitle";
+    private static final String PENDING = "PENDING";
+    private static final String DEPT_DAO_TAO = "Phòng Đào tạo";
+    private static final String REDIRECT_OUTBOUND = "redirect:/wh/outbound/";
+    private static final String AST_PRINTER = "Máy in HP";
+    private static final String AST_PHOTOCOPY = "Máy photocopy";
+    private static final String CODE_PRINTER = "AST-881";
+    private static final String CODE_PHOTOCOPY = "AST-882";
+    
+    // Mock State Management for Demo
+    private static final List<HandoverDetailResponseDTO.HandoverItemDTO> SELECTED_ASSETS = new ArrayList<>();
 
-    // =========================================================
-    //  ALLOCATION LIST  —  GET /wh/outbound
-    // =========================================================
+    // ALLOCATION LIST — GET /wh/outbound
     @GetMapping("")
     public String allocationListPage(Model model) {
-        model.addAttribute("activeMenu", "outbound");
-        model.addAttribute("pageTitle", "Xuất kho Cấp phát - Warehouse");
+        model.addAttribute(ACTIVE_MENU, OUTBOUND);
+        model.addAttribute(PAGE_TITLE, "Xuất kho Cấp phát - Warehouse");
         model.addAttribute("allocations", List.of(
-            HandoverResponseDTO.builder().handoverId(601).toDepartmentName("Phòng Đào tạo").createdAt(LocalDateTime.now().minusHours(2)).status("PENDING").build(),
-            HandoverResponseDTO.builder().handoverId(602).toDepartmentName("Phòng Tuyển sinh").createdAt(LocalDateTime.now().minusDays(1)).status("PENDING").build()
+            HandoverResponseDTO.builder().handoverId(601).toDepartmentName(DEPT_DAO_TAO).createdAt(LocalDateTime.now().minusHours(2)).status(PENDING).build(),
+            HandoverResponseDTO.builder().handoverId(602).toDepartmentName("Phòng Tuyển sinh").createdAt(LocalDateTime.now().minusDays(1)).status(PENDING).build()
         ));
         return "warehouse/outbound/allocation_list";
     }
 
-    // =========================================================
-    //  ALLOCATION DETAIL  —  GET /wh/outbound/{handover_id}
-    // =========================================================
+    // ALLOCATION DETAIL — GET /wh/outbound/{handover_id}
     @GetMapping("/{handover_id}")
     public String allocationDetailPage(@PathVariable("handover_id") Integer handoverId, Model model) {
-        model.addAttribute("activeMenu", "outbound");
-        model.addAttribute("pageTitle", "Chi tiết Cấp phát #" + handoverId);
+        model.addAttribute(ACTIVE_MENU, OUTBOUND);
+        model.addAttribute(PAGE_TITLE, "Chi tiết Cấp phát #" + handoverId);
+
+        // Mock Allocation Request
+        AllocationRequestResponse allocationRequest = AllocationRequestResponse.builder()
+                .requestId(101).userName("Nguyễn Văn A").requestedDepartmentName(DEPT_DAO_TAO)
+                .requestReason("Cấp phát thiết bị cho giảng viên mới").priority(Priority.HIGH)
+                .neededByDate(LocalDate.now().plusDays(3)).status("APPROVED").build();
+
+        List<HandoverDetailResponseDTO.RequestedItemDTO> requestedItems = List.of(
+                HandoverDetailResponseDTO.RequestedItemDTO.builder().assetTypeName(AST_PRINTER).requestedQuantity(1).allocatedQuantity(
+                        (int) SELECTED_ASSETS.stream().filter(a -> a.getAssetTypeName().equals(AST_PRINTER)).count()
+                ).build(),
+                HandoverDetailResponseDTO.RequestedItemDTO.builder().assetTypeName(AST_PHOTOCOPY).requestedQuantity(1).allocatedQuantity(
+                        (int) SELECTED_ASSETS.stream().filter(a -> a.getAssetTypeName().equals(AST_PHOTOCOPY)).count()
+                ).build()
+        );
+
         model.addAttribute("handover", HandoverDetailResponseDTO.builder()
-            .handoverId(handoverId).toDepartmentName("Phòng Đào tạo").status("PENDING")
-            .items(List.of(
-                HandoverDetailResponseDTO.HandoverItemDTO.builder().assetId(20).assetCode("AST-881").assetTypeName("Máy in HP").isScanned(false).build(),
-                HandoverDetailResponseDTO.HandoverItemDTO.builder().assetId(21).assetCode("AST-882").assetTypeName("Máy photocopy").isScanned(false).build()
-            )).build());
+            .handoverId(handoverId).fromDepartmentName("Kho Tổng").toDepartmentName(DEPT_DAO_TAO)
+            .status(PENDING).allocationRequest(allocationRequest).requestedItems(requestedItems)
+            .items(new ArrayList<>(SELECTED_ASSETS)).build());
+            
         return "warehouse/outbound/allocation_detail";
     }
 
-    // =========================================================
-    //  PROCESS ALLOCATION SCAN  —  POST /wh/outbound/{handover_id}/scan
-    // =========================================================
+    // PROCESS ALLOCATION SCAN — POST /wh/outbound/{handover_id}/scan
     @PostMapping("/{handover_id}/scan")
     public String processAllocationScan(
             @PathVariable("handover_id") Integer handoverId,
             @RequestParam("assetCode") String assetCode,
             RedirectAttributes ra) {
 
-        ra.addFlashAttribute(SUCCESS_MSG, "Đã xuất tài sản " + assetCode + " (demo).");
-        return "redirect:/wh/outbound/" + handoverId;
+        // Mock finding asset
+        if (assetCode.equals(CODE_PRINTER) || assetCode.equals(CODE_PHOTOCOPY)) {
+            if (SELECTED_ASSETS.stream().anyMatch(a -> a.getAssetCode().equals(assetCode))) {
+                ra.addFlashAttribute(ERROR_MSG, "Tài sản này đã được thêm.");
+                return REDIRECT_OUTBOUND + handoverId;
+            }
+            return REDIRECT_OUTBOUND + handoverId + "/qc-report?assetCode=" + assetCode;
+        }
+
+        ra.addFlashAttribute(ERROR_MSG, "Mã tài sản không hợp lệ hoặc không có trong kho.");
+        return REDIRECT_OUTBOUND + handoverId;
+    }
+
+    // QC REPORT PAGE — GET /wh/outbound/{handover_id}/qc-report
+    @GetMapping("/{handover_id}/qc-report")
+    public String qcReportPage(
+            @PathVariable("handover_id") Integer handoverId,
+            @RequestParam("assetCode") String assetCode,
+            Model model) {
+        
+        model.addAttribute(ACTIVE_MENU, OUTBOUND);
+        model.addAttribute(PAGE_TITLE, "Báo cáo chất lượng " + assetCode);
+
+        String assetTypeName = assetCode.equals(CODE_PRINTER) ? AST_PRINTER : AST_PHOTOCOPY;
+        Integer assetId = assetCode.equals(CODE_PRINTER) ? 20 : 21;
+
+        QCReportRequestDTO.QCItemDTO item = QCReportRequestDTO.QCItemDTO.builder()
+                .assetId(assetId).assetCode(assetCode).assetTypeName(assetTypeName).condition("GOOD").build();
+
+        model.addAttribute("qcReport", QCReportRequestDTO.builder()
+                .handoverId(handoverId).items(List.of(item)).build());
+
+        return "warehouse/outbound/qc_report";
+    }
+
+    // SUBMIT QC REPORT — POST /wh/outbound/{handover_id}/submit-qc
+    @PostMapping("/{handover_id}/submit-qc")
+    public String submitQCReport(
+            @PathVariable("handover_id") Integer handoverId,
+            @ModelAttribute QCReportRequestDTO qcReport,
+            RedirectAttributes ra) {
+
+        QCReportRequestDTO.QCItemDTO item = qcReport.getItems().get(0);
+        
+        // Add to selected assets list
+        SELECTED_ASSETS.add(HandoverDetailResponseDTO.HandoverItemDTO.builder()
+                .assetId(item.getAssetId()).assetCode(item.getAssetCode())
+                .assetTypeName(item.getAssetTypeName()).isScanned(true).build());
+
+        ra.addFlashAttribute(SUCCESS_MSG, "Đã thêm tài sản " + item.getAssetCode() + " kèm báo cáo chất lượng.");
+        return REDIRECT_OUTBOUND + handoverId;
+    }
+
+    // FINALIZE OUTBOUND — POST /wh/outbound/{handover_id}/finalize
+    @PostMapping("/{handover_id}/finalize")
+    public String finalizeOutbound(@PathVariable("handover_id") Integer handoverId, RedirectAttributes ra) {
+        SELECTED_ASSETS.clear();
+        ra.addFlashAttribute(SUCCESS_MSG, "Đã hoàn tất xuất kho cấp phát.");
+        return "redirect:/wh/outbound";
     }
 }
