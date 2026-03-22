@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dao.warehouse.impl;
 
 import edu.fpt.groupfive.dao.warehouse.WhZoneDAO;
+import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
 import edu.fpt.groupfive.model.warehouse.WarehouseZone;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,5 +70,40 @@ public class WhZoneDAOImpl implements WhZoneDAO {
                      ") * ? " +
                      "WHERE asset_type_id = ?";
         jdbcTemplate.update(sql, unitVolume, assetTypeId);
+    }
+
+    @Override
+    @SuppressWarnings("null")
+    public Optional<AssetLocationResponseDTO> getAssetLocation(int assetId) {
+        String sql = "SELECT " +
+                     "   a.asset_id, " +
+                     "   a.asset_name, " +
+                     "   a.current_status, " +
+                     "   z.zone_name, " +
+                     "   (u.first_name + ' ' + u.last_name) AS placed_by, " +
+                     "   p.placed_at " +
+                     "FROM asset a " +
+                     "LEFT JOIN wh_asset_placement p ON a.asset_id = p.asset_id " +
+                     "LEFT JOIN wh_zones z ON p.zone_id = z.zone_id " +
+                     "LEFT JOIN users u ON p.placed_by = u.user_id " +
+                     "WHERE a.asset_id = ?";
+        
+        List<AssetLocationResponseDTO> results = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            AssetLocationResponseDTO dto = AssetLocationResponseDTO.builder()
+                .assetCode(String.valueOf(rs.getInt("asset_id")))
+                .assetName(rs.getString("asset_name"))
+                .status(rs.getString("current_status"))
+                .zoneName(rs.getString("zone_name"))
+                .placedBy(rs.getString("placed_by"))
+                .build();
+            
+            Timestamp ts = rs.getTimestamp("placed_at");
+            if (ts != null) {
+                dto.setPlacedAt(ts.toLocalDateTime());
+            }
+            return dto;
+        }, assetId);
+        
+        return results.stream().findFirst();
     }
 }

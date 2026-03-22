@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao.warehouse;
 
+import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
 import edu.fpt.groupfive.model.warehouse.WarehouseZone;
 
@@ -16,4 +17,6 @@ public interface WhZoneDAO {
     void createZone(WarehouseZone zone);
 
     void updateCurrentCapacity(int assetTypeId, int unitVolume);
+
+    Optional<AssetLocationResponseDTO> getAssetLocation(int assetId);
 }

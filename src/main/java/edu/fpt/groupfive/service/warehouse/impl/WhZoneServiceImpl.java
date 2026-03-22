@@ -2,6 +2,7 @@ package edu.fpt.groupfive.service.warehouse.impl;
 
 import edu.fpt.groupfive.dao.warehouse.WhZoneDAO;
 import edu.fpt.groupfive.dto.request.warehouse.ZoneCreateRequestDTO;
+import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
 import edu.fpt.groupfive.model.warehouse.WarehouseZone;
 import edu.fpt.groupfive.service.warehouse.WhZoneService;
@@ -45,5 +46,27 @@ public class WhZoneServiceImpl implements WhZoneService {
     @Override
     public void recalculateCapacityByAssetType(int assetTypeId, int unitVolume) {
         whZoneDAO.updateCurrentCapacity(assetTypeId, unitVolume);
+    }
+
+    @Override
+    public AssetLocationResponseDTO findAssetLocation(String assetCode) {
+        int assetId;
+        try {
+            assetId = Integer.parseInt(assetCode);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Mã tài sản không hợp lệ. Vui lòng nhập số.");
+        }
+
+        AssetLocationResponseDTO dto = whZoneDAO.getAssetLocation(assetId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài sản với mã " + assetCode));
+
+        if (dto.getZoneName() == null) {
+            throw new IllegalArgumentException("Tài sản không có trong kho");
+        }
+
+        // Tái sử dụng setAssetCode nếu UI cần hiển thị lại
+        dto.setAssetCode(assetCode);
+
+        return dto;
     }
 }

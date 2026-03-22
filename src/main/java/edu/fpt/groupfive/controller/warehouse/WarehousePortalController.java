@@ -55,14 +55,11 @@ public class WarehousePortalController {
         model.addAttribute("pageTitle", "Tra cứu Tài sản - Warehouse");
 
         if (assetCode != null && !assetCode.isBlank()) {
-            if ("AST-001".equalsIgnoreCase(assetCode)) {
-                model.addAttribute("asset", AssetLocationResponseDTO.builder()
-                        .assetCode("AST-001").assetName("Laptop Dell Precision 5550")
-                        .status("IN_WAREHOUSE").zoneName("Zone A - Rack 1")
-                        .placedBy("Nguyen Van A").placedAt(LocalDateTime.now().minusDays(10))
-                        .build());
-            } else {
-                model.addAttribute("errorMessage", "Không tìm thấy tài sản với mã " + assetCode);
+            try {
+                AssetLocationResponseDTO dto = whZoneService.findAssetLocation(assetCode);
+                model.addAttribute("asset", dto);
+            } catch (IllegalArgumentException e) {
+                model.addAttribute("errorMessage", e.getMessage());
             }
         }
         return "warehouse/locator";
