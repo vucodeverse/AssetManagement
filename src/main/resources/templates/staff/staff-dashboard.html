@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/main-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bảng điều khiển Nhân viên Mua sắm - ProcureOS</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/staff/staff-dashboard.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <div class="staff-dashboard-wrapper">
+            <!-- Header section -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>BẢNG ĐIỀU KHIỂN NHÂN VIÊN MUA SẮM</h1>
+                    <p>Quản lý báo giá và theo dõi đơn đặt hàng đang hoạt động.</p>
+                </div>
+                <div class="top-actions">
+                    <i class="far fa-bell icon-btn header-icon-btn"></i>
+                    <i class="fas fa-cog icon-btn header-icon-btn"></i>
+                </div>
+            </header>
+
+            <!-- Top Grid: PRs and Quotations -->
+            <div class="top-section-grid">
+                <!-- Left: PRs Awaiting Quotation -->
+                <section class="dash-card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <h2>Yêu cầu mua sắm đang chờ báo giá</h2>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="pr-table" id="staff-pr-table">
+                            <thead>
+                                <tr>
+                                    <th>CHI TIẾT YÊU CẦU</th>
+                                    <th>HẠN CHÓT</th>
+                                    <th>ĐỘ ƯU TIÊN</th>
+                                    <th>THAO TÁC</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pr : ${dashboard.approvedPRs}">
+                                    <td>
+                                        <div class="pr-info">
+                                            <strong th:text="'#PR-' + ${pr.getPurchaseId}">#PR-2024-001</strong>
+                                        </div>
+                                    </td>
+                                    <td th:data-order="${pr.neededByDate}">
+                                        <div class="deadline-cell"
+                                            th:text="${#temporals.format(pr.neededByDate, 'dd-MM-yyyy')}">24-10-2024
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge priority-pill" th:classappend="${pr.priority.toLowerCase()}"
+                                            th:text="${T(edu.fpt.groupfive.common.Priority).valueOf(pr.priority).description}">URGENT</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/quotations/create/{id}(id=${pr.getPurchaseId})}"
+                                            class="btn-create-quote">TẠO BÁO GIÁ</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Right: My Quotations -->
+                <section class="dash-card">
+                    <div class="card-header">
+                        <h2>Báo giá của tôi</h2>
+                        <a th:href="@{/purchases}" class="view-all">Xem tất cả</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="pr-table quo-table-body" id="staff-quo-table">
+                            <thead class="quo-table-header">
+                                <tr>
+                                    <th>Chi tiết báo giá</th>
+                                    <th class="text-right">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="quo : ${dashboard.recentQuotations}">
+                                    <td class="quo-cell">
+                                        <div class="quo-details quo-stack">
+                                            <a th:href="@{/quotations/{id}(id=${quo.quotationId})}" class="quo-id-link">
+                                                <strong th:text="'#QTN-' + ${quo.quotationId}">#QTN-9901</strong>
+                                            </a>
+                                            <span th:text="${quo.supplierName}" class="quo-supplier-name">Global Logistics</span>
+                                        </div>
+                                    </td>
+                                    <td class="quo-cell text-right">
+                                        <div class="status-label quo-status-pill" th:text="${quo.quotationStatus.description}"
+                                            th:classappend="${quo.quotationStatus.name().toLowerCase()}">
+                                            DRAFT</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Bottom: PO Monitoring -->
+            <section class="dash-card w-full">
+                <div class="card-header">
+                    <h2>Theo dõi đơn đặt hàng đang hoạt động</h2>
+                    <div class="nav-arrows">
+                        <!-- Navigation arrows as placeholder per image 2 -->
+                        <i class="fas fa-chevron-left nav-arrow"></i>
+                        <i class="fas fa-chevron-right nav-arrow"></i>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="po-full-table" id="staff-po-table">
+                        <thead>
+                            <tr>
+                                <th>MÃ ĐH</th>
+                                <th>NGÀY TẠO</th>
+                                <th>NHÀ CUNG CẤP</th>
+                                <th>TỔNG GIÁ TIỀN</th>
+                                <th>GHI CHÚ</th>
+                                <th>TRẠNG THÁI</th>
+                                <th>NGƯỜI DUYỆT</th>
+                                <th class="text-right">THAO TÁC NHANH</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="po : ${dashboard.activeOrders}">
+                                <td>
+                                    <div class="po-ref" th:text="'#PO-' + ${po.orderId}">#PO-24-0012</div>
+                                </td>
+                                <td th:text="${#temporals.format(po.createdAt, 'dd-MM-yyyy')}">10-10-2024</td>
+                                <td>Northern Energy</td>
+                                <td th:text="${#numbers.formatDecimal(po.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">1.200 VNĐ</td>
+                                <td th:text="${po.getOrderNote}">Standard order</td>
+                                <td>
+                                    <span class="status-badge po-status-badge" th:classappend="${po.getOrderStatus.toLowerCase()}"
+                                        th:text="${T(edu.fpt.groupfive.common.PurchaseProcessStatus).valueOf(po.getOrderStatus).description}">SHIPPED</span>
+                                </td>
+                                <td th:text="${po.approvedByName}">John Doe</td>
+                                <td>
+                                    <div class="quick-actions">
+                                        <a th:href="@{/purchase-orders/{id}(id=${po.orderId})}"><i
+                                                class="far fa-eye"></i></a>
+                                        <i class="fas fa-print"></i>
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </th:block>
+
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/staff/staff.js}"></script>
+    </th:block>
+</body>
+
+</html>

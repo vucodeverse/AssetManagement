@@ -1,0 +1,310 @@
+/* Quotation Form Redesign - Premium Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+    --bg-main: #f8fafc;
+    --panel-bg: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --border-soft: #f1f5f9;
+    --accent: #1e293b;
+    --shadow-premium: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.quotation-form-wrapper {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 32px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* Header Area */
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.form-header h1 {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
+    text-transform: uppercase;
+}
+
+/* Status Badges */
+.badge-prem {
+    font-size: 11px;
+    font-weight: 900;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-badge-draft {
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+}
+
+/* Card Styles */
+.form-section-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: var(--shadow-premium);
+    transition: all 0.2s ease;
+}
+
+.grid-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.5fr;
+    gap: 32px;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.field-group label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+}
+
+.input-prem {
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fdfdfd;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input-prem:focus {
+    border-color: var(--text-primary);
+    box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.05);
+}
+
+.input-read-only {
+    background-color: #f8fafc;
+    color: var(--text-muted);
+    cursor: not-allowed;
+    border-style: dashed;
+}
+
+/* Table Section */
+.items-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.items-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.items-header h2 {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.items-count {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.items-table th {
+    text-align: left;
+    padding: 16px 20px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-soft);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.items-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: middle;
+}
+
+.input-table {
+    width: 100%;
+    padding: 10px 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    outline: none;
+    transition: border 0.2s;
+    box-sizing: border-box;
+}
+
+.input-table:focus {
+    border-color: var(--text-primary);
+}
+
+.td-item-id input {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.price-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.currency-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-muted);
+}
+
+/* Actions in Table */
+.btn-icon-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border-soft);
+    background: #fff;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: var(--text-primary);
+    border-color: var(--text-primary);
+    color: #fff;
+}
+
+/* Footer Actions */
+.form-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.footer-info {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-form {
+    padding: 12px 24px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 2px solid var(--text-primary);
+    color: var(--text-primary);
+}
+
+.btn-cancel:hover {
+    background: #f1f5f9;
+}
+
+.btn-draft {
+    background: #fff;
+    border: 2px solid var(--text-primary);
+    color: var(--text-primary);
+}
+
+.btn-draft:hover {
+    background: #f1f5f9;
+}
+
+.btn-save {
+    background: var(--text-primary);
+    border: 2px solid var(--text-primary);
+    color: #fff;
+}
+
+.btn-save:hover {
+    background: #334155;
+    border-color: #334155;
+    transform: translateY(-1px);
+}
+
+.error-msg {
+    color: #ef4444;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+}

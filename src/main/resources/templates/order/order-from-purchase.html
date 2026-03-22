@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/main-layout}">
+
+<head>
+  <title>Đơn Đặt Hàng | PROCUREX</title>
+  <th:block layout:fragment="extra-css">
+    <link rel="stylesheet" th:href="@{/css/order/order-from-purchase.css}">
+  </th:block>
+</head>
+
+<body>
+  <div layout:fragment="content">
+    <div class="po-list-wrapper">
+
+      <div class="page-header">
+        <div>
+          <h1>Đơn Đặt Hàng</h1>
+        </div>
+      </div>
+
+      <!-- Thẻ bộ lọc -->
+      <form id="filterForm" th:action="@{/purchase-orders}" method="get">
+        <div class="filter-card">
+          <!-- Thanh tìm kiếm -->
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="keyword" name="keyword" th:value="${criteria.keyword}"
+              placeholder="Tìm kiếm theo mã ĐH hoặc tên Nhà cung cấp...">
+          </div>
+
+          <!-- Các bộ lọc -->
+          <div class="filter-bar">
+            <!-- Trạng thái -->
+            <select id="statusFilter" name="status" class="filter-select">
+              <option value="">Tất cả trạng thái</option>
+              <option value="PENDING" th:selected="${criteria.status == 'PENDING'}">Đang chờ</option>
+              <option value="COMPLETED" th:selected="${criteria.status == 'COMPLETED'}">Đã hoàn thành</option>
+              <option value="CANCELLED" th:selected="${criteria.status == 'CANCELLED'}">Đã bị hủy</option>
+            </select>
+
+            <!-- Date From -->
+            <input type="date" id="dateFrom" name="dateFrom" class="filter-select" th:value="${criteria.dateFrom}"
+              placeholder="Từ ngày">
+
+            <!-- Date To -->
+            <input type="date" id="dateTo" name="dateTo" class="filter-select" th:value="${criteria.dateTo}"
+              placeholder="Đến ngày">
+
+            <!-- Supplier -->
+            <select id="supplierFilter" name="supplierName" class="filter-select">
+              <option value="">Tất cả nhà cung cấp</option>
+              <option th:each="s : ${suppliers}" th:value="${s.supplierName}" th:text="${s.supplierName}"
+                th:selected="${criteria.supplierName == s.supplierName}">
+              </option>
+            </select>
+
+            <!-- Amount Range -->
+            <select id="amountRange" name="amountRange" class="filter-select">
+              <option value="">Tất cả số tiền</option>
+              <option value="0-5000" th:selected="${criteria.amountRange == '0-5000'}">0 VNĐ – 5.000 VNĐ</option>
+              <option value="5000-20000" th:selected="${criteria.amountRange == '5000-20000'}">5.000 VNĐ – 20.000 VNĐ</option>
+              <option value="20000+" th:selected="${criteria.amountRange == '20000+'}">20.000+ VNĐ</option>
+            </select>
+
+            <button type="button" id="btnClearFilter" class="btn-clear-filter">
+              <i class="fas fa-times"></i> Xóa bộ lọc
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <div class="table-container">
+        <table class="po-data-table" id="purchaseOrdersTable">
+          <thead>
+            <tr>
+              <th>MÃ ĐH</th>
+              <th>NGÀY TẠO</th>
+              <th>NHÀ CUNG CẤP</th>
+              <th>TỔNG SỐ TIỀN</th>
+              <th>GHI CHÚ</th>
+              <th>TRẠNG THÁI</th>
+              <th>MÃ YC</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="po : ${orders}" class="clickable-row"
+              th:onclick="|window.location.href='@{/purchase-orders/{id}(id=${po.orderId})}'|">
+              <td class="td-id" th:text="'PO-' + ${po.orderId}">PO-001</td>
+              <td th:text="${po.createdAt != null ? #temporals.format(po.createdAt, 'dd-MM-yyyy') : '—'}">01-01-2024
+              </td>
+              <td th:text="${po.supplierName}">Supplier</td>
+              <td class="td-amount" th:text="${#numbers.formatDecimal(po.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ
+              </td>
+              <td class="td-note" th:text="${po.getOrderNote}">Note</td>
+              <td>
+                <span class="status-tag" th:classappend="${po.getOrderStatus}"
+                  th:text="${T(edu.fpt.groupfive.common.PurchaseProcessStatus).valueOf(po.getOrderStatus).description}">STATUS</span>
+              </td>
+              <td class="td-id" th:text="${po.purchaseId != null && po.purchaseId != '' && po.purchaseId != 'null' ? 'PR-' + po.purchaseId : '---'}">PR-001</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <th:block layout:fragment="extra-js">
+    <script th:src="@{/js/order/order-from-purchase.js}"></script>
+  </th:block>
+</body>
+
+</html>

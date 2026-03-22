@@ -25,7 +25,7 @@ public class AssetDAOImpl implements AssetDAO {
     private final DatabaseConfig databaseConfig;
 
     @Override
-    public void insert(Asset asset) {
+    public int insert(Asset asset) {
 
         String sql = """
                     INSERT INTO asset
@@ -41,7 +41,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
             ps.setString(3, asset.getCurrentStatus().name());
@@ -56,6 +56,13 @@ public class AssetDAOImpl implements AssetDAO {
             setDate(ps, 8, asset.getAcquisitionDate());
 
             ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+            return 0;
 
         } catch (Exception e) {
             throw new RuntimeException("Lỗi không tạo được tài sản.", e);
@@ -79,7 +86,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
@@ -107,7 +114,7 @@ public class AssetDAOImpl implements AssetDAO {
         String sql = "DELETE FROM asset WHERE asset_id = ?";
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();
@@ -156,7 +163,6 @@ public class AssetDAOImpl implements AssetDAO {
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi kiểm tra asset hợp lệ", e);
         }
-
         return validIds;
     }
 
@@ -207,7 +213,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -228,73 +234,146 @@ public class AssetDAOImpl implements AssetDAO {
     public List<Asset> findAll() {
 
         String sql = """
-    SELECT a.asset_id,
-           a.asset_name,
-           a.asset_type_id,
-           a.purchase_order_detail_id,
-           a.current_status,
-           a.original_cost,
-           a.department_id,
-           a.acquisition_date,
-           a.in_service_date,
-           a.warranty_start_date,
-           a.warranty_end_date,
-           t.type_name AS asset_type_name
-    FROM asset a
-    LEFT JOIN asset_type t ON a.asset_type_id = t.asset_type_id
-""";
+                    SELECT a.*,
+                           t.type_name
+                    FROM asset a
+                    LEFT JOIN asset_type t
+                        ON a.asset_type_id = t.asset_type_id
+                """;
 
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 list.add(mapResultSet(rs));
             }
-        } catch (SQLException e) {
-            System.out.println("Lỗi khi lấy danh sách tài sản. SQL: {}\nMessage: {}" + sql + e.getMessage() + e);
+
+        } catch (Exception e) {
             throw new RuntimeException("Tìm danh sách tài sản thất bại", e);
         }
 
         return list;
     }
 
+    @Override
+    public List<Asset> findAllByDepartmentId(Integer departmentId) {
+        String sql = """
+                SELECT a.*, t.type_name
+                  FROM asset a
+                        LEFT JOIN asset_type t
+                                ON a.asset_type_id = t.asset_type_id
+                        LEFT JOIN return_request_detail d
+                                ON d.asset_id = a.asset_id
+                        LEFT JOIN return_request r
+                                ON r.request_id = d.request_id
+                        AND r.status = 'PENDING_AM'
+                WHERE a.department_id = ?
+                        AND r.request_id IS NULL
+                """;
+        List<Asset> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, departmentId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapResultSet(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    private Asset mapResultSet2(ResultSet rs) throws SQLException {
+
+        Asset asset = new Asset();
+
+        asset.setAssetId(rs.getInt("asset_id"));
+        asset.setAssetName(rs.getString("asset_name"));
+        asset.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
+        asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
+
+        asset.setOriginalCost(rs.getBigDecimal("original_cost"));
+        asset.setAssetTypeId(rs.getInt("asset_type_id"));
+        asset.setAssetTypeName(rs.getString("type_name"));
+        asset.setWarrantyStartDate(toLocalDate(rs.getDate("warranty_start_date")));
+        asset.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
+        asset.setAcquisitionDate(toLocalDate(rs.getDate("acquisition_date")));
+        asset.setNote(rs.getString("note"));
+
+        return asset;
+    }
+
+    @Override
+    public List<Asset> findByReturnRequestId(Integer requestId) {
+        String sql = """
+                SELECT a.*, t.type_name, d.note
+                FROM return_request_detail d
+                JOIN asset a
+                    ON a.asset_id = d.asset_id
+                LEFT JOIN asset_type t
+                    ON t.asset_type_id = a.asset_type_id
+                WHERE d.request_id = ?
+                """;
+
+        List<Asset> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, requestId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapResultSet2(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
 
 
     @Override
     public Optional<AssetDetailResponse> findDetailById(Integer id) {
 
         String sql = """
-                SELECT 
+                SELECT
                     a.*,
                     t.type_name,
                     d.department_name,
                     po.purchase_order_id,
-                    po.order_date,
+                    po.created_at,
                     s.supplier_name
                 FROM asset a
-                
+
                 LEFT JOIN asset_type t
                     ON a.asset_type_id = t.asset_type_id
-                
+
                 LEFT JOIN departments d
                     ON a.department_id = d.department_id
-                
+
                 LEFT JOIN purchase_order_details pod
                     ON a.purchase_order_detail_id = pod.purchase_order_detail_id
-                
+
                 LEFT JOIN purchase_orders po
                     ON pod.purchase_order_id = po.purchase_order_id
-                
+
                 LEFT JOIN supplier s
                     ON po.supplier_id = s.supplier_id
-                
+
                 WHERE a.asset_id = ?
                 """;
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -318,7 +397,7 @@ public class AssetDAOImpl implements AssetDAO {
 
 
                     dto.setPurchaseOrderId(rs.getInt("purchase_order_id"));
-                    dto.setOrderDate(toLocalDate(rs.getDate("order_date")));
+                    dto.setOrderDate(toLocalDate(rs.getDate("created_at")));
                     dto.setSupplierName(rs.getString("supplier_name"));
                     return Optional.of(dto);
 
@@ -333,20 +412,21 @@ public class AssetDAOImpl implements AssetDAO {
     }
 
     @Override
-    public List<Asset> searchAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate, String direction, int offset, int pageSize) {
+    public List<Asset> searchAssets(String keyword, AssetStatus status, LocalDate fromDate,
+            LocalDate toDate, String direction, int offset, int pageSize) {
 
         StringBuilder sql = new StringBuilder("""
-        SELECT a.*, t.type_name
-        FROM asset a
-        LEFT JOIN asset_type t
-            ON a.asset_type_id = t.asset_type_id
-        WHERE 1=1
-        """);
+                SELECT a.*, t.type_name
+                FROM asset a
+                LEFT JOIN asset_type t
+                    ON a.asset_type_id = t.asset_type_id
+                WHERE 1=1
+                """);
 
-        if(keyword!=null &&!keyword.isBlank()){
+        if (keyword != null && !keyword.isBlank()) {
             sql.append(" and a.asset_name like ? ");
         }
-        if(status!=null){
+        if (status != null) {
             sql.append(" and a.current_status = ? ");
         }
 
@@ -357,7 +437,6 @@ public class AssetDAOImpl implements AssetDAO {
         if (toDate != null) {
             sql.append(" AND a.acquisition_date <= ? ");
         }
-
 
         //sort
         if (direction != null && !direction.isBlank()) {
@@ -371,23 +450,21 @@ public class AssetDAOImpl implements AssetDAO {
             }
 
         } else {
-
             sql.append(" order by a.asset_id ");
-
         }
 
         sql.append(" offset ? rows fetch next ? rows only ");
-        List<Asset> assets= new ArrayList<>();
-        try(Connection conn = databaseConfig.getConnection();
-            PreparedStatement ps=conn.prepareStatement(sql.toString())){
+        List<Asset> assets = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
-            int index=1;
+            int index = 1;
 
-            if(keyword !=null && !keyword.isBlank()){
-                ps.setString(index++, "%" +keyword +"%");
+            if (keyword != null && !keyword.isBlank()) {
+                ps.setString(index++, "%" + keyword + "%");
             }
 
-            if(status!=null){
+            if (status != null) {
                 ps.setString(index++, status.name());
             }
 
@@ -402,9 +479,9 @@ public class AssetDAOImpl implements AssetDAO {
             ps.setInt(index++, offset);
             ps.setInt(index, pageSize);
 
-            ResultSet rs=ps.executeQuery();
-            while(rs.next()){
-                Asset asset= mapResultSet(rs);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Asset asset = mapResultSet(rs);
                 assets.add(asset);
 
             }
@@ -498,13 +575,13 @@ public class AssetDAOImpl implements AssetDAO {
     }
 
     @Override
-    public int countAssets(String keyword, AssetStatus status,  LocalDate fromDate, LocalDate toDate) {
+    public int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate) {
 
         StringBuilder sql = new StringBuilder("""
-        SELECT COUNT(*)
-        FROM asset a
-        WHERE 1=1
-        """);
+                SELECT COUNT(*)
+                FROM asset a
+                WHERE 1=1
+                """);
 
         if (keyword != null && !keyword.isBlank()) {
             sql.append(" AND a.asset_name LIKE ? ");
@@ -523,7 +600,7 @@ public class AssetDAOImpl implements AssetDAO {
         }
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 
@@ -556,6 +633,27 @@ public class AssetDAOImpl implements AssetDAO {
         return 0;
     }
 
+    @Override
+    public List<Asset> findExpiringWarranties(int days) {
+String sql ="select a.*, t.type_name from asset a\n" +
+        "left join asset_type t on a.asset_type_id=t.asset_type_id\n" +
+        "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date))\n" +
+        "order by a.warranty_end_date asc";
+
+
+        List<Asset> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, days);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSet(rs));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
     @Override
     public List<Asset> findByDepartmentId(Integer departmentId) {
 
@@ -591,43 +689,20 @@ public class AssetDAOImpl implements AssetDAO {
     }
 
     private Asset mapResultSet(ResultSet rs) throws SQLException {
+
         Asset asset = new Asset();
 
         asset.setAssetId(rs.getInt("asset_id"));
         asset.setAssetName(rs.getString("asset_name"));
-
-        int podId = rs.getInt("purchase_order_detail_id");
-        asset.setPurchaseOrderDetailId(rs.wasNull() ? null : podId);
-
-        String status = rs.getString("current_status");
-        if (status != null && !status.isBlank()) {
-            try {
-                asset.setCurrentStatus(AssetStatus.valueOf(status.trim().toUpperCase()));
-            } catch (IllegalArgumentException ex) {
-                asset.setCurrentStatus(null);
-            }
-        } else {
-            asset.setCurrentStatus(null);
-        }
+        asset.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
+        asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
 
         asset.setOriginalCost(rs.getBigDecimal("original_cost"));
-
-        int typeId = rs.getInt("asset_type_id");
-        asset.setAssetTypeId(rs.wasNull() ? null : typeId);
-
-        asset.setAssetTypeName(rs.getString("asset_type_name"));
-
-        Date wStart = rs.getDate("warranty_start_date");
-        asset.setWarrantyStartDate(wStart == null ? null : wStart.toLocalDate());
-
-        Date wEnd = rs.getDate("warranty_end_date");
-        asset.setWarrantyEndDate(wEnd == null ? null : wEnd.toLocalDate());
-
-        Date acq = rs.getDate("acquisition_date");
-        asset.setAcquisitionDate(acq == null ? null : acq.toLocalDate());
-
-        Date inService = rs.getDate("in_service_date");
-        asset.setInServiceDate(inService == null ? null : inService.toLocalDate());
+        asset.setAssetTypeId(rs.getInt("asset_type_id"));
+        asset.setAssetTypeName(rs.getString("type_name"));
+        asset.setWarrantyStartDate(toLocalDate(rs.getDate("warranty_start_date")));
+        asset.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
+        asset.setAcquisitionDate(toLocalDate(rs.getDate("acquisition_date")));
 
         return asset;
     }
@@ -653,12 +728,5 @@ public class AssetDAOImpl implements AssetDAO {
     private java.time.LocalDate toLocalDate(Date date) {
         return date != null ? date.toLocalDate() : null;
     }
-
-
-
-
-
-
-
 
 }

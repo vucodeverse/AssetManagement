@@ -25,5 +25,5 @@ public class AssetTypeResponse {
     private String specification;
     private String model;
     private Integer categoryId;
-    private String categoryName;
+    private String categoryName; // JOIN ra cho hieen ten
 }

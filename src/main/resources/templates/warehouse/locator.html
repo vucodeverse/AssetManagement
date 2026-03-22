@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-magnifying-glass-location" style="margin-right:8px;"></i>Tra cứu Vị trí</h1>
+            <p class="page-subtitle">Nhập hoặc quét mã tài sản để tìm vị trí vật lý trong kho</p>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="wh-panel" style="max-width: 600px; margin: 0 auto;">
+            <div style="padding: 2rem;">
+                <form th:action="@{/wh/locator}" method="get">
+                    <div class="form-field">
+                        <label class="form-label" for="assetCode">Mã tài sản (Quét mã vạch)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="assetCode" name="assetCode" 
+                                   class="form-input" placeholder="VD: AST-001" 
+                                   autofocus autocomplete="off" th:value="${param.assetCode}"/>
+                            <button type="submit" class="btn-primary">Tìm kiếm</button>
+                        </div>
+                    </div>
+                </form>
+
+                <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #e5e7eb;">
+
+                <!-- Results -->
+                <div th:if="${asset}" class="locator-result" style="background: #f8fafc; border-radius: 12px; padding: 1.5rem; border: 1px solid #e2e8f0;">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <i class="fa-solid fa-box" style="font-size: 3rem; color: #3b82f6;"></i>
+                        <h2 style="margin-top: 1rem;" th:text="${asset.assetName}">Tên tài sản</h2>
+                        <span class="badge badge-active" th:text="${asset.status}">IN_WAREHOUSE</span>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600;">Vị trí (Zone)</div>
+                            <div style="font-weight: 700; font-size: 1.25rem; color: #1e293b;" th:text="${asset.zoneName}">Zone A - Rack 1</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600;">Mã tài sản</div>
+                            <div style="font-weight: 700; font-size: 1.25rem; color: #1e293b;" th:text="${asset.assetCode}">AST-001</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600;">Người xếp kho</div>
+                            <div style="font-size: 1rem; color: #334155;" th:text="${asset.placedBy}">Admin</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600;">Thời gian</div>
+                            <div style="font-size: 1rem; color: #334155;" th:text="${#temporals.format(asset.placedAt, 'HH:mm dd/MM/yyyy')}">10:00 20/03/2026</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${errorMessage}" class="flash-message error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+                
+                <div th:if="${param.assetCode != null && asset == null && errorMessage == null}" class="empty-state">
+                    <i class="fa-solid fa-box-open"></i>
+                    <p>Không tìm thấy dữ liệu vị trí cho mã này.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

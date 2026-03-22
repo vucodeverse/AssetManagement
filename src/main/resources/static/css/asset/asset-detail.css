@@ -1,0 +1,108 @@
+/* PAGE */
+
+.asset-page{
+    max-width:1000px;
+}
+
+/* HEADER */
+
+.asset-header{
+    margin-bottom:20px;
+}
+
+.asset-title{
+    font-size:26px;
+    font-weight:600;
+}
+
+/* FORM CONTAINER */
+
+.asset-form{
+    background:white;
+    padding:24px;
+    border-radius:8px;
+    border:1px solid #e5e7eb;
+}
+
+/* SECTION */
+
+.form-section{
+    margin-bottom:30px;
+}
+
+.form-section-title{
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:15px;
+}
+
+/* GRID */
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px;
+}
+
+/* GROUP */
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.form-group label{
+    font-weight:500;
+    margin-bottom:6px;
+}
+
+/* VIEW FIELD */
+
+.form-control-view{
+    border:1px solid #e5e7eb;
+    border-radius:6px;
+    padding:10px 12px;
+    background:#f9fafb;
+    min-height:40px;
+    display:flex;
+    align-items:center;
+}
+
+/* PURCHASE ORDER BLOCK */
+
+.purchase-group label{
+    margin-top:10px;
+}
+
+/* BUTTON */
+
+.form-actions{
+    margin-top:25px;
+    display:flex;
+    gap:10px;
+}
+
+.btn-primary{
+    background:#111827;
+    color:white;
+    padding:10px 18px;
+    border-radius:6px;
+    text-decoration:none;
+    font-weight:500;
+}
+
+.btn-primary:hover{
+    background:#000;
+}
+
+.btn-secondary{
+    background:#e5e7eb;
+    color:black;
+    padding:10px 18px;
+    border-radius:6px;
+    text-decoration:none;
+}
+
+.btn-secondary:hover{
+    background:#d1d5db;
+}

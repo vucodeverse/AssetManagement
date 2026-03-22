@@ -17,7 +17,6 @@ public class Asset {
 
     private Integer assetId;
     private String assetName;
-    private String serialNumber;
     private Integer assetTypeId;
     private  Integer purchaseOrderDetailId;
     private AssetStatus currentStatus;
@@ -30,5 +29,7 @@ public class Asset {
 
     private String assetTypeName;
 
+    // Thêm cho truy vấn trả tài sản
+    private String note;
 
 }

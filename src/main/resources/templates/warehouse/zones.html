@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-boxes-stacked" style="margin-right:8px;"></i>Quản lý Zone Lưu trữ</h1>
+            <p class="page-subtitle">Cấu hình không gian vật lý của kho, định hình đầu vào cho thuật toán xếp kho tự động</p>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+
+        <!-- Flash messages -->
+        <div th:if="${successMessage}" class="flash-message success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="flash-message error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- Stat cards summary -->
+        <div class="stat-cards">
+            <div class="stat-card">
+                <div class="stat-card-icon green"><i class="fa-solid fa-check"></i></div>
+                <div>
+                    <div class="stat-card-value" th:text="${countEmpty}">0</div>
+                    <div class="stat-card-label">Zone Trống</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon yellow"><i class="fa-solid fa-box"></i></div>
+                <div>
+                    <div class="stat-card-value" th:text="${countInUse}">0</div>
+                    <div class="stat-card-label">Đang Sử dụng</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div>
+                    <div class="stat-card-value" th:text="${countFull}">0</div>
+                    <div class="stat-card-label">Zone Đầy</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main layout: Table + Form -->
+        <div class="wh-layout">
+
+            <!-- LEFT: Zone table -->
+            <div>
+                <div class="wh-panel">
+                    <div class="wh-panel-header">
+                        <span class="wh-panel-title"><i class="fa-solid fa-list"></i> Danh sách Zone</span>
+                        <span class="wh-panel-count" th:text="${zones.size()} + ' zone'"></span>
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>Zone</th>
+                            <th>Trạng thái</th>
+                            <th>Loại tài sản đang chứa</th>
+                            <th>Sức chứa</th>
+                            <th class="action-cell">Chi tiết</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="zone : ${zones}">
+                            <!-- Zone name + status active/inactive -->
+                            <td>
+                                <div class="zone-name" th:text="${zone.zoneName}">A-01</div>
+                                <span th:if="${zone.status == 'ACTIVE'}" class="badge badge-active" style="margin-top:4px; display:inline-flex;">
+                                    <i class="fa-solid fa-circle" style="font-size:6px;"></i> Active
+                                </span>
+                                <span th:if="${zone.status != 'ACTIVE'}" class="badge badge-inactive" style="margin-top:4px; display:inline-flex;">
+                                    <i class="fa-solid fa-circle" style="font-size:6px;"></i> Inactive
+                                </span>
+                            </td>
+
+                            <!-- Status flag: EMPTY / IN_USE / FULL -->
+                            <td>
+                                <span th:switch="${zone.statusFlag}">
+                                    <span th:case="'EMPTY'"   class="badge badge-empty"><i class="fa-regular fa-circle"></i> Trống</span>
+                                    <span th:case="'IN_USE'"  class="badge badge-in-use"><i class="fa-solid fa-circle-half-stroke"></i> Đang dùng</span>
+                                    <span th:case="'FULL'"    class="badge badge-full"><i class="fa-solid fa-circle"></i> Đầy</span>
+                                </span>
+                            </td>
+
+                            <!-- Asset type -->
+                            <td>
+                                <span th:if="${zone.assetTypeName != null}" class="asset-type-chip">
+                                    <i class="fa-solid fa-tag"></i>
+                                    <span th:text="${zone.assetTypeName}"></span>
+                                </span>
+                                <span th:if="${zone.assetTypeName == null}" class="no-asset">— Chưa có hàng —</span>
+                            </td>
+
+                            <!-- Capacity bar -->
+                            <td class="capacity-cell">
+                                <div class="capacity-bar-wrap"
+                                     th:with="pct=${zone.fillPercentage},
+                                               fillClass=${pct == 0 ? 'fill-empty' : (pct < 50 ? 'fill-low' : (pct < 85 ? 'fill-mid' : 'fill-high'))}">
+                                    <div class="capacity-bar" th:classappend="${fillClass}">
+                                        <div class="capacity-bar-fill" th:style="'width:' + ${pct} + '%'"></div>
+                                    </div>
+                                    <span class="capacity-pct" th:text="${pct} + '%'"></span>
+                                </div>
+                                <div style="font-size:0.7rem; color:#9ca3af; margin-top:2px;"
+                                     th:text="${zone.currentCapacity} + ' / ' + ${zone.maxCapacity} + ' đv'"></div>
+                            </td>
+
+                            <!-- Action: Xem chi tiết -->
+                            <td class="action-cell">
+                                <a th:href="@{'/wh/config/zones/' + ${zone.zoneId}}"
+                                   class="btn-sm primary">
+                                    <i class="fa-solid fa-eye"></i> Xem
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Empty state -->
+                        <tr th:if="${zones == null or zones.isEmpty()}">
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-box-open"></i>
+                                    <p>Chưa có zone nào. Hãy tạo zone đầu tiên!</p>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RIGHT: Create zone form -->
+            <div>
+                <div class="form-panel">
+                    <h3 class="form-panel-title">
+                        <i class="fa-solid fa-plus" style="margin-right:6px;"></i>Tạo Zone Mới
+                    </h3>
+
+                    <form th:action="@{/wh/config/zones/create}" method="post"
+                          th:object="${zoneForm}">
+
+                        <div class="form-field">
+                            <label class="form-label" for="zoneName">Tên Zone</label>
+                            <input type="text" id="zoneName" th:field="*{zoneName}"
+                                   class="form-input"
+                                   placeholder="VD: A-01, B-02, Khu C..."
+                                   autocomplete="off" required/>
+                            <div class="form-error" th:errors="*{zoneName}"></div>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label" for="maxCapacity">Sức chứa Tối đa (Đơn vị)</label>
+                            <input type="number" id="maxCapacity" th:field="*{maxCapacity}"
+                                   class="form-input"
+                                   placeholder="VD: 20"
+                                   min="1" required/>
+                            <p class="form-hint">
+                                <i class="fa-solid fa-circle-info" style="margin-right:3px;"></i>
+                                Mỗi tài sản chiếm dụng một số "đơn vị" tùy theo loại (cấu hình ở trang Định mức).
+                            </p>
+                            <div class="form-error" th:errors="*{maxCapacity}"></div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">
+                                <i class="fa-solid fa-plus"></i> Tạo Zone
+                            </button>
+                            <a th:href="@{/wh/config/zones}" class="btn-secondary">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Info box -->
+                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:1rem 1.25rem; margin-top:1rem; font-size:0.8rem; color:#1e40af;">
+                    <p style="margin:0 0 6px; font-weight:700;"><i class="fa-solid fa-circle-info"></i> Lưu ý nghiệp vụ</p>
+                    <ul style="margin:0; padding-left:1.2rem; line-height:1.7;">
+                        <li><strong>Reset Zone:</strong> Chỉ thực hiện được khi Zone đã <em>trống hoàn toàn</em> (không còn tài sản nào).</li>
+                        <li><strong>Cập nhật Sức chứa:</strong> Giá trị mới không được nhỏ hơn lượng đang chiếm dụng.</li>
+                        <li>Zone mới tạo sẽ ở trạng thái <span class="badge badge-active" style="vertical-align:middle;">Active</span> và <span class="badge badge-empty" style="vertical-align:middle;">Trống</span>.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div><!-- /.wh-layout -->
+    </div><!-- /.content-wrapper -->
+
+</th:block>
+</body>
+</html>

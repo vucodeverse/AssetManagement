@@ -1,12 +1,26 @@
 package edu.fpt.groupfive.mapper;
 
-import edu.fpt.groupfive.dto.request.UseCreateRequest;
-import edu.fpt.groupfive.model.User;
+import edu.fpt.groupfive.dto.response.UserResponse;
+import edu.fpt.groupfive.dto.request.*;
+import edu.fpt.groupfive.model.Users;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+
+import java.util.List;
+
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
-    User toUser(UseCreateRequest request);
+    Users toUser(UserCreateRequest request);
+
+    @Mapping(target = "passwordHash", ignore = true)
+    void updateUserFromRequest(UserUpdateRequest request, @MappingTarget Users user);
+
+    UserResponse toResponse(Users user);
+
+    List<UserResponse> toResponseList(List<Users> users);
 }
 
 

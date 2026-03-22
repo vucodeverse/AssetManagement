@@ -1,0 +1,8 @@
+-triển khai đúng clean architechture, đảm bảo solid và các tầng controller, service, dao, dto, model.
+-controller chỉ làm việc với dto
+-service nhận vào dto request, trả về response dto
+-dao sử dụng jjdbc template
+-commit chuẩn git convention thật ngắn gọn
+-view thymeleaf sử dụng fragment và layout tối ưu
+-giao diện chỉ sử dụng HTML và CSS thuần, hạn chế tối đa JS
+-Không sử dụng REST API, chỉ build web mvc web form

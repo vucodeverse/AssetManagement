@@ -9,11 +9,11 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 @ComponentScan(basePackages = "edu.fpt.groupfive")
 @PropertySource("classpath:application.properties")
 @PropertySource("classpath:message-login.properties")
+@PropertySource("classpath:messages.properties")
 public class RootConfig {
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
-        PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer =
-                new PropertySourcesPlaceholderConfigurer();
+        PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
 
         // set file properties sang UTF8
         propertySourcesPlaceholderConfigurer.setFileEncoding("UTF-8");

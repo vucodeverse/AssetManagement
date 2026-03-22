@@ -30,8 +30,8 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
                 "from asset_type a join category c on a.category_id = c.category_id " +
                 "where a.status='ACTIVE'";
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery();) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();) {
             while (rs.next()) {
                 AssetType assetType = new AssetType();
                 assetType.setTypeId(rs.getInt("asset_type_id"));
@@ -65,7 +65,7 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
     public AssetType findById(Integer id) {
         String sql = "select * from asset_type where asset_type_id = ?";
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -112,7 +112,7 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
                 " category_id" +
                 ") values (?,?,?,?,?,?,?,?,?)";
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);) {
+                PreparedStatement ps = conn.prepareStatement(sql);) {
             ps.setString(1, assetType.getTypeName());
             ps.setString(2, assetType.getDescription());
             ps.setString(3, assetType.getTypeClass().name());
@@ -143,7 +143,7 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
                 "    category_id=?\n" +
                 "where asset_type_id = ?";
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, assetType.getTypeName());
             ps.setString(2, assetType.getDescription());
             ps.setString(3, assetType.getTypeClass().name());
@@ -167,7 +167,7 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
                 " set status = 'INACTIVE'" +
                 " where asset_type_id = ? and status ='ACTIVE'";
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, typeId);
             ps.executeUpdate();
         } catch (Exception e) {
@@ -179,7 +179,7 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
     public boolean existAssetUsingType(Integer typeId) {
         String sql = "select count(*) from asset where asset_type_id = ? ";
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, typeId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -196,7 +196,7 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
     public boolean existByTypeName(String typeName) {
         String sql = "select count(*) from asset_type where lower(type_name) = lower(?) and status = 'ACTIVE'";
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, typeName);
             ResultSet rs = ps.executeQuery();

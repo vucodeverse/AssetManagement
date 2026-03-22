@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <aside class="sidebar" th:fragment="sidebar(activeMenu, activeSub)">
+        <div class="sidebar-logo" th:onclick="|window.location.href='@{/director/dashboard}'|" style="cursor: pointer;">
+            <i class="fas fa-cube"></i> <span>Quản Lí</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- PHẦN QUẢN TRỊ -->
+            <div class="nav-group">
+                <div class="nav-group-title">Hệ thống</div>
+                <a class="nav-item" th:href="@{/director/dashboard}"
+                    th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
+                    <i class="fas fa-th-large"></i> TRANG CHỦ
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Yêu Cầu</div>
+                <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                    <i class="fas fa-shield-check"></i> PHÊ DUYỆT
+                </a>
+
+                <div class="sub-nav" th:if="${activeMenu}=='approval'">
+                    <a class="sub-item" th:href="@{/purchases}" th:classappend="${activeSub}=='pr' ? ' active' : ''">
+                        Yêu Cầu Mua Sắm
+                    </a>
+
+                </div>
+
+                <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                    <i class="fas fa-file-invoice-dollar"></i> ĐƠN ĐẶT HÀNG
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" th:text="${userInitials} ?: 'DR'">DR</div>
+            <div class="user-info">
+                <span class="user-name" th:text="${userName} ?: 'Giám Đốc'">Giám Đốc</span>
+                <span class="user-role" th:text="${userRole} ?: 'Quản Lý'">Quản Lý</span>
+            </div>
+            <div class="user-actions">
+                <a th:href="@{/logout}" class="action-btn logout-btn" title="Đăng xuất">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+</body>
+
+</html>

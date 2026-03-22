@@ -1,9 +1,7 @@
 package edu.fpt.groupfive.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 
 import java.time.LocalDateTime;
 @NoArgsConstructor
@@ -14,4 +12,11 @@ public class DepartmentResponse {
     private Integer departmentId;
     private String departmentName;
 
+    private String description;
+
+    private LocalDateTime createdDate;
+
+    private Integer managerId;
+
+    private String managerName;
 }

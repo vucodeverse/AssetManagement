@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface AssetDAO {
 
-    void insert(Asset asset);
+    int insert(Asset asset);
 
     void update(Asset asset);
 
@@ -25,6 +25,9 @@ public interface AssetDAO {
 
     List<Asset> findAll();
 
+    List<Asset> findAllByDepartmentId(Integer departmentId);
+
+    List<Asset> findByReturnRequestId(Integer requestId);
 
     Optional<AssetDetailResponse> findDetailById(Integer id);
     List<Asset> searchAssets(
@@ -45,6 +48,9 @@ public interface AssetDAO {
 
     int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate
     );
+
+    List<Asset> findExpiringWarranties(int days);
+
 
 
     List<Asset> findByDepartmentId(Integer departmentId);

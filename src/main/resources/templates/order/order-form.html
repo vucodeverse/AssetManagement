@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/main-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo Đơn Đặt Hàng</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/order/order-form.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <main class="po-content-wrapper">
+
+            <!-- Thanh điều hướng (Breadcrumb) -->
+            <div class="breadcrumb">
+                <a th:href="@{/purchase-staff/dashboard}">TRANG CHỦ</a>
+                /
+                <a th:href="@{/purchase-orders}">ĐƠN ĐẶT HÀNG</a> /
+                <span class="active">TẠO ĐƠN</span>
+            </div>
+
+            <!-- Tiêu đề trang -->
+            <header class="page-header">
+                <div class="header-text">
+                    <h1>TẠO ĐƠN ĐẶT HÀNG</h1>
+                    <p>Kiểm tra chi tiết báo giá và phát hành đơn đặt hàng chính thức đến nhà cung cấp.</p>
+                </div>
+            </header>
+
+            <!-- Biểu ngữ lỗi -->
+            <div class="alert-error" th:if="${error}">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <form
+                th:action="@{/purchase-orders/create-from-quotation/{id}(id=${orderCreateRequest.quotationId})}"
+                th:object="${orderCreateRequest}" method="post">
+
+                <div class="po-card">
+                    <h2 class="section-label">THÔNG TIN CHUNG</h2>
+                    <div class="form-grid">
+
+                        <div class="form-item">
+                            <label>MÃ BÁO GIÁ</label>
+                            <input type="text" th:value="'QT-' + *{quotationId}" readonly>
+                            <input type="hidden" th:field="*{quotationId}">
+                        </div>
+
+                        <div class="form-item">
+                            <label>NHÀ CUNG CẤP</label>
+                            <input type="text" th:value="${supplierName}" readonly>
+                            <input type="hidden" th:field="*{supplierId}">
+                        </div>
+
+                        <div class="form-item">
+                            <label>TỔNG TIỀN (VNĐ)</label>
+                            <input type="hidden" id="totalAmountInput" th:field="*{totalAmount}">
+                            <input type="text" id="totalAmountDisplay" th:value="${orderCreateRequest.totalAmount != null ?
+                                       #numbers.formatDecimal(orderCreateRequest.totalAmount, 1, 'POINT', 0, 'COMMA') + ' VNĐ'
+                                       : 'N/A'}" readonly>
+                        </div>
+
+                        <div class="form-item full-width">
+                            <label>GHI CHÚ ĐƠN HÀNG</label>
+                            <textarea th:field="*{orderNote}"
+                                placeholder="Hướng dẫn nội bộ hoặc yêu cầu giao hàng..."></textarea>
+                        </div>
+
+
+                    </div>
+                </div>
+
+                <!-- Chi tiết đơn hàng -->
+                <div class="po-card">
+                    <h2 class="section-label">CHI TIẾT ĐƠN HÀNG</h2>
+                    <div class="table-container">
+                        <table class="po-table">
+                            <thead>
+                                <tr>
+                                    <th class="th-header" style="width: 15%;">LOẠI TÀI SẢN</th>
+                                    <th>MÃ CHI TIẾT</th>
+                                    <th>ĐƠN GIÁ</th>
+                                    <th>THUẾS (%)</th>
+                                    <th>CHIẾT KHẤU (%)</th>
+                                    <th>SỐ LƯỢNG</th>
+                                    <th>GHI CHÚ</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="od, iter : *{purchaseOrderDetailCreateRequests}">
+                                    <td class="td-value" th:text="${od.assetTypeName}">Asset Type</td>
+
+                                    <!-- Hiển thị ID chi tiết -->
+                                    <td class="td-value" th:text="'QD-' + ${od.quotationDetailId}">QD-001</td>
+
+                                    <!-- Unit price display -->
+                                    <td class="td-value"
+                                        th:text="${od.price != null ? #numbers.formatDecimal(od.price, 1, 'POINT', 0, 'COMMA') + ' VNĐ' : '-'}">
+                                        -
+                                    </td>
+
+                                    <!-- Tax % display -->
+                                    <td class="td-value" th:text="${od.taxRate != null ? od.taxRate + '%' : '-'}">-</td>
+
+                                    <!-- Discount % display -->
+                                    <td class="td-value"
+                                        th:text="${od.discountRate != null ? od.discountRate + '%' : '-'}">-</td>
+
+                                    <!-- Số lượng: có thể chỉnh sửa -->
+                                    <td>
+                                        <input type="hidden"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].quotationDetailId'"
+                                            th:value="${od.quotationDetailId}">
+                                        <input type="hidden"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].price'"
+                                            th:value="${od.price}">
+                                        <input type="hidden"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].taxRate'"
+                                            th:value="${od.taxRate}">
+                                        <input type="hidden"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].discountRate'"
+                                            th:value="${od.discountRate}">
+                                        <input type="hidden"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].assetTypeId'"
+                                            th:value="${od.assetTypeId}">
+                                        <input type="hidden"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].assetTypeName'"
+                                            th:value="${od.assetTypeName}">
+
+                                        <input class="table-input qty-input" type="number" min="1"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].quantity'"
+                                            th:value="${od.quantity}"
+                                            th:attr="data-price=${od.price}, data-tax=${od.taxRate}, data-discount=${od.discountRate}">
+                                    </td>
+
+                                    <!-- Ghi chú (có thể chỉnh sửa) -->
+                                    <td>
+                                        <input class="table-input" type="text"
+                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].orderDetailNote'"
+                                            th:value="${od.orderDetailNote}" placeholder="Add note...">
+                                    </td>
+
+                                    <!-- Xóa dòng -->
+                                    <td class="td-delete">
+                                        <button type="submit" name="removeLine" th:value="${iter.index}"
+                                            class="btn-del-row" title="Remove this line">
+                                            <i class="far fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Các nút điều hướng cuối -->
+                <div class="po-footer">
+                    <div class="footer-info">
+                        <i class="fas fa-info-circle"></i> Kiểm tra kỹ tất cả các trường trước khi gửi.
+                    </div>
+                    <div class="footer-actions">
+                        <a th:href="@{/purchase-orders}" class="btn-outline">
+                            <i class="fas fa-arrow-left"></i> HỦY
+                        </a>
+                        <button type="submit" class="btn-solid">
+                            <i class="fas fa-file-invoice"></i> TẠO ĐƠN ĐẶT HÀNG
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+
+        </main>
+    </th:block>
+
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/order/order-form.js}"></script>
+    </th:block>
+</body>
+
+</html>

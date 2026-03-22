@@ -7,30 +7,44 @@ import edu.fpt.groupfive.dto.request.SupplierUpdateRequest;
 import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.SupplierResponse;
 import edu.fpt.groupfive.model.Supplier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.util.validator.SupplierNormalizer;
 import edu.fpt.groupfive.util.validator.SupplierValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.sql.SQLException;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class SupplierServiceImpl implements ISupplierService {
 
     private final SupplierDAO supplierDAO;
     private final SupplierValidator supplierValidator;
     private final SupplierNormalizer supplierNormalizer;
 
-    @Autowired
-    public SupplierServiceImpl(SupplierDAO supplierDAO,
-                               SupplierValidator supplierValidator,
-                               SupplierNormalizer supplierNormalizer) {
-        this.supplierDAO = supplierDAO;
-        this.supplierValidator = supplierValidator;
-        this.supplierNormalizer = supplierNormalizer;
+    @Override
+    public List<SupplierResponse> getAllSupplier() {
+
+        return supplierDAO.getAllSupplier().stream().map(supplier -> SupplierResponse.builder()
+                .supplierName(supplier.getSupplierName())
+                .id(supplier.getSupplierId())
+                .build()).toList();
     }
+
+    @Override
+    public Map<Integer, String> getSupplierIdToNameMap() {
+        return supplierDAO.getAllSupplier().stream()
+                .collect(Collectors.toMap(Supplier::getSupplierId, Supplier::getSupplierName,
+                        (existing, replacement) -> existing));
+    }
+
 
     @Override
     public PageResponse<SupplierResponse> searchSuppliers(
@@ -174,9 +188,10 @@ public class SupplierServiceImpl implements ISupplierService {
         return new SupplierResponse(
                 supplier.getSupplierCode(),
                 supplier.getSupplierName(),
+                supplier.getSupplierId(),
                 supplier.getTaxCode(),
-                supplier.getPhoneNumber(),
                 supplier.getEmail(),
+                supplier.getPhoneNumber(),
                 supplier.getAddress(),
                 supplier.getStatus(),
                 supplier.getCreatedDate(),
@@ -207,3 +222,4 @@ public class SupplierServiceImpl implements ISupplierService {
         return false;
     }
 }
+
