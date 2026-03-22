@@ -6,8 +6,6 @@ import edu.fpt.groupfive.dto.response.AllocationRequestDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetHandoverResponse;
 import edu.fpt.groupfive.mapper.AllocationRequestMapper;
 import edu.fpt.groupfive.mapper.AssetHandoverMapper;
-import edu.fpt.groupfive.model.AllocationRequestDetail;
-import edu.fpt.groupfive.model.AssetHandover;
 import edu.fpt.groupfive.service.AssetHandoverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

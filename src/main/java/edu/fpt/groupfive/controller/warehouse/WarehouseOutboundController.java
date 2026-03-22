@@ -3,8 +3,8 @@ package edu.fpt.groupfive.controller.warehouse;
 import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
-import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.QCReportRequestDTO;
+import edu.fpt.groupfive.service.warehouse.WarehouseOutboundService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +33,8 @@ public class WarehouseOutboundController {
     private static final String CODE_PRINTER = "AST-881";
     private static final String CODE_PHOTOCOPY = "AST-882";
     
+    private final WarehouseOutboundService warehouseOutboundService;
+
     // Mock State Management for Demo
     private static final List<HandoverDetailResponseDTO.HandoverItemDTO> SELECTED_ASSETS = new ArrayList<>();
 
@@ -41,10 +42,7 @@ public class WarehouseOutboundController {
     public String allocationListPage(Model model) {
         model.addAttribute(ACTIVE_MENU, OUTBOUND);
         model.addAttribute(PAGE_TITLE, "Xuất kho Cấp phát - Warehouse");
-        model.addAttribute("allocations", List.of(
-            HandoverResponseDTO.builder().handoverId(601).toDepartmentName(DEPT_DAO_TAO).createdAt(LocalDateTime.now().minusHours(2)).status(PENDING).build(),
-            HandoverResponseDTO.builder().handoverId(602).toDepartmentName("Phòng Tuyển sinh").createdAt(LocalDateTime.now().minusDays(1)).status(PENDING).build()
-        ));
+        model.addAttribute("allocations", warehouseOutboundService.getPendingAllocations());
         return "warehouse/outbound/allocation_list";
     }
 
