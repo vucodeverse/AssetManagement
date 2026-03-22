@@ -1,10 +1,12 @@
 package edu.fpt.groupfive.controller.department;
 
+import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.dto.request.AllocationRequestCreateRequest;
 import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
 import edu.fpt.groupfive.model.AllocationRequest;
 import edu.fpt.groupfive.service.AllocationRequestService;
 import edu.fpt.groupfive.service.AssetTypeService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -25,10 +27,10 @@ public class AllocationRequestController {
     private final AssetTypeService assetTypeService;
 
     @GetMapping("/list")
-    public String showList(Model model) {
-        Integer departmentId = 1;
+    public String showList(HttpSession session, Model model) {
+        Integer departmentId = (Integer) session.getAttribute("departmentId");
 
-        List<AllocationRequest> requests = allocationRequestService.getAllAllocationRequest(departmentId);
+        List<AllocationRequest> requests = allocationRequestService.getAllAllocationRequestByDepartmentId(departmentId);
 
         model.addAttribute("requests", requests);
 
@@ -44,14 +46,15 @@ public class AllocationRequestController {
      */
     @GetMapping("/search")
     public String searchAllocation(
+            HttpSession session,
             @RequestParam(required = false, name = "keyword") String keyword,
             @RequestParam(required = false, name = "status") String status,
-            @RequestParam(required = false, name = "priority") String priority,
+            @RequestParam(required = false, name = "priority") Priority priority,
             @RequestParam(required = false, name = "fromDate") String fromDate,
             @RequestParam(required = false, name = "toDate") String toDate,
             Model model) {
 
-        Integer departmentId = 1;
+        Integer departmentId = (Integer) session.getAttribute("departmentId");
 
         LocalDate from = null;
 
@@ -102,30 +105,27 @@ public class AllocationRequestController {
     @PostMapping("/save")
     public String saveRequest(@ModelAttribute("requestDto") @Valid AllocationRequestCreateRequest requestDto,
                               BindingResult bindingResult,
+                              HttpSession session,
                               Model model,
                               RedirectAttributes redirectAttributes) {
-        try {
 
-            if (bindingResult.hasErrors()) {
-                model.addAttribute("requestDto", requestDto);
-                model.addAttribute("assetType", assetTypeService.getAll());
-                model.addAttribute("canEdit", true);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("requestDto", requestDto);
+            model.addAttribute("assetType", assetTypeService.getAll());
+            model.addAttribute("canEdit", true);
 
-                System.out.println(bindingResult);
-
-                return "allocation/allocation_request_form";
-            }
-
-            allocationRequestService.createRequest(requestDto);
-
-            redirectAttributes.addFlashAttribute("message", "Gửi yêu cầu thành công!");
-
-            return "redirect:/department/allocation-request/list";
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống: " + e.getMessage());
-            return "redirect:/department/allocation-request/create";
+            return "allocation/allocation_request_form";
         }
+
+        requestDto.setRequesterId((Integer) session.getAttribute("userId"));
+        requestDto.setRequestedDepartmentId((Integer) session.getAttribute("departmentId"));
+
+        allocationRequestService.createRequest(requestDto);
+
+        redirectAttributes.addFlashAttribute("message", "Gửi yêu cầu thành công!");
+
+        return "redirect:/department/allocation-request/list";
+
     }
 
     @GetMapping("/edit/{id}")
@@ -150,14 +150,13 @@ public class AllocationRequestController {
             @PathVariable("id") Integer id,
             Model model) {
         // Lấy request cần update
-        AllocationRequestResponse dto =
-                allocationRequestService.getRequestById(id);
+        AllocationRequestResponse dto = allocationRequestService.getRequestById(id);
 
         model.addAttribute("requestDto", dto);
 
         model.addAttribute("assetType", assetTypeService.getAll());
 
-        model.addAttribute("canEdit", false );
+        model.addAttribute("canEdit", false);
 
         return "allocation/allocation_request_form";
 
@@ -169,26 +168,17 @@ public class AllocationRequestController {
             @ModelAttribute("requestDto") @Valid AllocationRequestCreateRequest dto,
             RedirectAttributes redirectAttributes) {
 
-        try {
 
-            allocationRequestService.updateRequest(id, dto);
+        allocationRequestService.updateRequest(id, dto);
 
-            redirectAttributes.addFlashAttribute(
-                    "message",
-                    "Cập nhật thành công!"
-            );
+        redirectAttributes.addFlashAttribute(
+                "message",
+                "Cập nhật thành công!"
+        );
 
-            return "redirect:/department/allocation-request/list";
+        return "redirect:/department/allocation-request/list";
 
-        } catch (Exception e) {
 
-            redirectAttributes.addFlashAttribute(
-                    "error",
-                    e.getMessage()
-            );
-
-            return "redirect:/department/allocation-request/edit/" + id;
-        }
     }
 
     @PostMapping("/delete/{id}")

@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/department-layout-layout}">
+
 
 <head>
     <meta charset="UTF-8">
@@ -13,6 +16,7 @@
 </head>
 
 <body>
+<th:block layout:fragment="content">
     <div class="purchase-content-wrapper">
 
         <form method="get" th:action="@{/asset-manager/allocation-request/list}">
@@ -166,7 +170,9 @@
                     </div>
                     <form th:action="@{/asset-manager/allocation-request/reject/{id}(id=${x.requestId})}" method="post">
                         <div class="reject-dialog-body">
-                            <textarea name="reasonReject" placeholder="Nhập lý do từ chối..." required></textarea>
+                            <label>
+                                <textarea name="reasonReject" placeholder="Nhập lý do từ chối..." required></textarea>
+                            </label>
                         </div>
                         <div class="modal-actions">
                             <a href="#" class="btn-cancel">Cancel</a>
@@ -180,7 +186,7 @@
 
         </div>
     </div>
-
+</th:block>
 </body>
 
 </html>

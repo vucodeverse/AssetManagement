@@ -178,6 +178,29 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
     }
 
     @Override
+    public void updateStatus(Integer id, String status, Integer whConfirmedBy) {
+        String query = """
+                UPDATE return_request SET
+                    status = ?,
+                    wh_confirmed_by = ?,
+                    wh_confirmed_at = CURRENT_TIMESTAMP,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE request_id = ?
+                """;
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, status);
+            ps.setInt(2, whConfirmedBy);
+            ps.setInt(3, id);
+
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public List<ReturnRequest> search(Integer departmentId, String keyword,
                                       String status, LocalDate fromDate, LocalDate toDate) {
         StringBuilder query = new StringBuilder("""

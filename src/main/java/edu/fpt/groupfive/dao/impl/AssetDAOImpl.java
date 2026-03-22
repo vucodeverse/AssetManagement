@@ -38,7 +38,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
             ps.setString(3, asset.getCurrentStatus().name());
@@ -272,7 +272,7 @@ public class AssetDAOImpl implements AssetDAO {
                     t.type_name,
                     d.department_name,
                     po.purchase_order_id,
-                    po.order_date,
+                    po.created_at,
                     s.supplier_name
                 FROM asset a
 
@@ -317,7 +317,7 @@ public class AssetDAOImpl implements AssetDAO {
                     dto.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
 
                     dto.setPurchaseOrderId(rs.getInt("purchase_order_id"));
-                    dto.setOrderDate(toLocalDate(rs.getDate("order_date")));
+                    dto.setOrderDate(toLocalDate(rs.getDate("created_at")));
                     dto.setSupplierName(rs.getString("supplier_name"));
                     return Optional.of(dto);
 
@@ -470,6 +470,29 @@ public class AssetDAOImpl implements AssetDAO {
 
         return 0;
     }
+
+    @Override
+    public List<Asset> findExpiringWarranties(int days) {
+String sql ="select a.*, t.type_name from asset a\n" +
+        "left join asset_type t on a.asset_type_id=t.asset_type_id\n" +
+        "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date))\n" +
+        "order by a.warranty_end_date asc";
+
+
+        List<Asset> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, days);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSet(rs));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
 
     private Asset mapResultSet(ResultSet rs) throws SQLException {
 

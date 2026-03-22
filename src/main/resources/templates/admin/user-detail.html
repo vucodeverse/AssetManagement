@@ -39,7 +39,7 @@
 <div class="content">
 
     <a th:href="@{/admin/users}" style="text-decoration: none;">
-        <h1 class="header-title">Quản lí người dùng</h1>
+        <h2 class="header-title"><i class="fas fa-users"></i> Quản lí người dùng</h2>
     </a>
 
     <hr/>
@@ -50,9 +50,9 @@
 
             <span th:if="${isEditMode}">Cập nhật người dùng</span>
             <span th:unless="${isEditMode}">
-        <span th:if="${canEdit}">Thêm người dùng</span>
-        <span th:unless="${canEdit}">Chi tiết người dùng</span>
-    </span>
+                <span th:if="${canEdit}">Thêm người dùng</span>
+                <span th:unless="${canEdit}">Chi tiết người dùng</span>
+            </span>
 
         </h3>
 
