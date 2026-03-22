@@ -40,48 +40,30 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
 
         String redirectUrl = request.getContextPath();
 
-        // nếu role là director
+        // Check roles and set redirect URL
         if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DIRECTOR"))) {
             redirectUrl += "/director/dashboard";
-        }
-
-        if (authentication.getAuthorities().stream()
+        } else if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("PURCHASE_STAFF"))) {
             redirectUrl += "/purchase-staff/dashboard";
+        } else if (authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("WAREHOUSE_STAFF"))) {
+            redirectUrl += "/wh/dashboard";
+        } else if (authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
+            redirectUrl += "/admin/users";
+        } else if (authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DEPARTMENT_MANAGER"))) {
+            redirectUrl += "/department/allocation-request/list";
+        } else if (authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
+            redirectUrl += "/manager/dashboard";
+        } else {
+            // Default redirect if no role matches
+            redirectUrl += "/";
         }
 
-        if (authentication.getAuthorities().stream().
-                anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
-//            if (authentication.getAuthorities().stream()
-//                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
-//                redirectUrl += "/admin/home";
-//            }
-
-            if (authentication.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("WAREHOUSE_STAFF"))) {
-                redirectUrl += "/wh/dashboard";
-            }
-
-
-            if (authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
-                redirectUrl += "/admin/users";
-            }
-
-            if (authentication.getAuthorities().stream().
-                    anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DEPARTMENT_MANAGER"))) {
-                redirectUrl += "/department/allocation-request/list";
-            }
-            if (authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
-                redirectUrl += "/manager/dashboard";
-            }
-
-            if (authentication.getAuthorities().stream().
-                    anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
-                redirectUrl += "/asset-manager/allocation-request/list";
-            }
-
-            response.sendRedirect(redirectUrl);
-        }
+        response.sendRedirect(redirectUrl);
     }
 }

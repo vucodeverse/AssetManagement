@@ -30,7 +30,7 @@ public class SecurityConfig {
     private boolean securityEnable;
 
     // các url dc truy cập tự do
-    private final String[] WHITE_LIST = {"/auth/login", "/static/**"};
+    private final String[] WHITE_LIST = {"/auth/login", "/css/**", "/js/**", "/vendor/**", "/static/**"};
 
     @Bean
     public PasswordEncoder passwordEncoder() {
