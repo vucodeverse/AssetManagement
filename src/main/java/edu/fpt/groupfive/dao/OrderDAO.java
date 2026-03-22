@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao;
 
-import edu.fpt.groupfive.common.OrderStatus;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.model.Order;
 import edu.fpt.groupfive.model.PurchaseDetail;
@@ -20,5 +20,5 @@ public interface OrderDAO {
 
     List<Order> findRecent();
 
-    void updateStatus(Integer orderId, OrderStatus orderStatus);
+    void updateStatus(Integer orderId, PurchaseProcessStatus status);
 }

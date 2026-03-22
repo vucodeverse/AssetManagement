@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.controller.quotation;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dto.request.*;
 import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
@@ -58,7 +58,7 @@ public class QuotationController {
         model.addAttribute("purchaseId", purchaseId);
 
         if (ids == null || ids.isBlank()) {
-            return "redirect:/quotations/purchase/" + purchaseId;
+            return "redirect:/quotations/of-purchase/" + purchaseId;
         }
 
         List<Integer> idList = Arrays.stream(ids.split(","))
@@ -68,18 +68,16 @@ public class QuotationController {
                 .collect(Collectors.toList());
 
         // chỉ lấy ra các quotation detial ko bị reject
-        List<QuotationResponse> quotationResponses =
-                idList.stream()
-                        .map(quotationService::getQuotationById)
-                        .map(qr -> {
-                            qr.setQuotationDetails(
-                                    qr.getQuotationDetails().stream()
-                                            .filter(qd -> qd.getStatus() != Status.REJECTED)
-                                            .toList()
-                            );
-                            return qr;
-                        })
-                        .toList();
+        List<QuotationResponse> quotationResponses = idList.stream()
+                .map(quotationService::getQuotationById)
+                .map(qr -> {
+                    qr.setQuotationDetails(
+                            qr.getQuotationDetails().stream()
+                                    .filter(qd -> qd.getStatus() != PurchaseProcessStatus.REJECTED)
+                                    .toList());
+                    return qr;
+                })
+                .toList();
         model.addAttribute("quotations", quotationResponses);
         model.addAttribute("purchaseModel", "PR-" + purchaseId);
 
@@ -187,13 +185,12 @@ public class QuotationController {
     @PostMapping("/{id}/actions")
     public String processActions(@PathVariable("id") Integer id,
             @RequestParam("action") String action,
-            @RequestParam(value = "reason", required = false) String reason,
             RedirectAttributes redirectAttributes) {
 
         // lấy ra purchase id của quotation.
         int purchaseId = quotationService.getQuotationById(id).getPurchaseId();
         try {
-            quotationService.processQuotationAction(id, action, reason);
+            quotationService.processQuotationAction(id, action);
             redirectAttributes.addFlashAttribute("message", successActionMsg);
         } catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -257,7 +254,6 @@ public class QuotationController {
         return URL_QUO_OF_PURCHASE;
     }
 
-
     // khởi tọa bind object
     @ModelAttribute("searchForQuotation")
     public QuotationSearchCriteria initSearchForQuotation() {
@@ -280,7 +276,7 @@ public class QuotationController {
     // filter
     private void prepareQuotationFilter(Model model) {
         prepareQuotationMenu(model);
-        model.addAttribute("statuses", Status.values());
+        model.addAttribute("statuses", PurchaseProcessStatus.values());
         model.addAttribute("suppliers", supplierService.getAllSupplier());
     }
 
@@ -288,7 +284,7 @@ public class QuotationController {
     private void prepareQuotationSearchModel(Model model) {
         prepareQuotationMenu(model);
         model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", Status.values());
+        model.addAttribute("status", PurchaseProcessStatus.values());
     }
 
     // thêm mới 1 dòng quotaton detail

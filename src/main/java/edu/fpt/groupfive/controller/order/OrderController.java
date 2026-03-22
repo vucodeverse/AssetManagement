@@ -11,6 +11,7 @@ import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -32,9 +33,8 @@ public class OrderController {
 
     private final OrderService orderService;
     private final ISupplierService supplierService;
-    private final OrderCalculationUtil orderCalculationUtil;
 
-    @org.springframework.beans.factory.annotation.Value("${order.success.delivery_date_update}")
+    @Value("${order.success.delivery_date_update}")
     private String successDeliveryDateUpdateMsg;
 
     @ModelAttribute

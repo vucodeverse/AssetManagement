@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Repository
@@ -43,7 +42,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         Purchase purchase = new Purchase();
         purchase.setId(rs.getInt("purchase_request_id"));
 
-        purchase.setStatus(Request.valueOf(rs.getString("status").trim().toUpperCase()));
+        purchase.setStatus(PurchaseProcessStatus.valueOf(rs.getString("status").trim().toUpperCase()));
 
         purchase.setPurchaseNote(rs.getString("note"));
         purchase.setRejectReason(rs.getString("reject_reason"));
@@ -280,7 +279,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
     // update purchase
     @Override
-    public void updateStatus(Request request, Integer purchaseId, String reasonReject, Integer userId) {
+    public void updateStatus(PurchaseProcessStatus purchaseProcessStatus, Integer purchaseId, String reasonReject, Integer userId) {
 
         String sql = "update purchase_request set status = ? , reject_reason = ?, updated_at = ?, " +
                 "approved_by_director_at = ?, approved_by_director_id = ? where purchase_request_id = ?";
@@ -288,7 +287,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setString(1, request.name());
+            preparedStatement.setString(1, purchaseProcessStatus.name());
 
             if (reasonReject == null || reasonReject.isBlank()) {
                 preparedStatement.setNull(2, Types.NVARCHAR);
@@ -298,7 +297,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
             preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 
-            if ("APPROVED".equals(request.name())) {
+            if ("APPROVED".equals(purchaseProcessStatus.name())) {
                 preparedStatement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
                 preparedStatement.setObject(5, userId);
             } else {

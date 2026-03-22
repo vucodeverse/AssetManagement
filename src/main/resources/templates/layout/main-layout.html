@@ -16,10 +16,14 @@
 
         <div sec:authorize="hasAuthority('DIRECTOR')"
             th:replace="~{fragment/director-sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
+        <div sec:authorize="hasAuthority('DEPARTMENT_MANAGER')"
+            th:replace="~{fragment/department-sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
         <div sec:authorize="hasAuthority('PURCHASE_STAFF')"
             th:replace="~{fragment/staff-sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
         <div sec:authorize="hasAuthority('ASSET_MANAGER')"
             th:replace="~{fragment/manager-sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
+        <div sec:authorize="hasAuthority('WAREHOUSE_STAFF')"
+            th:replace="~{fragment/warehouse-sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
         <div sec:authorize="!isAuthenticated()"
             th:replace="~{fragment/sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
 

@@ -1,8 +1,8 @@
 package edu.fpt.groupfive.service.impl;
 
-import edu.fpt.groupfive.common.OrderStatus;
-import edu.fpt.groupfive.common.Status;
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
+
+
 import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
@@ -80,8 +80,8 @@ public class OrderServiceImpl implements OrderService {
 
         // lấy ra list quotation detiail
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
-                .filter(qd -> Status.APPROVED == qd.getQuotationDetailStatus()
-                        || Status.PENDING == qd.getQuotationDetailStatus())
+                .filter(qd -> PurchaseProcessStatus.APPROVED == qd.getQuotationDetailStatus()
+                        || PurchaseProcessStatus.PENDING == qd.getQuotationDetailStatus())
                 .toList();
 
         // lấy ra assettype
@@ -120,11 +120,11 @@ public class OrderServiceImpl implements OrderService {
 
         // ly toàn bộ quotation detail lên trước
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
-                .filter(qd -> Status.APPROVED == qd.getQuotationDetailStatus()
-                        || Status.PENDING == qd.getQuotationDetailStatus())
+                .filter(qd -> PurchaseProcessStatus.APPROVED == qd.getQuotationDetailStatus()
+                        || PurchaseProcessStatus.PENDING == qd.getQuotationDetailStatus())
                 .toList();
 
-        // map dùng để lấy đơn giá, thuế... từ báo giá
+        // lưu id và quota detail của nó
         Map<Integer, QuotationDetail> quotationDetailMap = quotationDetails.stream()
                 .collect(Collectors.toMap(QuotationDetail::getId, qd -> qd));
 
@@ -144,7 +144,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setQuotationId(quotationId);
         order.setPurchaseId(quotation.getPurchaseId());
-        order.setOrderStatus(OrderStatus.PENDING);
+        order.setOrderStatus(PurchaseProcessStatus.PENDING);
         order.setOrderNote(purchaseOrderCreateRequest.getOrderNote());
         order.setSupplierId(quotation.getSupplierId());
         order.setApprovedBy(userDAO.findUserIdByUsername(username));
@@ -180,13 +180,54 @@ public class OrderServiceImpl implements OrderService {
 
         // update quotation detail sang APPROVED
         detailCreateRequests
-                .forEach(line -> quotationDetailDAO.update(line.getQuotationDetailId(), Status.APPROVED));
+                .forEach(line -> quotationDetailDAO.update(line.getQuotationDetailId(), PurchaseProcessStatus.APPROVED));
 
         // update quotation sang APPROVED
-        quotationDAO.updateStatus(quotationId, Status.APPROVED, null);
+        quotationDAO.updateStatus(quotationId, PurchaseProcessStatus.APPROVED);
 
-        if(checkQuantityOfPO(quotation.getPurchaseId())) purchaseDAO.updateStatus(Request.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
+        // chuyển những quotation detail khác sang reject
+        updateQuotationDetail(detailCreateRequests, quotationDetails);
+
+        if(checkQuantityOfPO(quotation.getPurchaseId())) {
+            purchaseDAO.updateStatus(PurchaseProcessStatus.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
+
+            rejectOtherQuotations(quotationId, quotation.getPurchaseId());
+        }
         return orderId;
+    }
+
+    private void updateQuotationDetail(List<PurchaseOrderDetailCreateRequest> approvedRequests, List<QuotationDetail> allCandidates) {
+        Set<Integer> approvedIds = approvedRequests.stream()
+                .map(PurchaseOrderDetailCreateRequest::getQuotationDetailId)
+                .collect(Collectors.toSet());
+
+        for (QuotationDetail qd : allCandidates) {
+            if (!approvedIds.contains(qd.getId())) {
+                quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
+            }
+        }
+    }
+
+    // hủy những quotation khác khi hàng đã đủ
+    private void rejectOtherQuotations(Integer currentQuotationId, Integer purchaseId) {
+        List<Quotation> otherQuotations = quotationDAO.findByPurchaseId(purchaseId).stream()
+                .filter(q -> !q.getId().equals(currentQuotationId))
+                .filter(q -> q.getQuotationStatus() == PurchaseProcessStatus.PENDING 
+                        || q.getQuotationStatus() == PurchaseProcessStatus.DRAFT)
+                .toList();
+
+        for (Quotation q : otherQuotations) {
+            // Reject the quotation itself
+            quotationDAO.updateStatus(q.getId(), PurchaseProcessStatus.REJECTED);
+            
+            // Reject all its details
+            List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(q.getId());
+            for (QuotationDetail qd : details) {
+                if (qd.getQuotationDetailStatus() != PurchaseProcessStatus.REJECTED) {
+                    quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
+                }
+            }
+        }
     }
 
     // lấy ra toàn bộ po và pr id tương ứng
@@ -284,7 +325,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<PurchaseOrderDetailResponse> getAllOrderDetails() {
-        throw new UnsupportedOperationException("getAllOrderDetails() chua duoc implement");
+        List<OrderDetail> list=orderDetailDAO.findAll();
+        return orderDetailMapper.toListOrderDetailResponse(list);
     }
 
     @Override
@@ -308,18 +350,18 @@ public class OrderServiceImpl implements OrderService {
 
         Map<Integer, String> map = userService.getUserIdToUsernameMap();
 
-        return (List<PurchaseOrderResponse>) orderDAO.findRecent().stream().filter(o -> OrderStatus.PENDING == o.getOrderStatus()).map(o -> PurchaseOrderResponse.builder()
+        return (List<PurchaseOrderResponse>) orderDAO.findRecent().stream().filter(o -> PurchaseProcessStatus.PENDING == o.getOrderStatus()).map(o -> PurchaseOrderResponse.builder()
                         .orderId(o.getId())
                 .orderNote(o.getOrderNote())
                 .createdAt(o.getCreatedAt())
                 .orderStatus(o.getOrderStatus().name())
                 .purchaseId(o.getPurchaseId())
                 .approvedByName(map.getOrDefault(o.getUpdatedBy(), "Hiện chưa được chấp nhận"))
-                .totalAmount(o.getTotalAmount())).toList();
+                .totalAmount(o.getTotalAmount()).build()).toList();
     }
 
     @Override
-    public void updateStatus(Integer orderId, OrderStatus orderStatus) {
+    public void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus) {
         orderDAO.findById(orderId).orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
 
         orderDAO.updateStatus(orderId, orderStatus);

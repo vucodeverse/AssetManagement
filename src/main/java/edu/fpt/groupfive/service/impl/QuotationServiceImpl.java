@@ -1,13 +1,13 @@
 package edu.fpt.groupfive.service.impl;
 
-import edu.fpt.groupfive.common.Status;
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
+
+import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dto.request.QuotationDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
-import edu.fpt.groupfive.dto.response.QuotationSummaryResponse;
 import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.mapper.QuotationDetailMapper;
 import edu.fpt.groupfive.mapper.QuotationMapper;
@@ -17,13 +17,13 @@ import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.QuotationService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
+import edu.fpt.groupfive.util.config.RoleLogin;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +44,7 @@ public class QuotationServiceImpl implements QuotationService {
     private final RangeAmount rangeAmount;
     private final AssetTypeService assetTypeService;
     private final OrderCalculationUtil orderCalculationUtil;
+    private final RoleLogin roleLogin;
 
     @Value("${quotation.supplier_not_found}")
     private String supplierNotFoundMsg;
@@ -62,6 +63,8 @@ public class QuotationServiceImpl implements QuotationService {
 
     @Value("${quotation.asset_type_not_found}")
     private String assetTypeNotFoundMsg;
+    @Value("${quotation.detail.not_found}")
+    private String quotationDetailNotFoundMsg;
 
     @Value("${quotation.pr_not_approved}")
     private String prNotApprovedMsg;
@@ -89,11 +92,10 @@ public class QuotationServiceImpl implements QuotationService {
         return QuotationResponse.builder()
                 .quotationId(q.getId())
                 .purchaseId(q.getPurchaseId())
-                .status(q.getStatus())
+                .quotationStatus(q.getQuotationStatus())
                 .totalAmount(q.getTotalAmount())
                 .createdAt(q.getCreatedAt())
                 .supplierName(supplierMap.getOrDefault(q.getSupplierId(), supplierNotFoundMsg))
-                .rejectedReason(q.getRejectedReason())
                 .build();
     }
 
@@ -121,14 +123,14 @@ public class QuotationServiceImpl implements QuotationService {
         q.setPurchaseId(purchaseId);
 
         // kiểm tra xem save hay draft
-        Status status = "draft".equalsIgnoreCase(action) ? Status.DRAFT
-                : Status.PENDING;
+        PurchaseProcessStatus quotationStatus = "draft".equalsIgnoreCase(action) ? PurchaseProcessStatus.DRAFT
+                : PurchaseProcessStatus.PENDING;
 
         // set các giá trị
         q.setTotalAmount(orderCalculationUtil.calculateTotal(quotationCreateRequest));
 
         // nếu là draft thì update thời gian sửa
-        if (Status.DRAFT.equals(status)) {
+        if (PurchaseProcessStatus.DRAFT.equals(quotationStatus)) {
             q.setUpdatedAt(LocalDateTime.now());
         }
 
@@ -152,7 +154,7 @@ public class QuotationServiceImpl implements QuotationService {
             // map sang quotation detail
             QuotationDetail quotationDetail = quotationDetailMapper.toQuotationDetail(qd);
             quotationDetail.setAssetTypeId(map.get(qd.getAssetTypeName()));
-            quotationDetail.setQuotationDetailStatus(Status.PENDING);
+            quotationDetail.setQuotationDetailStatus(PurchaseProcessStatus.PENDING);
             quotationDetails.add(quotationDetail);
         }
 
@@ -161,12 +163,12 @@ public class QuotationServiceImpl implements QuotationService {
         // check xem quotation này đã được tạo hay chưa
         if (quotationCreateRequest.getQuotationId() != null) {
             q.setId(quotationCreateRequest.getQuotationId());
-            q.setStatus(status);
+            q.setQuotationStatus(quotationStatus);
             quotationDAO.update(q);
 
             return quotationCreateRequest.getQuotationId();
         } else {
-            q.setStatus(status);
+            q.setQuotationStatus(quotationStatus);
             q.setCreatedAt(LocalDateTime.now());
 
             return quotationDAO.insert(q);
@@ -180,7 +182,7 @@ public class QuotationServiceImpl implements QuotationService {
         // check quotation có tồn tịa hay ko
         Quotation q = quotationDAO.findById(id)
                 .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
-        if (q.getStatus() != Status.DRAFT) {
+        if (q.getQuotationStatus() != PurchaseProcessStatus.DRAFT) {
             throw new InvalidDataException(editNotDraftMsg);
         }
 
@@ -221,22 +223,22 @@ public class QuotationServiceImpl implements QuotationService {
 
     // update quotation
     @Override
-    public void processQuotationAction(Integer id, String action, String reason) {
+    public void processQuotationAction(Integer id, String action) {
 
         Quotation quotation = quotationDAO.findById(id)
                 .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
         List<QuotationDetail> detailsList = quotationDetailDAO.findByQuotationId(quotation.getId()).stream()
-                .filter(qd -> Status.REJECTED != qd.getQuotationDetailStatus()
-                        && Status.DELETED != qd.getQuotationDetailStatus())
+                .filter(qd -> PurchaseProcessStatus.REJECTED != qd.getQuotationDetailStatus()
+                        && PurchaseProcessStatus.DELETED != qd.getQuotationDetailStatus())
                 .toList();
 
         if ("r".equals(action)) {
-            detailsList.forEach(qd -> quotationDetailDAO.update(qd.getId(), Status.REJECTED));
-            quotationDAO.updateStatus(id, Status.REJECTED, reason);
+            detailsList.forEach(qd -> quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED));
+            quotationDAO.updateStatus(id, PurchaseProcessStatus.REJECTED);
         } else if ("d".equals(action)) {
-            detailsList.forEach(qd -> quotationDetailDAO.update(qd.getId(), Status.DELETED));
-            quotationDAO.updateStatus(id, Status.DELETED, null);
+            detailsList.forEach(qd -> quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.DELETED));
+            quotationDAO.updateStatus(id, PurchaseProcessStatus.DELETED);
         }
 
     }
@@ -249,9 +251,13 @@ public class QuotationServiceImpl implements QuotationService {
 
         // lấy ra supplier
         Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
+        List<Quotation> quotations = quotationDAO.findByPurchaseId(purchaseId);
+
+
+        quotations = author(quotations);
 
         // map về response
-        return quotationDAO.findByPurchaseId(purchaseId).stream()
+        return quotations.stream()
                 .map(q -> toQuotationResponse(q, supplierMap))
                 .toList();
     }
@@ -266,7 +272,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // lấy ra list quotation detail từ DB
         List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(q.getId()).stream()
-                .filter(qd -> Status.DELETED != qd.getQuotationDetailStatus()).toList();
+                .filter(qd -> PurchaseProcessStatus.DELETED != qd.getQuotationDetailStatus()).toList();
 
         // lấy ra các loại tài sản
         Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
@@ -304,7 +310,7 @@ public class QuotationServiceImpl implements QuotationService {
         return QuotationResponse.builder()
                 .quotationId(q.getId())
                 .purchaseId(q.getPurchaseId())
-                .status(q.getStatus())
+                .quotationStatus(q.getQuotationStatus())
                 .totalAmount(q.getTotalAmount())
                 .createdAt(q.getCreatedAt())
                 .supplierName(supplierMap.getOrDefault(q.getSupplierId(), supplierNotFoundAltMsg))
@@ -313,59 +319,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .totalTax(totalTax)
                 .grandTotal(grandTotal)
                 .quotationDetails(quotationDetailResponses)
-                .rejectedReason(q.getRejectedReason())
                 .build();
-    }
-
-    // thực hiện search và filter cho màn quotation list
-    @Override
-    public List<QuotationSummaryResponse> searchQuotations(QuotationSearchCriteria s) {
-
-        // ktra from và to có khớp ko
-        if (s.getFrom() != null && s.getTo() != null && s.getFrom().isAfter(s.getTo())) {
-            throw new InvalidDataException(searchInvalidDateMsg);
-        }
-
-        // mặc định null
-        s.setMinAmount(null);
-        s.setMaxAmount(null);
-
-        if (s.getAmountRange() != null && !s.getAmountRange().isBlank()) {
-
-            // tách min và max amount
-            List<BigDecimal> list = rangeAmount.applyRangeAMount(s.getAmountRange());
-            if (list.size() == 1) {
-                s.setMinAmount(list.get(0));
-            } else if (list.size() == 2) {
-                s.setMinAmount(list.get(0));
-                s.setMaxAmount(list.get(1));
-            }
-        }
-
-        // Khóa: ID yêu cầu mua sắm - Giá trị: mảng các đối tượng chứa thông tin tóm tắt
-        // của quotaiton
-        Map<Integer, Object[]> summaryMap = purchaseDAO.searchQuotationSummary(s);
-
-        List<QuotationSummaryResponse> out = new ArrayList<>();
-        for (Map.Entry<Integer, Object[]> entry : summaryMap.entrySet()) {
-            Object[] data = entry.getValue();
-
-            // trả về list QuotationForPurchase
-            out.add(QuotationSummaryResponse.builder()
-                    .purchaseId(entry.getKey())
-                    .needByDate((LocalDate) data[0])
-                    .priority((String) data[1])
-                    .numberOfQuotation((Integer) data[2])
-                    .estPrice((BigDecimal) data[3])
-                    .build());
-        }
-        return out;
-    }
-
-    // mặc định của màn quotation list
-    @Override
-    public List<QuotationSummaryResponse> getQuotationAndPurchase() {
-        return searchQuotations(new QuotationSearchCriteria());
     }
 
     // method search cho màn qop
@@ -405,7 +359,7 @@ public class QuotationServiceImpl implements QuotationService {
     public List<QuotationDetailCreateRequest> prepareQuotationForm(Integer purchaseId) {
 
         // check xem purrchase đã đc approve chưa
-        purchaseDAO.findByIdAndStatus(purchaseId, Request.APPROVED.name()).orElseThrow(() -> new InvalidDataException(
+        purchaseDAO.findByIdAndStatus(purchaseId, PurchaseProcessStatus.APPROVED.name()).orElseThrow(() -> new InvalidDataException(
                 mapNotApprovedMsg));
 
         // lấy ra list purchase detail
@@ -433,18 +387,25 @@ public class QuotationServiceImpl implements QuotationService {
                 .toList();
     }
 
-    @Value("${quotation.detail.not_found}")
-    private String quotationDetailNotFoundMsg;
 
     @Override
     public void processQuotationDetailAction(Integer id, String actions) {
         quotationDetailDAO.findById(id).orElseThrow(() -> new InvalidDataException(quotationDetailNotFoundMsg));
 
         if ("a".equals(actions)) {
-            quotationDetailDAO.update(id, Status.APPROVED);
+            quotationDetailDAO.update(id, PurchaseProcessStatus.APPROVED);
         } else if ("r".equals(actions)) {
-            quotationDetailDAO.update(id, Status.REJECTED);
+            quotationDetailDAO.update(id, PurchaseProcessStatus.REJECTED);
         }
+    }
+
+    private List<Quotation> author(List<Quotation> quotations){
+        if (!Role.PURCHASE_STAFF.name().equals(roleLogin.getRole()))
+            quotations = quotations.stream().filter(q -> !PurchaseProcessStatus.DRAFT.equals(q.getQuotationStatus()))
+                    .toList();
+
+
+        return quotations;
     }
 
 }

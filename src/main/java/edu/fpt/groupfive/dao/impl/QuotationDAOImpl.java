@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao.impl;
 
-import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dao.QuotationDAO;
 import edu.fpt.groupfive.dao.QuotationDetailDAO;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,8 +40,8 @@ public class QuotationDAOImpl implements QuotationDAO {
         quotation.setId(rs.getInt("quotation_id"));
         quotation.setPurchaseId(rs.getInt("purchase_request_id"));
         quotation.setSupplierId(rs.getInt("supplier_id"));
-        quotation.setStatus(
-                Status.valueOf(rs.getString("status").toUpperCase()));
+        quotation.setQuotationStatus(
+                PurchaseProcessStatus.valueOf(rs.getString("status").toUpperCase()));
         quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
 
         Timestamp createdAt = rs.getTimestamp("created_at");
@@ -49,8 +50,6 @@ public class QuotationDAOImpl implements QuotationDAO {
         Timestamp updatedAt = rs.getTimestamp("updated_at");
         quotation.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
 
-        quotation.setRejectedReason(rs.getString("reject_reason"));
-
         return quotation;
     }
 
@@ -58,7 +57,7 @@ public class QuotationDAOImpl implements QuotationDAO {
     public Integer insert(Quotation quotation) {
 
         String sql = "insert into quotation (purchase_request_id, supplier_id, status, total_amount, " +
-                "created_at, reject_reason) values (?,?,?,?,?,?)";
+                "created_at) values (?,?,?,?,?)";
 
         try (Connection connection = databaseConfig.getConnection()) {
             connection.setAutoCommit(false);
@@ -67,12 +66,11 @@ public class QuotationDAOImpl implements QuotationDAO {
                     Statement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setObject(1, quotation.getPurchaseId());
                 preparedStatement.setObject(2, quotation.getSupplierId());
-                preparedStatement.setString(3, quotation.getStatus().toString());
+                preparedStatement.setString(3, quotation.getQuotationStatus().name());
                 preparedStatement.setBigDecimal(4, quotation.getTotalAmount());
                 preparedStatement.setTimestamp(5,
                         quotation.getCreatedAt() != null ? Timestamp.valueOf(quotation.getCreatedAt())
                                 : Timestamp.valueOf(LocalDateTime.now()));
-                preparedStatement.setString(6, quotation.getRejectedReason());
 
                 preparedStatement.executeUpdate();
                 ResultSet rs = preparedStatement.getGeneratedKeys();
@@ -118,7 +116,7 @@ public class QuotationDAOImpl implements QuotationDAO {
             connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setObject(1, quotation.getSupplierId());
-            preparedStatement.setString(2, quotation.getStatus().toString());
+            preparedStatement.setString(2, quotation.getQuotationStatus().name());
             preparedStatement.setBigDecimal(3, quotation.getTotalAmount());
             preparedStatement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
             preparedStatement.setInt(5, quotation.getId());
@@ -153,10 +151,9 @@ public class QuotationDAOImpl implements QuotationDAO {
         }
     }
 
-    // update khi reject
     @Override
-    public void updateStatus(Integer quotationId, Status status, String rejectedReason) {
-        String sql = "update quotation set status = ?, reject_reason = ?, updated_at = ? WHERE quotation_id =" +
+    public void updateStatus(Integer quotationId, PurchaseProcessStatus status) {
+        String sql = "update quotation set status = ?, updated_at = ? WHERE quotation_id =" +
                 " ?";
 
         Connection connection = null;
@@ -164,10 +161,9 @@ public class QuotationDAOImpl implements QuotationDAO {
             connection = databaseConfig.getConnection();
             connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, status.toString());
-            preparedStatement.setString(2, rejectedReason);
-            preparedStatement.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
-            preparedStatement.setInt(4, quotationId);
+            preparedStatement.setString(1, status.name());
+            preparedStatement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            preparedStatement.setInt(3, quotationId);
             preparedStatement.executeUpdate();
 
             connection.commit();
@@ -315,7 +311,7 @@ public class QuotationDAOImpl implements QuotationDAO {
                 quotation.setId(rs.getInt("quotation_id"));
                 quotation.setPurchaseId(rs.getInt("purchase_request_id"));
                 quotation.setSupplierId(rs.getInt("supplier_id"));
-                quotation.setStatus(Status.valueOf(rs.getString("status").toUpperCase()));
+                quotation.setQuotationStatus(PurchaseProcessStatus.valueOf(rs.getString("status").toUpperCase()));
                 quotation.setTotalAmount(rs.getBigDecimal("total_amount"));
 
                 Timestamp createdAt = rs.getTimestamp("created_at");

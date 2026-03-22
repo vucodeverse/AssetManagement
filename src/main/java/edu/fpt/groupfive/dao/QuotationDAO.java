@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao;
 
-import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.model.Quotation;
 
@@ -14,7 +14,7 @@ public interface QuotationDAO {
 
     void update(Quotation quotation);
 
-    void updateStatus(Integer quotationId, Status status, String rejectedReason);
+    void updateStatus(Integer quotationId, PurchaseProcessStatus status);
 
     List<Quotation> findByPurchaseId(Integer purchaseId);
 

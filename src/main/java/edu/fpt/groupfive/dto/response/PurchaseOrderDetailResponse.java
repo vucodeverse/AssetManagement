@@ -13,6 +13,7 @@ import java.time.LocalDate;
 public class PurchaseOrderDetailResponse {
     private Integer purchaseOrderDetailId;
     private Integer purchaseRequestDetailId;
+    private Integer assetTypeId;
     private String assetTypeName;
     private Integer quantity;
     private BigDecimal price;

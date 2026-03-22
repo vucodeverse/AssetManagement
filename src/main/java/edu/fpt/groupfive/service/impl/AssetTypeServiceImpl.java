@@ -3,7 +3,6 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.common.AssetTypeClass;
 import edu.fpt.groupfive.common.DepreciationMethod;
 import edu.fpt.groupfive.dao.AssetTypeDAO;
-import edu.fpt.groupfive.dao.impl.AssetTypeDAOImpl;
 import edu.fpt.groupfive.dto.request.AssetTypeCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetTypeUpdateRequest;
 import edu.fpt.groupfive.dto.response.AssetTypeResponse;
@@ -19,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

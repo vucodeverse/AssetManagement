@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.model;
 
-import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,11 +12,10 @@ import java.util.List;
 @Setter
 public class Quotation extends AbstractEntity<Integer>{
 
-    private Status status;
+    private PurchaseProcessStatus quotationStatus;
     private String quotationNote;
     private Integer supplierId;
     private Integer purchaseId;
     private BigDecimal totalAmount;
-    private String rejectedReason;
     private List<QuotationDetail> quotationDetails = new ArrayList<>();
 }

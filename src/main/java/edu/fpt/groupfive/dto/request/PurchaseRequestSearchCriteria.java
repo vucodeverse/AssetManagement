@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.dto.request;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import jakarta.validation.constraints.Future;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class PurchaseRequestSearchCriteria {
-    private Request status;
+    private PurchaseProcessStatus status;
     private Priority priority;
     private String keyword;
 

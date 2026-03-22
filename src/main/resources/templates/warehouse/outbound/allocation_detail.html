@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <header class="page-header">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                <a th:href="@{/wh/outbound}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+                <span style="color: #cbd5e1;">/</span>
+                <span style="color: #94a3b8;">Chi tiết Cấp phát</span>
+            </div>
+            <h1 class="page-title">Xử lý Xuất kho #<span th:text="${handover.handoverId}"></span></h1>
+            <p class="page-subtitle">Phòng ban Đích: <strong th:text="${handover.toDepartmentName}"></strong></p>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div th:if="${successMessage}" class="flash-message success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <div class="wh-layout" style="grid-template-columns: 1fr 400px;">
+            <!-- SCANNER FORM -->
+            <div class="wh-panel">
+                <div class="wh-panel-header">
+                    <span class="wh-panel-title"><i class="fa-solid fa-right-from-bracket"></i> Quét Mã Xuất kho</span>
+                </div>
+                <div style="padding: 2rem; text-align: center;">
+                    <div style="margin-bottom: 2rem;">
+                        <i class="fa-solid fa-barcode" style="font-size: 4rem; color: #a855f7;"></i>
+                        <p style="margin-top: 1rem; color: #64748b;">Quét mã tài sản để đưa ra khỏi kệ</p>
+                    </div>
+                    <form th:action="@{'/wh/outbound/' + ${handover.handoverId} + '/scan'}" method="post">
+                        <input type="text" name="assetCode" class="form-input" 
+                               style="max-width: 300px; text-align: center; font-size: 1.5rem; font-weight: 700;"
+                               placeholder="Mã tài sản..." autofocus autocomplete="off">
+                        <div style="margin-top: 1rem;">
+                            <button type="submit" class="btn-primary" style="background: #a855f7; border-color: #a855f7;">Xác nhận Xuất</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- CHECKLIST -->
+            <div class="wh-panel">
+                <div class="wh-panel-header">
+                    <span class="wh-panel-title"><i class="fa-solid fa-clipboard-list"></i> Chỉ định Cấp phát</span>
+                </div>
+                <div style="padding: 1rem;">
+                    <div th:each="item : ${handover.items}" 
+                         style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 12px;">
+                        <div th:class="${item.isScanned ? 'text-purple' : 'text-gray'}" style="font-size: 1.25rem;">
+                            <i th:class="${item.isScanned ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'}"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 0.9rem;" th:text="${item.assetCode}"></div>
+                            <div style="font-size: 0.75rem; color: #6b7280;" th:text="${item.assetTypeName}"></div>
+                        </div>
+                        <div th:if="${item.isScanned}" style="font-size: 0.7rem; background: #f3e8ff; color: #7e22ce; padding: 2px 6px; border-radius: 4px;">
+                            Đã xuất
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

@@ -1,16 +1,18 @@
 package edu.fpt.groupfive.common;
 
-public enum Request {
+public enum PurchaseProcessStatus {
     DRAFT("Tạm thời"),
     PENDING("Đang chờ"),
     APPROVED("Đã chấp nhận"),
     ORDERED("Đã đặt hàng"),
     REJECTED("Từ chối"),
-    DELETED("Đã bị xóa");
+    DELETED("Đã bị xóa"),
+    COMPLETED("Đã hoàn thành"),
+    CANCELLED("Đã bị hủy");
 
     private String description;
 
-    Request(String s) {
+    PurchaseProcessStatus(String s) {
         this.description = s;
     }
 

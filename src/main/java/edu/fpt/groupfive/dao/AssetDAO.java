@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface AssetDAO {
 
-    void insert(Asset asset);
+    int insert(Asset asset);
 
     void update(Asset asset);
 
@@ -37,6 +37,9 @@ public interface AssetDAO {
 
     int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate
     );
+
+    List<Asset> findExpiringWarranties(int days);
+
 
 
 }

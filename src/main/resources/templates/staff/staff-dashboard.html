@@ -51,7 +51,7 @@
                                             <strong th:text="'#PR-' + ${pr.getPurchaseId}">#PR-2024-001</strong>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td th:data-order="${pr.neededByDate}">
                                         <div class="deadline-cell"
                                             th:text="${#temporals.format(pr.neededByDate, 'dd-MM-yyyy')}">24-10-2024
                                         </div>
@@ -141,7 +141,7 @@
                                 <td th:text="${po.getOrderNote}">Standard order</td>
                                 <td>
                                     <span class="status-badge po-status-badge" th:classappend="${po.getOrderStatus.toLowerCase()}"
-                                        th:text="${T(edu.fpt.groupfive.common.OrderStatus).valueOf(po.getOrderStatus).description}">SHIPPED</span>
+                                        th:text="${T(edu.fpt.groupfive.common.PurchaseProcessStatus).valueOf(po.getOrderStatus).description}">SHIPPED</span>
                                 </td>
                                 <td th:text="${po.approvedByName}">John Doe</td>
                                 <td>

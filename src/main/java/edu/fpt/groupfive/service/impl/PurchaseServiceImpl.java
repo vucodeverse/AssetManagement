@@ -1,20 +1,20 @@
 package edu.fpt.groupfive.service.impl;
 
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
+import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.dao.PurchaseDAO;
-import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.dao.QuotationDAO;
 import edu.fpt.groupfive.dto.request.PurchaseRequestCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseRequestDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseRequestResponse;
-import edu.fpt.groupfive.mapper.PurchaseDetailMapper;
 import edu.fpt.groupfive.mapper.PurchaseMapper;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
+import edu.fpt.groupfive.util.config.RoleLogin;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,8 +34,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final PurchaseMapper purchaseMapper;
     private final UserService userService;
     private final AssetTypeService assetTypeService;
-    private final PurchaseDetailDAO purchaseDetailDAO;
-    private final PurchaseDetailMapper purchaseDetailMapper;
+    private final RoleLogin roleLogin;
 
     @Value("${purchase.detail.asset_type_not_found}")
     private String assetTypeNotFoundMsg;
@@ -58,16 +57,16 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Value("${purchase.edit.not_draft}")
     private String notDraftMsg;
 
-    // tạo 1 purchase request
+    // tạo 1 purchase purchaseProcessStatus
     @Override
     public Integer createPurchaseRequest(PurchaseRequestCreateRequest purchaseCreateRequest, int userId,
-                                         Request request) {
+            PurchaseProcessStatus purchaseProcessStatus) {
 
         // map từ dto sang purchase
         Purchase purchase = purchaseMapper.toPurchase(purchaseCreateRequest);
 
         // set status
-        purchase.setStatus(request);
+        purchase.setStatus(purchaseProcessStatus);
 
         Integer purchaseId;
 
@@ -135,7 +134,10 @@ public class PurchaseServiceImpl implements PurchaseService {
         // lấy ra tất first name và last name của use
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
 
-        return purchaseDAO.findAll().stream().map(p -> {
+        List<Purchase> purchases = purchaseDAO.findAll();
+
+        purchases = author(purchases);
+        return purchases.stream().map(p -> {
 
             // map sang response để trả về client
             PurchaseRequestResponse resp = purchaseMapper.toPurchaseResponse(p);
@@ -158,8 +160,11 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         // lấy ra user
         Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
+        List<Purchase> purchases = purchaseDAO.search(p);
 
-        return purchaseDAO.search(p).stream()
+        purchases = author(purchases);
+
+        return purchases.stream()
                 .map(pr -> {
 
                     // Chuyển đổi sang PurchaseRequestResponse để hiển thị trên giao diện
@@ -177,15 +182,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         // check purchase có tồn tại hay ko
         purchaseDAO.findById(purchaseId).orElseThrow(() -> new InvalidDataException(invalidIdMsg));
 
-
-
         // Xử lý các hành động (actions) nhận được từ controller
         if ("a".equals(action)) {
-            purchaseDAO.updateStatus(Request.APPROVED, purchaseId, null, userId);
+            purchaseDAO.updateStatus(PurchaseProcessStatus.APPROVED, purchaseId, null, userId);
         } else if ("r".equals(action)) {
-            purchaseDAO.updateStatus(Request.REJECTED, purchaseId, reasonReject, userId);
+            purchaseDAO.updateStatus(PurchaseProcessStatus.REJECTED, purchaseId, reasonReject, userId);
         } else if ("d".equals(action)) {
-            purchaseDAO.updateStatus(Request.DELETED, purchaseId, null, userId);
+            purchaseDAO.updateStatus(PurchaseProcessStatus.DELETED, purchaseId, null, userId);
         } else {
             throw new InvalidDataException(invalidActionMsg);
         }
@@ -200,7 +203,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                 .orElseThrow(() -> new InvalidDataException(purchaseNotFoundMsg));
 
         // nếu ko phải draft thì ko thể sửa
-        if (Request.DRAFT != purchase.getStatus()) {
+        if (PurchaseProcessStatus.DRAFT != purchase.getStatus()) {
             throw new InvalidDataException(notDraftMsg);
         }
 
@@ -224,5 +227,19 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     }
 
+    private List<Purchase> author(List<Purchase> purchases){
+        if (!Role.ASSET_MANAGER.name().equals(roleLogin.getRole()))
+            purchases = purchases.stream()
+                    .filter(p -> !PurchaseProcessStatus.DRAFT.equals(p.getStatus()))
+                    .toList();
+
+
+        if (Role.PURCHASE_STAFF.name().equals(roleLogin.getRole()))
+            purchases = purchases.stream()
+                    .filter(p -> !PurchaseProcessStatus.REJECTED.equals(p.getStatus()))
+                    .toList();
+
+        return purchases;
+    }
 
 }

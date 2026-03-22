@@ -87,9 +87,6 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
 
         assetHandoverDetailDao.insertBatch(handoverId, handoverDetailList);
 
-
-
-
     }
 
     @Override

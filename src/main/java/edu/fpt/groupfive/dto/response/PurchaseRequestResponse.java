@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dto.response;
 
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class PurchaseRequestResponse {
     private Integer purchaseId;
-    private Request status;
+    private PurchaseProcessStatus status;
     private String creatorName;
     private LocalDate neededByDate;
     private String priority;

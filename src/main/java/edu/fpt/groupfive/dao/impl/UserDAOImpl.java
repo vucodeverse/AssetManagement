@@ -507,4 +507,20 @@ public class UserDAOImpl implements UserDAO {
         return 0;
 
     }
+
+    @Override
+    public String findFullNameByUserId(Integer userId) {
+        String sql = "select first_name, last_name from users where user_id = ?";
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("first_name") + " " + rs.getString("last_name");
+            }
+            return "Unknown";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

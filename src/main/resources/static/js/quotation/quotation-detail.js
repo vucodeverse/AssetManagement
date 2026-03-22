@@ -17,18 +17,4 @@ $(document).ready(function () {
     });
 });
 
-function openRejectModal(e, btn) {
-    if (e) e.stopPropagation();
-
-    const action = $(btn).data("action");
-
-    $('#rejectForm').attr("action", action);
-    $('#rejectModal textarea').val("");
-    $('#rejectModal').css("display", "block");
-}
-
-function closeRejectModal() {
-    $('#rejectModal').css("display", "none");
-
-}
 

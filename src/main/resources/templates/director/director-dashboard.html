@@ -93,7 +93,7 @@
                                             th:text="${T(edu.fpt.groupfive.common.Priority).valueOf(p.priority).description}"></span>
                                         <span th:if="${p.priority == null}">—</span>
                                     </td>
-                                    <td>
+                                    <td th:data-order="${p.createdAt}">
                                         <span th:if="${p.createdAt != null}"
                                             th:text="${#temporals.format(p.createdAt,'dd-MM-yyyy')}"></span>
                                         <span th:if="${p.createdAt == null}">—</span>
@@ -137,9 +137,9 @@
                                         th:text="${#numbers.formatDecimal(quo.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
                                         4.500 VNĐ</td>
                                     <td><span class="badge-prem"
-                                            th:classappend="'quo-' + ${quo.status.name().toLowerCase()}"
-                                            th:text="${quo.status.description}">PENDING</span></td>
-                                    <td th:text="${#temporals.format(quo.createdAt, 'dd-MM-yyyy')}">____</td>
+                                            th:classappend="'quo-' + ${quo.quotationStatus.name().toLowerCase()}"
+                                            th:text="${quo.quotationStatus.description}">PENDING</span></td>
+                                    <td th:data-order="${quo.createdAt}" th:text="${#temporals.format(quo.createdAt, 'dd-MM-yyyy')}">____</td>
                                     <td style="text-align: right;"><i class="fas fa-chevron-right arrow-icon"></i></td>
                                 </tr>
                             </tbody>

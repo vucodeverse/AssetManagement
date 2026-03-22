@@ -1,11 +1,12 @@
 package edu.fpt.groupfive.dto.response;
 
-import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,11 +16,10 @@ import java.util.List;
 public class QuotationResponse {
     private Integer quotationId;
     private Integer purchaseId;
-    private Status status;
+    private PurchaseProcessStatus quotationStatus;
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
     private String supplierName;
-    private String rejectedReason;
     private String quotationNote;
 
     private BigDecimal subtotal;

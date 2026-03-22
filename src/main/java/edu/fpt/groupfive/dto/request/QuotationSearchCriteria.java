@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.dto.request;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import jakarta.validation.constraints.Future;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,7 +17,7 @@ import java.time.LocalDate;
 public class QuotationSearchCriteria {
     private Integer purchaseId;
     private String keyword;
-    private Status status;
+    private PurchaseProcessStatus status;
     private Priority priority;
     private String amountRange;
     private BigDecimal minAmount;
