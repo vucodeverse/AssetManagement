@@ -51,8 +51,8 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
             redirectUrl += "/purchase-staff/dashboard";
         }
 
-        if (authentication.getAuthorities().stream().
-                anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
+//        if (authentication.getAuthorities().stream().
+//                anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
 //            if (authentication.getAuthorities().stream()
 //                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
 //                redirectUrl += "/admin/home";
@@ -82,6 +82,6 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
             }
 
             response.sendRedirect(redirectUrl);
-        }
+//        }
     }
 }
