@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface AssetHandoverDetailDao {
     void insertBatch(Integer requestId, List<AssetHandoverDetail> details);
+    List<AssetHandoverDetail> findAllByHandoverId(Integer handoverId);
 }

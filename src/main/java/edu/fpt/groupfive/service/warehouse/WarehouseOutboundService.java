@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.service.warehouse;
 
+import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
 import java.util.List;
 
@@ -13,4 +14,12 @@ public interface WarehouseOutboundService {
      * @return Danh sách HandoverResponseDTO
      */
     List<HandoverResponseDTO> getPendingAllocations();
+
+    /**
+     * Lấy chi tiết một lệnh bàn giao/cấp phát.
+     *
+     * @param handoverId ID của lệnh handover
+     * @return HandoverDetailResponseDTO
+     */
+    HandoverDetailResponseDTO getHandoverDetail(Integer handoverId);
 }

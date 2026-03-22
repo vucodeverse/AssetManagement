@@ -34,7 +34,7 @@ BEGIN
 END ELSE SELECT @CatNet = category_id FROM category WHERE category_name = N'Thiết bị Mạng';
 
 -- 3. Thêm Loại tài sản (Asset Types)
-DECLARE @AT_MBP INT, @AT_DELL INT, @AT_AERON INT, @AT_DESK INT, @AT_CISCO INT, @AT_UBI INT;
+DECLARE @AT_MBP INT, @AT_DELL INT, @AT_AERON INT, @AT_DESK INT, @AT_CISCO INT, @AT_UBI INT, @AT_PRINTER INT, @AT_PHOTOCOPY INT;
 
 -- IT
 IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'MacBook Pro 14 M3')
@@ -80,6 +80,21 @@ BEGIN
     VALUES (N'Ubiquiti AP AC Pro', N'Access Point Wifi chuyên dụng', 'EQUIPMENT', 'ACTIVE', 'STRAIGHT_LINE', 36, '802.11ac, Dual-Band', @CatNet, 'UAP-AC-PRO');
     SET @AT_UBI = SCOPE_IDENTITY();
 END ELSE SELECT @AT_UBI = asset_type_id FROM asset_type WHERE type_name = N'Ubiquiti AP AC Pro';
+
+-- Office Equipment
+IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'Máy in HP')
+BEGIN
+    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
+    VALUES (N'Máy in HP', N'Máy in laser đa chức năng', 'EQUIPMENT', 'ACTIVE', 'STRAIGHT_LINE', 36, 'In, Scan, Copy', @CatIT, 'HP-LaserJet-Pro');
+    SET @AT_PRINTER = SCOPE_IDENTITY();
+END ELSE SELECT @AT_PRINTER = asset_type_id FROM asset_type WHERE type_name = N'Máy in HP';
+
+IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'Máy photocopy')
+BEGIN
+    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
+    VALUES (N'Máy photocopy', N'Máy photocopy công suất lớn', 'FIXED_ASSET', 'ACTIVE', 'STRAIGHT_LINE', 60, 'In A3, A4, Scan mạng', @CatIT, 'Ricoh-Aficio');
+    SET @AT_PHOTOCOPY = SCOPE_IDENTITY();
+END ELSE SELECT @AT_PHOTOCOPY = asset_type_id FROM asset_type WHERE type_name = N'Máy photocopy';
 
 -- 4. Thông tin User & Department
 DECLARE @AdminID INT, @DirectorID INT, @AssetMgrID INT, @StaffMgrID INT, @DeptID INT;
@@ -221,42 +236,59 @@ BEGIN
     SET @WH_ID = SCOPE_IDENTITY();
 END
 
--- Zone cho IT
-IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Zone IT - Tầng 1')
-    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, status)
-    VALUES (@WH_ID, N'Zone IT - Tầng 1', 500, 0, 'ACTIVE');
+-- 8.1. Định mức thể tích của từng loại tài sản (wh_asset_capacity)
+IF NOT EXISTS (SELECT 1 FROM wh_asset_capacity WHERE asset_type_id = @AT_MBP)
+    INSERT INTO wh_asset_capacity (asset_type_id, unit_volume) VALUES (@AT_MBP, 1);
+IF NOT EXISTS (SELECT 1 FROM wh_asset_capacity WHERE asset_type_id = @AT_DELL)
+    INSERT INTO wh_asset_capacity (asset_type_id, unit_volume) VALUES (@AT_DELL, 2);
+IF NOT EXISTS (SELECT 1 FROM wh_asset_capacity WHERE asset_type_id = @AT_AERON)
+    INSERT INTO wh_asset_capacity (asset_type_id, unit_volume) VALUES (@AT_AERON, 5);
+IF NOT EXISTS (SELECT 1 FROM wh_asset_capacity WHERE asset_type_id = @AT_DESK)
+    INSERT INTO wh_asset_capacity (asset_type_id, unit_volume) VALUES (@AT_DESK, 8);
+IF NOT EXISTS (SELECT 1 FROM wh_asset_capacity WHERE asset_type_id = @AT_CISCO)
+    INSERT INTO wh_asset_capacity (asset_type_id, unit_volume) VALUES (@AT_CISCO, 3);
+IF NOT EXISTS (SELECT 1 FROM wh_asset_capacity WHERE asset_type_id = @AT_UBI)
+    INSERT INTO wh_asset_capacity (asset_type_id, unit_volume) VALUES (@AT_UBI, 1);
+IF NOT EXISTS (SELECT 1 FROM wh_asset_capacity WHERE asset_type_id = @AT_PRINTER)
+    INSERT INTO wh_asset_capacity (asset_type_id, unit_volume) VALUES (@AT_PRINTER, 5);
+IF NOT EXISTS (SELECT 1 FROM wh_asset_capacity WHERE asset_type_id = @AT_PHOTOCOPY)
+    INSERT INTO wh_asset_capacity (asset_type_id, unit_volume) VALUES (@AT_PHOTOCOPY, 15);
+
+-- 8.2. Quản lý Khu vực lưu trữ (Dynamic Zones)
+-- Zone cho Laptop
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Khu Laptop - Kệ A1')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, asset_type_id, status)
+    VALUES (@WH_ID, N'Khu Laptop - Kệ A1', 100, 0, @AT_MBP, 'ACTIVE');
+
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Khu Laptop - Kệ B1')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, asset_type_id, status)
+    VALUES (@WH_ID, N'Khu Laptop - Kệ B1', 100, 0, @AT_DELL, 'ACTIVE');
 
 -- Zone cho Furniture
-IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Zone Nội thất - Lầu 2')
-    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, status)
-    VALUES (@WH_ID, N'Zone Nội thất - Lầu 2', 200, 0, 'ACTIVE');
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Khu Nội thất - Tầng 2')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, asset_type_id, status)
+    VALUES (@WH_ID, N'Khu Nội thất - Tầng 2', 50, 0, @AT_AERON, 'ACTIVE');
 
 -- Zone cho Networking
-IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Phòng Kỹ thuật - Rack A')
-    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, status)
-    VALUES (@WH_ID, N'Phòng Kỹ thuật - Rack A', 100, 0, 'ACTIVE');
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Phòng Rack - Tủ A')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, asset_type_id, status)
+    VALUES (@WH_ID, N'Phòng Rack - Tủ A', 30, 0, @AT_CISCO, 'ACTIVE');
+
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Phòng Rack - Tủ B')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, asset_type_id, status)
+    VALUES (@WH_ID, N'Phòng Rack - Tủ B', 30, 0, @AT_UBI, 'ACTIVE');
+
+-- Zone cho Office Equipment (Printers/Photocopiers)
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Khu Thiết bị văn phòng - Hàng B1')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, asset_type_id, status)
+    VALUES (@WH_ID, N'Khu Thiết bị văn phòng - Hàng B1', 150, 0, @AT_PRINTER, 'ACTIVE');
+
+-- Zone chung cho tài sản khác
+IF NOT EXISTS (SELECT 1 FROM wh_zones WHERE zone_name = N'Khu vực chờ phân loại - Floor 1')
+    INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, asset_type_id, status)
+    VALUES (@WH_ID, N'Khu vực chờ phân loại - Floor 1', 200, 0, NULL, 'ACTIVE');
 
 PRINT 'Full Procurement dummy data created successfully.';
-
--- =============================================
--- 12. DATA MOCK CHO LUỒNG XUẤT KHO CẤP PHÁT (OUTBOUND ALLOCATION)
--- =============================================
-
-DECLARE @AT_PRINTER INT, @AT_PHOTOCOPY INT;
-
-IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'Máy in HP')
-BEGIN
-    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
-    VALUES (N'Máy in HP', N'Máy in laser đa chức năng', 'EQUIPMENT', 'ACTIVE', 'STRAIGHT_LINE', 36, 'In, Scan, Copy', @CatIT, 'HP-LaserJet-Pro');
-    SET @AT_PRINTER = SCOPE_IDENTITY();
-END ELSE SELECT @AT_PRINTER = asset_type_id FROM asset_type WHERE type_name = N'Máy in HP';
-
-IF NOT EXISTS (SELECT 1 FROM asset_type WHERE type_name = N'Máy photocopy')
-BEGIN
-    INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
-    VALUES (N'Máy photocopy', N'Máy photocopy công suất lớn', 'FIXED_ASSET', 'ACTIVE', 'STRAIGHT_LINE', 60, 'In A3, A4, Scan mạng', @CatIT, 'Ricoh-Aficio');
-    SET @AT_PHOTOCOPY = SCOPE_IDENTITY();
-END ELSE SELECT @AT_PHOTOCOPY = asset_type_id FROM asset_type WHERE type_name = N'Máy photocopy';
 
 -- 12.1. Sinh ra một số Asset đang nằm trong kho (AVAILABLE)
 DECLARE @AssetPrinter1 INT = 20;
@@ -275,11 +307,11 @@ SET IDENTITY_INSERT asset OFF;
 -- Đưa vào Zone (wh_asset_placement)
 IF NOT EXISTS (SELECT 1 FROM wh_asset_placement WHERE asset_id = 20)
     INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, placed_at)
-    SELECT @AssetPrinter1, zone_id, @AssetMgrID, GETDATE() FROM wh_zones WHERE zone_name = N'Zone IT - Tầng 1';
+    SELECT @AssetPrinter1, zone_id, @AssetMgrID, GETDATE() FROM wh_zones WHERE zone_name = N'Khu Thiết bị văn phòng - Hàng B1';
 
 IF NOT EXISTS (SELECT 1 FROM wh_asset_placement WHERE asset_id = 21)
     INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, placed_at)
-    SELECT @AssetPhoto1, zone_id, @AssetMgrID, GETDATE() FROM wh_zones WHERE zone_name = N'Zone IT - Tầng 1';
+    SELECT @AssetPhoto1, zone_id, @AssetMgrID, GETDATE() FROM wh_zones WHERE zone_name = N'Khu Thiết bị văn phòng - Hàng B1';
 
 -- 12.2. Tạo Allocation Request đã được APPROVED (Mock ID: 101)
 DECLARE @AllocReq1 INT = 101;
@@ -309,4 +341,101 @@ IF NOT EXISTS (SELECT 1 FROM asset_handover WHERE handover_id = 601)
 SET IDENTITY_INSERT asset_handover OFF;
 
 PRINT 'Outbound Allocation mock data created successfully.';
+
+-- =============================================
+-- 13. BỔ SUNG THÊM DỮ LIỆU CẤP PHÁT & TÀI SẢN KHO (EXTRA DATA)
+-- =============================================
+
+-- 13.1. Thêm thêm Phòng ban
+DECLARE @DeptKT INT, @DeptHC INT;
+
+IF NOT EXISTS (SELECT 1 FROM departments WHERE department_name = N'Phòng Kỹ thuật')
+BEGIN
+    INSERT INTO departments (department_name, status, description) 
+    VALUES (N'Phòng Kỹ thuật', 'ACTIVE', N'Phòng phát triển phần mềm và hạ tầng');
+    SET @DeptKT = SCOPE_IDENTITY();
+END ELSE SELECT @DeptKT = department_id FROM departments WHERE department_name = N'Phòng Kỹ thuật';
+
+IF NOT EXISTS (SELECT 1 FROM departments WHERE department_name = N'Phòng Hành chính')
+BEGIN
+    INSERT INTO departments (department_name, status, description) 
+    VALUES (N'Phòng Hành chính', 'ACTIVE', N'Quản lý nhân sự và văn phòng phẩm');
+    SET @DeptHC = SCOPE_IDENTITY();
+END ELSE SELECT @DeptHC = department_id FROM departments WHERE department_name = N'Phòng Hành chính';
+
+-- 13.2. Sinh thêm Asset đang nằm trong kho (AVAILABLE)
+-- Lấy lại các biến ID cần thiết (vì DECLARE ở trên có thể khác batch)
+DECLARE @Extra_AdminID INT, @Extra_AssetMgrID INT;
+SELECT @Extra_AdminID = user_id FROM users WHERE username = 'admin';
+SELECT @Extra_AssetMgrID = user_id FROM users WHERE username = 'assetmanager';
+
+DECLARE @Extra_AT_MBP INT, @Extra_AT_DELL INT, @Extra_AT_CISCO INT;
+SELECT @Extra_AT_MBP = asset_type_id FROM asset_type WHERE type_name = N'MacBook Pro 14 M3';
+SELECT @Extra_AT_DELL = asset_type_id FROM asset_type WHERE type_name = N'Dell Precision 3660';
+SELECT @Extra_AT_CISCO = asset_type_id FROM asset_type WHERE type_name = N'Cisco Switch 2960';
+
+SET IDENTITY_INSERT asset ON;
+IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 30)
+    INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, original_cost, acquisition_date)
+    VALUES (30, N'MacBook Pro 14 M3 - WH 01', @Extra_AT_MBP, 'AVAILABLE', 44000000, GETDATE());
+IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 31)
+    INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, original_cost, acquisition_date)
+    VALUES (31, N'MacBook Pro 14 M3 - WH 02', @Extra_AT_MBP, 'AVAILABLE', 44000000, GETDATE());
+IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 32)
+    INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, original_cost, acquisition_date)
+    VALUES (32, N'Dell Precision 3660 - WH 01', @Extra_AT_DELL, 'AVAILABLE', 34500000, GETDATE());
+IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 33)
+    INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, original_cost, acquisition_date)
+    VALUES (33, N'Cisco Switch 2960 - WH 01', @Extra_AT_CISCO, 'AVAILABLE', 14500000, GETDATE());
+SET IDENTITY_INSERT asset OFF;
+
+-- Đưa vào Zone
+IF NOT EXISTS (SELECT 1 FROM wh_asset_placement WHERE asset_id = 30)
+    INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, placed_at) 
+    SELECT 30, zone_id, @Extra_AssetMgrID, GETDATE() FROM wh_zones WHERE zone_name = N'Khu Laptop - Kệ A1';
+
+IF NOT EXISTS (SELECT 1 FROM wh_asset_placement WHERE asset_id = 31)
+    INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, placed_at) 
+    SELECT 31, zone_id, @Extra_AssetMgrID, GETDATE() FROM wh_zones WHERE zone_name = N'Khu Laptop - Kệ A1';
+
+IF NOT EXISTS (SELECT 1 FROM wh_asset_placement WHERE asset_id = 32)
+    INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, placed_at) 
+    SELECT 32, zone_id, @Extra_AssetMgrID, GETDATE() FROM wh_zones WHERE zone_name = N'Khu Laptop - Kệ B1';
+
+IF NOT EXISTS (SELECT 1 FROM wh_asset_placement WHERE asset_id = 33)
+    INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, placed_at) 
+    SELECT 33, zone_id, @Extra_AssetMgrID, GETDATE() FROM wh_zones WHERE zone_name = N'Phòng Rack - Tủ A';
+
+-- 13.3. Tạo thêm Allocation Requests APPROVED
+SET IDENTITY_INSERT allocation_request ON;
+IF NOT EXISTS (SELECT 1 FROM allocation_request WHERE request_id = 102)
+    INSERT INTO allocation_request (request_id, requester_id, requested_department_id, request_date, needed_by_date, priority, reason, status, am_approved_by, am_approved_at)
+    VALUES (102, @Extra_AdminID, @DeptKT, GETDATE(), DATEADD(DAY, 5, GETDATE()), 'CRITICAL', N'Cấp phát laptop cho team dự án AI', 'APPROVED', @Extra_AssetMgrID, GETDATE());
+
+IF NOT EXISTS (SELECT 1 FROM allocation_request WHERE request_id = 103)
+    INSERT INTO allocation_request (request_id, requester_id, requested_department_id, request_date, needed_by_date, priority, reason, status, am_approved_by, am_approved_at)
+    VALUES (103, @Extra_AdminID, @DeptHC, GETDATE(), DATEADD(DAY, 10, GETDATE()), 'MEDIUM', N'Cấp phát switch cho văn phòng mới', 'APPROVED', @Extra_AssetMgrID, GETDATE());
+SET IDENTITY_INSERT allocation_request OFF;
+
+-- Allocation Details
+IF NOT EXISTS (SELECT 1 FROM allocation_request_detail WHERE request_id = 102 AND asset_type_id = @Extra_AT_MBP)
+    INSERT INTO allocation_request_detail (request_id, asset_type_id, quantity_requested, note)
+    VALUES (102, @Extra_AT_MBP, 2, N'Yêu cầu cấu hình M3 16GB');
+
+IF NOT EXISTS (SELECT 1 FROM allocation_request_detail WHERE request_id = 103 AND asset_type_id = @Extra_AT_CISCO)
+    INSERT INTO allocation_request_detail (request_id, asset_type_id, quantity_requested, note)
+    VALUES (103, @Extra_AT_CISCO, 1, N'Cần loại 24 port');
+
+-- 13.4. Tạo Asset Handovers PENDING
+SET IDENTITY_INSERT asset_handover ON;
+IF NOT EXISTS (SELECT 1 FROM asset_handover WHERE handover_id = 602)
+    INSERT INTO asset_handover (handover_id, handover_type, allocation_request_id, to_department_id, executed_by_user_id, status, note, created_at)
+    VALUES (602, 'ALLOCATION', 102, @DeptKT, @Extra_AdminID, 'PENDING', N'Phiếu xuất kho cho dự án AI', GETDATE());
+
+IF NOT EXISTS (SELECT 1 FROM asset_handover WHERE handover_id = 603)
+    INSERT INTO asset_handover (handover_id, handover_type, allocation_request_id, to_department_id, executed_by_user_id, status, note, created_at)
+    VALUES (603, 'ALLOCATION', 103, @DeptHC, @Extra_AdminID, 'PENDING', N'Xuất kho thiết bị mạng cho VP lầu 3', GETDATE());
+SET IDENTITY_INSERT asset_handover OFF;
+
+PRINT 'All extra dummy data created successfully.';
 

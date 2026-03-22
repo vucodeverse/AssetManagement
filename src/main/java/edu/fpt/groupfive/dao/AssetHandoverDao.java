@@ -8,4 +8,5 @@ public interface AssetHandoverDao {
     Integer insert(AssetHandover assetHandover);
     List<AssetHandover> findAllByAllocationRequest();
     List<AssetHandover> findAllByReturnRequest();
+    AssetHandover findById(Integer id);
 }
