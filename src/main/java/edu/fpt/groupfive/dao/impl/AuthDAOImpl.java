@@ -1,7 +1,6 @@
 package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.dao.AuthDAO;
-import edu.fpt.groupfive.model.Users;
 
 import java.util.Optional;
 
@@ -13,8 +12,8 @@ public class AuthDAOImpl implements AuthDAO {
     }
 
 
-    @Override
-    public Optional<Users> getUserDetail(String username, String passwordHash) {
-        return null;
-    }
+//    @Override
+//    public Optional<Users> getUserDetail(String username, String passwordHash) {
+//        return null;
+//    }
 }

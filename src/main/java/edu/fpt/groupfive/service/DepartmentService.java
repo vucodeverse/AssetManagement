@@ -18,4 +18,6 @@
         int countStaffInDepartment(Integer departmentId);
         int countDepartments();
         boolean existsDepartmentName(String departmentName, Integer departId);
+
+        List<DepartmentResponse> findAll();
     }

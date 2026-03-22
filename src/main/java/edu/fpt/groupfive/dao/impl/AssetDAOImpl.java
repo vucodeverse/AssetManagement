@@ -2,10 +2,13 @@ package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.common.AssetStatus;
 import edu.fpt.groupfive.dao.AssetDAO;
+import edu.fpt.groupfive.dto.request.search.AssetSearchCriteria;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -120,8 +123,83 @@ public class AssetDAOImpl implements AssetDAO {
             throw new RuntimeException("Xóa tài sản thất bại", e);
         }
     }
+    @Override
+    public List<Integer> findValidAssetIds(List<Integer> assetIds, int departmentId) {
 
-    // find asset by id
+        if (assetIds == null || assetIds.isEmpty()) {
+            return List.of();
+        }
+
+        String placeholders = assetIds.stream()
+                .map(id -> "?")
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+
+        String sql = """
+        SELECT asset_id
+        FROM asset
+        WHERE department_id = ?
+        AND asset_id IN (%s)
+        """.formatted(placeholders);
+
+        List<Integer> validIds = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, departmentId);
+
+            int index = 2;
+            for (Integer id : assetIds) {
+                ps.setInt(index++, id);
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                validIds.add(rs.getInt("asset_id"));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi kiểm tra asset hợp lệ", e);
+        }
+        return validIds;
+    }
+
+    @Override
+    public void updateAssetDepartment(List<Integer> assetIds, int newDepartmentId) {
+
+        if (assetIds == null || assetIds.isEmpty()) {
+            throw new IllegalArgumentException("Danh sách asset không hợp lệ");
+        }
+        String placeholders = assetIds.stream()
+                .map(id -> "?")
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+
+        String sql = """
+        UPDATE asset
+        SET department_id = ?
+        WHERE asset_id IN (%s)
+        """.formatted(placeholders);
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, newDepartmentId);
+
+            int index = 2;
+            for (Integer id : assetIds) {
+                ps.setInt(index++, id);
+            }
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi update department cho asset", e);
+        }
+    }
+    //  find asset by id
     @Override
     public Optional<Asset> findById(Integer id) {
 
@@ -263,6 +341,7 @@ public class AssetDAOImpl implements AssetDAO {
         return list;
     }
 
+
     @Override
     public Optional<AssetDetailResponse> findDetailById(Integer id) {
 
@@ -316,6 +395,7 @@ public class AssetDAOImpl implements AssetDAO {
                     dto.setWarrantyStartDate(toLocalDate(rs.getDate("warranty_start_date")));
                     dto.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
 
+
                     dto.setPurchaseOrderId(rs.getInt("purchase_order_id"));
                     dto.setOrderDate(toLocalDate(rs.getDate("created_at")));
                     dto.setSupplierName(rs.getString("supplier_name"));
@@ -358,7 +438,7 @@ public class AssetDAOImpl implements AssetDAO {
             sql.append(" AND a.acquisition_date <= ? ");
         }
 
-        // sort
+        //sort
         if (direction != null && !direction.isBlank()) {
 
             sql.append(" order by a.original_cost ");
@@ -409,6 +489,88 @@ public class AssetDAOImpl implements AssetDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return assets;
+    }
+
+    @Override
+    public List<Asset> searchAssets(
+            AssetSearchCriteria criteria,
+            int offset,
+            int pageSize
+    ) {
+        StringBuilder sql = new StringBuilder("""
+        SELECT a.*, t.type_name
+        FROM asset a
+        LEFT JOIN asset_type t
+            ON a.asset_type_id = t.asset_type_id
+        WHERE 1=1
+        """);
+
+        if (criteria.getDepartmentId() != null) {
+            sql.append(" AND a.department_id = ? ");
+        }
+        if (criteria.getKeyword() != null && !criteria.getKeyword().isBlank()) {
+            sql.append(" AND a.asset_name LIKE ? ");
+        }
+        if (criteria.getStatus() != null) {
+            sql.append(" AND a.current_status = ? ");
+        }
+        if (criteria.getAcquisitionFrom() != null) {
+            sql.append(" AND a.acquisition_date >= ? ");
+        }
+        if (criteria.getAcquisitionTo() != null) {
+            sql.append(" AND a.acquisition_date <= ? ");
+        }
+
+        // sort
+        if (criteria.getDirection() != null && !criteria.getDirection().isBlank()) {
+            sql.append(" ORDER BY a.original_cost ");
+            if ("DESC".equalsIgnoreCase(criteria.getDirection())) {
+                sql.append(" DESC ");
+            } else {
+                sql.append(" ASC ");
+            }
+        } else {
+            sql.append(" ORDER BY a.asset_id ");
+        }
+
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ");
+
+        List<Asset> assets = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (criteria.getDepartmentId() != null) {
+                ps.setInt(index++, criteria.getDepartmentId());
+            }
+            if (criteria.getKeyword() != null && !criteria.getKeyword().isBlank()) {
+                ps.setString(index++, "%" + criteria.getKeyword() + "%");
+            }
+            if (criteria.getStatus() != null) {
+                ps.setString(index++, criteria.getStatus().name());
+            }
+            if (criteria.getAcquisitionFrom() != null) {
+                ps.setDate(index++, Date.valueOf(criteria.getAcquisitionFrom()));
+            }
+            if (criteria.getAcquisitionTo() != null) {
+                ps.setDate(index++, Date.valueOf(criteria.getAcquisitionTo()));
+            }
+
+            ps.setInt(index++, offset);
+            ps.setInt(index, pageSize);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                assets.add(mapResultSet(rs));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Search assets failed", e);
+        }
+
         return assets;
     }
 
@@ -492,7 +654,39 @@ String sql ="select a.*, t.type_name from asset a\n" +
         }
         return list;
     }
+    @Override
+    public List<Asset> findByDepartmentId(Integer departmentId) {
 
+        String sql = """
+                SELECT a.*,
+                       t.type_name
+                FROM asset a
+                LEFT JOIN asset_type t
+                    ON a.asset_type_id = t.asset_type_id
+                WHERE a.department_id = ?
+                """;
+
+        List<Asset> list = new ArrayList<>();
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, departmentId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+                    list.add(mapResultSet(rs));
+                }
+
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Tìm tài sản theo department thất bại", e);
+        }
+
+        return list;
+    }
 
     private Asset mapResultSet(ResultSet rs) throws SQLException {
 

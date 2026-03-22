@@ -21,7 +21,7 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+            Authentication authentication) throws IOException, ServletException {
 
 
         // Lấy username từ authentication

@@ -12,7 +12,7 @@ public class Main {
         // ===== Cấu hình DB (giống application.properties) =====
         String url = "jdbc:sqlserver://localhost:1433;databaseName=AssetManager;encrypt=true;trustServerCertificate=true";
         String dbUser = "sa";
-        String dbPassword = "123";
+        String dbPassword = "888999";
 
         // ===== Mật khẩu mới muốn đặt =====
         String newPassword = "123"; // <-- Đổi mật khẩu ở đây

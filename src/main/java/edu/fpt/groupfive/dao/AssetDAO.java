@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dao;
 
 import edu.fpt.groupfive.common.AssetStatus;
+import edu.fpt.groupfive.dto.request.search.AssetSearchCriteria;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.model.Asset;
 
@@ -15,6 +16,10 @@ public interface AssetDAO {
     void update(Asset asset);
 
     void delete(Integer id);
+
+    List<Integer> findValidAssetIds(List<Integer> assetIds, int departmentId);
+
+    void updateAssetDepartment(List<Integer> assetIds, int newDepartmentId);
 
     Optional<Asset> findById(Integer id);
 
@@ -35,6 +40,12 @@ public interface AssetDAO {
             int pageSize
     );
 
+    List<Asset> searchAssets(
+            AssetSearchCriteria criteria,
+            int offset,
+            int pageSize
+    );
+
     int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate
     );
 
@@ -42,4 +53,5 @@ public interface AssetDAO {
 
 
 
+    List<Asset> findByDepartmentId(Integer departmentId);
 }

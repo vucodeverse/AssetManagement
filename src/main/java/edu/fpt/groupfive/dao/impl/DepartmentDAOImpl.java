@@ -6,10 +6,7 @@ import edu.fpt.groupfive.model.Department;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -150,7 +147,6 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         return Optional.empty();
     }
 
-
     @Override
     public List<Department> findAll() {
         String query = """
@@ -210,6 +206,21 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    private Department mapResultSetToDepartment(ResultSet rs) throws SQLException {
+        Department d = new Department();
+        d.setDepartmentId(rs.getInt("department_id"));
+        d.setDepartmentName(rs.getString("department_name"));
+        d.setStatus(rs.getString("status"));
+        d.setManagerId(rs.getInt("manager_user_id"));
+
+        Timestamp created = rs.getTimestamp("created_date");
+        Timestamp updated = rs.getTimestamp("updated_date");
+
+        if (created != null) d.setCreatedDate(created.toLocalDateTime());
+        if (updated != null) d.setUpdatedDate(updated.toLocalDateTime());
+
+        return d;
     }
 
     @Override
