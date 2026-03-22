@@ -4,6 +4,7 @@ import edu.fpt.groupfive.dto.request.warehouse.TransactionFilterRequestDTO;
 import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.DashboardResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.LedgerRecordResponseDTO;
+import edu.fpt.groupfive.service.warehouse.WhTransactionService;
 import edu.fpt.groupfive.service.warehouse.WhZoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class WarehousePortalController {
 
     private final WhZoneService whZoneService;
+    private final WhTransactionService whTransactionService;
 
     // =========================================================
     // DASHBOARD — GET /wh/dashboard
@@ -39,7 +41,7 @@ public class WarehousePortalController {
                 .pendingInboundReturn(5)
                 .pendingOutboundAllocation(2)
                 .capacityHeatmap(whZoneService.getAllZones())
-                .recentActivities(buildDummyLedger().stream().limit(5).collect(Collectors.toList()))
+                .recentActivities(whTransactionService.getAllTransactions().stream().limit(5).collect(Collectors.toList()))
                 .build();
 
         model.addAttribute("dashboard", dashboard);
@@ -72,21 +74,7 @@ public class WarehousePortalController {
     public String ledger(TransactionFilterRequestDTO filter, Model model) {
         model.addAttribute("activeMenu", "ledger");
         model.addAttribute("pageTitle", "Sổ cái Giao dịch - Warehouse");
-        model.addAttribute("transactions", buildDummyLedger());
+        model.addAttribute("transactions", whTransactionService.getAllTransactions());
         return "warehouse/ledger_list";
-    }
-
-    private List<LedgerRecordResponseDTO> buildDummyLedger() {
-        return List.of(
-                LedgerRecordResponseDTO.builder().transactionId(1001).transactionType("INBOUND")
-                        .assetName("Monitor LG 24\"").zoneName("B-01").executedBy("Admin")
-                        .executedAt(LocalDateTime.now().minusMinutes(30)).referenceId(101).referenceType("PO").build(),
-                LedgerRecordResponseDTO.builder().transactionId(1002).transactionType("OUTBOUND")
-                        .assetName("Keyboard Corsair").zoneName("A-05").executedBy("Staff 1")
-                        .executedAt(LocalDateTime.now().minusHours(2)).referenceId(202).referenceType("HANDOVER")
-                        .build(),
-                LedgerRecordResponseDTO.builder().transactionId(1003).transactionType("INBOUND")
-                        .assetName("Mouse Logitech").zoneName("C-02").executedBy("Admin")
-                        .executedAt(LocalDateTime.now().minusDays(1)).referenceId(102).referenceType("PO").build());
     }
 }

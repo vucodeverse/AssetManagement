@@ -5,6 +5,8 @@ import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import edu.fpt.groupfive.dto.response.warehouse.LedgerRecordResponseDTO;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -173,5 +175,60 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
                 }
             }
         }
+    }
+
+    @Override
+    public List<LedgerRecordResponseDTO> getAllTransactions() {
+        String sql = """
+            SELECT 
+                t.transaction_id, 
+                t.transaction_type, 
+                a.asset_name, 
+                z.zone_name, 
+                CONCAT(u.first_name, ' ', u.last_name) AS executed_by, 
+                t.executed_at,
+                COALESCE(po.purchase_order_id, ho.asset_handover_id) AS reference_id,
+                CASE 
+                    WHEN po.purchase_order_id IS NOT NULL THEN 'PO'
+                    WHEN ho.asset_handover_id IS NOT NULL THEN 'HANDOVER'
+                    ELSE 'OTHER' 
+                END AS reference_type
+            FROM wh_transactions t
+            JOIN asset a ON t.asset_id = a.asset_id
+            JOIN wh_zones z ON t.zone_id = z.zone_id
+            JOIN users u ON t.executed_by = u.user_id
+            LEFT JOIN map_po_transactions po ON t.transaction_id = po.transaction_id
+            LEFT JOIN map_handover_transactions ho ON t.transaction_id = ho.transaction_id
+            ORDER BY t.executed_at DESC
+        """;
+
+        List<LedgerRecordResponseDTO> result = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                LedgerRecordResponseDTO dto = LedgerRecordResponseDTO.builder()
+                        .transactionId(rs.getInt("transaction_id"))
+                        .transactionType(rs.getString("transaction_type"))
+                        .assetName(rs.getString("asset_name"))
+                        .zoneName(rs.getString("zone_name"))
+                        .executedBy(rs.getString("executed_by"))
+                        .executedAt(rs.getTimestamp("executed_at") != null 
+                                ? rs.getTimestamp("executed_at").toLocalDateTime() 
+                                : null)
+                        .referenceId(rs.getObject("reference_id") != null 
+                                ? rs.getInt("reference_id") 
+                                : null)
+                        .referenceType(rs.getString("reference_type"))
+                        .build();
+                result.add(dto);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi tải danh sách giao dịch kho: " + e.getMessage(), e);
+        }
+
+        return result;
     }
 }
