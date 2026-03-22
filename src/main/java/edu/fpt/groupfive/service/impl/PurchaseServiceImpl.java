@@ -16,7 +16,7 @@ import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.config.RoleLogin;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +27,8 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Getter
+@Setter
 public class PurchaseServiceImpl implements PurchaseService {
 
     private final PurchaseDAO purchaseDAO;

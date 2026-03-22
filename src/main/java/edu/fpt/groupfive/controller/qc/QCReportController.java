@@ -24,27 +24,27 @@ public class QCReportController {
     private final AssetService assetService;
     private final UserService userService;
 
-    @GetMapping("/create")
-    public String showCreateForm(
-            @RequestParam(value = "assetId", required = false) Integer assetId,
-            Model model) {
-
-        if (!model.containsAttribute("qcReport")) {
-            QCReportRequest qcReport = new QCReportRequest();
-            if (assetId != null) {
-                qcReport.setAssetId(assetId);   }
-            model.addAttribute("qcReport", qcReport);
-        }
-
-        model.addAttribute("assets", assetService.findAll());
-        model.addAttribute("users", userService.findAll());
-
-        if (assetId != null) {
-            model.addAttribute("selectedAssetId", assetId);
-        }
-
-        return "qc/create";
-    }
+//    @GetMapping("/create")
+//    public String showCreateForm(
+//            @RequestParam(value = "assetId", required = false) Integer assetId,
+//            Model model) {
+//
+//        if (!model.containsAttribute("qcReport")) {
+//            QCReportRequest qcReport = new QCReportRequest();
+//            if (assetId != null) {
+//                qcReport.setAssetId(assetId);   }
+//            model.addAttribute("qcReport", qcReport);
+//        }
+//
+//        model.addAttribute("assets", assetService.findAll());
+//        model.addAttribute("users", userService.findAll());
+//
+//        if (assetId != null) {
+//            model.addAttribute("selectedAssetId", assetId);
+//        }
+//
+//        return "qc/create";
+//    }
 
     @PostMapping("/create")
     public String processCreateForm(

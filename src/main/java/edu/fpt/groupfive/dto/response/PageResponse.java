@@ -8,7 +8,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@AllArgsConstructor
 public class PageResponse<T> {
     private List<T> data;
     private int currentPage;

@@ -76,7 +76,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
 
         // Kiểm tra manager tồn tại
         System.out.println("Checking manager with ID: " + dto.getAssetManagerId());
-        User manager = userDAO.findById(dto.getAssetManagerId())
+        Users manager = userDAO.findById(dto.getAssetManagerId())
                 .orElseThrow(() -> {
                     System.out.println("ERROR: Manager not found with ID: " + dto.getAssetManagerId());
                     return new IllegalArgumentException("Người quản lý không hợp lệ");

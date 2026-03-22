@@ -212,7 +212,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         d.setDepartmentId(rs.getInt("department_id"));
         d.setDepartmentName(rs.getString("department_name"));
         d.setStatus(rs.getString("status"));
-        d.setManagerUserId(rs.getInt("manager_user_id"));
+        d.setManagerId(rs.getInt("manager_user_id"));
 
         Timestamp created = rs.getTimestamp("created_date");
         Timestamp updated = rs.getTimestamp("updated_date");

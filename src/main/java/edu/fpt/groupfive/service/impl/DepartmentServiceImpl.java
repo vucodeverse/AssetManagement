@@ -11,11 +11,8 @@ import edu.fpt.groupfive.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +24,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public void createDepartment(DepartmentCreateRequest request) {
-        if (departmentDAO.existsByName(request.getDepartmentName())) {
+        if (departmentDAO.existsByName(request.getDepartmentName(), request.getDepartmentId())) {
             throw new IllegalArgumentException("Department already exists");
         }
 
@@ -92,6 +89,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         return departmentDAO.existsByName(departmentName, departId);
     }
 
+
+    @Override
+    public int countStaffInDepartment(Integer departmentId) {
+        return userDAO.countUsersInDepartment(departmentId);
+    }
     @Override
     public List<DepartmentResponse> findAll() {
 
@@ -99,14 +101,12 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .stream()
                 .map(dept -> new DepartmentResponse(
                         dept.getDepartmentId(),
-                        dept.getDepartmentName()
+                        dept.getDepartmentName(),
+                        dept.getDescription(),
+                        dept.getCreatedDate(),
+                        dept.getManagerId(),
+                        dept.getManagerName()
                 ))
                 .toList();
     }
-
-    @Override
-    public int countStaffInDepartment(Integer departmentId) {
-        return userDAO.countUsersInDepartment(departmentId);
-    }
-
 }

@@ -43,4 +43,5 @@ public interface UserService {
     boolean existsDirector(Integer userId);
 
     Map<Integer, String> getUserIdToUsernameMap();
+    List<UserResponse> findAll();
 }

@@ -191,4 +191,24 @@ public class UserServiceImpl implements UserService {
         return userMap;
     }
 
+    @Override
+    public List<UserResponse> findAll() {
+        return userDAO.findAll()
+                .stream()
+                .map(user -> new UserResponse(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getPhoneNumber(),
+                        user.getStatus(),
+                        user.getRole(),
+                        user.getCreatedDate(),
+                        user.getUpdatedDate(),
+                        user.getDepartmentId()
+                ))
+                .toList();
+    }
+
 }
