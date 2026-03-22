@@ -21,4 +21,8 @@ public interface TransferRequestDAO {
     void updateSenderConfirm(int transferId, int userId, LocalDateTime time);
 
     void updateReceiverConfirm(int transferId, int userId, LocalDateTime time);
+
+    List<TransferRequest> findByFromDepartmentId(Integer fromDeptId);
+    List<TransferRequest> findByToDepartmentId(Integer toDeptId);
+    List<TransferRequest> findByStatus(String status);
 }

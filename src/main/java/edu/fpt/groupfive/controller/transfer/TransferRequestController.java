@@ -1,16 +1,21 @@
 package edu.fpt.groupfive.controller.transfer;
 
+import edu.fpt.groupfive.common.TransferAction;
 import edu.fpt.groupfive.dto.request.search.AssetSearchCriteria;
 import edu.fpt.groupfive.dto.request.transfer.TransferRequestCreate;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.TransferResponse;
+import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.DepartmentService;
 import edu.fpt.groupfive.service.ITransferRequestService;
 import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.service.impl.TransferRequestDetailServiceImpl;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -134,7 +139,83 @@ public class TransferRequestController {
 //        model.addAttribute("transferResponse", transferResponse);
 //        return "transfer/detail";
 //    }
+
+
+
+
+    // Department Manager: xem tất cả lệnh liên quan (gửi + nhận)
+    @GetMapping("/my")
+    public String listMyTransfers(Model model, HttpSession session) {
+        Integer departmentId = (Integer) session.getAttribute("departmentId");
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (departmentId == null || userId == null) {
+            return "redirect:/auth/login";
+        }
+        Users user = userService.findById(userId);
+        List<TransferResponse> list = transferRequestService.getTransfersForDepartmentManager(departmentId);
+        model.addAttribute("transfers", list);
+        model.addAttribute("role", "DEPARTMENT_MANAGER");
+        model.addAttribute("currentUser", user);
+        model.addAttribute("activeMenu", "transfer");
+        return "transfer/list";
+    }
+
+    // Warehouse Staff: xem lệnh cần xử lý (status = SENDER_CONFIRMED)
+    @GetMapping("/warehouse")
+    public String listWarehouse(Model model, HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth/login";
+        }
+        Users user = userService.findById(userId);
+        List<TransferResponse> list = transferRequestService.getTransfersForWarehouse();
+        model.addAttribute("transfers", list);
+        model.addAttribute("role", "WAREHOUSE_STAFF");
+        model.addAttribute("currentUser", user);
+        model.addAttribute("activeMenu", "transfer");
+        return "transfer/list";
+    }
+
+    // Chi tiết lệnh (dùng chung)
+    @GetMapping("/{id}")
+    public String detail(@PathVariable int id, Model model, HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth/login";
+        }
+        Users user = userService.findById(userId);
+        TransferResponse transfer = transferRequestService.getTransferDetail(id);
+        model.addAttribute("transfer", transfer);
+        model.addAttribute("currentUser", user);
+        model.addAttribute("activeMenu", "transfer");
+        return "transfer/detail";
+    }
+
+    // Xử lý action (xác nhận gửi, nhận, hủy)
+    @PostMapping("/{id}/action")
+    public String processAction(@PathVariable int id,
+                                @RequestParam TransferAction action,
+                                @RequestParam(required = false) Boolean issue,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth/login";
+        }
+        try {
+            transferRequestService.processTransferAction(id, userId, action, issue != null ? issue : false);
+            redirectAttributes.addFlashAttribute("message", "Cập nhật thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/transfer-requests/" + id;
+    }
 }
+
+
+
+
+
 
 
 

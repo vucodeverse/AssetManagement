@@ -211,4 +211,17 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+
+    @Override
+    public Users findByUsername(String username) {
+        return userDAO.findUserByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user: " + username));
+    }
+
+
+    @Override
+    public Users findById(Integer id) {
+        return userDAO.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy user id = "+id));
+    }
+
 }

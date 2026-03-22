@@ -22,9 +22,11 @@ public class TransferResponse {
     private List<AssetTypeResponse> assets;
     private String senderConfirmedBy;
     private LocalDateTime senderConfirmedAt;
-    private String warehouseConfirmedBy;
-    private LocalDateTime warehouseConfirmedAt;
+
     private String receiverConfirmedBy;
     private LocalDateTime receiverConfirmedAt;
     private String qualityReportResult;
+
+    private List<TransferAssetDetailResponse> transferAssets;
+
 }

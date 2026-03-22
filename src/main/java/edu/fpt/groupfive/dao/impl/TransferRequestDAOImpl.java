@@ -22,14 +22,14 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
     public int createTransferRequest(TransferRequest request) {
 
         String query = """
-        INSERT INTO transfer_request (
-            allocation_request_id, from_department_id, to_department_id,
-            asset_manager_id, transfer_date, reason, status,
-            sender_confirmed_by, sender_confirmed_at,
-            receiver_confirmed_by, receiver_confirmed_at,
-            created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())
-    """;
+                    INSERT INTO transfer_request (
+                        allocation_request_id, from_department_id, to_department_id,
+                        asset_manager_id, transfer_date, reason, status,
+                        sender_confirmed_by, sender_confirmed_at,
+                        receiver_confirmed_by, receiver_confirmed_at,
+                        created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())
+                """;
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
@@ -68,10 +68,10 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
     @Override
     public int updateStatus(int transferId, String status) {
         String query = """
-            UPDATE transfer_request
-            SET status = ?, updated_at = SYSDATETIME()
-            WHERE transfer_id = ?
-        """;
+                    UPDATE transfer_request
+                    SET status = ?, updated_at = SYSDATETIME()
+                    WHERE transfer_id = ?
+                """;
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query)) {
 
@@ -86,14 +86,14 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
     @Override
     public Optional<TransferRequest> findById(int transferId) {
         String query = """
-            SELECT transfer_id, allocation_request_id, from_department_id, to_department_id,
-                   asset_manager_id, transfer_date, reason, status,
-                   sender_confirmed_by, sender_confirmed_at,
-                   receiver_confirmed_by, receiver_confirmed_at,
-                   created_at, updated_at
-            FROM transfer_request
-            WHERE transfer_id = ?
-        """;
+                    SELECT transfer_id, allocation_request_id, from_department_id, to_department_id,
+                           asset_manager_id, transfer_date, reason, status,
+                           sender_confirmed_by, sender_confirmed_at,
+                           receiver_confirmed_by, receiver_confirmed_at,
+                           created_at, updated_at
+                    FROM transfer_request
+                    WHERE transfer_id = ?
+                """;
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query)) {
@@ -113,13 +113,13 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
     @Override
     public List<TransferRequest> findAll() {
         String query = """
-        SELECT transfer_id, allocation_request_id, from_department_id, to_department_id,
-               asset_manager_id, transfer_date, reason, status,
-               sender_confirmed_by, sender_confirmed_at,
-               receiver_confirmed_by, receiver_confirmed_at,
-               created_at, updated_at
-        FROM transfer_request
-    """;
+                    SELECT transfer_id, allocation_request_id, from_department_id, to_department_id,
+                           asset_manager_id, transfer_date, reason, status,
+                           sender_confirmed_by, sender_confirmed_at,
+                           receiver_confirmed_by, receiver_confirmed_at,
+                           created_at, updated_at
+                    FROM transfer_request
+                """;
 
         List<TransferRequest> requests = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
@@ -153,12 +153,12 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
     @Override
     public void updateSenderConfirm(int transferId, int userId, LocalDateTime time) {
         String query = """
-        UPDATE transfer_request
-        SET sender_confirmed_by = ?, 
-            sender_confirmed_at = ?, 
-            updated_at = SYSDATETIME()
-        WHERE transfer_id = ?
-    """;
+                    UPDATE transfer_request
+                    SET sender_confirmed_by = ?, 
+                        sender_confirmed_at = ?, 
+                        updated_at = SYSDATETIME()
+                    WHERE transfer_id = ?
+                """;
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query)) {
@@ -176,12 +176,12 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
     @Override
     public void updateReceiverConfirm(int transferId, int userId, LocalDateTime time) {
         String query = """
-        UPDATE transfer_request
-        SET receiver_confirmed_by = ?, 
-            receiver_confirmed_at = ?, 
-            updated_at = SYSDATETIME()
-        WHERE transfer_id = ?
-    """;
+                    UPDATE transfer_request
+                    SET receiver_confirmed_by = ?, 
+                        receiver_confirmed_at = ?, 
+                        updated_at = SYSDATETIME()
+                    WHERE transfer_id = ?
+                """;
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query)) {
@@ -195,6 +195,7 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
             throw new RuntimeException("Lỗi khi xác nhận nhận tài sản", e);
         }
     }
+
     private TransferRequest mapRow(ResultSet rs) throws SQLException {
         TransferRequest request = new TransferRequest();
         request.setTransferId(rs.getInt("transfer_id"));
@@ -215,5 +216,57 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
         Timestamp updatedAt = rs.getTimestamp("updated_at");
         request.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
         return request;
+    }
+
+
+    @Override
+    public List<TransferRequest> findByFromDepartmentId(Integer fromDeptId) {
+        String sql = "SELECT * FROM transfer_request WHERE from_department_id = ? ORDER BY created_at DESC";
+        List<TransferRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, fromDeptId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<TransferRequest> findByToDepartmentId(Integer toDeptId) {
+        String sql = "SELECT * FROM transfer_request WHERE to_department_id = ? ORDER BY created_at DESC";
+        List<TransferRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, toDeptId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<TransferRequest> findByStatus(String status) {
+        String sql = "SELECT * FROM transfer_request WHERE status = ? ORDER BY created_at DESC";
+        List<TransferRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
     }
 }

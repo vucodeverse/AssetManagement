@@ -44,4 +44,8 @@ public interface UserService {
 
     Map<Integer, String> getUserIdToUsernameMap();
     List<UserResponse> findAll();
+    Users findByUsername(String username);
+
+    Users findById(Integer id);
+
 }

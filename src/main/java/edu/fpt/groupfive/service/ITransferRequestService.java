@@ -21,4 +21,12 @@ public interface ITransferRequestService {
 //    void updateStatus(int transferId, String status);
 //
 //    Optional<TransferRequest> getTransferRequestById(int transferId);
+
+
+    List<TransferResponse> getTransfersForSender(int departmentId);
+    List<TransferResponse> getTransfersForReceiver(int departmentId);
+    List<TransferResponse> getTransfersForWarehouse();
+    TransferResponse getTransferDetail(int transferId);
+
+    List<TransferResponse> getTransfersForDepartmentManager(int departmentId);
 }

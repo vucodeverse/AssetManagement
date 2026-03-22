@@ -3,6 +3,7 @@ package edu.fpt.groupfive.service.impl;
 import edu.fpt.groupfive.common.TransferAction;
 import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dto.request.transfer.TransferRequestCreate;
+import edu.fpt.groupfive.dto.response.TransferAssetDetailResponse;
 import edu.fpt.groupfive.dto.response.TransferResponse;
 import edu.fpt.groupfive.model.*;
 import edu.fpt.groupfive.service.ITransferRequestService;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -188,5 +190,93 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
                     "Trạng thái không hợp lệ. Yêu cầu: " + expected + ", hiện tại: " + current
             );
         }
+    }
+
+
+
+    // ========== CÁC PHƯƠNG THỨC MỚI ==========
+    @Override
+    public List<TransferResponse> getTransfersForSender(int departmentId) {
+        List<TransferRequest> list = transferRequestDAO.findByFromDepartmentId(departmentId);
+        return convertList(list);
+    }
+
+    @Override
+    public List<TransferResponse> getTransfersForReceiver(int departmentId) {
+        List<TransferRequest> list = transferRequestDAO.findByToDepartmentId(departmentId);
+        return convertList(list);
+    }
+
+    @Override
+    public List<TransferResponse> getTransfersForWarehouse() {
+        List<TransferRequest> list = transferRequestDAO.findByStatus("SENDER_CONFIRMED");
+        return convertList(list);
+    }
+
+    @Override
+    public TransferResponse getTransferDetail(int transferId) {
+        TransferRequest t = transferRequestDAO.findById(transferId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lệnh #" + transferId));
+
+        TransferResponse response = convertToResponse(t);
+
+        List<TransferRequestDetail> details = transferRequestDetailDAO.findByTransferId(transferId);
+        List<TransferAssetDetailResponse> assetDetails = new ArrayList<>();
+        for (TransferRequestDetail d : details) {
+            Asset asset = assetDAO.findById(d.getAssetId()).orElse(null);
+            String assetName = (asset != null) ? asset.getAssetName() : "Không xác định";
+            assetDetails.add(new TransferAssetDetailResponse(
+                    d.getAssetId(), assetName, d.getConditionFromSender(), d.getNote()));
+        }
+        response.setTransferAssets(assetDetails);
+        return response;
+    }
+
+    private List<TransferResponse> convertList(List<TransferRequest> list) {
+        List<TransferResponse> result = new ArrayList<>();
+        for (TransferRequest t : list) {
+            result.add(convertToResponse(t));
+        }
+        return result;
+    }
+
+    private TransferResponse convertToResponse(TransferRequest t) {
+        TransferResponse resp = new TransferResponse();
+        resp.setTransferId(t.getTransferId());
+        resp.setStatus(t.getStatus());
+        resp.setCreatedAt(t.getTransferDate());
+        resp.setReason(t.getReason());
+
+        departmentDAO.findById(t.getFromDepartmentId()).ifPresent(d -> resp.setFromDepartmentName(d.getDepartmentName()));
+        departmentDAO.findById(t.getToDepartmentId()).ifPresent(d -> resp.setToDepartmentName(d.getDepartmentName()));
+
+        if (t.getAssetManagerId() != null) {
+            userDAO.findById(t.getAssetManagerId()).ifPresent(u -> resp.setAssetManagerName(u.getFirstName() + " " + u.getLastName()));
+        }
+
+        if (t.getSenderConfirmedBy() != null) {
+            userDAO.findById(t.getSenderConfirmedBy()).ifPresent(u -> resp.setSenderConfirmedBy(u.getFirstName() + " " + u.getLastName()));
+            resp.setSenderConfirmedAt(t.getSenderConfirmedAt());
+        }
+        if (t.getReceiverConfirmedBy() != null) {
+            userDAO.findById(t.getReceiverConfirmedBy()).ifPresent(u -> resp.setReceiverConfirmedBy(u.getFirstName() + " " + u.getLastName()));
+            resp.setReceiverConfirmedAt(t.getReceiverConfirmedAt());
+        }
+
+        return resp;
+    }
+
+
+    @Override
+    public List<TransferResponse> getTransfersForDepartmentManager(int departmentId) {
+        List<TransferRequest> fromList = transferRequestDAO.findByFromDepartmentId(departmentId);
+        List<TransferRequest> toList = transferRequestDAO.findByToDepartmentId(departmentId);
+        // Gộp hai list, loại trùng (nếu có)
+        List<TransferRequest> combined = new ArrayList<>();
+        combined.addAll(fromList);
+        combined.addAll(toList);
+        // Sắp xếp theo created_at giảm dần
+        combined.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+        return convertList(combined);
     }
 }
