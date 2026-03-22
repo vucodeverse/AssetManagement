@@ -13,9 +13,9 @@ public interface AssetMapper {
 
     Asset toAsset(AssetCreateRequest request);
 
-    AssetResponse toResponse(Asset asset);
+    AssetResponse toAssetResponse(Asset asset);
 
-    List<AssetResponse> toResponseList(List<Asset> assets);
+    List<AssetResponse> toAssetResponseList(List<Asset> assets);
 
     @Mapping(target = "assetId", ignore = true)
     void updateFromRequest(AssetUpdateRequest request,

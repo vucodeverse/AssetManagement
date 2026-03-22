@@ -1,10 +1,13 @@
 package edu.fpt.groupfive.common;
 
 public enum AssetStatus {
+    NEW, // Vừa tạo, chưa được kho tiếp nhận
 
-    INSTOCK,
-    ASSIGNED,
-            MAINTENANCE,
-    DAMAGED, LOST,
-    DISPOSED
+    AVAILABLE, // Đã ở kho và sẵn sàng sử dụng
+
+    ASSIGNED, // Đã bàn giao cho người dùng
+
+    UNDER_MAINTENANCE, // Đang sửa chữa
+
+    DISPOSED// Thanh lý / ngừng sử dụng
 }

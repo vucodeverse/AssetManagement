@@ -16,23 +16,27 @@ public class UserUpdateRequest {
 
     private String password;
 
-    @NotBlank(message = "First name is required")
+    @NotBlank(message = "Tên là bắt buộc")
     private String firstName;
 
-    @NotBlank(message = "Last name is required")
+    @NotBlank(message = "Họ là bắt buộc")
     private String lastName;
 
-    @Email(message = "Invalid email format")
+    @Email(message = "Định dạng email không hợp lệ")
+    @NotBlank(message = "Email là bắt buộc")
     private String email;
 
-    @NotBlank(message = "Phone is required")
+    @Pattern(
+            regexp = "^0\\d{9}$",
+            message = "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0"
+    )
     private String phoneNumber;
 
-    @NotNull(message = "Role is required")
+    @NotNull(message = "Vai trò là bắt buộc")
     private Role role;
 
     private String status;
 
-    @NotNull(message = "Department is required")
+    @NotNull(message = "Phòng ban là bắt buộc")
     private Integer departmentId;
 }

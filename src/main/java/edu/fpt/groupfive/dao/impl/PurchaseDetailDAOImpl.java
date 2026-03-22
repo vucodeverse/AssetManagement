@@ -3,7 +3,9 @@ package edu.fpt.groupfive.dao.impl;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
 import edu.fpt.groupfive.model.PurchaseDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
+import edu.fpt.groupfive.util.exception.DataAccessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -17,6 +19,9 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    @Value("${dao.common.insert_error}")
+    private String insertErrorMsg;
+
     // insert purchase detail
     @Override
     public void insert(PurchaseDetail purchaseDetail, Connection connection) {
@@ -27,18 +32,13 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             preparedStatement.setBigDecimal(1, purchaseDetail.getEstimatePrice());
             preparedStatement.setInt(2, purchaseDetail.getQuantity());
             preparedStatement.setInt(3, purchaseDetail.getPurchaseRequestId());
-            preparedStatement.setInt(4, purchaseDetail.getAssetTypeId());
+            preparedStatement.setInt(4, purchaseDetail.getTypeId());
             preparedStatement.setString(5, purchaseDetail.getSpecificationRequirement());
             preparedStatement.setString(6, purchaseDetail.getPurchaseDetailNote());
             preparedStatement.executeUpdate();
         } catch (Exception exception) {
-            throw new RuntimeException(exception);
+            throw new DataAccessException(insertErrorMsg, exception);
         }
-    }
-
-    @Override
-    public Optional<PurchaseDetail> findById(Integer purchaseDetailId) {
-        return Optional.empty();
     }
 
     // tìm purchase detail theo purchse request
@@ -64,7 +64,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
                     detail.setSpecificationRequirement(
                             rs.getString("spec_requirement"));
                     detail.setPurchaseDetailNote(rs.getString("note"));
-                    detail.setAssetTypeId(rs.getInt("asset_type_id"));
+                    detail.setTypeId(rs.getInt("asset_type_id"));
                     detail.setPurchaseRequestId(rs.getInt("purchase_request_id"));
                     detail.setEstimatePrice(rs.getBigDecimal("estimated_price"));
 
@@ -73,14 +73,13 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Error finding PurchaseDetails by purchaseRequestId=" + purchaseRequestId, e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
 
         return purchaseDetails;
     }
 
-    // xóa tất cả purchase detail theo purchase request id (dùng cho update draft)
+    // xóa tất cả purchase detail theo purchase request id (dùng khi update draft)
     @Override
     public void deleteByPurchaseRequestId(Integer purchaseRequestId, Connection conn) {
         String sql = "delete from purchase_request_detail where purchase_request_id = ?";
@@ -88,7 +87,7 @@ public class PurchaseDetailDAOImpl implements PurchaseDetailDAO {
             ps.setInt(1, purchaseRequestId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting PurchaseDetails by purchaseRequestId=" + purchaseRequestId, e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
     }
 }

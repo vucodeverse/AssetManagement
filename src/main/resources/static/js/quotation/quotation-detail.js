@@ -1,5 +1,4 @@
 $(document).ready(function () {
-    if (!$('#quotationDetailTable').length) return;
 
     $('#quotationDetailTable').DataTable({
         pageLength: 5,
@@ -12,7 +11,10 @@ $(document).ready(function () {
         columnDefs: [],
         language: {
             paginate: { previous: "<", next: ">" },
-            info: "SHOWING _START_ TO _END_ OF _TOTAL_ ENTRIES"
+            info: "HIỂN THỊ TỪ _START_ ĐẾN _END_ TRONG TỔNG SỐ _TOTAL_ MỤC",
+            emptyTable: "Không có dữ liệu."
         }
     });
 });
+
+

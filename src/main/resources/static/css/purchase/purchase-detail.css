@@ -1,3 +1,6 @@
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 :root {
     --panel: #ffffff;
     --text: #111827;
@@ -11,6 +14,10 @@
 
 * {
     box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* ───── MAIN CONTENT ───── */
@@ -38,15 +45,23 @@
     gap: 14px;
 }
 
-.back-icon {
+.btn-back {
     cursor: pointer;
-    font-size: 18px;
+    font-size: 16px;
     color: var(--text);
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: .15s ease;
 }
 
-.back-icon:hover {
-    opacity: .6;
+.btn-back:hover {
+    background: #e2e8f0;
 }
 
 .top-bar h1 {
@@ -165,6 +180,12 @@
     margin-top: 2px;
 }
 
+.badge-status.badge-REJECTED {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fca5a5;
+}
+
 @media (max-width: 980px) {
     .info-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -178,6 +199,33 @@
     .info-block:nth-child(4) {
         border-top: 1px solid var(--border);
     }
+}
+
+/* ───── REJECT REASON ───── */
+.reject-reason-box {
+    margin-top: 24px;
+    padding: 16px 22px;
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-left: 4px solid #f56565;
+    border-radius: 8px;
+}
+
+.reject-reason-label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #c53030;
+    margin-bottom: 8px;
+}
+
+.reject-reason-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e53e3e;
+    line-height: 1.5;
 }
 
 .separator {
@@ -271,6 +319,21 @@
 .q-actions {
     display: flex;
     gap: 10px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.manager-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.manager-actions form {
+    margin: 0;
 }
 
 .btn-view-quotes,
@@ -520,4 +583,59 @@
     border: 1px solid #c3e6cb !important;
     font-size: 13px;
     font-weight: 600;
+}
+
+/* ───── FLASH BANNER (success after create) ───── */
+.alert-success-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    border-left: 4px solid #10b981;
+    border-radius: 10px;
+    padding: 13px 18px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    animation: fadeInDown 0.35s ease;
+}
+
+.alert-success-banner i {
+    font-size: 15px;
+    color: #10b981;
+    flex-shrink: 0;
+}
+
+.alert-success-banner span {
+    flex: 1;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #10b981;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: opacity .15s;
+}
+
+.alert-close:hover {
+    opacity: .6;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

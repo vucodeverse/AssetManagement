@@ -9,7 +9,8 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface QuotationMapper {
 
-    @Mapping(target = "quotationDetailNote", source = "quotationNote")
+
+    @Mapping(target = "quotationDetails", source = "quotationDetailCreateRequests")
     Quotation toQuotation(QuotationCreateRequest quotationCreateRequest);
 
     @Mapping(source = "id", target = "quotationId")

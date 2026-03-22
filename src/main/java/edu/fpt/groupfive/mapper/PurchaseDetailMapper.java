@@ -1,24 +1,23 @@
 package edu.fpt.groupfive.mapper;
 
-import edu.fpt.groupfive.dto.request.PurchaseDetailCreateRequest;
-import edu.fpt.groupfive.dto.response.PurchaseDetailResponse;
+import edu.fpt.groupfive.dto.request.PurchaseRequestDetailCreateRequest;
+import edu.fpt.groupfive.dto.response.PurchaseRequestDetailResponse;
 import edu.fpt.groupfive.model.PurchaseDetail;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PurchaseDetailMapper {
 
-    PurchaseDetail toPurchaseDetail(PurchaseDetailCreateRequest purchaseDetailCreateRequest);
+    PurchaseDetail toPurchaseDetail(PurchaseRequestDetailCreateRequest purchaseRequestDetailCreateRequest);
 
-    List<PurchaseDetail> toPurchaseDetailList(List<PurchaseDetailCreateRequest> purchaseDetailCreateRequests);
+    List<PurchaseDetail> toPurchaseDetailList(
+            List<PurchaseRequestDetailCreateRequest> purchaseRequestDetailCreateRequests);
 
-    PurchaseDetailResponse toPurchaseDetailResponse(PurchaseDetail purchaseDetail);
+    PurchaseRequestDetailResponse toPurchaseDetailResponse(PurchaseDetail purchaseDetail);
 
-    List<PurchaseDetailResponse> toPurchaseDetailResponseList(List<PurchaseDetail> purchaseDetails);
+    List<PurchaseRequestDetailResponse> toPurchaseDetailResponseList(List<PurchaseDetail> purchaseDetails);
 
 }

@@ -9,11 +9,9 @@ import java.util.List;
 @Getter
 @Builder
 public class DashboardDTO {
-    private long pendingPRCount;
-    private long pendingQuoCount;
-    private long totalPOCount;
-    private BigDecimal totalPOValue;
-    
-    private List<PurchaseResponse> recentPRs;
+    private List<PurchaseRequestResponse> recentPRs;
     private List<QuotationResponse> recentQuotations;
+    private Integer totalPrPending;
+    private Integer totalQuotationPending;
+    private BigDecimal totalPrTotalInYear;
 }

@@ -1,7 +1,8 @@
 package edu.fpt.groupfive.service.impl;
 
+import edu.fpt.groupfive.common.AssetTypeClass;
+import edu.fpt.groupfive.common.DepreciationMethod;
 import edu.fpt.groupfive.dao.AssetTypeDAO;
-import edu.fpt.groupfive.dao.impl.AssetTypeDAOImpl;
 import edu.fpt.groupfive.dto.request.AssetTypeCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetTypeUpdateRequest;
 import edu.fpt.groupfive.dto.response.AssetTypeResponse;
@@ -13,10 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ public class AssetTypeServiceImpl implements AssetTypeService {
     public List<AssetTypeResponse> getAllAssetType() {
         return assetTypeDAO.findAll().stream().map(assetType -> AssetTypeResponse.builder()
                 .typeId(assetType.getTypeId())
-                .typeName(assetType.getTypeName()).build()).collect(Collectors.toList());
+                .typeName(assetType.getTypeName()).build()).toList();
     }
 
     public AssetTypeResponse getById(Integer id) {
@@ -106,8 +107,37 @@ public class AssetTypeServiceImpl implements AssetTypeService {
 
     @Override
     public Map<Integer, String> getAssetTypeIdToNameMap() {
-        return assetTypeDAO.findAll().stream()
-                .collect(Collectors.toMap(AssetType::getTypeId, AssetType::getTypeName,
-                        (existing, replacement) -> existing));
+        Map<Integer, String> map = new HashMap<>();
+
+        for(AssetType assetType : assetTypeDAO.findAll()) {
+            map.put(assetType.getTypeId(), assetType.getTypeName());
+        }
+
+        return map;
+    }
+
+    @Override
+    public List<AssetTypeResponse> search(String keyword,
+                                          Integer categoryId,
+                                          AssetTypeClass typeClass,
+                                          DepreciationMethod depreciationMethod,
+                                          String direction,
+                                          int offset,
+                                          int limit) {
+
+        List<AssetType> assetTypes =
+                assetTypeDAO.search(keyword, categoryId, typeClass, depreciationMethod, direction, offset, limit);
+
+        return assetTypeMapper.toAssetTypeResponseList(assetTypes);
+    }
+
+
+    @Override
+    public int count(String keyword,
+                     Integer categoryId,
+                     AssetTypeClass typeClass,
+                     DepreciationMethod depreciationMethod) {
+
+        return assetTypeDAO.count(keyword, categoryId, typeClass, depreciationMethod);
     }
 }

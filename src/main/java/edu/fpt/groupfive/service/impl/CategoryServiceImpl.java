@@ -107,7 +107,7 @@ public class CategoryServiceImpl implements CategoryService {
         int totalPages=(int) Math.ceil((double) totalElements/PAGE_SIZE);
 
         List<CategoryResponse> responses = categoryMapper.toCategoryResponseList(categories);
-        return new PageResponse<>(responses, page, PAGE_SIZE, totalElements, totalPages);
+        return new PageResponse<>(responses, page, PAGE_SIZE, totalElements);
     }
 
 

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/main-layout}">
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
 
 <head>
-    <title th:text="'Quotation Detail #' + ${quotation.quotationId} + ' | PROCUREX'">Quotation Detail | PROCUREX</title>
+    <title th:text="'Chi Tiết Báo Giá #' + ${quotation.quotationId} + ' | PROCUREX'">Chi Tiết Báo Giá | PROCUREX</title>
     <th:block layout:fragment="extra-css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,105 +14,134 @@
 </head>
 
 <body>
-    <div layout:fragment="content">
+    <th:block layout:fragment="content">
         <div class="po-detail-wrapper">
-            <!-- Thanh điều hướng (Breadcrumb) -->
-            <div class="breadcrumb">
-                <a th:href="@{/purchase-staff/dashboard}">DASHBOARD</a> /
-                <a th:href="@{/purchase-staff/purchases}">PURCHASES</a> /
-                <a
-                    th:href="@{/purchase-staff/quotations/of-purchase/{id}(id=${quotation.purchaseId})}">QUOTATIONS</a>
-                /
-                <span class="active">DETAIL</span>
-            </div>
 
             <header class="content-header">
                 <div class="header-left">
-                    <h1>QUOTATION DETAILS</h1>
+                    <a class="btn-back" th:href="@{/quotations/of-purchase/{id}(id=${quotation.purchaseId})}">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1>CHI TIẾT BÁO GIÁ</h1>
                 </div>
                 <div class="header-actions">
                     <!-- Các hành động của Director -->
                     <th:block>
-                        <button type="button" class="btn-outline-prem" onclick="openRejectModal()">REJECT</button>
-                        <a th:href="@{/purchase-staff/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
-                            class="btn-approve">
-                            APPROVE & GENERATE PO
-                        </a>
-                        <a th:if="${quotation.quotationStatus == 'DRAFT'}" class="btn-solid-prem"
-                            th:href="@{/purchase-staff/quotations/{id}/edit(id=${quotation.quotationId})}">
-                            UPDATE QUOTATION
-                        </a>
+                        <div sec:authorize="hasAuthority('DIRECTOR')">
+                            <form th:action="@{/quotations/{id}/actions(id=${quotation.quotationId})}" method="post" style="display: inline-block;">
+                                <input type="hidden" name="action" value="r">
+                                <button type="submit" class="btn-outline-prem"
+                                    th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}">
+                                    TỪ CHỐI
+                                </button>
+                            </form>
+                            <a th:href="@{/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
+                                th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
+                                class="btn-approve">
+                                DUYỆT & TẠO ĐƠN HÀNG
+                            </a>
+                        </div>
+                        <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                            <a th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT'}"
+                                class="btn-solid-prem" th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
+                                CẬP NHẬT BÁO GIÁ
+                            </a>
+                        </div>
                     </th:block>
                 </div>
             </header>
+
+            <!-- Success Message -->
+            <div th:if="${message}" class="alert-success-banner">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${message}" style="font-weight: 600; font-size: 14px;"></span>
+            </div>
 
             <div class="details-card">
                 <!-- Thông tin tiêu đề -->
                 <div class="header-info">
                     <div class="info-item">
-                        <label>QUOTATION ID</label>
+                        <label>MÃ BÁO GIÁ</label>
                         <p class="val-bold" th:text="'QT-' + ${quotation.quotationId}">QT-2024-001</p>
                     </div>
                     <div class="info-item">
-                        <label>SUPPLIER VENDOR</label>
+                        <label>NHÀ CUNG CẤP</label>
                         <p class="val-bold">
-                            <span th:text="${quotation.supplierName}">Global Tech Solutions Inc.</span>
+                            <span th:text="${quotation.supplierName}">Nhà cung cấp mẫu</span>
                         </p>
                     </div>
                     <div class="info-item">
-                        <label>STATUS</label>
+                        <label>TRẠNG THÁI</label>
                         <div>
-                            <span class="status-badge" th:classappend="${quotation.quotationStatus}"
-                                th:text="${quotation.quotationStatus}">PENDING</span>
+                            <span class="status-badge" th:classappend="${quotation.quotationStatus.name()}"
+                                th:text="${quotation.quotationStatus.description}">ĐANG CHỜ</span>
                         </div>
                     </div>
                     <div class="info-item">
-                        <label>DATE RECEIVED</label>
+                        <label>NGÀY NHẬN</label>
                         <p class="val-bold"
                             th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'dd-MM-yyyy') : '—'}">
                             10-01-2024</p>
                     </div>
                 </div>
 
-                <!-- Lý do từ chối -->
-                <div th:if="${quotation.quotationStatus == T(edu.fpt.groupfive.common.QuotationStatus).REJECTED and quotation.rejectedReason != null}"
-                    class="rejection-reason-box">
-                    <label>REJECTION REASON</label>
-                    <p th:text="${quotation.rejectedReason}">Reason will appear here...</p>
-                </div>
 
                 <hr class="divider">
 
                 <!-- Bảng danh sách mặt hàng -->
                 <section class="items-section">
-                    <h2 class="section-title">QUOTATION LINE ITEMS</h2>
+                    <h2 class="section-title">CHI TIẾT MẶT HÀNG BÁO GIÁ</h2>
                     <div class="details-table-wrap">
                         <table id="quotationItemsTable" class="details-table">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>ASSET TYPE NAME</th>
-                                    <th>QUANTITY</th>
-                                    <th>PRICE</th>
-                                    <th>TAX (%)</th>
-                                    <th>DISCOUNT (%)</th>
-                                    <th>WARRANTY (MO)</th>
+                                    <th>LOẠI TÀI SẢN</th>
+                                    <th>SỐ LƯỢNG</th>
+                                    <th>ĐƠN GIÁ</th>
+                                    <th>THUẾ (%)</th>
+                                    <th>CHIẾT KHẤU (%)</th>
+                                    <th>BẢO HÀNH (THÁNG)</th>
+                                    <th>THỰC THI</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="item, stat : ${quotation.quotationDetails}">
                                     <td class="td-id" th:text="${stat.count}">1</td>
-                                    <td class="td-bold" th:text="${item.assetTypeName}">Asset Type</td>
+                                    <td class="td-bold" th:text="${item.assetTypeName}">Loại tài sản</td>
                                     <td th:text="${#numbers.formatInteger(item.quantity, 2)}">01</td>
-                                    <td th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}">
-                                        $0.00</td>
+                                    <td th:text="${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
+                                        0 VNĐ</td>
                                     <td
                                         th:text="${item.taxRate != null ? #numbers.formatDecimal(item.taxRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
                                         0%</td>
                                     <td
                                         th:text="${item.discountRate != null ? #numbers.formatDecimal(item.discountRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
                                         0%</td>
-                                    <td th:text="${item.warrantyMonths + ' Months'}">12 Months</td>
+                                    <td th:text="${item.warrantyMonths + ' Tháng'}">12 Tháng</td>
+                                    <td class="td-action">
+                                        <!-- Director Actions for Pending Item in a Pending Quotation -->
+                                        <div sec:authorize="hasAuthority('DIRECTOR')" 
+                                             th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING' and item.status != null and item.status.name() == 'PENDING'}">
+                                            <form method="post"
+                                                  th:action="@{/quotations/details/{id}/actions(id=${item.quotationDetailId})}"
+                                                  style="margin:0;">
+                                                <button type="submit" class="btn-bw btn-bw-approve"
+                                                        name="actions" value="a">DUYỆT</button>
+                                                <button type="submit" class="btn-bw btn-bw-reject"
+                                                        name="actions" value="r">TỪ CHỐI</button>
+                                            </form>
+                                        </div>
+
+                                        <!-- Status Display for Non-Directors, Non-Pending Quotations, or Already Processed Items -->
+                                        <div th:if="${!#authorization.expression('hasAuthority(''DIRECTOR'')') or (quotation.quotationStatus != null and quotation.quotationStatus.name() != 'PENDING') or (item.status != null and item.status.name() != 'PENDING')}">
+                                            <span th:if="${item.status != null}"
+                                                  class="status-badge"
+                                                  th:classappend="'status-' + ${item.status.name()}"
+                                                  th:text="${item.status.description}">
+                                            </span>
+                                        </div>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -122,79 +151,40 @@
                 <!-- Khu vực tổng kết cuối trang -->
                 <div class="footer-summary">
                     <div class="terms-box">
-                        <!-- Vị trí dành cho Ghi chú hoặc Điều khoản báo giá -->
-                        <label>QUOTATION NOTES</label>
-                        <p>This quotation is valid for 30 days. Specifications provided match the purchase request
-                            requirements. Warranty covers manufacturing defects only.</p>
+                        <label>GHI CHÚ BÁO GIÁ</label>
+                        <p th:text="${quotation.quotationNote != null ? quotation.quotationNote : 'Không có ghi chú'}"></p>
                     </div>
                     <div class="total-summary">
                         <div class="summary-line">
-                            <span>Subtotal</span>
+                            <span>Tạm tính</span>
                             <span
-                                th:text="'$' + ${#numbers.formatDecimal(quotation.subtotal, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                th:text="${#numbers.formatDecimal(quotation.subtotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ</span>
                         </div>
                         <div class="summary-line">
-                            <span>Total Discount</span>
+                            <span>Tổng chiết khấu</span>
                             <span class="discount-val"
-                                th:text="'-$' + ${#numbers.formatDecimal(quotation.totalDiscount, 1, 'COMMA', 2, 'POINT')}">-$0.00</span>
+                                th:text="'-' + ${#numbers.formatDecimal(quotation.totalDiscount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">-0 VNĐ</span>
                         </div>
                         <div class="summary-line">
-                            <span>Tax Est.</span>
+                            <span>Thuế dự kiến</span>
                             <span
-                                th:text="'$' + ${#numbers.formatDecimal(quotation.totalTax, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                th:text="${#numbers.formatDecimal(quotation.totalTax, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ</span>
                         </div>
                         <div class="grand-total-row">
-                            <span>EST. TOTAL</span>
+                            <span>TỔNG CỘNG</span>
                             <span class="grand-total"
-                                th:text="'$' + ${#numbers.formatDecimal(quotation.grandTotal, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                                th:text="${#numbers.formatDecimal(quotation.grandTotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </th:block>
 
-    <!-- Modal từ chối -->
-    <div id="rejectModal" class="modal" layout:fragment="extra-content">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>REJECT QUOTATION</h2>
-            </div>
-            <form th:action="@{/purchase-staff/quotations/{id}/reject(id=${quotation.quotationId})}" method="post">
-                <div class="modal-body">
-                    <p style="font-size: 14px; margin-bottom: 16px; color: #666;">Please provide a reason for rejecting
-                        this quotation. This will be visible to the purchase staff.</p>
-                    <textarea name="reason" placeholder="Enter rejection reason here..." required></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-outline-prem" onclick="closeRejectModal()">CANCEL</button>
-                    <button type="submit" class="btn-solid-prem"
-                        style="background: #ff0000; border-color: #ff0000;">CONFIRM
-                        REJECTION</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <th:block layout:fragment="extra-js">
         <script th:src="@{/js/quotation/quotation-detail.js}"></script>
-        <script>
-            function openRejectModal() {
-                document.getElementById('rejectModal').style.display = 'block';
-            }
 
-            function closeRejectModal() {
-                document.getElementById('rejectModal').style.display = 'none';
-            }
-
-            // Close modal when clicking outside
-            window.onclick = function (event) {
-                const modal = document.getElementById('rejectModal');
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
-            }
-        </script>
     </th:block>
 </body>
 

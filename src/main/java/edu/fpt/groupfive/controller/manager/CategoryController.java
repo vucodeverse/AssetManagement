@@ -134,7 +134,7 @@ public class CategoryController {
         PageResponse<CategoryResponse> result =
                 categoryService.searchAndSort(keyword, direction, page);
 
-        model.addAttribute("categories", result.getContent());
+        model.addAttribute("categories", result.getData());
         model.addAttribute("page", result);
 
     }

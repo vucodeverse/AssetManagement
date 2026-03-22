@@ -1,22 +1,29 @@
 package edu.fpt.groupfive.dto.response;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 public class PurchaseOrderResponse {
-    private Integer orderId;
-    private Integer purchaseId;
-    private LocalDate createdAt;
-    private String supplierName;
-    private BigDecimal totalAmount;
-    private String note;
-    private String status;
-    private String approvedByName;
+    protected Integer orderId;
+    protected Integer purchaseId;
+    protected LocalDateTime createdAt;
+    protected String supplierName;
+    protected BigDecimal totalAmount;
+    protected String orderNote;
+    protected String orderStatus;
+    protected String approvedByName;
+
+    private List<PurchaseOrderDetailResponse> orderDetails;
+    private BigDecimal subtotal;
+    private BigDecimal totalDiscount;
+    private BigDecimal totalTax;
 }

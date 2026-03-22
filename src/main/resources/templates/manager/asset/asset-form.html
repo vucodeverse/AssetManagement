@@ -2,7 +2,7 @@
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{/layout/manager-layout}">
+      layout:decorate="~{layout/manager-layout}">
 
 <head>
     <th:block layout:fragment="extra-css">
@@ -15,93 +15,147 @@
 <th:block layout:fragment="content">
 
     <header class="page-header">
-        <h1 class="page-title" th:text="${isEdit} ? 'CẬP NHẬT TÀI SẢN' : 'TẠO TÀI SẢN'"></h1>
+        <h1 class="page-title"
+            th:text="${isEdit} ? 'CẬP NHẬT TÀI SẢN' : 'TẠO TÀI SẢN'"></h1>
     </header>
 
     <div class="content-wrapper">
 
-        <div th:if="${error}" class="error-box">
-            <span th:text="${error}"></span>
+        <div class="error-message"
+             th:if="${error}"
+             th:text="${error}">
         </div>
 
-        <div class="main-content" style="grid-template-columns: 1fr;"> <!-- chỉ 1 cột vì form dài -->
+        <div class="form-panel">
 
-            <div class="right-panel" style="max-width: none;">
-                <div class="form-panel">
+            <form th:action="${isEdit} ? @{/manager/assets/edit/{id}(id=${asset.assetId})} : @{/manager/assets/create}"
+                  th:object="${asset}" method="post">
 
-                    <form th:action="${isEdit} ? @{/manager/assets/edit/{id}(id=${asset.assetId})} : @{/manager/assets/create}"
-                          th:object="${asset}" method="post">
+                <input type="hidden" th:if="${isEdit}" th:field="*{assetId}"/>
 
-                        <input type="hidden" th:if="${isEdit}" th:field="*{assetId}" />
+                <div class="form-grid">
 
-                        <!-- SERIAL -->
-                        <div class="form-field">
-                            <label class="form-label">SỐ SERIAL</label>
-                            <input type="text" th:field="*{serialNumber}" class="form-input" required placeholder="VD: SN12345678"/>
-                            <div class="error text-danger" th:errors="*{serialNumber}"></div>
-                        </div>
+                    <!--asset name-->
+                    <div class="form-field">
+                        <label>Tên tài sản</label>
+                        <input type="text" th:field="*{assetName}">
 
-                        <!-- LOẠI TÀI SẢN -->
-                        <div class="form-field">
-                            <label class="form-label">LOẠI TÀI SẢN</label>
-                            <select th:field="*{assetTypeId}" class="form-input" required>
-                                <option value="">-- Chọn loại tài sản --</option>
-                                <option th:each="type : ${assetTypes}"
-                                        th:value="${type.typeId}"
-                                        th:text="${type.typeName}"></option>
-                            </select>
-                        </div>
+                        <span class="error"
+                              th:if="${#fields.hasErrors('assetName')}"
+                              th:errors="*{assetName}">
+                        </span>
 
-                        <!-- NGÀY MUA -->
-                        <div class="form-field">
-                            <label class="form-label">NGÀY MUA</label>
-                            <input type="date" th:field="*{acquisitionDate}" class="form-input"/>
-                        </div>
+                    </div>
 
-                        <!-- NGUYÊN GIÁ -->
-                        <div class="form-field">
-                            <label class="form-label">NGUYÊN GIÁ (₫)</label>
-                            <input type="number" step="1000" th:field="*{originalCost}" class="form-input" min="0"/>
-                            <div class="error text-danger" th:errors="*{originalCost}"></div>
-                        </div>
+                    <!-- quantity -->
+                    <div th:if="${!isEdit}" class="form-field">
+                        <label>Số lượng</label>
+                        <input type="number" th:field="*{quantity}"
+                               placeholder="VD: 123"/>
 
-                        <!-- BẢO HÀNH BẮT ĐẦU -->
-                        <div class="form-field">
-                            <label class="form-label">NGÀY BẢO HÀNH BẮT ĐẦU</label>
-                            <input type="date" th:field="*{warrantyStartDate}" class="form-input"/>
-                        </div>
+                        <span class="error"
+                              th:if="${#fields.hasErrors('quantity')}"
+                              th:errors="*{quantity}">
+                        </span>
+                    </div>
 
-                        <!-- BẢO HÀNH KẾT THÚC -->
-                        <div class="form-field">
-                            <label class="form-label">NGÀY BẢO HÀNH KẾT THÚC</label>
-                            <input type="date" th:field="*{warrantyEndDate}" class="form-input"/>
-                        </div>
+                    <!--asset type-->
+                    <div class="form-field">
+                        <label>Loại tài sản</label>
+                        <select th:field="*{assetTypeId}">
+                            <option value="">-- Chọn loại tài sản --</option>
+                            <option th:each="type : ${assetTypes}"
+                                    th:value="${type.typeId}"
+                                    th:text="${type.typeName}"></option>
+                        </select>
+                        <span class="error"
+                              th:if="${#fields.hasErrors('assetTypeId')}"
+                              th:errors="*{assetTypeId}">
+                        </span>
+                    </div>
 
-                        <!-- TRẠNG THÁI (chỉ hiện khi edit) -->
-                        <div class="form-field" th:if="${isEdit}">
-                            <label class="form-label">TRẠNG THÁI HIỆN TẠI</label>
-                            <select th:field="*{currentStatus}" class="form-input">
-                                <option value="GOOD">Tốt</option>
-                                <option value="NEEDS_REPAIR">Cần sửa chữa</option>
-                                <option value="BROKEN">Hỏng</option>
-                                <option value="DISPOSED">Đã thanh lý</option>
-                            </select>
-                        </div>
+                    <!--purchase order-->
+                    <div class="form-field">
+                        <label>Đơn mua</label>
+                        <select th:field="*{purchaseOrderDetailId}">
+                            <option value="">-- Chọn đơn mua --</option>
+                            <option th:each="order : ${orders}"
+                                    th:value="${order.purchaseOrderDetailId}"
+                                    th:text="'PO-' + ${order.purchaseOrderDetailId}">
+                            </option>
+                        </select>
+                    </div>
 
-                        <div class="form-actions">
-                            <button type="submit" class="btn-add"
-                                    th:text="${isEdit} ? 'CẬP NHẬT' : 'THÊM MỚI'"></button>
-                            <button type="button" onclick="window.location.href='/manager/assets'"
-                                    class="btn-cancel">HỦY</button>
-                        </div>
+                    <!--acquisitionDate-->
+                    <div class="form-field">
+                        <label>Ngày mua</label>
+                        <input type="date" th:field="*{acquisitionDate}">
+                    </div>
 
-                    </form>
+
+                    <!--originalCost-->
+                    <div class="form-field">
+                        <label>Nguyên giá</label>
+                        <input type="number" th:field="*{originalCost}">
+
+                        <span class="error"
+                              th:if="${#fields.hasErrors('originalCost')}"
+                              th:errors="*{originalCost}">
+                        </span>
+                    </div>
+
+                    <!--warrantyStartDate-->
+                    <div class="form-field">
+                        <label>Bảo hành bắt đầu</label>
+                        <input type="date" th:field="*{warrantyStartDate}">
+                    </div>
+
+                    <!--warrantyEndDate-->
+                    <div class="form-field">
+                        <label>Bảo hành kết thúc</label>
+                        <input type="date" th:field="*{warrantyEndDate}">
+                    </div>
+
+                    <!--status-->
+                    <div class="form-field">
+                        <label>Trạng thái tài sản</label>
+                        <select th:field="*{currentStatus}">
+                            <option value="">-- Chọn trạng thái tài sản --</option>
+                            <option th:each="status : ${statuses}"
+                                    th:value="${status}"
+                                    th:text="${status}">
+                            </option>
+                        </select>
+
+                        <span class="error"
+                              th:if="${#fields.hasErrors('currentStatus')}"
+                              th:errors="*{currentStatus}">
+                        </span>
+                    </div>
+
+
                 </div>
-            </div>
+
+                <div class="form-actions">
+
+                    <button type="submit"
+                            class="btn-primary"
+                            th:text="${isEdit} ? 'CẬP NHẬT' : 'THÊM MỚI'"></button>
+
+                    <button type="button"
+                            onclick="window.location.href='/manager/assets'"
+                            class="btn-secondary">
+                        HỦY
+                    </button>
+
+                </div>
+
+            </form>
 
         </div>
     </div>
 
 </th:block>
+
 </body>
 </html>

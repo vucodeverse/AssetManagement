@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class OrderDetail extends AbstractEntity<Integer> {
+
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal taxRate;
@@ -16,5 +17,5 @@ public class OrderDetail extends AbstractEntity<Integer> {
     private String orderDetailNote;
     private Integer assetTypeId;
     private Integer quotationDetailId;
-    private LocalDate expectedDeliveryDate;
+    private LocalDate deliveryDate;
 }

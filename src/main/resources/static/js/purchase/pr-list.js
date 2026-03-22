@@ -9,13 +9,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 ordering: true,
                 info: true,
                 searching: false,
-                order: [[5, "desc"]],
+                order: [[1, "desc"], [5, "desc"]],
                 columnDefs: [
                     { orderable: false, targets: 6 }
                 ],
                 language: {
                     paginate: { previous: "<", next: ">" },
-                    info: "SHOWING _START_ TO _END_ OF _TOTAL_ PURCHASE REQUESTS"
+                    info: "HIỂN THỊ TỪ _START_ ĐẾN _END_ TRONG TỔNG SỐ _TOTAL_ YÊU CẦU MUA SẮM",
+                    emptyTable: "Không có yêu cầu mua sắm nào."
                 }
             });
         } catch (e) {
@@ -23,14 +24,25 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    const filters = ["statusFilter", "priorityFilter", "from", "to"];
-    filters.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener("change", function () {
-                const form = document.getElementById("filterForm");
-                if (form) form.submit();
-            });
-        }
+
+    $('#statusFilter, #priorityFilter, #from, #to').change(function (){
+        $('#filterForm').submit();
     });
+
 });
+
+function openRejectModal(e,btn) {
+    if(e) e.stopPropagation();
+
+    const action = $(btn).data("action"); // biến DOM btn thành object jquery và lấy giá trị ở data-action của html
+
+
+    $('#rejectForm').attr("action", action); // attr dùng để đọc hoặc thay đổi attribute
+    $("#rejectForm textarea").val(""); // xóa nội dung textarea
+    $('#rejectModal').css("display", "flex"); // css cho form
+
+}
+
+function closeRejectModal() {
+    $('#rejectModal').css("display", "none")
+}

@@ -1,7 +1,5 @@
 package edu.fpt.groupfive.service;
 
-import java.util.Map;
-
 import edu.fpt.groupfive.common.Role;
 import edu.fpt.groupfive.dto.request.UserCreateRequest;
 import edu.fpt.groupfive.dto.request.UserUpdateRequest;
@@ -10,42 +8,39 @@ import edu.fpt.groupfive.dto.response.UserResponse;
 import edu.fpt.groupfive.model.Users;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
-        List<Users> getAllUsers();
+    void createUser(UserCreateRequest request);
 
-        List<UserResponse> getAllUsers2();
+    void updateUser(UserUpdateRequest request);
 
-        Integer getUserIdByUsername(String username);
+    void removeUser(Integer id);
+    Integer getUserIdByUsername(String username);
 
-        String findNameById(Integer userId);
+    List<UserResponse> searchUsers(
+            int page, int size,
+            String status, Integer departmentId,
+            Role role, String keyword);
 
-        void createUser(UserCreateRequest request);
+    int getTotalPagesWithFilter(
+            int size,
+            String status, Integer departmentId,
+            Role role, String keyword);
 
-        void updateUser(UserUpdateRequest request);
+    UserResponse getUserById(Integer id);
 
-        void removeUser(Integer id);
+    List<UserResponse> getAllUserByDepartId(Integer departId);
 
-        List<UserResponse> searchUsers(
-                        int page, int size,
-                        String status, Integer departmentId,
-                        Role role, String keyword);
+    boolean existsByUsername(String username);
 
-        int getTotalPagesWithFilter(
-                        int size,
-                        String status, Integer departmentId,
-                        Role role, String keyword);
+    boolean existsByEmail(String email, Integer userId);
 
-        UserResponse getUserById(Integer id);
+    boolean existsByPhone(String phone, Integer userId);
 
-        List<UserResponse> getAllUserByDepartId(Integer departId);
+    boolean existsManager(Integer departmentId, Integer userId);
 
-        boolean existsByUsername(String username);
+    boolean existsDirector(Integer userId);
 
-        boolean existsByEmail(String email, Integer userId);
-
-        boolean existsManager(Integer departmentId, Integer userId);
-
-        Map<Integer, String> getUserIdToUsernameMap();
-
+    Map<Integer, String> getUserIdToUsernameMap();
 }

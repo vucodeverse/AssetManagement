@@ -208,4 +208,172 @@ public class AssetTypeDAOImpl implements AssetTypeDAO {
         }
         return false;
     }
+    @Override
+    public List<AssetType> search(String keyword,
+                                  Integer categoryId,
+                                  AssetTypeClass typeClass,
+                                  DepreciationMethod depreciationMethod,
+                                  String sortDirection,
+                                  int offset,
+                                  int limit) {
+
+        List<AssetType> list = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder(
+                "select a.*, c.category_name " +
+                        "from asset_type a join category c on a.category_id = c.category_id " +
+                        "where a.status = 'ACTIVE' "
+        );
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append(" and lower(a.type_name) like lower(?) ");
+        }
+
+        if (categoryId != null) {
+            sql.append(" and a.category_id = ? ");
+        }
+
+        if (typeClass != null) {
+            sql.append(" and a.type_class = ? ");
+        }
+
+        if (depreciationMethod != null) {
+            sql.append(" and a.default_depreciation_method = ? ");
+        }
+
+        sql.append(" order by a.asset_type_id ");
+        if ("desc".equalsIgnoreCase(sortDirection)) {
+            sql.append("desc ");
+        } else {
+            sql.append("asc ");
+        }
+
+        sql.append(" offset ? rows fetch next ? rows only ");
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (keyword != null && !keyword.isBlank()) {
+                ps.setString(index++, "%" + keyword + "%");
+            }
+
+            if (categoryId != null) {
+                ps.setInt(index++, categoryId);
+            }
+
+            if (typeClass != null) {
+                ps.setString(index++, typeClass.name());
+            }
+
+            if (depreciationMethod != null) {
+                ps.setString(index++, depreciationMethod.name());
+            }
+
+            ps.setInt(index++, offset);
+            ps.setInt(index, limit);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                AssetType assetType = new AssetType();
+
+                assetType.setTypeId(rs.getInt("asset_type_id"));
+                assetType.setTypeName(rs.getString("type_name"));
+                assetType.setDescription(rs.getString("description"));
+                assetType.setTypeClass(
+                        AssetTypeClass.valueOf(rs.getString("type_class").toUpperCase())
+                );
+                assetType.setStatus(rs.getString("status"));
+
+                String method = rs.getString("default_depreciation_method");
+                if (method != null) {
+                    assetType.setDefaultDepreciationMethod(
+                            DepreciationMethod.valueOf(method.toUpperCase())
+                    );
+                }
+
+                assetType.setDefaultUsefulLifeMonths(
+                        (Integer) rs.getObject("default_useful_life_months")
+                );
+
+                assetType.setSpecification(rs.getString("specification"));
+                assetType.setModel(rs.getString("model"));
+                assetType.setCategoryId(rs.getInt("category_id"));
+                assetType.setCategoryName(rs.getString("category_name"));
+
+                list.add(assetType);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+
+    @Override
+    public int count(String keyword,
+                     Integer categoryId,
+                     AssetTypeClass typeClass,
+                     DepreciationMethod depreciationMethod) {
+
+        StringBuilder sql = new StringBuilder(
+                "select count(*) " +
+                        "from asset_type a " +
+                        "where a.status = 'ACTIVE' "
+        );
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append(" and lower(a.type_name) like lower(?) ");
+        }
+
+        if (categoryId != null) {
+            sql.append(" and a.category_id = ? ");
+        }
+
+        if (typeClass != null) {
+            sql.append(" and a.type_class = ? ");
+        }
+
+        if (depreciationMethod != null) {
+            sql.append(" and a.default_depreciation_method = ? ");
+        }
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (keyword != null && !keyword.isBlank()) {
+                ps.setString(index++, "%" + keyword + "%");
+            }
+
+            if (categoryId != null) {
+                ps.setInt(index++, categoryId);
+            }
+
+            if (typeClass != null) {
+                ps.setString(index++, typeClass.name());
+            }
+
+            if (depreciationMethod != null) {
+                ps.setString(index++, depreciationMethod.name());
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+    }
 }

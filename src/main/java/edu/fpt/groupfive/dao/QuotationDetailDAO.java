@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao;
 
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dto.response.QuotationDetailResponse;
 import edu.fpt.groupfive.model.QuotationDetail;
 
@@ -13,12 +14,10 @@ public interface QuotationDetailDAO {
 
     Optional<QuotationDetail> findById(Integer quotationDetailId);
 
-    List<QuotationDetail> findByPurchaseId(Integer purchaseId);
-
     List<QuotationDetail> findByQuotationId(Integer quotationId);
 
-    void deleteByQuotationId(Integer quotationId);
-
     void deleteByQuotationId(Integer quotationId, Connection connection);
+
+    void update(Integer quotationId, PurchaseProcessStatus status);
 
 }

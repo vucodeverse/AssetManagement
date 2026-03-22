@@ -9,38 +9,40 @@
         </div>
 
         <nav class="sidebar-nav">
-            <!-- BẢNG ĐIỀU KHIỀN -->
-            <a class="nav-item" th:href="@{/purchase-staff/dashboard}"
-                th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
+            <!-- PHẦN ĐIỀU HƯỚNG -->
+            <div class="nav-group">
+                <div class="nav-group-title">Chính</div>
+                <a class="nav-item" th:href="@{/purchase-staff/dashboard}"
+                    th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
+                    <i class="fas fa-th-large"></i> TRANG CHỦ
+                </a>
+            </div>
 
-            <!-- YÊU CẦU MUA SẮM -->
-            <a class="nav-item" th:href="@{/purchase-staff/purchases}"
-                th:classappend="${activeMenu}=='approval' ? ' active' : ''">
-                <i class="fas fa-shopping-cart"></i> Purchases
-            </a>
+            <div class="nav-group">
+                <div class="nav-group-title">Mua sắm</div>
+                <a class="nav-item" th:href="@{/purchases}"
+                    th:classappend="${activeMenu}=='approval' and ${activeSub}=='pr' ? ' active' : ''">
+                    <i class="fas fa-shopping-cart"></i> YÊU CẦU MUA SẮM
+                </a>
 
-            <!-- BÁO GIÁ -->
-            <a class="nav-item" th:href="@{/purchase-staff/quotations}"
-                th:classappend="${activeMenu}=='quotation' ? ' active' : ''">
-                <i class="fas fa-file-invoice"></i> Quotations
-            </a>
 
-            <!-- ĐƠN HÀNG MUA SẮM -->
-            <a class="nav-item" th:href="@{/purchase-staff/purchase-orders}"
-                th:classappend="${activeMenu}=='po' ? ' active' : ''">
-                <i class="fas fa-file-invoice-dollar"></i> Purchase Orders
-            </a>
+                <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                    <i class="fas fa-file-invoice-dollar"></i> ĐƠN ĐẶT HÀNG
+                </a>
+            </div>
         </nav>
 
         <div class="sidebar-user">
             <div class="user-avatar" th:text="${userInitials} ?: 'SM'">SM</div>
             <div class="user-info">
-                <span class="user-name" th:text="${userName} ?: 'Staff Member'">Staff Member</span>
-                <span class="user-role" th:text="${userRole} ?: 'Senior Procurement'">Senior Procurement</span>
+                <span class="user-name" th:text="${userName} ?: 'Nhân Viên'">Nhân Viên</span>
+                <span class="user-role" th:text="${userRole} ?: 'Nhân Viên Mua Sắm'">Nhân Viên Mua Sắm</span>
             </div>
-            <i class="fas fa-cog user-settings"></i>
+            <div class="user-actions">
+                <a th:href="@{/logout}" class="action-btn logout-btn" title="Đăng xuất">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
         </div>
     </aside>
 

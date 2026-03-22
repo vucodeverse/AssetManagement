@@ -1,214 +1,282 @@
-/* Sử dụng các biến từ trang mẫu */
-:root {
-    --panel: #ffffff;
-    --text: #111827;
-    --muted2: #9ca3af;
-    --border: #e5e7eb;
-    --border2: #eef2f7;
-    --shadow: 0 10px 28px rgba(0, 0, 0, .06);
-    --radius: 14px;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    background-color: #f8fafc;
-    color: var(--text);
+    background-color: #f8f9fa;
+    color: #1a1a1a;
+    padding: 40px 20px;
+    line-height: 1.6;
 }
 
-h2 {
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--text);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 15px;
+/* container */
+.pr-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 40px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* ===== CARD REFACTOR ===== */
-.card {
-    background: var(--panel);
-    border: 1px solid var(--border) !important;
-    border-radius: var(--radius) !important;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    margin-bottom: 24px;
-}
-
-.card-header {
-    background-color: #fff !important; /* Bỏ màu xanh/xám cũ */
-    color: var(--muted2) !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border) !important;
-    padding: 16px 20px !important;
-}
-
-/* ===== INPUT & SELECT REFACTOR ===== */
-.form-control, .form-select {
-    appearance: none;
-    background: var(--panel);
-    border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
-    padding: 10px 14px !important;
-    font-size: 13px !important;
-    color: var(--text) !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: var(--muted2) !important;
-}
-
-.form-label {
+/* breadcrumb */
+.breadcrumb {
     font-size: 11px;
+    font-weight: 700;
+    color: #999;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+.breadcrumb a {
+    color: #999;
+    text-decoration: none;
+}
+
+.breadcrumb .active {
+    color: #000;
+}
+
+/* header */
+.pr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #000;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.pr-header h1 {
+    font-size: 24px;
+    letter-spacing: 1px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pr-header p {
+    font-size: 13px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* section */
+.form-section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 14px;
     font-weight: 800;
-    color: var(--muted2);
-    text-transform: uppercase;
-    margin-bottom: 8px;
+    background: #f0f0f0;
+    padding: 8px 15px;
+    display: inline-block;
+    margin-bottom: 20px;
+    border-left: 4px solid #000;
 }
 
-
-.form-select {
-    background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%), linear-gradient(135deg, #9ca3af 50%, transparent 50%) !important;
-    background-position: calc(100% - 16px) calc(50% - 2px), calc(100% - 11px) calc(50% - 2px) !important;
-    background-size: 5px 5px, 5px 5px !important;
-    background-repeat: no-repeat !important;
+/* grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
 }
 
-/* ===== TABLE REFACTOR ===== */
-.table {
-    margin-bottom: 0;
+.form-group.full-width {
+    grid-column: span 3;
 }
 
-.table thead th {
+/* label */
+.form-group label {
+    display: block;
     font-size: 11px;
-    letter-spacing: .14em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #444;
+}
+
+/* input */
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #000;
+}
+
+/* textarea */
+.form-group textarea {
+    height: 80px;
+    resize: none;
+}
+
+/* table */
+.table-container {
+    overflow-x: auto;
+}
+
+.pr-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+.pr-table th {
+    text-align: left;
+    font-size: 11px;
+    padding: 12px;
+    border-bottom: 2px solid #000;
+    color: #666;
     text-transform: uppercase;
-    color: var(--muted2);
-    border-bottom: 1px solid var(--border) !important;
-    padding: 16px 14px !important;
+}
+
+.pr-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* table input */
+.table-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    background: #fafafa;
+}
+
+.table-input:focus {
+    border-color: #000;
     background: #fff;
 }
 
-.table tbody td {
-    padding: 14px !important;
-    border-bottom: 1px solid var(--border2) !important;
-    border-top: none !important;
-    font-size: 13px;
-    vertical-align: middle;
+/* remove button */
+.btn-remove {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #ccc;
+    transition: 0.2s;
 }
 
-/* ===== BUTTONS REFACTOR ===== */
-/* Nút Thêm dòng (giống btn-add) */
-.btn-light {
-    background-color: white !important;
-    color: black !important;
-    border: 1px solid black !important;
-    border-radius: 6px !important;
-    font-weight: 600;
+.btn-remove:hover {
+    color: #ff4d4d;
+}
+
+/* add button */
+.btn-add-row {
+    background: none;
+    border: 1px dashed #000;
+    padding: 10px 20px;
     font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
-.btn-light:hover {
-    background-color: #f3f4f6 !important;
+.btn-add-row:hover {
+    background: #f8f8f8;
 }
 
-/* Nút Gửi yêu cầu (giống btn-approve) */
-.btn-success {
-    background: #111827 !important;
-    border: 1px solid #111827 !important;
-    border-radius: 12px !important;
-    font-size: 12px !important;
-    font-weight: 900 !important;
+/* footer */
+.pr-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eee;
+    padding-top: 30px;
+    margin-top: 20px;
+}
+
+.footer-left p {
+    font-size: 12px;
+    color: #999;
+}
+
+/* buttons */
+.footer-right button,
+.footer-right a {
+    padding: 12px 25px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: 0.2s;
     text-transform: uppercase;
-    padding: 12px 30px !important;
+    text-decoration: none;
 }
 
-/* Nút Nhập lại (giống btn-reset) */
-.btn-outline-secondary {
-    border: 1px solid var(--border) !important;
-    color: var(--muted2) !important;
-    border-radius: 12px !important;
-    font-size: 11px !important;
-    font-weight: 900 !important;
-    text-transform: uppercase;
+/* text button */
+.btn-text {
+    background: none;
+    border: none;
+    color: #666;
 }
 
-.btn-outline-secondary:hover {
-    background: #f3f4f6 !important;
-    color: var(--text) !important;
+/* solid button */
+.btn-solid {
+    background: #000;
+    color: #fff;
+    border: 1px solid #000;
 }
 
-/* Nút Xóa (giống btn-reject) */
-.btn-danger {
-    background: #fff !important;
-    color: #dc2626 !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 8px !important;
-    font-weight: bold;
+.btn-solid:hover {
+    opacity: 0.8;
 }
 
-.btn-danger:hover {
-    background: #fef2f2 !important;
-    border-color: #dc2626 !important;
-}
-
-/* container nút */
-.d-flex.justify-content-between {
-    border-top: 1px solid #e5e7eb;
-    padding-top: 20px;
-}
-
-/* ===== BACK BUTTON ===== */
 .btn-back-custom {
     background-color: white;
     color: black;
     border: 1px solid black;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 10px 20px;
+    font-size: 10px;
     text-decoration: none;
-    transition: 0.2s;
+    cursor: pointer;
 }
 
 .btn-back-custom:hover {
-    background-color: gray;
-    border-color: #9ca3af;
+    background-color: #5c636a;
+    border-color: #565e64;
+    color: white;
 }
 
-
-/* ===== RESET BUTTON ===== */
 .btn-reset-custom {
     background-color: white;
-    color: #374151;
-    border: 1px solid #d1d5db;
-    padding: 8px 18px;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: 0.2s;
+    color: black;
+    border: 1px solid black;
+    padding: 10px 20px;
+    font-size: 10px;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .btn-reset-custom:hover {
-    background-color: gray;
+    background-color: #5c636a;
+    border-color: #565e64;
+    color: white;
 }
 
-
-/* ===== SUBMIT BUTTON ===== */
 .btn-submit-custom {
-    background-color: #2563eb;
+    background-color: #0d6efd;
     color: white;
-    border: 1px solid #2563eb;
-    padding: 8px 22px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: 0.2s;
+    border: 1px solid black;
+    padding: 10px 20px;
+    font-size: 10px;
+    cursor: pointer;
 }
 
 .btn-submit-custom:hover {
-    background-color: #1d4ed8;
-    border-color: #1d4ed8;
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
 }

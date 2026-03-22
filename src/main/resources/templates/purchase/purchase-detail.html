@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/main-layout}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main-layout}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Request Detail</title>
+    <title>Chi Tiết Yêu Cầu Mua Sắm</title>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" th:href="@{/css/purchase/purchase-detail.css}">
     </th:block>
@@ -16,36 +16,55 @@
     <th:block layout:fragment="content">
 
         <main class="main-content">
-            <!-- Thanh điều hướng (Breadcrumb) -->
-            <div class="breadcrumb">
-                DASHBOARD / <a th:href="@{/purchase-staff/purchases}">PURCHASE REQUESTS</a> /
-                <span class="active">DETAIL</span>
-            </div>
 
-            <!-- Thông báo thành công -->
-            <div th:if="${message}" class="alert alert-success"
-                style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+            <!-- Flash message thành công -->
+            <div th:if="${message}" class="alert-success-banner">
+                <i class="fas fa-check-circle"></i>
                 <span th:text="${message}"></span>
             </div>
+
             <!-- Tiêu đề -->
             <header class="top-bar">
                 <div class="title-section">
-                    <h1>PURCHASE REQUEST DETAIL</h1>
+                    <a class="btn-back" th:href="@{/purchases}">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1>CHI TIẾT YÊU CẦU MUA SẮM</h1>
                 </div>
                 <div class="header-actions">
-                    <form method="post"
-                        th:action="@{/purchase-staff/purchases/{id}/actions(id=${purchase.purchaseId})}">
+                    <div class="manager-actions" sec:authorize="hasAuthority('ASSET_MANAGER')">
+                        <form th:action="@{/purchases/{id}/edit(id=${purchase.purchaseId})}" method="get">
+                            <button type="submit"
+                                th:if="${purchase.status != null && purchase.status.name() == 'DRAFT'}"
+                                class="btn-approve">CẬP NHẬT</button>
+                        </form>
+                        <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
+                            <button type="submit"
+                                th:if="${purchase.status != null && (purchase.status.name() == 'DRAFT' || purchase.status.name() == 'PENDING')}"
+                                class="btn-reject" name="action" value="d">
+                                XÓA
+                            </button>
+                        </form>
+                    </div>
 
-                        <div th:if="${purchase.status.name() != 'APPROVED' && purchase.status.name() != 'REJECTED'}">
-                            <button type="submit" name="actions" value="a" class="btn-approve">APPROVE</button>
-                            <!-- đổi reject thành button để mở popup -->
-                            <a class="btn-reject" th:href="'#reject-' + ${purchase.purchaseId}"
-                                onclick="event.stopPropagation();">
-                                REJECT
-                            </a>
-                        </div>
-                    </form>
+                    <div class="manager-actions" sec:authorize="hasAuthority('PURCHASE_STAFF')"
+                         th:if="${purchase.status != null and purchase.status.name() == 'APPROVED'}">
+                        <a th:href="@{/quotations/create/{id}(id=${purchase.purchaseId})}"
+                           class="btn-create-quote">TẠO BÁO GIÁ</a>
+                    </div>
+                    <div th:if="${purchase.status != null and purchase.status.name() == 'PENDING'}" class="action-group"
+                        sec:authorize="hasAuthority('DIRECTOR')">
+                        <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
+                            <button type="submit" name="action" value="a" class="btn-approve">DUYỆT</button>
+                        </form>
+                        <button type="button" class="btn-reject" th:data-id="${purchase.purchaseId}"
+                            th:data-action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}"
+                            onclick="openRejectModal(this)">
+                            TỪ CHỐI
+                        </button>
+                    </div>
                 </div>
+
             </header>
 
             <!-- Nội dung chi tiết yêu cầu mua sắm -->
@@ -53,48 +72,51 @@
                 <!-- Lưới thông tin -->
                 <div class="info-grid">
                     <div class="info-block">
-                        <label>REQUEST ID</label>
+                        <label>MÃ YÊU CẦU</label>
                         <div class="val" th:text="'PR-' + ${purchase.purchaseId}">PR-0842</div>
                     </div>
                     <div class="info-block">
-                        <label>STATUS</label>
-                        <div class="badge-status" th:text="${purchase.status}">PENDING APPROVAL</div>
+                        <label>TRẠNG THÁI</label>
+                        <div class="badge-status" th:classappend="'badge-' + ${purchase.status.name()}"
+                            th:text="${purchase.status.description}">ĐANG CHỜ DUYỆT</div>
                     </div>
                     <div class="info-block">
-                        <label>CREATOR</label>
-                        <!-- creatorName đã được JOIN sẵn ở DAO, không cần loop qua list users -->
+                        <label>ĐỘ ƯU TIÊN</label>
+                        <div class="badge-priority" th:classappend="'pill-' + ${purchase.priority}"
+                            th:text="${T(edu.fpt.groupfive.common.Priority).valueOf(purchase.priority).description}">
+                            CAO</div>
+                    </div>
+                    <div class="info-block">
+                        <label>NGƯỜI TẠO</label>
                         <div class="val" th:text="${purchase.creatorName}">N/A</div>
                     </div>
                     <div class="info-block">
-                        <label>CREATED AT</label>
+                        <label>NGÀY TẠO</label>
                         <div class="val" th:text="${#temporals.format(purchase.createdAt,'dd-MM-yyyy')}">Oct 24,
                             2023</div>
                     </div>
                 </div>
 
                 <!-- Lý do từ chối (chỉ hiển thị khi trạng thái là REJECTED) -->
-                <div th:if="${purchase.status.name() == 'REJECTED' && purchase.rejectReason != null}"
-                    style="margin-top: 12px; padding: 12px 16px; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 6px;">
-                    <label
-                        style="font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #ef4444; text-transform: uppercase;">REJECT
-                        REASON</label>
-                    <div style="margin-top: 4px; font-size: 14px; color: #991b1b; font-weight: 500;"
-                        th:text="${purchase.rejectReason}">Reason...</div>
+                <div th:if="${purchase.status != null and purchase.status.name() == 'REJECTED' and purchase.rejectReason != null}"
+                    class="reject-reason-box">
+                    <label class="reject-reason-label">LÝ DO TỪ CHỐI</label>
+                    <div class="reject-reason-text" th:text="${purchase.rejectReason}"></div>
                 </div>
 
                 <hr class="separator">
 
                 <!-- Phần bảng danh sách mặt hàng -->
                 <div class="table-section">
-                    <h3>REQUESTED ITEMS</h3>
+                    <h3>DANH SÁCH MẶT HÀNG</h3>
                     <table class="item-table">
                         <thead>
                             <tr>
-                                <th>ASSET TYPE NAME</th>
-                                <th>QUANTITY</th>
-                                <th>EST. PRICE</th>
-                                <th>SPEC REQUIREMENT</th>
-                                <th>NOTE</th>
+                                <th>LOẠI TÀI SẢN</th>
+                                <th>SỐ LƯỢNG</th>
+                                <th>GIÁ DỰ KIẾN</th>
+                                <th>YÊU CẦU KỸ THUẬT</th>
+                                <th>GHI CHÚ</th>
                             </tr>
                         </thead>
 
@@ -107,12 +129,12 @@
 
                                 <td th:text="${prd.quantity}"></td>
 
-                                <td th:text="${#numbers.formatInteger(prd.getEstimatePrice, 1, 'POINT')}"></td>
+                                <td th:text="${#numbers.formatDecimal(prd.getEstimatePrice, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'"></td>
 
                                 <td th:text="${prd.getSpecificationRequirement}"></td>
 
                                 <td class="italic-note"
-                                    th:text="${prd.getPurchaseDetailNote != null ? prd.getPurchaseDetailNote : 'None'}">
+                                    th:text="${prd.getPurchaseDetailNote != null ? prd.getPurchaseDetailNote : 'Trống'}">
                                 </td>
 
                             </tr>
@@ -124,69 +146,74 @@
 
                 <!-- Tóm tắt tài chính -->
                 <div class="summary-area">
-                    <div class="summary-line">
-                        <span>SUBTOTAL ESTIMATED</span>
-                        <strong id="subtotal">0</strong>
-                    </div>
                     <div class="summary-line total">
-                        <span>TOTAL AMOUNT</span>
-                        <strong id="total">0</strong>
+                        <span>TỔNG YÊU CẦU MUA SẮM:  </span>
+                        <strong th:text="${#numbers.formatDecimal(purchase.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0 VNĐ
+                        </strong>
                     </div>
+
                     <!-- Phần tóm tắt báo giá liên quan -->
-                    <div class="quotations-summary-section" th:if="${purchase.status.name() == 'APPROVED'}">
+                    <div class="quotations-summary-section"
+                         th:if="${purchase.status != null and purchase.status.name() == 'APPROVED'}"
+                         sec:authorize="hasAnyAuthority('DIRECTOR', 'PURCHASE_STAFF')">
                         <hr class="separator">
                         <div class="quotation-header">
                             <div class="q-title">
-                                <h3>QUOTATIONS</h3>
-                                <span class="q-count" th:text="${purchase.quotationCount + ' RECEIVED'}">0
-                                    RECEIVED</span>
+                                <h3>BÁO GIÁ</h3>
+                                <span class="q-count" th:text="${purchase.quotationCount + ' ĐÃ NHẬN'}">0
+                                    ĐÃ NHẬN</span>
                             </div>
                             <div class="q-actions">
-                                <a th:href="@{/purchase-staff/quotations/of-purchase/{id}(id=${purchase.purchaseId})}"
+                                <a th:href="@{/quotations/of-purchase/{id}(id=${purchase.purchaseId})}"
                                     class="btn-outline">
-                                    <i class="fas fa-file-invoice"></i> View All Quotations
-                                </a>
-                                <a th:href="@{/purchase-staff/quotations/create/{id}(id=${purchase.purchaseId})}"
-                                    class="btn-solid" th:if="${purchase.status.name() == 'PENDING'}">
-                                    <i class="fas fa-plus"></i> Add New Quotation
+                                    <i class="fas fa-file-invoice"></i> Xem tất cả
                                 </a>
                             </div>
                         </div>
-                        <p class="no-quotes-msg" th:if="${purchase.quotationCount == 0}">No quotations received yet for
-                            this request.</p>
+                        <p class="no-quotes-msg" th:if="${purchase.quotationCount == 0}">Chưa có báo giá nào cho yêu cầu
+                            này.</p>
                     </div>
                 </div>
         </main>
         <!-- Modal từ chối -->
-        <div th:id="'reject-' + ${purchase.purchaseId}" class="modal-overlay">
-            <div class="modal" role="dialog" aria-modal="true">
-                <div class="modal-header">
-                    <h3 class="modal-title">
-                        Reject Reason - PR-<span th:text="${purchase.purchaseId}"></span>
-                    </h3>
-                    <a href="#" class="modal-close" aria-label="Close">✕</a>
+        <th:block>
+            <div id="rejectModal" class="modal-overlay">
+
+                <div class="modal">
+                    <div class="modal-header">
+                        <h3 class="modal-title">
+                            Lý do từ chối
+                        </h3>
+
+                        <button type="button" class="modal-close" onclick="closeRejectModal()">✕</button>
+                    </div>
+
+                    <form method="post" id="rejectForm" th:action="@{/purchases/0/actions}">
+
+                        <div class="modal-body">
+                            <textarea name="reasonReject" placeholder="Nhập lý do từ chối..." required></textarea>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-submit" name="action" value="r">
+                                Xác nhận
+                            </button>
+
+                            <button type="button" class="btn-cancel" onclick="closeRejectModal()">
+                                Hủy
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
 
-                <form th:action="@{/purchase-staff/purchases/{id}/actions(id=${purchase.purchaseId})}" method="post">
-                    <div class="modal-body">
-                        <textarea name="reasonReject" placeholder="Enter reject reason..." required></textarea>
-                    </div>
-
-                    <div class="modal-actions">
-                        <button type="submit" class="btn-submit" name="actions" value="r">Submit</button>
-                        <a href="#" class="btn-cancel">Cancel</a>
-                    </div>
-                </form>
             </div>
-        </div>
+        </th:block>
     </th:block>
 
     <th:block layout:fragment="extra-js">
         <script th:src="@{/js/purchase/pr-detail.js}"></script>
     </th:block>
-
-
-
 </body>
 
 </html>

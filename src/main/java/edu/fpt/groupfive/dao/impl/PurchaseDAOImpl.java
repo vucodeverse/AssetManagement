@@ -1,18 +1,21 @@
 package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.dao.PurchaseDAO;
 import edu.fpt.groupfive.dao.PurchaseDetailDAO;
-import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
-import edu.fpt.groupfive.dto.request.SearchForQuotation;
+import edu.fpt.groupfive.dto.request.PurchaseRequestSearchCriteria;
+import edu.fpt.groupfive.dto.request.QuotationSearchCriteria;
 import edu.fpt.groupfive.model.Purchase;
 import edu.fpt.groupfive.model.PurchaseDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
+import edu.fpt.groupfive.util.exception.DataAccessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -25,94 +28,105 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     private final DatabaseConfig databaseConfig;
     private final PurchaseDetailDAO purchaseDetailDAO;
 
+    @Value("${dao.common.insert_error}")
+    private String insertErrorMsg;
+
+    @Value("${purchase.create.failure}")
+    private String createFailureMsg;
+
+    @Value("${dao.common.map_error}")
+    private String mapErrorMsg;
+
+    // map các thuộc tính
+    private Purchase mapRowForList(ResultSet rs) throws SQLException {
+        Purchase purchase = new Purchase();
+        purchase.setId(rs.getInt("purchase_request_id"));
+
+        purchase.setStatus(PurchaseProcessStatus.valueOf(rs.getString("status").trim().toUpperCase()));
+
+        purchase.setPurchaseNote(rs.getString("note"));
+        purchase.setRejectReason(rs.getString("reject_reason"));
+        purchase.setCreatedByUser(rs.getInt("creator_id"));
+
+        Date neededByDate = rs.getDate("needed_by_date");
+        purchase.setNeededByDate(neededByDate != null ? neededByDate.toLocalDate() : null);
+        purchase.setReason(rs.getString("request_reason"));
+
+        purchase.setPriority(Priority.valueOf(rs.getString("priority").trim().toUpperCase()));
+
+        // sửa thành LocalDateTime
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        purchase.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
+
+        purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
+        Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
+        if (approvedAt != null) {
+            purchase.setApprovedAt(approvedAt.toLocalDateTime());
+        }
+        Timestamp updatedAtTs = rs.getTimestamp("updated_at");
+        purchase.setUpdatedAt(updatedAtTs != null ? updatedAtTs.toLocalDateTime() : null);
+        return purchase;
+    }
+
     // insert purchase request
     @Override
     public int insert(Purchase purchase) {
 
-        // câu sql
         String sql = "insert into purchase_request (status, note, creator_id, needed_by_date, priority, " +
                 "approved_by_director_id,reject_reason, created_at, updated_at, request_reason, " +
-                "approved_by_director_at," +
-                "purchase_staff_user_id) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+                "approved_by_director_at) values (?,?,?,?,?,?,?,?,?,?,?)";
 
-        Connection connection = null;
-        try {
-            connection = databaseConfig.getConnection();
+        try (Connection connection = databaseConfig.getConnection()) {
 
-            // tắt auto commit
             connection.setAutoCommit(false);
 
-            // kết nối db và trả lại id sau khi insert thành công
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql,
+                    Statement.RETURN_GENERATED_KEYS)) {
 
-            // set placeholder
-            preparedStatement.setString(1, purchase.getStatus() != null ? purchase.getStatus().toString() : null);
-            preparedStatement.setString(2, purchase.getPurchaseNote());
-            preparedStatement.setInt(3, purchase.getCreatedByUser());
-
-            if (purchase.getNeededByDate() != null) {
+                preparedStatement.setString(1, purchase.getStatus().name());
+                preparedStatement.setString(2, purchase.getPurchaseNote());
+                preparedStatement.setInt(3, purchase.getCreatedByUser());
                 preparedStatement.setDate(4, Date.valueOf(purchase.getNeededByDate()));
-            } else {
-                preparedStatement.setNull(4, Types.DATE);
-            }
-
-            if (purchase.getPriority() != null) {
                 preparedStatement.setString(5, purchase.getPriority().name());
-            } else {
-                preparedStatement.setNull(5, Types.NVARCHAR);
+                preparedStatement.setObject(6, purchase.getApprovedByDirector());
+                preparedStatement.setString(7, purchase.getRejectReason());
+                preparedStatement.setTimestamp(8, Timestamp.valueOf(purchase.getCreatedAt()));
+                preparedStatement.setTimestamp(9,
+                        purchase.getUpdatedAt() != null
+                                ? Timestamp.valueOf(purchase.getUpdatedAt())
+                                : null);
+                preparedStatement.setString(10, purchase.getReason());
+                preparedStatement.setTimestamp(11,
+                        purchase.getApprovedAt() != null
+                                ? Timestamp.valueOf(purchase.getApprovedAt())
+                                : null);
+
+                preparedStatement.executeUpdate();
+
+                int purchaseId;
+                try (ResultSet rs = preparedStatement.getGeneratedKeys()) {
+                    purchaseId = rs.next() ? rs.getInt(1) : 0;
+                }
+
+                if (purchase.getPurchaseDetails() != null) {
+                    for (PurchaseDetail d : purchase.getPurchaseDetails()) {
+                        d.setPurchaseRequestId(purchaseId);
+                        purchaseDetailDAO.insert(d, connection);
+                    }
+                }
+
+                connection.commit();
+                return purchaseId;
+
+            } catch (Exception e) {
+                connection.rollback();
+                throw new DataAccessException(insertErrorMsg, e);
+            } finally {
+                connection.setAutoCommit(true);
             }
 
-            preparedStatement.setObject(6, purchase.getApprovedByDirector());
-            preparedStatement.setString(7, purchase.getRejectReason());
-
-            if (purchase.getCreatedAt() != null) {
-                preparedStatement.setTimestamp(8, Timestamp.valueOf(purchase.getCreatedAt().atStartOfDay()));
-            } else {
-                preparedStatement.setNull(8, Types.TIMESTAMP);
-            }
-
-            preparedStatement.setTimestamp(9,
-                    purchase.getUpdatedAt() != null ? Timestamp.valueOf(purchase.getUpdatedAt().atStartOfDay()) : null);
-
-            preparedStatement.setString(10, purchase.getReason());
-            preparedStatement.setTimestamp(11,
-                    purchase.getApprovedAt() != null ? Timestamp.valueOf(purchase.getApprovedAt()) : null);
-            preparedStatement.setObject(12, purchase.getPurchaseStaffId());
-
-            preparedStatement.executeUpdate();
-            ResultSet rs = preparedStatement.getGeneratedKeys();
-            int purchaseId = rs.next() ? rs.getInt(1) : 0;
-
-            if (purchase.getPurchaseDetails() != null) {
-                for (PurchaseDetail d : purchase.getPurchaseDetails()) {
-                    d.setPurchaseRequestId(purchaseId);
-
-                    // truyền cả connection nếu lỗi sẽ rollback hết
-                    purchaseDetailDAO.insert(d, connection);
-                }
-            }
-
-            connection.commit();
-            return purchaseId;
-
-        } catch (Exception exception) {
-
-            // nếu có lỗi sẽ rollback
-            if (connection != null)
-                try {
-                    connection.rollback();
-                } catch (Exception ignored) {
-                }
-            throw new RuntimeException(exception);
-        } finally {
-
-            // reset auto commit lại về true và đóng cổng.
-            if (connection != null)
-                try {
-                    connection.setAutoCommit(true);
-                    connection.close();
-                } catch (Exception ignored) {
-                }
+        } catch (Exception e) {
+            throw new DataAccessException(createFailureMsg, e);
         }
     }
 
@@ -120,9 +134,9 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     @Override
     public Optional<Purchase> findById(Integer purchaseId) {
 
-        String sql = "select p.*, u.first_name, u.last_name " +
-                "from purchase_request p left join users u on p.creator_id = u.user_id " +
-                "where p.purchase_request_id = ?";
+        String sql = "select p.* " +
+                "from purchase_request p " +
+                "where p.purchase_request_id = ? and p.status <> 'DELETED'";
 
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -138,7 +152,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
 
         return Optional.empty();
@@ -146,7 +160,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
     // lấy ra các purchase đã dc approve
     @Override
-    public Optional<Purchase> findByIdAndApproved(Integer purchaseId, String status) {
+    public Optional<Purchase> findByIdAndStatus(Integer purchaseId, String status) {
         String sql = "select * from purchase_request where purchase_request_id = ? and status = ?";
 
         try (Connection connection = databaseConfig.getConnection();
@@ -155,31 +169,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             preparedStatement.setString(2, status);
             ResultSet rs = preparedStatement.executeQuery();
             if (rs.next()) {
-
-                Purchase purchase = new Purchase();
-                purchase.setId(rs.getInt("purchase_request_id"));
-                purchase.setStatus(Request.valueOf(rs.getString("status").toUpperCase()));
-                purchase.setPurchaseNote(rs.getString("note"));
-                purchase.setRejectReason(rs.getString("reject_reason"));
-                purchase.setCreatedByUser(rs.getInt("creator_id"));
-                Date neededByDate = rs.getDate("needed_by_date");
-                purchase.setNeededByDate(
-                        neededByDate != null ? neededByDate.toLocalDate() : null);
-
-                purchase.setReason(rs.getString("request_reason"));
-                purchase.setPriority(Priority.valueOf(rs.getString("priority").toUpperCase()));
-                purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
-
-                Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
-                if (approvedAt != null) {
-                    purchase.setApprovedAt(approvedAt.toLocalDateTime());
-                }
-
-                purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
-                purchase.setCreatedAt(rs.getDate("created_at").toLocalDate());
-                Date updatedAt = rs.getDate("updated_at");
-                purchase.setUpdatedAt(
-                        updatedAt != null ? updatedAt.toLocalDate() : null);
+                Purchase purchase = mapRowForList(rs);
 
                 purchase.setPurchaseDetails(
                         purchaseDetailDAO.findByPurchaseRequestId(purchaseId));
@@ -188,7 +178,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
 
         return Optional.empty();
@@ -197,8 +187,8 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     // lấy tất cả các purchase
     @Override
     public List<Purchase> findAll() {
-        String sql = "select p.*, u.first_name, u.last_name " +
-                "from purchase_request p left join users u on p.creator_id = u.user_id";
+        String sql = "select p.* " +
+                "from purchase_request p where p.status <> 'DELETED'";
 
         List<Purchase> purchases = new ArrayList<>();
         try (Connection connection = databaseConfig.getConnection();
@@ -208,71 +198,24 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 try {
                     purchases.add(mapRowForList(rs));
                 } catch (Exception e) {
-                    log.error("Error mapping purchase row: {}", e.getMessage());
+                    throw new DataAccessException(mapErrorMsg, e);
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
         return purchases;
     }
 
-    // map các thuộc tính
-    private Purchase mapRowForList(ResultSet rs) throws SQLException {
-        Purchase purchase = new Purchase();
-        purchase.setId(rs.getInt("purchase_request_id"));
-
-        String status = rs.getString("status");
-        if (status != null && !status.isBlank()) {
-            try {
-                purchase.setStatus(Request.valueOf(status.trim().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid status value: {}", status);
-            }
-        }
-
-        purchase.setPurchaseNote(rs.getString("note"));
-        purchase.setRejectReason(rs.getString("reject_reason"));
-        purchase.setCreatedByUser(rs.getInt("creator_id"));
-
-        String firstName = rs.getString("first_name");
-        String lastName = rs.getString("last_name");
-
-        Date neededByDate = rs.getDate("needed_by_date");
-        purchase.setNeededByDate(neededByDate != null ? neededByDate.toLocalDate() : null);
-        purchase.setReason(rs.getString("request_reason"));
-
-        String priority = rs.getString("priority");
-        if (priority != null && !priority.isBlank()) {
-            try {
-                purchase.setPriority(Priority.valueOf(priority.trim().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid priority value: {}", priority);
-            }
-        }
-
-        Date createdAt = rs.getDate("created_at");
-        purchase.setCreatedAt(createdAt != null ? createdAt.toLocalDate() : null);
-
-        purchase.setApprovedByDirector(rs.getInt("approved_by_director_id"));
-        Timestamp approvedAt = rs.getTimestamp("approved_by_director_at");
-        if (approvedAt != null) {
-            purchase.setApprovedAt(approvedAt.toLocalDateTime());
-        }
-        purchase.setPurchaseStaffId(rs.getInt("purchase_staff_user_id"));
-        Date updatedAt = rs.getDate("updated_at");
-        purchase.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDate() : null);
-        return purchase;
-    }
-
-    // lấy purchase theo các thuộc tính trong filter
+    // lấy purchase lọc theo filter và search
     @Override
-    public List<Purchase> getPurchaseByFilter(PurchaseSearchAndFilter p) {
+    public List<Purchase> search(PurchaseRequestSearchCriteria p) {
 
         // khai báo dynamic sql
         StringBuilder sql = new StringBuilder(
-                "select p.*, u.first_name, u.last_name " +
-                        "from purchase_request p left join users u on p.creator_id = u.user_id where 1 = 1");
+                "select p.*" +
+                        "from purchase_request p left join users u on p.creator_id = u.user_id where 1 = 1 and p" +
+                        ".status <> 'DELETED'");
         List<Purchase> purchases = new ArrayList<>();
 
         List<Object> params = new ArrayList<>();
@@ -301,16 +244,9 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             sql.append(" and (");
             String keyword = p.getKeyword().trim();
 
-            // validte keyword
-            String idStr = keyword;
-            if (idStr.toUpperCase().startsWith("PR-")) {
-                idStr = idStr.substring(3);
-            }
-
-            // nếu là số thì search theo id
-            if (idStr.matches("\\d+")) {
+            if (keyword.matches("\\d+")) {
                 sql.append(" p.purchase_request_id = ? or ");
-                params.add(Integer.parseInt(idStr));
+                params.add(Integer.parseInt(keyword));
             }
 
             sql.append(" lower(u.first_name) like ? or lower(u.last_name) like ? )");
@@ -331,36 +267,50 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                     Purchase mappedPurchase = mapRowForList(rs);
                     purchases.add(mappedPurchase);
                 } catch (Exception e) {
-                    log.error("Error mapping filtered purchase row: {}", e.getMessage());
+                    throw new DataAccessException(mapErrorMsg, e);
                 }
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
         return purchases;
     }
 
-    // update status của purchase
+    // update purchase
     @Override
-    public void updatePurchaseStatus(Request request, Integer purchaseId, String reasonReject) {
-        String sql = "update purchase_request set status = ? , reject_reason = ? where purchase_request_id = ?";
+    public void updateStatus(PurchaseProcessStatus purchaseProcessStatus, Integer purchaseId, String reasonReject, Integer userId) {
+
+        String sql = "update purchase_request set status = ? , reject_reason = ?, updated_at = ?, " +
+                "approved_by_director_at = ?, approved_by_director_id = ? where purchase_request_id = ?";
 
         try (Connection connection = databaseConfig.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setString(1, request.name());
-            preparedStatement.setInt(3, purchaseId);
+            preparedStatement.setString(1, purchaseProcessStatus.name());
 
             if (reasonReject == null || reasonReject.isBlank()) {
                 preparedStatement.setNull(2, Types.NVARCHAR);
             } else {
                 preparedStatement.setString(2, reasonReject);
             }
+
+            preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+
+            if ("APPROVED".equals(purchaseProcessStatus.name())) {
+                preparedStatement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                preparedStatement.setObject(5, userId);
+            } else {
+                preparedStatement.setNull(4, Types.TIMESTAMP);
+                preparedStatement.setNull(5, Types.INTEGER);
+            }
+
+            preparedStatement.setInt(6, purchaseId);
+
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
     }
 
@@ -368,13 +318,13 @@ public class PurchaseDAOImpl implements PurchaseDAO {
     // từng purchase kèm các thuộc tính cần
     // của purchase
     @Override
-    public Map<Integer, Object[]> findQuotationSummaryByFilter(SearchForQuotation s) {
+    public Map<Integer, Object[]> searchQuotationSummary(QuotationSearchCriteria s) {
         StringBuilder sql = new StringBuilder(
                 "select p.purchase_request_id, p.needed_by_date, p.priority, " +
                         "count(q.quotation_id) as number_of_quotation, " +
                         "min(q.total_amount) as est_price " +
                         "from purchase_request p " +
-                        "left join quotation q on p.purchase_request_id = q.purchase_request_id " +
+                        "left join quotation q on p.purchase_request_id = q.purchase_request_id and q.status <> 'DELETED' " +
                         "left join users u on p.creator_id = u.user_id " +
                         "where p.status = 'APPROVED' ");
 
@@ -436,7 +386,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                     int purchaseId = rs.getInt("purchase_request_id");
                     Date neededByDate = rs.getDate("needed_by_date");
                     result.put(purchaseId, new Object[] {
-                            neededByDate != null ? neededByDate.toLocalDate() : null,
+                            neededByDate.toLocalDate(),
                             rs.getString("priority"),
                             rs.getInt("number_of_quotation"),
                             rs.getBigDecimal("est_price")
@@ -444,105 +394,65 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error executing quotation summary query", e);
+            throw new DataAccessException(insertErrorMsg, e);
         }
 
         return result;
     }
 
     @Override
-    public long countByStatus(Request status) {
-        String sql = "select count(*) from purchase_request where status = ?";
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, status.name());
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next())
-                return rs.getLong(1);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return 0;
-    }
+    public List<Object[]> getItemOnDB() {
+        String sql =" select " +
+                "          (select count(*) from purchase_request p where p.status = 'PENDING'), " +
+                "          (select count(*) from quotation q where q.status = 'PENDING'), " +
+                "          (select coalesce(sum(po.total_amount), 0) from purchase_orders po where po.status <> 'DELETED' " +
+                "           and exists (select 1 from purchase_order_details pod where pod.purchase_order_id = po.purchase_order_id and year(pod.delivery_date) = year(getdate()))) ";
 
-    @Override
-    public List<Purchase> findRecent(int limit) {
-        String sql = "select p.*, u.first_name, u.last_name " +
-                "from purchase_request p left join users u on p.creator_id = u.user_id " +
-                "order by p.created_at desc, p.purchase_request_id desc " +
-                "offset 0 rows fetch next ? rows only";
-        List<Purchase> purchases = new ArrayList<>();
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, limit);
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                purchases.add(mapRowForList(rs));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return purchases;
-    }
+        try(Connection connection = databaseConfig.getConnection();
+        PreparedStatement ps = connection.prepareStatement(sql)) {
 
-    @Override
-    public List<Purchase> findApprovedPRs(int limit) {
-        String sql = "select p.*, u.first_name, u.last_name " +
-                "from purchase_request p left join users u on p.creator_id = u.user_id " +
-                "where p.status = 'APPROVED' " +
-                "order by p.approved_by_director_at desc, p.purchase_request_id desc " +
-                "offset 0 rows fetch next ? rows only";
-        List<Purchase> purchases = new ArrayList<>();
-        try (Connection connection = databaseConfig.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, limit);
-            ResultSet rs = preparedStatement.executeQuery();
+            ResultSet rs = ps.executeQuery();
+            List<Object[]> result = new ArrayList<>();
             while (rs.next()) {
-                purchases.add(mapRowForList(rs));
+                Integer countPrPending = rs.getInt(1);
+                Integer countQtPending = rs.getInt(2);
+                BigDecimal totalAmount = rs.getBigDecimal(3);
+
+                result.add(new Object[] { countPrPending, countQtPending, totalAmount });
             }
+
+            return result;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return purchases;
     }
 
     // update purchase request nếu là draft
     @Override
     public void update(Purchase purchase) {
+
         String sql = "update purchase_request set status = ?, note = ?, needed_by_date = ?, " +
                 "priority = ?, reject_reason = ?, updated_at = ?, request_reason = ? " +
-                "where purchase_request_id = ?";
+                "where purchase_request_id = ? and status in ('DRAFT','PENDING')";
 
-        Connection connection = null;
-        try {
-            connection = databaseConfig.getConnection();
+        try (Connection connection = databaseConfig.getConnection()) {
+
             connection.setAutoCommit(false);
 
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, purchase.getStatus() != null ? purchase.getStatus().toString() : null);
-            ps.setString(2, purchase.getPurchaseNote());
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            if (purchase.getNeededByDate() != null) {
+                ps.setString(1, purchase.getStatus().name());
+                ps.setString(2, purchase.getPurchaseNote());
                 ps.setDate(3, Date.valueOf(purchase.getNeededByDate()));
-            } else {
-                ps.setNull(3, Types.DATE);
-            }
-
-            if (purchase.getPriority() != null) {
                 ps.setString(4, purchase.getPriority().name());
-            } else {
-                ps.setNull(4, Types.NVARCHAR);
+                ps.setString(5, purchase.getRejectReason());
+                ps.setTimestamp(6, Timestamp.valueOf(purchase.getUpdatedAt()));
+                ps.setString(7, purchase.getReason());
+                ps.setInt(8, purchase.getId());
+
+                ps.executeUpdate();
             }
 
-            ps.setString(5, purchase.getRejectReason());
-            ps.setTimestamp(6, purchase.getUpdatedAt() != null
-                    ? Timestamp.valueOf(purchase.getUpdatedAt().atStartOfDay())
-                    : null);
-            ps.setString(7, purchase.getReason());
-            ps.setInt(8, purchase.getId());
-            ps.executeUpdate();
-
-            // xóa detail cũ rồi insert lại
             purchaseDetailDAO.deleteByPurchaseRequestId(purchase.getId(), connection);
 
             if (purchase.getPurchaseDetails() != null) {
@@ -555,19 +465,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
             connection.commit();
 
         } catch (Exception e) {
-            if (connection != null)
-                try {
-                    connection.rollback();
-                } catch (Exception ignored) {
-                }
-            throw new RuntimeException(e);
-        } finally {
-            if (connection != null)
-                try {
-                    connection.setAutoCommit(true);
-                    connection.close();
-                } catch (Exception ignored) {
-                }
+            throw new DataAccessException(insertErrorMsg, e);
         }
     }
 }

@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.model;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.Request;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 public class Purchase extends AbstractEntity<Integer>{
 
-    private Request status;
+    private PurchaseProcessStatus status;
     private String purchaseNote;
     private String rejectReason;
     private Integer createdByUser;
@@ -22,7 +22,6 @@ public class Purchase extends AbstractEntity<Integer>{
     private Priority priority;
     private Integer approvedByDirector;
     private LocalDateTime approvedAt;
-    private Integer purchaseStaffId;
     private List<PurchaseDetail> purchaseDetails;
     private List<Quotation> quotations;
 }

@@ -1,34 +1,34 @@
 package edu.fpt.groupfive.service.impl;
 
-import edu.fpt.groupfive.common.OrderStatus;
-import edu.fpt.groupfive.common.QuotationStatus;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
+
+
 import edu.fpt.groupfive.dao.*;
-import edu.fpt.groupfive.dto.request.OrderCreateRequest;
-import edu.fpt.groupfive.dto.request.OrderDetailCreateRequest;
-import edu.fpt.groupfive.dto.request.OrderSearchCriteria;
-import edu.fpt.groupfive.dto.response.OrderDetailResponse;
+import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
-import edu.fpt.groupfive.dto.response.PurchaseOrderGroupResponse;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.mapper.OrderDetailMapper;
 import edu.fpt.groupfive.mapper.OrderMapper;
 import edu.fpt.groupfive.model.*;
 import edu.fpt.groupfive.service.AssetTypeService;
+import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.OrderService;
+import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
+import edu.fpt.groupfive.util.RangeAmount;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Objects;
 
 @Service
-@Slf4j(topic = "ORDER-SERVICE")
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
     private final QuotationDAO quotationDAO;
@@ -37,225 +37,351 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final OrderDAO orderDAO;
     private final OrderDetailDAO orderDetailDAO;
-    private final SupplierDAO supplierDAO;
     private final AssetTypeService assetTypeService;
-    private final PurchaseDetailDAO purchaseDetailDAO;
     private final OrderCalculationUtil orderCalculationUtil;
+    private final RangeAmount rangeAmount;
+    private final ISupplierService supplierService;
+    private final UserService userService;
+    private final UserDAO userDAO;
+    private final PurchaseDAO purchaseDAO;
+    private final PurchaseDetailDAO purchaseDetailDAO;
 
+    @Value("${order.quotation_not_found}")
+    private String quotationNotFoundMsg;
+
+    @Value("${order.create.min_lines}")
+    private String minLinesMsg;
+
+    @Value("${order.create.quotation_detail_not_found}")
+    private String quotationDetailNotFoundMsg;
+
+    @Value("${order.not_found}")
+    private String orderNotFoundMsg;
+
+    @Value("${order.delivery_date.required}")
+    private String deliveryDateRequiredMsg;
+
+    @Value("${order.delivery_date.past}")
+    private String deliveryDatePastMsg;
+
+    @Value("${order.delivery_date.invalid_format}")
+    private String deliveryDateInvalidFormatMsg;
+
+    @Value("${order.not_found_fallback}")
+    private String notFoundFallbackMsg;
+
+    // kiểm tra order hợp lệ hay ko
     @Override
-    public OrderCreateRequest checkFormCreateOrder(Integer quotationId) {
+    public PurchaseOrderCreateRequest preparePurchaseOrderForm(Integer quotationId) {
+
+        // check quotation có đang tồn tịaij hay ko
         Quotation quotation = quotationDAO.findById(quotationId)
-                .orElseThrow(() -> new InvalidDataException("Quotation không tồn tại: " + quotationId));
+                .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
-        List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
+        // lấy ra list quotation detiail
+        List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
+                .filter(qd -> PurchaseProcessStatus.APPROVED == qd.getQuotationDetailStatus()
+                        || PurchaseProcessStatus.PENDING == qd.getQuotationDetailStatus())
+                .toList();
 
+        // lấy ra assettype
         Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
 
-        List<OrderDetailCreateRequest> orderDetailCreateRequests = quotationDetails.stream()
-                .map(qd -> OrderDetailCreateRequest.builder()
+        // map quotation detial sang purchase orderdetail
+        List<PurchaseOrderDetailCreateRequest> purchaseOrderDetailCreateRequests = quotationDetails.stream()
+                .map(qd -> PurchaseOrderDetailCreateRequest.builder()
                         .quotationDetailId(qd.getId())
                         .discountRate(qd.getDiscountRate())
                         .taxRate(qd.getTaxRate())
                         .price(qd.getPrice())
                         .assetTypeId(qd.getAssetTypeId())
-                        .assetTypeName(assetTypeNames.getOrDefault(qd.getAssetTypeId(), "N/A"))
+                        .assetTypeName(assetTypeNames.getOrDefault(qd.getAssetTypeId(), notFoundFallbackMsg))
                         .quantity(qd.getQuantity())
                         .build())
-                .collect(Collectors.toCollection(ArrayList::new));
+                .toList();
 
-        return OrderCreateRequest.builder()
+        // trả về order create
+        return PurchaseOrderCreateRequest.builder()
                 .totalAmount(quotation.getTotalAmount())
                 .supplierId(quotation.getSupplierId())
                 .quotationId(quotationId)
-                .orderDetailCreateRequests(orderDetailCreateRequests)
+                .purchaseOrderDetailCreateRequests(purchaseOrderDetailCreateRequests)
                 .build();
     }
 
+    // tạo order
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer createOrder(Integer quotationId, OrderCreateRequest req) {
+    public Integer createPurchaseOrder(Integer quotationId, PurchaseOrderCreateRequest purchaseOrderCreateRequest,
+            String username) {
 
-        // 1. Validate quotation tồn tại
+        // ktra tồn tại
         Quotation quotation = quotationDAO.findById(quotationId)
-                .orElseThrow(() -> new InvalidDataException("Quotation không tồn tại: " + quotationId));
+                .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
 
-        // 2. Load toàn bộ QuotationDetail từ DB → dùng Map để tra cứu nhanh O(1)
-        List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId);
+        // ly toàn bộ quotation detail lên trước
+        List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
+                .filter(qd -> PurchaseProcessStatus.APPROVED == qd.getQuotationDetailStatus()
+                        || PurchaseProcessStatus.PENDING == qd.getQuotationDetailStatus())
+                .toList();
+
+        // lưu id và quota detail của nó
         Map<Integer, QuotationDetail> quotationDetailMap = quotationDetails.stream()
                 .collect(Collectors.toMap(QuotationDetail::getId, qd -> qd));
 
-        // 3. Validate danh sách lines từ form
-        List<OrderDetailCreateRequest> lines = req.getOrderDetailCreateRequests();
+        // check danh sách order request gửi về để tạo po
+        List<PurchaseOrderDetailCreateRequest> lines = purchaseOrderCreateRequest
+                .getPurchaseOrderDetailCreateRequests();
         if (lines == null || lines.isEmpty()) {
-            throw new InvalidDataException("Cần ít nhất 1 dòng để tạo PO");
+            throw new InvalidDataException(minLinesMsg);
         }
 
-        // Lọc bỏ dòng có quantity null hoặc <= 0
-        List<OrderDetailCreateRequest> validLines = lines.stream()
+        // bỏ những row có quantity null và <= 0
+        List<PurchaseOrderDetailCreateRequest> detailCreateRequests = lines.stream()
                 .filter(o -> o.getQuantity() != null && o.getQuantity() > 0)
-                .collect(Collectors.toList());
+                .toList();
 
-        if (validLines.isEmpty()) {
-            throw new InvalidDataException("Không có dòng hợp lệ nào để tạo PO");
-        }
-
-        // 4. Kiểm tra trùng quotationDetailId trong cùng 1 request
-        Set<Integer> seen = new HashSet<>();
-        for (OrderDetailCreateRequest line : validLines) {
-            if (!seen.add(line.getQuotationDetailId())) {
-                throw new InvalidDataException("Duplicate quotation detail id: " + line.getQuotationDetailId());
-            }
-        }
-
-        // 5. Kiểm tra số lượng dựa trên PR (Purchase Request)
-        // Lấy danh sách Purchase Detail IDs từ Quotation Details
-        List<Integer> prDetailIds = quotationDetails.stream()
-                .map(QuotationDetail::getPurchaseDetailId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        // Lấy số lượng đã đặt của từng dòng PR (tổng hợp từ TẤT CẢ các PO trước đó)
-        Map<Integer, Integer> orderedQtyByPrDetail = orderDAO.getOrderedQtyByPurchaseDetail(prDetailIds);
-
-        // Lấy thông tin PR Detail gốc để biết số lượng yêu cầu ban đầu
-        List<PurchaseDetail> prDetails = purchaseDetailDAO.findByPurchaseRequestId(quotation.getPurchaseId());
-        Map<Integer, PurchaseDetail> prDetailMap = prDetails.stream()
-                .collect(Collectors.toMap(PurchaseDetail::getId, pd -> pd));
-
-        // 6. Tạo Order header
+        // tạo order
         Order order = new Order();
         order.setQuotationId(quotationId);
-        order.setPurchaseRequestId(quotation.getPurchaseId());
-        order.setOrderStatus(OrderStatus.PENDING);
-        order.setOrderNote(req.getOrderNote());
+        order.setPurchaseId(quotation.getPurchaseId());
+        order.setOrderStatus(PurchaseProcessStatus.PENDING);
+        order.setOrderNote(purchaseOrderCreateRequest.getOrderNote());
         order.setSupplierId(quotation.getSupplierId());
+        order.setApprovedBy(userDAO.findUserIdByUsername(username));
 
-        // Tính toán lại tổng tiền trong tầng service để đảm bảo an toàn dữ liệu
-        orderCalculationUtil.recalculateTotal(req);
-        order.setTotalAmount(req.getTotalAmount());
+        // tính lại tổng tiền
+        orderCalculationUtil.recalculateTotal(purchaseOrderCreateRequest);
+        order.setTotalAmount(purchaseOrderCreateRequest.getTotalAmount());
 
-        Integer orderId = orderDAO.insert(order);
-        if (orderId == null || orderId <= 0) {
-            throw new InvalidDataException("Tạo purchase order thất bại");
-        }
+        List<OrderDetail> orderDetails = new ArrayList<>();
 
-        // 7. Tạo từng OrderDetail
-        for (OrderDetailCreateRequest line : validLines) {
+        // tạo từng order detail
+        for (PurchaseOrderDetailCreateRequest line : detailCreateRequests) {
+
+            // lấy thông tin báo giá chi tiết
             QuotationDetail qd = quotationDetailMap.get(line.getQuotationDetailId());
             if (qd == null) {
-                throw new InvalidDataException("Quotation detail không tồn tại: " + line.getQuotationDetailId());
+                throw new InvalidDataException(quotationDetailNotFoundMsg);
             }
 
-            PurchaseDetail prDetail = prDetailMap.get(qd.getPurchaseDetailId());
-            if (prDetail == null) {
-                throw new InvalidDataException("Không tìm thấy thông tin Purchase Request gốc cho dòng này.");
-            }
-
-            int alreadyOrdered = orderedQtyByPrDetail.getOrDefault(qd.getPurchaseDetailId(), 0);
-            int remainingInPr = prDetail.getQuantity() - alreadyOrdered;
-
-            if (line.getQuantity() > remainingInPr) {
-                throw new InvalidDataException(String.format(
-                        "Số lượng đặt hàng (%d) vượt quá số lượng còn lại trong PR (%d). Đã đặt trước đó: %d/%d.",
-                        line.getQuantity(), remainingInPr, alreadyOrdered, prDetail.getQuantity()));
-            }
-
-            // Sử dụng mapper để ánh xạ các trường chung (số lượng, ghi chú,
-            // quotationDetailId)
             OrderDetail orderDetail = orderDetailMapper.toOrderDetail(line);
-
-            // Ghi đè các trường lấy từ database (không tin form dữ liệu gửi lên) để tránh
-            // rò rỉ hoặc can thiệp dữ liệu
             orderDetail.setPrice(qd.getPrice());
             orderDetail.setTaxRate(qd.getTaxRate());
             orderDetail.setDiscountRate(qd.getDiscountRate());
             orderDetail.setAssetTypeId(qd.getAssetTypeId());
 
-            orderDetailDAO.insetOrderDetail(orderDetail, orderId);
+            orderDetails.add(orderDetail);
         }
 
-        // 8. Update quotation status to APPROVED
-        quotationDAO.updateStatusReject(quotationId, QuotationStatus.APPROVED, null);
+        order.setOrderDetails(orderDetails);
 
+        // insert order vao DB
+        Integer orderId = orderDAO.insert(order);
+
+        // update quotation detail sang APPROVED
+        detailCreateRequests
+                .forEach(line -> quotationDetailDAO.update(line.getQuotationDetailId(), PurchaseProcessStatus.APPROVED));
+
+        // update quotation sang APPROVED
+        quotationDAO.updateStatus(quotationId, PurchaseProcessStatus.APPROVED);
+
+        // chuyển những quotation detail khác sang reject
+        updateQuotationDetail(detailCreateRequests, quotationDetails);
+
+        if(checkQuantityOfPO(quotation.getPurchaseId())) {
+            purchaseDAO.updateStatus(PurchaseProcessStatus.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
+
+            rejectOtherQuotations(quotationId, quotation.getPurchaseId());
+        }
         return orderId;
     }
 
+    private void updateQuotationDetail(List<PurchaseOrderDetailCreateRequest> approvedRequests, List<QuotationDetail> allCandidates) {
+        Set<Integer> approvedIds = approvedRequests.stream()
+                .map(PurchaseOrderDetailCreateRequest::getQuotationDetailId)
+                .collect(Collectors.toSet());
+
+        for (QuotationDetail qd : allCandidates) {
+            if (!approvedIds.contains(qd.getId())) {
+                quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
+            }
+        }
+    }
+
+    // hủy những quotation khác khi hàng đã đủ
+    private void rejectOtherQuotations(Integer currentQuotationId, Integer purchaseId) {
+        List<Quotation> otherQuotations = quotationDAO.findByPurchaseId(purchaseId).stream()
+                .filter(q -> !q.getId().equals(currentQuotationId))
+                .filter(q -> q.getQuotationStatus() == PurchaseProcessStatus.PENDING 
+                        || q.getQuotationStatus() == PurchaseProcessStatus.DRAFT)
+                .toList();
+
+        for (Quotation q : otherQuotations) {
+            // Reject the quotation itself
+            quotationDAO.updateStatus(q.getId(), PurchaseProcessStatus.REJECTED);
+            
+            // Reject all its details
+            List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(q.getId());
+            for (QuotationDetail qd : details) {
+                if (qd.getQuotationDetailStatus() != PurchaseProcessStatus.REJECTED) {
+                    quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
+                }
+            }
+        }
+    }
+
+    // lấy ra toàn bộ po và pr id tương ứng
     @Override
-    public List<PurchaseOrderGroupResponse> getOrdersGroupedByPR(OrderSearchCriteria criteria) {
-        parseAmountRange(criteria);
+    public List<PurchaseOrderResponse> searchPurchaseOrders(PurchaseOrderSearchCriteria criteria) {
 
-        List<Object[]> results = orderDAO.searchAndFilter(criteria);
+        // set mặc điịnh min max
+        criteria.setMinAmount(null);
+        criteria.setMaxAmount(null);
 
-        LinkedHashMap<Integer, PurchaseOrderGroupResponse> groupMap = new LinkedHashMap<>();
+        if (criteria.getAmountRange() != null && !criteria.getAmountRange().isBlank()) {
+            List<BigDecimal> list = rangeAmount.applyRangeAMount(criteria.getAmountRange());
 
+            if (list.size() == 1) {
+                criteria.setMinAmount(list.get(0));
+            } else if (list.size() == 2) {
+                criteria.setMinAmount(list.get(0));
+                criteria.setMaxAmount(list.get(list.size() - 1));
+            }
+        }
+
+        List<Object[]> results = orderDAO.search(criteria);
+        List<PurchaseOrderResponse> list = new ArrayList<>();
+
+        // map từng row sang po response
         for (Object[] row : results) {
             Order order = (Order) row[0];
             String supplierName = (String) row[1];
-            int purchaseRequestId = order.getPurchaseRequestId();
-
             PurchaseOrderResponse poResponse = orderMapper.toPurchaseOrderResponse(order);
             poResponse.setSupplierName(supplierName);
-
-            groupMap.computeIfAbsent(purchaseRequestId, prId -> PurchaseOrderGroupResponse.builder()
-                    .purchaseRequestId(prId)
-                    .orders(new ArrayList<>())
-                    .build()).getOrders().add(poResponse);
+            list.add(poResponse);
         }
 
-        return new ArrayList<>(groupMap.values());
+        return list;
     }
 
+    // lấy ra toàn bộ po detail
     @Override
-    public PurchaseOrderDetailResponse getOrderDetail(Integer orderId) {
+    public PurchaseOrderResponse getPurchaseOrderById(Integer orderId) {
         Order order = orderDAO.findById(orderId)
-                .orElseThrow(() -> new InvalidDataException("Purchase Order không tồn tại: " + orderId));
+                .orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
 
-        String supplierName = supplierDAO.findById(order.getSupplierId())
-                .map(Supplier::getSupplierName)
-                .orElse("N/A");
-
-        List<OrderDetail> detailModels = orderDetailDAO.findByOrderId(orderId);
+        Map<Integer, String> map = supplierService.getSupplierIdToNameMap();
         Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
 
-        List<OrderDetailResponse> items = detailModels.stream()
+        // lấy ra list po detail theo po id
+        List<OrderDetail> poDetails = orderDetailDAO.findByOrderId(orderId);
+
+        // Fetch quotation details to get purchaseRequestDetailId
+        List<QuotationDetail> qDetails = quotationDetailDAO.findByQuotationId(order.getQuotationId());
+        Map<Integer, Integer> qDetailIdToPurchaseDetailId = qDetails.stream()
+                .collect(java.util.stream.Collectors.toMap(QuotationDetail::getId,
+                        QuotationDetail::getPurchaseDetailId));
+
+        // map sang po detail response
+        List<PurchaseOrderDetailResponse> items = poDetails.stream()
                 .map(detail -> {
-                    OrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
-                    itemDto.setAssetTypeName(assetTypeNames.getOrDefault(detail.getAssetTypeId(), "N/A"));
+                    PurchaseOrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
+                    itemDto.setAssetTypeName(assetTypeNames.getOrDefault(detail.getAssetTypeId(), notFoundFallbackMsg));
+                    itemDto.setPurchaseRequestDetailId(qDetailIdToPurchaseDetailId.get(detail.getQuotationDetailId()));
                     return itemDto;
                 })
                 .toList();
 
-        // Use centralized calculation utility
-        BigDecimal[] breakdown = orderCalculationUtil.calculateBreakdownForOrder(detailModels);
+        // tính toán các loại giá cho order detail đó
+        BigDecimal[] calculated = orderCalculationUtil.calculatePoDetail(poDetails);
 
-        PurchaseOrderDetailResponse response = orderMapper.toPurchaseOrderDetailResponse(order);
-        response.setSupplierName(supplierName);
-        response.setSubtotal(breakdown[0]);
-        response.setTotalDiscount(breakdown[1]);
-        response.setTotalTax(breakdown[2]);
-        response.setGrandTotal(breakdown[3]);
-        response.setItems(items);
+        PurchaseOrderResponse response = orderMapper.toPurchaseOrderResponse(order);
+        response.setSupplierName(map.getOrDefault(order.getSupplierId(), notFoundFallbackMsg));
+        response.setOrderDetails(items);
+        response.setSubtotal(calculated[0]);
+        response.setTotalDiscount(calculated[1]);
+        response.setTotalTax(calculated[2]);
+        response.setTotalAmount(calculated[3]);
 
         return response;
     }
 
-    private void parseAmountRange(OrderSearchCriteria criteria) {
+    @Override
+    public void updateDeliveryDate(Integer orderId, String deliveryDateStr) {
+        if (deliveryDateStr == null || deliveryDateStr.isBlank()) {
+            throw new InvalidDataException(deliveryDateRequiredMsg);
+        }
 
-        if (criteria.getAmountRange() == null || criteria.getAmountRange().isBlank())
-            return;
-        switch (criteria.getAmountRange()) {
-            case "0-5000" -> {
-                criteria.setMinAmount(BigDecimal.ZERO);
-                criteria.setMaxAmount(new BigDecimal("5000"));
-            }
-            case "5000-20000" -> {
-                criteria.setMinAmount(new BigDecimal("5000"));
-                criteria.setMaxAmount(new BigDecimal("20000"));
-            }
-            case "20000+" -> {
-                criteria.setMinAmount(new BigDecimal("20000"));
-                criteria.setMaxAmount(null);
-            }
+        LocalDate deliveryDate = LocalDate.parse(deliveryDateStr);
+        if (deliveryDate.isBefore(LocalDate.now())) {
+            throw new InvalidDataException(deliveryDatePastMsg);
+        }
+        try {
+            orderDetailDAO.updateDeliveryDate(orderId, deliveryDate);
+        } catch (Exception e) {
+            throw new InvalidDataException(deliveryDateInvalidFormatMsg);
         }
     }
+
+    @Override
+    public List<PurchaseOrderDetailResponse> getAllOrderDetails() {
+        List<OrderDetail> list=orderDetailDAO.findAll();
+        return orderDetailMapper.toListOrderDetailResponse(list);
+    }
+
+    @Override
+    public List<PurchaseOrderDetailResponse> getAllOrderDetails(Integer orderId) {
+        Map<Integer, String> map = assetTypeService.getAssetTypeIdToNameMap();
+
+        return orderDetailDAO.findByOrderId(orderId).stream()
+                .map(pod -> PurchaseOrderDetailResponse.builder()
+                        .purchaseOrderDetailId(pod.getId())
+                        .price(pod.getPrice())
+                        .taxRate(pod.getTaxRate())
+                        .deliveryDate(pod.getDeliveryDate())
+                        .discountRate(pod.getDiscountRate())
+                        .quantity(pod.getQuantity())
+                        .assetTypeName(map.getOrDefault(pod.getAssetTypeId(), "Không có loại tài sản"))
+                        .build()).toList();
+    }
+
+    @Override
+    public List<PurchaseOrderResponse> getOrderWithPending() {
+
+        Map<Integer, String> map = userService.getUserIdToUsernameMap();
+
+        return (List<PurchaseOrderResponse>) orderDAO.findRecent().stream().filter(o -> PurchaseProcessStatus.PENDING == o.getOrderStatus()).map(o -> PurchaseOrderResponse.builder()
+                        .orderId(o.getId())
+                .orderNote(o.getOrderNote())
+                .createdAt(o.getCreatedAt())
+                .orderStatus(o.getOrderStatus().name())
+                .purchaseId(o.getPurchaseId())
+                .approvedByName(map.getOrDefault(o.getUpdatedBy(), "Hiện chưa được chấp nhận"))
+                .totalAmount(o.getTotalAmount()).build()).toList();
+    }
+
+    @Override
+    public void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus) {
+        orderDAO.findById(orderId).orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
+
+        orderDAO.updateStatus(orderId, orderStatus);
+    }
+
+    private Boolean checkQuantityOfPO(Integer purchaseId){
+
+        List<PurchaseDetail> purchaseDetails = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
+
+        Map<Integer, Integer> ordered = orderDAO.getOrderedQuantityByPurchaseDetailId(purchaseDetails);
+
+        for(PurchaseDetail pd : purchaseDetails){
+            int orderedQty = ordered.getOrDefault(pd.getId(), 0);
+
+            if(orderedQty < pd.getQuantity()){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 }

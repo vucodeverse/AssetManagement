@@ -12,15 +12,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller()
-@RequestMapping("/auth")
+@RequestMapping("auth")
 @RequiredArgsConstructor
-@Slf4j
 public class LoginController {
 
     @GetMapping("/login")
     public String loginProcess(@ModelAttribute("loginRequest") UserLoginRequest userLoginReqest, Model model,
     HttpServletRequest request){
-        log.info("Post login controller");
 
             Object errLogin = request.getSession().getAttribute("error_login");
         if(errLogin != null){

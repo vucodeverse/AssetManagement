@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -27,14 +28,16 @@ public class UserController {
         model.addAttribute("departments", departmentService.getAllDepartments());
     }
 
-    // Giữ lại dữ liệu trong form khi lỗi
-    private String returnData(Model model, String mode) {
-        setupData(model);
-        model.addAttribute("mode", mode);
-        return "user-detail";
+    private void setupAttributes(Model model, Object user, boolean canEdit, boolean isEditMode) {
+        model.addAttribute("user", user);
+        model.addAttribute("roles", Role.getRoles());
+        model.addAttribute("departments", departmentService.getAllDepartments());
+        model.addAttribute("canEdit", canEdit);
+        model.addAttribute("isEditMode", isEditMode);
     }
 
-    @GetMapping("/home")
+
+    @GetMapping("/users")
     public String homePage(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "status", required = false) String status,
@@ -44,7 +47,7 @@ public class UserController {
             Model model) {
 
         // Số lượng data trong một trang
-        int pageSize = 5;
+        int pageSize = 7;
 
         if (status != null && status.isBlank()) status = null;
         if (keyword != null && keyword.isBlank()) keyword = null;
@@ -66,18 +69,29 @@ public class UserController {
         model.addAttribute("keyword", keyword);
 
         setupData(model);
-        return "user-list";
+        return "admin/user-list";
     }
 
-    @GetMapping("/add")
+
+    /**
+     *
+     * @param model dùng để truyền dữ liệu từ controller sang view
+     * @return tên trang hiển thị form chỉnh sửa user
+     */
+    @GetMapping("/user/add")
     public String addForm(Model model) {
-        model.addAttribute("user", new UserCreateRequest());
-        setupData(model);
-        model.addAttribute("mode", "Add");
-        return "user-detail";
+        setupAttributes(model, new UserCreateRequest(), true, false);
+        return "admin/user-detail";
     }
 
-    @GetMapping("/edit/{id}")
+    /**
+     * Điều hướng đến trang edit
+     *
+     * @param id mã định danh của user cần cập nhật
+     * @param model dùng để truyền dữ liệu từ controller sang view
+     * @return tên trang hiển thị form chỉnh sửa user
+     */
+    @GetMapping("/user/edit/{id}")
     public String editForm(@PathVariable("id") Integer id, Model model) {
 
         UserResponse response = userService.getUserById(id);
@@ -93,30 +107,45 @@ public class UserController {
         request.setStatus(response.getStatus());
         request.setDepartmentId(response.getDepartmentId());
 
+        // Truyền giá trị lên form
+        setupAttributes(model, request, true, true);
 
-        model.addAttribute("user", request);
-        setupData(model);
-        model.addAttribute("mode", "Edit");
-        return "user-detail";
+        return "admin/user-detail";
+    }
+
+
+    /**
+     * Hàm xem chi tiết người dùng
+     *
+     * @param id mã của người cần xem chi tiết
+     * @param model dùng để truyền dữ liệu từ controller sang view
+     * @return tên trang hiển thị form chỉnh sửa user
+     */
+    @GetMapping("/user/detail/{id}")
+    public String showDetail(@PathVariable("id") Integer id, Model model) {
+
+        UserResponse response = userService.getUserById(id);
+
+        setupAttributes(model, response, false, false);
+
+        return "admin/user-detail";
     }
 
     /**
      * Hàm điều hướng khi ấn nút add
+     *
      * @param request nhận giá trị từ form
      * @param bindingResult kiểm tra lỗi
      * @param model truyền lại data
-     * @return trang chủ
+     * @return tên trang hiển thị form thêm user
      */
-    @PostMapping("/create")
+    @PostMapping("/user/create")
     public String createUser(
             @Valid @ModelAttribute("user") UserCreateRequest request,
             BindingResult bindingResult,
-            Model model) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
-        // Nếu form nhập có lỗi
-        if (bindingResult.hasErrors()) {
-            return returnData(model, "Add");
-        }
 
         // Nếu username bị trùng
         if (userService.existsByUsername(request.getUsername())) {
@@ -136,6 +165,15 @@ public class UserController {
             );
         }
 
+        // Nếu phone bị trùng
+        if (userService.existsByPhone(request.getPhoneNumber(), null)) {
+            bindingResult.rejectValue(
+                    "phoneNumber",
+                    "duplicate.phoneNumber",
+                    "Số điện thoại đã tồn tại!"
+            );
+        }
+
         // Nếu phòng ban đã có trưởng phòng
         if (request.getRole() == Role.DEPARTMENT_MANAGER) {
             if (userService.existsManager(request.getDepartmentId(), null)) {
@@ -147,31 +185,45 @@ public class UserController {
             }
         }
 
-        if (bindingResult.hasErrors()) {
-            return returnData(model, "Add");
+        // Nếu công ty đã có giám đốc rồi
+        if (request.getRole() == Role.DIRECTOR) {
+            if (userService.existsDirector(null)) {
+                bindingResult.rejectValue(
+                        "role",
+                        "duplicate.manager",
+                        "Công ty đã có giám đốc");
+            }
         }
 
+        if (bindingResult.hasErrors()) {
+            setupAttributes(model, request, true, false);
+            return "admin/user-detail";
+        }
+
+        redirectAttributes.addFlashAttribute(
+                "message",
+                "Tạo user thành công!"
+        );
+
         userService.createUser(request);
-        return "redirect:/admin/home";
+        return "redirect:/admin/users";
     }
 
     /**
      * Hàm điều hướng khi ấn nút add
+     *
      * @param request nhận giá trị từ form
      * @param bindingResult kiểm tra lỗi
      * @param model truyền lại data
      * @return trang chủ
      */
-    @PostMapping("/update")
+    @PostMapping("/user/update")
     public String updateUser(
             @Valid @ModelAttribute("user") UserUpdateRequest request,
             BindingResult bindingResult,
-            Model model) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
-        // Nếu có lỗi trong form
-        if (bindingResult.hasErrors()) {
-            return returnData(model, "Edit");
-        }
 
         // Nếu email bị trùng
         if (userService.existsByEmail(request.getEmail(), request.getUserId())) {
@@ -179,6 +231,15 @@ public class UserController {
                     "email",
                     "duplicate.email",
                     "Email đã tồn tại!"
+            );
+        }
+
+        // Nếu phone bị trùng
+        if (userService.existsByPhone(request.getPhoneNumber(), request.getUserId())) {
+            bindingResult.rejectValue(
+                    "phoneNumber",
+                    "duplicate.phoneNumber",
+                    "Số điện thoại đã tồn tại!"
             );
         }
 
@@ -193,19 +254,43 @@ public class UserController {
             }
         }
 
+        // Nếu công ty đã có giám đốc rồi
+        if (request.getRole() == Role.DIRECTOR) {
+            if (userService.existsDirector(request.getUserId())) {
+                bindingResult.rejectValue(
+                        "role",
+                        "duplicate.manager",
+                        "Công ty đã có giám đốc");
+            }
+        }
+
+
         if (bindingResult.hasErrors()) {
-            return returnData(model, "Edit");
+            setupAttributes(model, request, true, true);
+            return "admin/user-detail";
         }
 
         userService.updateUser(request);
-        return "redirect:/admin/home";
+
+        redirectAttributes.addFlashAttribute(
+                "message",
+                "Cập nhật thành công!"
+        );
+
+        return "redirect:/admin/users";
     }
 
 
-    @GetMapping("/delete/{id}")
+    /**
+     * Xóa 1 user khỏi hệ thống
+     *
+     * @param userId mã định danh của user cần xóa
+     * @return quay về trang danh sách user sau khi xóa
+     */
+    @GetMapping("/user/delete/{id}")
     public String deleteUser(@PathVariable("id") Integer userId) {
         userService.removeUser(userId);
-        return "redirect:/admin/home";
+        return "redirect:/admin/users";
     }
 
 

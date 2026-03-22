@@ -1,20 +1,13 @@
-document.addEventListener("DOMContentLoaded", function () {
+function openRejectModal(btn) {
+    const action = btn.dataset.action;
+    const modal = document.getElementById("rejectModal");
+    const form = document.getElementById("rejectForm");
 
-    let subtotal = 0;
+    form.action = action;
+    form.querySelector("textarea").value = "";
+    modal.style.display = "flex";
+}
 
-    const rows = document.querySelectorAll("tr[data-qty]");
-
-    rows.forEach(row => {
-        const qty = parseFloat(row.dataset.qty) || 0;
-        const price = parseFloat(row.dataset.price) || 0;
-        subtotal += qty * price;
-    });
-
-    const fmt = (n) => n.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
-    const subtotalEl = document.getElementById("subtotal");
-    if (subtotalEl) subtotalEl.textContent = fmt(subtotal);
-
-    const totalEl = document.getElementById("total");
-    if (totalEl) totalEl.textContent = fmt(subtotal);
-});
+function closeRejectModal() {
+    document.getElementById("rejectModal").style.display = "none";
+}

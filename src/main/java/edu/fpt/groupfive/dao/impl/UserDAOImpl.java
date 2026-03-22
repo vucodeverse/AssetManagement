@@ -18,6 +18,7 @@ public class UserDAOImpl implements UserDAO {
 
     private final DatabaseConfig databaseConfig;
 
+    // Map ResultSet sang Users object
     private Users mapRowToUser(ResultSet rs) throws Exception {
         Users user = new Users();
 
@@ -41,6 +42,7 @@ public class UserDAOImpl implements UserDAO {
         return user;
     }
 
+    // Thực thi truy vấn không có tham số và trả về danh sách Người dùng
     @NonNull
     private List<Users> getUsers(String query) {
         List<Users> list = new ArrayList<>();
@@ -60,11 +62,13 @@ public class UserDAOImpl implements UserDAO {
         return list;
     }
 
+    // Tìm kiếm username trong database
     @Override
     public Optional<Users> findUserByUsername(String username) {
         String query = """
                   select * from Users where username = ?
                 """;
+
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
@@ -80,11 +84,8 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
-    @Override
-    public String findFullNameById(Integer purchaseId) {
-        return "";
-    }
 
+    // Chèn một user mới vào database
     @Override
     public void insert(Users users) {
         String query = """
@@ -139,7 +140,7 @@ public class UserDAOImpl implements UserDAO {
             ps.setString(5, users.getEmail());
             ps.setString(6, users.getStatus());
             ps.setString(7, users.getRole().name());
-            ps.setTimestamp(8, Timestamp.valueOf(users.getUpdatedDate()));
+            ps.setTimestamp(8, users.getUpdatedDate() != null ? Timestamp.valueOf(users.getUpdatedDate()) : null);
             ps.setInt(9, users.getDepartmentId());
             ps.setInt(10, users.getUserId());
 
@@ -214,6 +215,32 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public boolean existsByPhone(String phone, Integer userId) {
+        StringBuilder query = new StringBuilder("""
+                SELECT 1 FROM Users WHERE phone_number = ?
+                """);
+
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query.toString())
+        ) {
+            ps.setString(1, phone);
+
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
+            return ps.executeQuery().next();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
     public boolean existsManagerByDepartment(Integer departmentId, Integer userId) {
 
         StringBuilder query = new StringBuilder("""
@@ -228,8 +255,8 @@ public class UserDAOImpl implements UserDAO {
         }
 
         try (Connection connection = databaseConfig.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query.toString())
-        ) {
+             PreparedStatement ps = connection.prepareStatement(query.toString())) {
+
             ps.setInt(1, departmentId);
             if (userId != null) {
                 ps.setInt(2, userId);
@@ -240,6 +267,35 @@ public class UserDAOImpl implements UserDAO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean exitsDirector(Role role, Integer userId) {
+
+        StringBuilder query = new StringBuilder("""
+                  SELECT 1 FROM Users
+                  WHERE role = ?
+                """);
+
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query.toString())) {
+
+            ps.setString(1, role.name());
+
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
+
+            return ps.executeQuery().next();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 
@@ -253,6 +309,18 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public Integer findUserIdByUsername(String username) {
+        String sql = "select u.user_id from users u where u.username like ?";
+
+        try (Connection connection = databaseConfig.getConnection();
+        PreparedStatement ps = connection.prepareStatement(sql)){
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("user_id");
+            }
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return 0;
     }
 
@@ -307,38 +375,6 @@ public class UserDAOImpl implements UserDAO {
 
     }
 
-
-    @Override
-    public List<Users> findAllByFirstNameDesc() {
-        String query = """
-                SELECT * FROM users ORDER BY first_name DESC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
-    public List<Users> findAllByFirstNameAsc() {
-        String query = """
-                SELECT * FROM users ORDER BY first_name ASC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
-    public List<Users> findAllByCreateDateAsc() {
-        String query = """
-                SELECT * FROM users ORDER BY created_date ASC
-                """;
-        return getUsers(query);
-    }
-
-    @Override
-    public List<Users> findAllByCreateDateDesc() {
-        String query = """
-                SELECT * FROM users ORDER BY created_date DESC
-                """;
-        return getUsers(query);
-    }
 
     @Override
     public int countUsersInDepartment(Integer departmentId) {
@@ -396,6 +432,7 @@ public class UserDAOImpl implements UserDAO {
 
         query.append(" ORDER BY user_id");
         query.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
         param.add(offset);
         param.add(size);
 
@@ -469,5 +506,21 @@ public class UserDAOImpl implements UserDAO {
 
         return 0;
 
+    }
+
+    @Override
+    public String findFullNameByUserId(Integer userId) {
+        String sql = "select first_name, last_name from users where user_id = ?";
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("first_name") + " " + rs.getString("last_name");
+            }
+            return "Unknown";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -1,8 +1,8 @@
 package edu.fpt.groupfive.util;
 
-import edu.fpt.groupfive.dto.request.OrderCreateRequest;
-import edu.fpt.groupfive.dto.request.OrderDetailCreateRequest;
-import edu.fpt.groupfive.dto.request.QuotationCreateDetailRequest;
+import edu.fpt.groupfive.dto.request.PurchaseOrderCreateRequest;
+import edu.fpt.groupfive.dto.request.PurchaseOrderDetailCreateRequest;
+import edu.fpt.groupfive.dto.request.QuotationDetailCreateRequest;
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
 import edu.fpt.groupfive.model.OrderDetail;
 import edu.fpt.groupfive.model.QuotationDetail;
@@ -18,7 +18,7 @@ public class OrderCalculationUtil {
     private static final int SCALE = 2;
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
 
-    // ===== Core: tính tiền 1 dòng (discount trước thuế) =====
+    // tính toán từng dòng  1
     public BigDecimal calculateLineTotal(BigDecimal qty, BigDecimal price,
             BigDecimal discountRate, BigDecimal taxRate) {
         if (qty == null || price == null)
@@ -37,19 +37,13 @@ public class OrderCalculationUtil {
         return taxableAmount.add(tax);
     }
 
-    // ===== Order: tính lại tổng cho PO form =====
-    public void recalculateTotal(OrderCreateRequest request) {
-        if (request == null || request.getOrderDetailCreateRequests() == null
-                || request.getOrderDetailCreateRequests().isEmpty()) {
-            if (request != null)
-                request.setTotalAmount(BigDecimal.ZERO);
-            return;
-        }
+    // tính toán lại giá tiền khi tạo purchase order
+    public void recalculateTotal(PurchaseOrderCreateRequest request) {
 
         BigDecimal total = BigDecimal.ZERO;
-        for (OrderDetailCreateRequest line : request.getOrderDetailCreateRequests()) {
+        for (PurchaseOrderDetailCreateRequest line : request.getPurchaseOrderDetailCreateRequests()) {
             total = total.add(calculateLineTotal(
-                    line.getQuantity() != null ? new BigDecimal(line.getQuantity()) : null,
+                    new BigDecimal(line.getQuantity()),
                     line.getPrice(),
                     line.getDiscountRate(),
                     line.getTaxRate()));
@@ -57,10 +51,10 @@ public class OrderCalculationUtil {
         request.setTotalAmount(total.setScale(SCALE, RoundingMode.HALF_UP));
     }
 
-    // ===== Quotation: tính total từ QuotationCreateRequest =====
+    // tính toán giá cho quotation
     public BigDecimal calculateTotal(QuotationCreateRequest request) {
         BigDecimal total = BigDecimal.ZERO;
-        for (QuotationCreateDetailRequest qd : request.getQuotationCreateDetailRequestList()) {
+        for (QuotationDetailCreateRequest qd : request.getQuotationDetailCreateRequests()) {
             total = total.add(calculateLineTotal(
                     qd.getQuantity() != null ? BigDecimal.valueOf(qd.getQuantity()) : null,
                     qd.getPrice(),
@@ -70,27 +64,36 @@ public class OrderCalculationUtil {
         return total;
     }
 
-    // ===== Quotation Detail: tính breakdown đầy đủ (dùng cho quotation-detail
-    // page) =====
-    // Trả về [subtotal, totalDiscount, totalTax, grandTotal]
-    public BigDecimal[] calculateBreakdown(List<QuotationDetail> details) {
+    // tính toán cho từng quotation detail và total của quotation
+    public BigDecimal[] calculateQuotationPrice(List<QuotationDetail> details) {
         BigDecimal subtotal = BigDecimal.ZERO;
         BigDecimal totalDiscount = BigDecimal.ZERO;
         BigDecimal totalTax = BigDecimal.ZERO;
 
+        // duyệt từng quotation detail
         for (QuotationDetail qd : details) {
+
             BigDecimal discountRate = qd.getDiscountRate() != null ? qd.getDiscountRate() : BigDecimal.ZERO;
+
             BigDecimal taxRate = qd.getTaxRate() != null ? qd.getTaxRate() : BigDecimal.ZERO;
+
             BigDecimal qty = qd.getQuantity() != null ? BigDecimal.valueOf(qd.getQuantity()) : BigDecimal.ZERO;
-            BigDecimal price = qd.getPrice() != null ? qd.getPrice() : BigDecimal.ZERO;
 
+            BigDecimal price = qd.getPrice() != null  ? qd.getPrice() : BigDecimal.ZERO;
+
+            // tính tổng riêng từng detail
             BigDecimal lineTotal = qty.multiply(price);
-            BigDecimal lineDiscount = lineTotal.multiply(discountRate)
-                    .divide(HUNDRED, SCALE, RoundingMode.HALF_UP);
-            BigDecimal taxableAmount = lineTotal.subtract(lineDiscount);
-            BigDecimal tax = taxableAmount.multiply(taxRate)
-                    .divide(HUNDRED, SCALE, RoundingMode.HALF_UP);
 
+            // tính discount cho từng detail làm tròn đế chữ số tp thứ 2
+            BigDecimal lineDiscount = lineTotal.multiply(discountRate).divide(HUNDRED, SCALE, RoundingMode.HALF_UP);
+
+            // tính số tiền sẽ phải chiu thuế
+            BigDecimal taxableAmount = lineTotal.subtract(lineDiscount);
+
+            // tính t huế
+            BigDecimal tax = taxableAmount.multiply(taxRate).divide(HUNDRED, SCALE, RoundingMode.HALF_UP);
+
+            // tính tổng
             subtotal = subtotal.add(lineTotal);
             totalDiscount = totalDiscount.add(lineDiscount);
             totalTax = totalTax.add(tax);
@@ -100,7 +103,7 @@ public class OrderCalculationUtil {
         return new BigDecimal[] { subtotal, totalDiscount, totalTax, grandTotal };
     }
 
-    public BigDecimal[] calculateBreakdownForOrder(List<OrderDetail> details) {
+    public BigDecimal[] calculatePoDetail(List<OrderDetail> details) {
         BigDecimal subtotal = BigDecimal.ZERO;
         BigDecimal totalDiscount = BigDecimal.ZERO;
         BigDecimal totalTax = BigDecimal.ZERO;

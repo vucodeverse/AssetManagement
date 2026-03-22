@@ -25,16 +25,15 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public void createDepartment(DepartmentCreateRequest request) {
-        if (departmentDAO.existsByName(request.getDepartmentName())) {
-            throw new IllegalArgumentException("Department already exists");
-        }
+//        if (departmentDAO.existsByName(request.getDepartmentName())) {
+//            throw new IllegalArgumentException("Department already exists");
+//        }
 
         Department d = departmentMapper.toDepartment(request);
         d.setStatus("ACTIVE");
         d.setCreatedDate(LocalDateTime.now());
 
         departmentDAO.insert(d);
-
     }
 
     @Override
@@ -42,13 +41,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         Department existing = departmentDAO.findById(request.getDepartmentId())
                 .orElseThrow(() -> new RuntimeException("Not found"));
-
-        if (!existing.getDepartmentName()
-                .equalsIgnoreCase(request.getDepartmentName())
-                && departmentDAO.existsByName(request.getDepartmentName())) {
-
-            throw new IllegalArgumentException("Department name already exists");
-        }
 
         departmentMapper.updateDepartFromRequest(request, existing);
         existing.setUpdatedDate(LocalDateTime.now());
@@ -90,6 +82,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public int countDepartments() {
         return departmentDAO.countDepartments();
+    }
+
+    @Override
+    public boolean existsDepartmentName(String departmentName, Integer departId) {
+        return departmentDAO.existsByName(departmentName, departId);
     }
 
     @Override

@@ -1,15 +1,10 @@
 package edu.fpt.groupfive.controller.director;
 
 import edu.fpt.groupfive.common.Priority;
-import edu.fpt.groupfive.common.QuotationStatus;
-import edu.fpt.groupfive.common.Request;
-import edu.fpt.groupfive.dto.request.PurchaseSearchAndFilter;
-import edu.fpt.groupfive.dto.request.SearchForQuotation;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
 import edu.fpt.groupfive.service.DashboardService;
 import edu.fpt.groupfive.service.PurchaseService;
-import edu.fpt.groupfive.service.QuotationService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,22 +12,11 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/director")
 @RequiredArgsConstructor
-@Slf4j(topic = "DIRECTOR-CONTROLLER")
 public class DirectorController {
     private final DashboardService dashboardService;
     private final PurchaseService purchaseService;
-    private final QuotationService quotationService;
 
-    @ModelAttribute("searchAndFilter")
-    public PurchaseSearchAndFilter initSearchAndFilter() {
-        return new PurchaseSearchAndFilter();
-    }
-
-    @ModelAttribute("searchForQuotation")
-    public SearchForQuotation initSearchForQuotation() {
-        return new SearchForQuotation();
-    }
-
+    // hiển thị dashboard
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
         model.addAttribute("activeMenu", "dashboard");
@@ -40,32 +24,15 @@ public class DirectorController {
         return "director/director-dashboard";
     }
 
+    // hiển thị list purchase request để duyệt
     @GetMapping("/purchases")
     public String showPurchases(Model model) {
-        model.addAttribute("activeMenu", "purchase");
-        model.addAttribute("purchases", purchaseService.findAllPurchases());
+        model.addAttribute("activeMenu", "approval");
+        model.addAttribute("activeSub", "pr");
+        model.addAttribute("purchases", purchaseService.getPurchaseRequests());
         model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", Request.values());
+        model.addAttribute("status", PurchaseProcessStatus.values());
         return "purchase/purchase-list";
     }
 
-    @GetMapping("/quotations")
-    public String showQuotations(Model model) {
-        model.addAttribute("activeMenu", "quotation");
-        model.addAttribute("quotations", quotationService.getQuotationAndPurchase());
-        model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", QuotationStatus.values());
-        return "quotation/quotation-list";
-    }
-
-    @GetMapping("/purchases/{id}")
-    public String showPurchaseDetail(@PathVariable("id") Integer id, Model model) {
-        // Tái sử dụng view chi tiết
-        return "redirect:/purchase-staff/purchases/" + id;
-    }
-
-    @GetMapping("/quotations/{id}")
-    public String showQuotationDetail(@PathVariable("id") Integer id, Model model) {
-        return "redirect:/purchase-staff/quotations/" + id;
-    }
 }

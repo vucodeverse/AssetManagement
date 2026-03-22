@@ -1,13 +1,16 @@
 package edu.fpt.groupfive.dao;
 
+import edu.fpt.groupfive.common.AssetStatus;
+import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.model.Asset;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public interface AssetDAO {
 
-    void insert(Asset asset);
+    int insert(Asset asset);
 
     void update(Asset asset);
 
@@ -17,5 +20,26 @@ public interface AssetDAO {
 
     List<Asset> findAll();
 
-    boolean existsBySerial(String serialNumber);
+    List<Asset> findAllByDepartmentId(Integer departmentId);
+
+    List<Asset> findByReturnRequestId(Integer requestId);
+
+    Optional<AssetDetailResponse> findDetailById(Integer id);
+    List<Asset> searchAssets(
+            String keyword,
+            AssetStatus status,
+            LocalDate fromDate,
+            LocalDate toDate,
+            String direction,
+            int offset,
+            int pageSize
+    );
+
+    int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate
+    );
+
+    List<Asset> findExpiringWarranties(int days);
+
+
+
 }

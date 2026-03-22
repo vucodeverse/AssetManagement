@@ -1,11 +1,20 @@
 /* ── Variables (shadow the layout root) ─────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 :root {
     --panel: #ffffff;
     --text: #111827;
     --muted2: #9ca3af;
     --border: #e5e7eb;
-    --shadow: 0 4px 20px rgba(0, 0, 0, .06);
-    --radius: 14px;
+    --border2: #eef2f7;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --radius: 12px;
+}
+
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text);
+    background-color: #f8fafc;
 }
 
 /* ── Page Wrapper ─────────────────────────────────────────── */
@@ -93,7 +102,7 @@
 }
 
 .search-wrap input:focus {
-    border-color: #6366f1;
+    border-color: var(--text);
 }
 
 .filter-bar {
@@ -104,25 +113,33 @@
 }
 
 .filter-select {
-    padding: 8px 12px;
+    padding: 10px 16px;
     border: 1px solid var(--border);
     border-radius: 10px;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 500;
     color: var(--text);
-    background: var(--panel);
+    background: #fff;
     cursor: pointer;
-    min-width: 130px;
+    min-width: 150px;
     outline: none;
-    transition: border .15s;
+    transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
 }
 
 .filter-select:focus {
-    border-color: #6366f1;
+    border-color: var(--text);
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.05);
 }
 
 input[type="date"].filter-select {
-    min-width: 140px;
+    min-width: 160px;
+    background-image: none;
+    padding-right: 12px;
 }
 
 .btn-clear-filter {
@@ -163,7 +180,7 @@ input[type="date"].filter-select {
 .pr-badge {
     background: var(--text);
     color: #fff;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 900;
     padding: 3px 8px;
     border-radius: 6px;
@@ -189,17 +206,18 @@ input[type="date"].filter-select {
 .po-data-table {
     width: 100%;
     border-collapse: collapse;
+    font-family: 'Inter', -apple-system, sans-serif;
 }
 
 .po-data-table thead th {
     text-align: left;
     padding: 12px 18px;
-    font-size: 10px;
-    font-weight: 900;
+    font-size: 11px;
+    font-weight: 800;
     color: var(--muted2);
-    letter-spacing: .08em;
+    letter-spacing: .14em;
     text-transform: uppercase;
-    border-bottom: 2px solid var(--border);
+    border-bottom: 1px solid var(--border);
     background: #fafafa;
     white-space: nowrap;
 }
@@ -221,7 +239,8 @@ input[type="date"].filter-select {
 }
 
 .po-data-table .td-id {
-    font-weight: 900;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, sans-serif !important;
     color: var(--text);
     white-space: nowrap;
 }
@@ -243,7 +262,7 @@ input[type="date"].filter-select {
 .status-tag {
     display: inline-block;
     padding: 4px 10px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 900;
     border-radius: 6px;
     text-transform: uppercase;
@@ -251,73 +270,71 @@ input[type="date"].filter-select {
 }
 
 .status-tag.PENDING {
-    background: #fef3c7;
+    background: #fffbeb;
     color: #92400e;
+    border: 1px solid #fde68a;
 }
 
-.status-tag.ACTIVE {
-    background: #d1fae5;
-    color: #065f46;
+.status-tag.ACTIVE, .status-tag.APPROVED {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
 }
 
 .status-tag.SHIPPED {
-    background: #1f2937;
-    color: #fff;
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
 }
 
-.status-tag.PROCESSING {
-    background: #ede9fe;
-    color: #5b21b6;
-}
-
-.status-tag.CANCELLED {
-    background: #fee2e2;
+.status-tag.CANCELLED, .status-tag.REJECTED {
+    background: #fef2f2;
     color: #991b1b;
-}
-
-.status-tag.APPROVED {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.status-tag.REJECTED {
-    background: #fee2e2;
-    color: #991b1b;
+    border: 1px solid #fecaca;
 }
 
 /* ── Pagination ───────────────────────────────────────────── */
-.pagination-bar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.dataTables_wrapper .dataTables_info {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: var(--muted2) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding-top: 24px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    padding-top: 20px !important;
+    display: flex !important;
     gap: 6px;
-    padding: 20px 0 8px;
+    align-items: center;
 }
 
-.page-btn {
-    border: 1px solid var(--border);
-    background: var(--panel);
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 8px;
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    background: #f1f5f9 !important;
+    border: none !important;
+    color: var(--text) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
     cursor: pointer;
-    text-decoration: none;
-    transition: background .12s, border .12s;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif !important;
 }
 
-.page-btn:hover {
-    background: #f3f4f6;
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--text) !important;
+    color: #fff !important;
 }
 
-.page-btn.active {
-    background: var(--text);
-    color: #fff;
-    border-color: var(--text);
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+    background: #e2e8f0 !important;
+    color: var(--text) !important;
 }
 
-.page-btn.disabled {
-    opacity: .4;
-    pointer-events: none;
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    opacity: .35 !important;
+    cursor: default !important;
 }

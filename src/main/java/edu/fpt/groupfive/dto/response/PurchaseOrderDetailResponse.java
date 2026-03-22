@@ -4,7 +4,6 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @Setter
@@ -12,17 +11,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PurchaseOrderDetailResponse {
-    private Integer orderId;
-    private String status;
-    private LocalDate createdAt;
-    private String supplierName;
-    private String orderNote;
-
-    // Totals
-    private BigDecimal subtotal;
-    private BigDecimal totalDiscount;
-    private BigDecimal totalTax;
-    private BigDecimal grandTotal;
-
-    private List<OrderDetailResponse> items;
+    private Integer purchaseOrderDetailId;
+    private Integer purchaseRequestDetailId;
+    private Integer assetTypeId;
+    private String assetTypeName;
+    private Integer quantity;
+    private BigDecimal price;
+    private BigDecimal taxRate;
+    private BigDecimal discountRate;
+    private LocalDate deliveryDate;
 }

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{/layout/manager-layout}">
+      layout:decorate="~{layout/manager-layout}">
 
 <head>
     <th:block layout:fragment="extra-css">
@@ -73,7 +73,6 @@
                         <span>
                             Trang <span th:text="${page.currentPage}"></span> /
                             <span th:text="${page.totalPages}"></span>
-                            - Tổng <span th:text="${page.totalElements}"></span> kết quả
                         </span>
 
                         <div class="pagination-controls">
