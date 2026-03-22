@@ -170,4 +170,17 @@ public class AssetHandoverDaoImpl implements AssetHandoverDao {
 
         return null;
     }
+
+    @Override
+    public void updateStatus(Integer id, Status status) {
+        String query = "UPDATE asset_handover SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE handover_id = ?";
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, status.name());
+            ps.setInt(2, id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Cập nhật trạng thái AssetHandover thất bại", e);
+        }
+    }
 }

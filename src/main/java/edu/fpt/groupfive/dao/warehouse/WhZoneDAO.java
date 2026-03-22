@@ -19,4 +19,6 @@ public interface WhZoneDAO {
     void updateCurrentCapacity(int assetTypeId, int unitVolume);
 
     Optional<AssetLocationResponseDTO> getAssetLocation(int assetId);
+
+    void updateCurrentCapacityForDecrease(int zoneId, int unitVolume);
 }

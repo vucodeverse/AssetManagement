@@ -19,6 +19,27 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
     private final DatabaseConfig databaseConfig;
 
     @Override
+    public void insert(AssetHandoverDetail detail) {
+        String query = """
+                INSERT INTO asset_handover_detail
+                (handover_id, asset_id, note)
+                VALUES (?, ?, ?)
+                """;
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, detail.getHandoverId());
+            ps.setInt(2, detail.getAssetId());
+            ps.setString(3, detail.getNote());
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void insertBatch(Integer handoverId, List<AssetHandoverDetail> details) {
         String query = """
                 INSERT INTO asset_handover_detail

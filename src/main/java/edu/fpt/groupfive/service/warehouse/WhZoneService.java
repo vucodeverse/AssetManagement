@@ -18,4 +18,6 @@ public interface WhZoneService {
     void recalculateCapacityByAssetType(int assetTypeId, int unitVolume);
 
     AssetLocationResponseDTO findAssetLocation(String assetCode);
+
+    void decreaseCapacity(Integer zoneId, Integer unitVolume);
 }

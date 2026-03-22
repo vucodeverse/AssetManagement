@@ -19,7 +19,8 @@ public class WarehouseOutboundController {
     private static final String ACTIVE_MENU = "activeMenu";
     private static final String OUTBOUND = "outbound";
     private static final String PAGE_TITLE = "pageTitle";
-    private static final String REDIRECT_OUTBOUND = "redirect:/wh/outbound/";
+    private static final String REDIRECT_OUTBOUND_LIST = "redirect:/wh/outbound";
+    private static final String REDIRECT_OUTBOUND_DETAIL = "redirect:/wh/outbound/";
     
     private final WarehouseOutboundService warehouseOutboundService;
 
@@ -36,7 +37,7 @@ public class WarehouseOutboundController {
         HandoverDetailResponseDTO detail = warehouseOutboundService.getHandoverDetail(handoverId);
         
         if (detail == null) {
-            return "redirect:/wh/outbound";
+            return REDIRECT_OUTBOUND_LIST;
         }
 
         model.addAttribute(ACTIVE_MENU, OUTBOUND);
@@ -51,10 +52,17 @@ public class WarehouseOutboundController {
             @PathVariable("handover_id") Integer handoverId,
             @RequestParam("assetCode") String assetCode,
             RedirectAttributes ra) {
-
-        // Placeholder cho logic quét mã tài sản thực tế
-        ra.addFlashAttribute(ERROR_MSG, "Tính năng quét mã thực tế đang được tích hợp. Mã đã nhập: " + assetCode);
-        return REDIRECT_OUTBOUND + handoverId;
+        try {
+            boolean isCompleted = warehouseOutboundService.processScan(handoverId, assetCode, 1); // Mock executedBy = 1
+            if (isCompleted) {
+                ra.addFlashAttribute(SUCCESS_MSG, "Đã quét đủ số lượng tài sản. Lệnh xuất kho #" + handoverId + " đã hoàn tất.");
+                return REDIRECT_OUTBOUND_LIST;
+            }
+            ra.addFlashAttribute(SUCCESS_MSG, "Đã quét và gán tài sản " + assetCode + " thành công.");
+        } catch (Exception e) {
+            ra.addFlashAttribute(ERROR_MSG, "Lỗi khi quét tài sản: " + e.getMessage());
+        }
+        return REDIRECT_OUTBOUND_DETAIL + handoverId;
     }
 
     @GetMapping("/{handover_id}/qc-report")
@@ -79,7 +87,7 @@ public class WarehouseOutboundController {
             RedirectAttributes ra) {
         
         ra.addFlashAttribute(SUCCESS_MSG, "Đã ghi nhận báo cáo QC.");
-        return REDIRECT_OUTBOUND + handoverId;
+        return REDIRECT_OUTBOUND_DETAIL + handoverId;
     }
 
     @PostMapping("/{handover_id}/complete")
@@ -88,6 +96,6 @@ public class WarehouseOutboundController {
             RedirectAttributes ra) {
         
         ra.addFlashAttribute(SUCCESS_MSG, "Lệnh xuất kho #" + handoverId + " đã được hoàn tất thành công (giả định).");
-        return "redirect:/wh/outbound";
+        return REDIRECT_OUTBOUND_LIST;
     }
 }

@@ -69,4 +69,9 @@ public class WhZoneServiceImpl implements WhZoneService {
 
         return dto;
     }
+
+    @Override
+    public void decreaseCapacity(Integer zoneId, Integer unitVolume) {
+        whZoneDAO.updateCurrentCapacityForDecrease(zoneId, unitVolume);
+    }
 }

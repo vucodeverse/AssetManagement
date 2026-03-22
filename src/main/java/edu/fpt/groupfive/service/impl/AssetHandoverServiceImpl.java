@@ -1,5 +1,7 @@
 package edu.fpt.groupfive.service.impl;
 
+import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.dao.AllocationReqDao;
 import edu.fpt.groupfive.dao.AllocationReqDetailDao;
 import edu.fpt.groupfive.dao.AssetHandoverDao;
 import edu.fpt.groupfive.dao.AssetHandoverDetailDao;
@@ -14,6 +16,7 @@ import edu.fpt.groupfive.model.AssetHandoverDetail;
 import edu.fpt.groupfive.service.AssetHandoverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +28,7 @@ public class AssetHandoverServiceImpl implements AssetHandoverService {
     private final AllocationReqDetailDao allocationRequestDetailDao;
     private final AllocationRequestMapper allocationRequestMapper;
     private final AssetHandoverMapper assetHandoverMapper;
+    private final AllocationReqDao allocationReqDao;
     private final AssetHandoverDao assetHandoverDao;
     private final AssetHandoverDetailDao assetHandoverDetailDao;
     private final AssetDAO assetDAO;
@@ -64,5 +68,24 @@ public class AssetHandoverServiceImpl implements AssetHandoverService {
                     .isScanned(true)
                     .build();
         }).toList();
+    }
+
+    @Override
+    @Transactional
+    public void addHandoverDetail(Integer handoverId, Integer assetId) {
+        AssetHandoverDetail detail = new AssetHandoverDetail();
+        detail.setHandoverId(handoverId);
+        detail.setAssetId(assetId);
+        assetHandoverDetailDao.insert(detail);
+    }
+
+    @Override
+    public void updateStatus(Integer id, Status status) {
+        assetHandoverDao.updateStatus(id, status);
+    }
+
+    @Override
+    public void updateAllocationStatus(Integer id, String status) {
+        allocationReqDao.updateStatusWh(id, status);
     }
 }

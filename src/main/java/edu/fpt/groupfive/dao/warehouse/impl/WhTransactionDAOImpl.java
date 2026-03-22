@@ -135,6 +135,68 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
     }
 
     @Override
+    public void executeOutboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note) {
+        String deletePlacementSql = "DELETE FROM wh_asset_placement WHERE asset_id = ?";
+        String insertTransactionSql = "INSERT INTO wh_transactions (asset_id, zone_id, transaction_type, executed_by, executed_at, note) VALUES (?, ?, 'OUTBOUND', ?, SYSDATETIME(), ?)";
+        String insertMapSql = "INSERT INTO map_handover_transactions (asset_handover_id, transaction_id) VALUES (?, ?)";
+
+        Connection connection = null;
+        try {
+            connection = databaseConfig.getConnection();
+            connection.setAutoCommit(false);
+
+            try (
+                PreparedStatement psDelete = connection.prepareStatement(deletePlacementSql);
+                PreparedStatement psTrans = connection.prepareStatement(insertTransactionSql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement psMap = connection.prepareStatement(insertMapSql)
+            ) {
+                // 1. Delete placement
+                psDelete.setInt(1, assetId);
+                psDelete.executeUpdate();
+
+                // 2. Insert transaction
+                psTrans.setInt(1, assetId);
+                psTrans.setInt(2, zoneId);
+                psTrans.setInt(3, executedBy);
+                psTrans.setString(4, note);
+                psTrans.executeUpdate();
+
+                int transId = -1;
+                try (ResultSet rs = psTrans.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        transId = rs.getInt(1);
+                    }
+                }
+
+                // 3. Map handover transaction
+                if (transId != -1) {
+                    psMap.setInt(1, handoverId);
+                    psMap.setInt(2, transId);
+                    psMap.executeUpdate();
+                }
+            }
+
+            connection.commit();
+        } catch (Exception e) {
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                }
+            }
+            throw new RuntimeException("Lỗi khi thực hiện xuất kho: " + e.getMessage(), e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException ex) {
+                }
+            }
+        }
+    }
+
+    @Override
     public List<LedgerRecordResponseDTO> getAllTransactions(TransactionFilterRequestDTO filter) {
         StringBuilder sql = new StringBuilder("""
             SELECT 
@@ -199,8 +261,8 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
                                     ? rs.getTimestamp("executed_at").toLocalDateTime() 
                                     : null)
                             .referenceId(rs.getObject("reference_id") != null 
-                                    ? rs.getInt("reference_id") 
-                                    : null)
+                                     ? rs.getInt("reference_id") 
+                                     : null)
                             .referenceType(rs.getString("reference_type"))
                             .build();
                     result.add(dto);

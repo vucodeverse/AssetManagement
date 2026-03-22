@@ -22,4 +22,13 @@ public interface WarehouseOutboundService {
      * @return HandoverDetailResponseDTO
      */
     HandoverDetailResponseDTO getHandoverDetail(Integer handoverId);
+
+    /**
+     * Xử lý quét mã tài sản để xuất kho.
+     *
+     * @param handoverId ID của lệnh bàn giao
+     * @param assetCode  Mã tài sản (asset_id)
+     * @param executedBy ID người thực hiện
+     */
+    boolean processScan(Integer handoverId, String assetCode, Integer executedBy);
 }

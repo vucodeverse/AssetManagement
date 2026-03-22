@@ -73,12 +73,19 @@ public class WhZoneDAOImpl implements WhZoneDAO {
     }
 
     @Override
+    public void updateCurrentCapacityForDecrease(int zoneId, int unitVolume) {
+        String sql = "UPDATE wh_zones SET current_capacity = current_capacity - ? WHERE zone_id = ?";
+        jdbcTemplate.update(sql, unitVolume, zoneId);
+    }
+
+    @Override
     @SuppressWarnings("null")
     public Optional<AssetLocationResponseDTO> getAssetLocation(int assetId) {
         String sql = "SELECT " +
                      "   a.asset_id, " +
                      "   a.asset_name, " +
                      "   a.current_status, " +
+                     "   z.zone_id, " +
                      "   z.zone_name, " +
                      "   (u.first_name + ' ' + u.last_name) AS placed_by, " +
                      "   p.placed_at " +
@@ -90,9 +97,11 @@ public class WhZoneDAOImpl implements WhZoneDAO {
         
         List<AssetLocationResponseDTO> results = jdbcTemplate.query(sql, (rs, rowNum) -> {
             AssetLocationResponseDTO dto = AssetLocationResponseDTO.builder()
+                .assetId(rs.getInt("asset_id"))
                 .assetCode(String.valueOf(rs.getInt("asset_id")))
                 .assetName(rs.getString("asset_name"))
                 .status(rs.getString("current_status"))
+                .zoneId(rs.getObject("zone_id", Integer.class))
                 .zoneName(rs.getString("zone_name"))
                 .placedBy(rs.getString("placed_by"))
                 .build();

@@ -17,5 +17,7 @@ public interface WhTransactionDAO {
 
     Map<Integer, List<Integer>> executeInboundTransaction(Integer poId, Integer executedBy, List<AssetPlacementPlan> placements);
 
+    void executeOutboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note);
+
     List<LedgerRecordResponseDTO> getAllTransactions(TransactionFilterRequestDTO filter);
 }
