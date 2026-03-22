@@ -37,7 +37,6 @@ public class WarehouseOutboundController {
     // Mock State Management for Demo
     private static final List<HandoverDetailResponseDTO.HandoverItemDTO> SELECTED_ASSETS = new ArrayList<>();
 
-    // ALLOCATION LIST — GET /wh/outbound
     @GetMapping("")
     public String allocationListPage(Model model) {
         model.addAttribute(ACTIVE_MENU, OUTBOUND);
@@ -49,7 +48,6 @@ public class WarehouseOutboundController {
         return "warehouse/outbound/allocation_list";
     }
 
-    // ALLOCATION DETAIL — GET /wh/outbound/{handover_id}
     @GetMapping("/{handover_id}")
     public String allocationDetailPage(@PathVariable("handover_id") Integer handoverId, Model model) {
         model.addAttribute(ACTIVE_MENU, OUTBOUND);
@@ -78,7 +76,13 @@ public class WarehouseOutboundController {
         return "warehouse/outbound/allocation_detail";
     }
 
-    // PROCESS ALLOCATION SCAN — POST /wh/outbound/{handover_id}/scan
+    private boolean isAllItemsAllocated() {
+        // Mock requirements: 1 Printer, 1 Photocopy
+        long printerCount = SELECTED_ASSETS.stream().filter(a -> a.getAssetTypeName().equals(AST_PRINTER)).count();
+        long photocopyCount = SELECTED_ASSETS.stream().filter(a -> a.getAssetTypeName().equals(AST_PHOTOCOPY)).count();
+        return printerCount >= 1 && photocopyCount >= 1;
+    }
+
     @PostMapping("/{handover_id}/scan")
     public String processAllocationScan(
             @PathVariable("handover_id") Integer handoverId,
@@ -98,7 +102,6 @@ public class WarehouseOutboundController {
         return REDIRECT_OUTBOUND + handoverId;
     }
 
-    // QC REPORT PAGE — GET /wh/outbound/{handover_id}/qc-report
     @GetMapping("/{handover_id}/qc-report")
     public String qcReportPage(
             @PathVariable("handover_id") Integer handoverId,
@@ -120,7 +123,6 @@ public class WarehouseOutboundController {
         return "warehouse/outbound/qc_report";
     }
 
-    // SUBMIT QC REPORT — POST /wh/outbound/{handover_id}/submit-qc
     @PostMapping("/{handover_id}/submit-qc")
     public String submitQCReport(
             @PathVariable("handover_id") Integer handoverId,
@@ -134,15 +136,15 @@ public class WarehouseOutboundController {
                 .assetId(item.getAssetId()).assetCode(item.getAssetCode())
                 .assetTypeName(item.getAssetTypeName()).isScanned(true).build());
 
-        ra.addFlashAttribute(SUCCESS_MSG, "Đã thêm tài sản " + item.getAssetCode() + " kèm báo cáo chất lượng.");
+        ra.addFlashAttribute(SUCCESS_MSG, "Đã quét và xuất kho tài sản " + item.getAssetCode());
+        
+        if (isAllItemsAllocated()) {
+            SELECTED_ASSETS.clear();
+            ra.addFlashAttribute(SUCCESS_MSG, "Đã hoàn tất toàn bộ yêu cầu cấp phát.");
+            return "redirect:/wh/outbound";
+        }
+        
         return REDIRECT_OUTBOUND + handoverId;
     }
 
-    // FINALIZE OUTBOUND — POST /wh/outbound/{handover_id}/finalize
-    @PostMapping("/{handover_id}/finalize")
-    public String finalizeOutbound(@PathVariable("handover_id") Integer handoverId, RedirectAttributes ra) {
-        SELECTED_ASSETS.clear();
-        ra.addFlashAttribute(SUCCESS_MSG, "Đã hoàn tất xuất kho cấp phát.");
-        return "redirect:/wh/outbound";
-    }
 }
