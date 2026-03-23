@@ -18,6 +18,7 @@ import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.util.OrderCalculationUtil;
 import edu.fpt.groupfive.util.RangeAmount;
+import edu.fpt.groupfive.util.SecurityUtils;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserDAO userDAO;
     private final PurchaseDAO purchaseDAO;
     private final PurchaseDetailDAO purchaseDetailDAO;
+    private final SecurityUtils securityUtils;
 
     @Value("${order.quotation_not_found}")
     private String quotationNotFoundMsg;
@@ -362,7 +364,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus) {
-        orderDAO.findById(orderId).orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
+        Order order = orderDAO.findById(orderId).orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
+
+        if(checkQuantityOfPO(order.getPurchaseId()))
+            purchaseDAO.updateStatus(PurchaseProcessStatus.COMPLETED, order.getPurchaseId(), null, securityUtils.getCurrentUserId());
 
         orderDAO.updateStatus(orderId, orderStatus);
     }
