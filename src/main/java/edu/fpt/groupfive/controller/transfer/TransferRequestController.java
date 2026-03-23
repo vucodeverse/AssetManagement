@@ -34,7 +34,20 @@ public class TransferRequestController {
     private final UserService userService;
     private final TransferRequestDetailServiceImpl transferRequestDetailServiceImpl;
 
-    @GetMapping("/create-form")
+    @GetMapping("/am")
+    public String listAllTransfers(Model model, HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) return "redirect:/auth/login";
+        Users user = userService.findById(userId);
+        // Lấy tất cả các transfer
+        List<TransferResponse> list = transferRequestService.getAllTransfers();
+        model.addAttribute("transfers", list);
+        model.addAttribute("role", "ASSET_MANAGER");
+        model.addAttribute("currentUser", user);
+        model.addAttribute("activeMenu", "transfer");
+        return "transfer/list";
+    }
+    @GetMapping("/add")
     public String showCreateForm(
             @RequestParam(value = "fromDepartmentId", required = false) Integer fromDepartmentId,
             @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
@@ -104,10 +117,10 @@ public class TransferRequestController {
 
             if (fromDepartmentId == null) {
                 System.out.println("fromDepartmentId is null, redirecting to add without param");
-                return "redirect:/transfer-requests/create-form";
+                return "redirect:/transfer-requests/add";
             }
 
-            String redirectUrl = "/transfer-requests/create-form?fromDepartmentId=" + fromDepartmentId;
+            String redirectUrl = "/transfer-requests/add?fromDepartmentId=" + fromDepartmentId;
             if (request.getAssetIds() != null && !request.getAssetIds().isEmpty()) {
                 for (Integer id : request.getAssetIds()) {
                     redirectUrl += "&selectedIds=" + id;
@@ -127,9 +140,9 @@ public class TransferRequestController {
 
             Integer fromDepartmentId = request.getFromDepartmentId();
             if (fromDepartmentId != null) {
-                return "redirect:/transfer-requests/create-form?fromDepartmentId=" + fromDepartmentId;
+                return "redirect:/transfer-requests/add?fromDepartmentId=" + fromDepartmentId;
             }
-            return "redirect:/transfer-requests/create-form";
+            return "redirect:/transfer-requests/add";
         }
     }
 
@@ -172,7 +185,7 @@ public class TransferRequestController {
             return "redirect:/auth/login";
         }
         Users user = userService.findById(userId);
-        List<TransferResponse> list = transferRequestService.getTransfersForWarehouse();
+        List<TransferResponse> list = transferRequestService.getAllTransfers();
         model.addAttribute("transfers", list);
         model.addAttribute("role", "WAREHOUSE_STAFF");
         model.addAttribute("currentUser", user);
@@ -198,8 +211,8 @@ public class TransferRequestController {
     // Xử lý action (xác nhận gửi, nhận, hủy)
     @PostMapping("/{id}/action")
     public String processAction(@PathVariable("id") int id,
-                                @RequestParam TransferAction action,
-                                @RequestParam(required = false) Boolean issue,
+                                @RequestParam("action") TransferAction action,
+                                @RequestParam(value = "issue", required = false) Boolean issue,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         Integer userId = (Integer) session.getAttribute("userId");
@@ -213,6 +226,20 @@ public class TransferRequestController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/transfer-requests/" + id;
+    }
+
+
+    @GetMapping("/{id}/cancel")
+    public String cancelTransfer(@PathVariable("id") int id, HttpSession session, RedirectAttributes redirectAttributes) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) return "redirect:/auth/login";
+        try {
+            transferRequestService.processTransferAction(id, userId, TransferAction.CANCEL, false);
+            redirectAttributes.addFlashAttribute("message", "Đã hủy lệnh #" + id);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/transfer-requests/am";
     }
 }
 

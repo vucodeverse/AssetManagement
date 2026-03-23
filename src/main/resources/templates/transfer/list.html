@@ -6,27 +6,30 @@
       layout:decorate="~{layout/main-layout}">
 
   <title>Danh sách điều chuyển</title>
+
+
   <th:block layout:fragment="extra-css">
-    <link rel="stylesheet" th:href="@{/css/transfer/transfer-list.css}">
+    <link rel="stylesheet" th:href="@{/css/transfer/list.css}">
+
   </th:block>
 </head>
 <body>
 <th:block layout:fragment="content">
   <div class="container">
-    <h1 th:text="${role == 'DEPARTMENT_MANAGER'} ? 'Danh sách lệnh điều chuyển' : 'Danh sách lệnh cần xử lý kho'"></h1>
-    <div th:if="${message}" class="alert alert-success">[[${message}]]</div>
-    <div th:if="${error}" class="alert alert-danger">[[${error}]]</div>
+    <div class="page-header">
+      <h1 th:text="${role == 'DEPARTMENT_MANAGER'} ? 'Danh sách lệnh điều chuyển' : (${role == 'ASSET_MANAGER'} ? 'Quản lý lệnh điều chuyển' : 'Danh sách lệnh cần xử lý kho')"></h1>
+      <a th:if="${role == 'ASSET_MANAGER'}" th:href="@{/transfer-requests/add}" class="btn-add">+ Tạo yêu cầu</a>
+    </div>
 
     <table class="table table-bordered">
       <thead>
-      32
       <th>ID</th>
       <th>Từ phòng ban</th>
       <th>Đến phòng ban</th>
       <th>Lý do</th>
       <th>Ngày tạo</th>
       <th>Trạng thái</th>
-      <th></th>
+      <th>Hành động</th>
       </thead>
       <tbody>
       <tr th:each="t : ${transfers}">
@@ -36,7 +39,13 @@
         <td th:text="${t.reason}">-</td>
         <td th:text="${#temporals.format(t.createdAt, 'dd-MM-yyyy HH:mm')}">-</td>
         <td><span th:text="${t.status}"></span></td>
-        <td><a th:href="@{/transfer-requests/{id}(id=${t.transferId})}" class="btn btn-sm btn-primary">Xem</a></td>
+
+        <td>
+          <a th:href="@{/transfer-requests/{id}(id=${t.transferId})}" class="btn-view">Xem</a>
+          <a th:if="${role == 'ASSET_MANAGER' and t.status != 'RECEIVER_CONFIRMED' and t.status != 'CANCELLED'}"
+             th:href="@{/transfer-requests/{id}/cancel(id=${t.transferId})}" class="btn-cancel">Hủy</a>
+        </td>
+
       </tr>
       <tr th:if="${#lists.isEmpty(transfers)}">
         <td colspan="7" class="text-center">Không có lệnh nào</td>

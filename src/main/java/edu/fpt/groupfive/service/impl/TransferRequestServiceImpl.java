@@ -196,8 +196,10 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
     }
 
     @Override
-    public List<TransferResponse> getTransfersForWarehouse() {
-        List<TransferRequest> list = transferRequestDAO.findByStatus("SENDER_CONFIRMED");
+    public List<TransferResponse> getAllTransfers() {
+        List<TransferRequest> list = transferRequestDAO.findAll();
+        list.sort((a,b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+
         return convertList(list);
     }
 
@@ -234,6 +236,9 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
         resp.setStatus(t.getStatus());
         resp.setCreatedAt(t.getTransferDate());
         resp.setReason(t.getReason());
+
+        resp.setFromDepartmentId(t.getFromDepartmentId());
+        resp.setToDepartmentId(t.getToDepartmentId());
 
         departmentDAO.findById(t.getFromDepartmentId()).ifPresent(d -> resp.setFromDepartmentName(d.getDepartmentName()));
         departmentDAO.findById(t.getToDepartmentId()).ifPresent(d -> resp.setToDepartmentName(d.getDepartmentName()));
