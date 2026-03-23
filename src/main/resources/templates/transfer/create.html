@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tạo yêu cầu điều chuyển</title>
     <link rel="stylesheet" th:href="@{/css/transfer/form.css}">
-    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -151,14 +150,14 @@
 
                             <!-- Pages around current -->
                             <span th:each="i : ${#numbers.sequence(currentPage - 1 > 0 ? currentPage - 1 : 0, currentPage+1 < totalPages-1 ? currentPage+1 : totalPages-1)}">
-            <a th:if="${i != currentPage}"
-               th:href="@{/transfer-requests/create-form(fromDepartmentId=${selectedDepartmentId}, pageNo=${i})}"
-               class="page-number"
-               th:text="${i + 1}"></a>
-            <span th:if="${i == currentPage}"
-                  class="page-number active"
-                  th:text="${i + 1}"></span>
-        </span>
+                                <a th:if="${i != currentPage}"
+                                   th:href="@{/transfer-requests/create-form(fromDepartmentId=${selectedDepartmentId}, pageNo=${i})}"
+                                   class="page-number"
+                                   th:text="${i + 1}"></a>
+                                <span th:if="${i == currentPage}"
+                                      class="page-number active"
+                                      th:text="${i + 1}"></span>
+                            </span>
 
                             <!-- Right ellipsis -->
                             <span th:if="${currentPage < totalPages - 3}" class="ellipsis">...</span>
@@ -197,17 +196,6 @@
                         <p class="field-hint">Không thể chọn cùng phòng ban nguồn</p>
                     </div>
 
-                    <div class="form-group">
-                        <label>Người quản lý <span class="required">*</span></label>
-                        <select th:field="*{assetManagerId}" class="form-select" required>
-                            <option value="">-- Chọn người quản lý --</option>
-                            <option th:each="u : ${users}"
-                                    th:value="${u.userId}"
-                                    th:text="${u.fullName}">
-                            </option>
-                        </select>
-                    </div>
-
                     <div class="form-group full-width">
                         <label>Lý do điều chuyển <span class="required">*</span></label>
                         <textarea th:field="*{reason}"
@@ -222,7 +210,7 @@
                         <i data-lucide="x"></i>
                         Hủy bỏ
                     </a>
-                    <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">
                         <i data-lucide="send"></i>
                         Tạo yêu cầu
                     </button>
@@ -241,10 +229,11 @@
 
 </main>
 
+<script src="https://unpkg.com/lucide@latest" defer></script>
 <script>
-    lucide.createIcons();
-
     document.addEventListener("DOMContentLoaded", () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
         // DOM elements
         const checkboxes = document.querySelectorAll(".asset-checkbox");
         const selectAll = document.getElementById("selectAll");
@@ -253,96 +242,104 @@
         const form = document.getElementById("mainForm");
         const hiddenDiv = document.getElementById("hiddenAssetContainer");
         const toDepartmentSelect = document.querySelector("[name='toDepartmentId']");
-        const managerSelect = document.querySelector("[name='assetManagerId']");
         const reasonTextarea = document.querySelector("[name='reason']");
+        const fromDepartmentSelect = document.querySelector("select[name='fromDepartmentId']");
 
         // Selected assets set from URL and checkboxes
-        const selectedSet = new Set(
-            new URLSearchParams(window.location.search).getAll("selectedIds")
-        );
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedSet = new Set(urlParams.getAll("selectedIds"));
 
         // Initialize checkboxes state
-        checkboxes.forEach(cb => {
-            if (cb.checked) selectedSet.add(cb.value);
-        });
+        function initializeCheckboxes() {
+            checkboxes.forEach(cb => {
+                if (selectedSet.has(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+            // Also add already-checked checkboxes (from th:checked) into selectedSet
+            checkboxes.forEach(cb => {
+                if (cb.checked) selectedSet.add(cb.value);
+            });
+        }
 
         function updateUI() {
             countEl.textContent = selectedSet.size;
-            const hasAssets = selectedSet.size > 0;
-            const hasToDepartment = toDepartmentSelect && toDepartmentSelect.value;
-            const hasManager = managerSelect && managerSelect.value;
-            const hasReason = reasonTextarea && reasonTextarea.value.trim();
-            submitBtn.disabled = !(hasAssets && hasToDepartment && hasManager && hasReason);
         }
 
-        function syncCheckboxes() {
-            checkboxes.forEach(cb => {
-                cb.checked = selectedSet.has(cb.value);
-            });
-            if (selectAll) {
-                const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
-                selectAll.checked = allChecked;
-            }
+        function syncSelectAll() {
+            if (!selectAll) return;
+            const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+            selectAll.checked = allChecked;
         }
 
-        // Step 3 data persistence
-        function saveStep3Data() {
-            if (toDepartmentSelect) sessionStorage.setItem('temp_toDept', toDepartmentSelect.value);
-            if (managerSelect) sessionStorage.setItem('temp_manager', managerSelect.value);
-            if (reasonTextarea) sessionStorage.setItem('temp_reason', reasonTextarea.value);
-        }
-
-        function restoreStep3Data() {
-            const toDeptVal = sessionStorage.getItem('temp_toDept');
-            const managerVal = sessionStorage.getItem('temp_manager');
-            const reasonVal = sessionStorage.getItem('temp_reason');
-
-            if (toDepartmentSelect && toDeptVal) toDepartmentSelect.value = toDeptVal;
-            if (managerSelect && managerVal) managerSelect.value = managerVal;
-            if (reasonTextarea && reasonVal) reasonTextarea.value = reasonVal;
-
-            updateUI();
-        }
-
-        function clearStep3Temp() {
-            sessionStorage.removeItem('temp_toDept');
-            sessionStorage.removeItem('temp_manager');
-            sessionStorage.removeItem('temp_reason');
-        }
-
-        // Event listeners
+        // Individual checkbox change
         checkboxes.forEach(cb => {
             cb.addEventListener("change", () => {
-                if (cb.checked) selectedSet.add(cb.value);
-                else selectedSet.delete(cb.value);
+                if (cb.checked) {
+                    selectedSet.add(cb.value);
+                } else {
+                    selectedSet.delete(cb.value);
+                }
                 updateUI();
-                syncCheckboxes();
+                syncSelectAll();
             });
         });
 
+        // Select All logic
         if (selectAll) {
             selectAll.addEventListener("change", () => {
+                const isChecked = selectAll.checked;
                 checkboxes.forEach(cb => {
-                    cb.checked = selectAll.checked;
-                    if (cb.checked) selectedSet.add(cb.value);
-                    else selectedSet.delete(cb.value);
+                    cb.checked = isChecked;
+                    if (isChecked) {
+                        selectedSet.add(cb.value);
+                    } else {
+                        selectedSet.delete(cb.value);
+                    }
                 });
                 updateUI();
             });
         }
 
-        if (toDepartmentSelect) toDepartmentSelect.addEventListener("change", updateUI);
-        if (managerSelect) managerSelect.addEventListener("change", updateUI);
-        if (reasonTextarea) reasonTextarea.addEventListener("input", updateUI);
+        // Step 3 validation triggers
+        if (toDepartmentSelect) {
+            toDepartmentSelect.addEventListener("change", saveStep3Data);
+        }
+        if (reasonTextarea) {
+            reasonTextarea.addEventListener("input", saveStep3Data);
+        }
 
-        const deptSelect = document.querySelector("select[name='fromDepartmentId']");
-        if (deptSelect) {
-            deptSelect.addEventListener("change", () => {
+        // Save step 3 data
+        function saveStep3Data() {
+            if (toDepartmentSelect && toDepartmentSelect.value) {
+                sessionStorage.setItem('temp_toDept', toDepartmentSelect.value);
+            }
+            if (reasonTextarea && reasonTextarea.value) {
+                sessionStorage.setItem('temp_reason', reasonTextarea.value);
+            }
+        }
+
+        function restoreStep3Data() {
+            const toDeptVal = sessionStorage.getItem('temp_toDept');
+            const reasonVal = sessionStorage.getItem('temp_reason');
+
+            if (toDepartmentSelect && toDeptVal) toDepartmentSelect.value = toDeptVal;
+            if (reasonTextarea && reasonVal) reasonTextarea.value = reasonVal;
+        }
+
+        function clearStep3Temp() {
+            sessionStorage.removeItem('temp_toDept');
+            sessionStorage.removeItem('temp_reason');
+        }
+
+        // Clear temp data when department changes
+        if (fromDepartmentSelect) {
+            fromDepartmentSelect.addEventListener("change", () => {
                 clearStep3Temp();
             });
         }
 
-        // Pagination links: save step3 data before navigation
+        // Pagination handling
         document.querySelectorAll(".pagination a").forEach(link => {
             link.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -351,6 +348,11 @@
                 const url = new URL(link.href, window.location.origin);
                 url.searchParams.delete("selectedIds");
                 selectedSet.forEach(id => url.searchParams.append("selectedIds", id));
+
+                if (!url.searchParams.has("fromDepartmentId") && fromDepartmentSelect) {
+                    url.searchParams.set("fromDepartmentId", fromDepartmentSelect.value);
+                }
+
                 window.location.href = url.toString();
             });
         });
@@ -363,7 +365,10 @@
                 return;
             }
 
-            hiddenDiv.innerHTML = "";
+            while (hiddenDiv.firstChild) {
+                hiddenDiv.removeChild(hiddenDiv.firstChild);
+            }
+
             selectedSet.forEach(id => {
                 const input = document.createElement("input");
                 input.type = "hidden";
@@ -376,9 +381,14 @@
         });
 
         // Initial setup
+        initializeCheckboxes();
         updateUI();
-        syncCheckboxes();
+        syncSelectAll();
         restoreStep3Data();
+
+        if (urlParams.has("success")) {
+            clearStep3Temp();
+        }
     });
 </script>
 
