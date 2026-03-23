@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dto.response.warehouse;
 
+import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
 import lombok.Builder;
 import lombok.Data;
 import java.util.List;
@@ -12,13 +13,24 @@ public class HandoverDetailResponseDTO {
     private String toDepartmentName;
     private String status;
     private List<HandoverItemDTO> items;
+    private AllocationRequestResponse allocationRequest;
+    private List<RequestedItemDTO> requestedItems;
 
     @Data
     @Builder
     public static class HandoverItemDTO {
         private Integer assetId;
         private String assetCode;
+        private String assetName;
         private String assetTypeName;
         private boolean isScanned;
+    }
+
+    @Data
+    @Builder
+    public static class RequestedItemDTO {
+        private String assetTypeName;
+        private Integer requestedQuantity;
+        private Integer allocatedQuantity;
     }
 }

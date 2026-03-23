@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.service.warehouse;
 
 import edu.fpt.groupfive.dto.request.warehouse.ZoneCreateRequestDTO;
+import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
 
 import java.util.List;
@@ -13,4 +14,12 @@ public interface WhZoneService {
     void updateZone(int zoneId, ZoneCreateRequestDTO dto);
     
     void createZone(ZoneCreateRequestDTO dto);
+
+    void recalculateCapacityByAssetType(int assetTypeId, int unitVolume);
+    
+    void deleteZone(int zoneId);
+
+    AssetLocationResponseDTO findAssetLocation(String assetCode);
+
+    void decreaseCapacity(Integer zoneId, Integer unitVolume);
 }

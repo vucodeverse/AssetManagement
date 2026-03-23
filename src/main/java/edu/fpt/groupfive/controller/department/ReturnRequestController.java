@@ -1,12 +1,15 @@
-package edu.fpt.groupfive.controller.returnreq;
+package edu.fpt.groupfive.controller.department;
 
 import edu.fpt.groupfive.dto.request.ReturnRequestCreateRequest;
 import edu.fpt.groupfive.dto.response.ReturnRequestRespnse;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.ReturnRequestService;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -22,8 +25,9 @@ public class ReturnRequestController {
     private final AssetService assetService;
 
     @GetMapping("/list")
-    public String showList(Model model) {
-        int departmentId = 1;
+    public String showList(HttpSession session, Model model) {
+
+        Integer departmentId = (Integer) session.getAttribute("departmentId");
 
         List<ReturnRequestRespnse> list = returnRequestService.getAllRequest(departmentId);
 
@@ -33,11 +37,13 @@ public class ReturnRequestController {
     }
 
     @GetMapping("/search")
-    public String searchAction(@RequestParam(required = false, name = "keyword") String keyword,
-                           @RequestParam(required = false, name = "status") String status,
-                           @RequestParam(required = false, name = "fromDate") String fromDate,
-                           @RequestParam(required = false, name = "toDate") String toDate,
-                           Model model) {
+    public String searchAction(
+            HttpSession session,
+            @RequestParam(required = false, name = "keyword") String keyword,
+            @RequestParam(required = false, name = "status") String status,
+            @RequestParam(required = false, name = "fromDate") String fromDate,
+            @RequestParam(required = false, name = "toDate") String toDate,
+            Model model) {
 
         LocalDate from = null;
 
@@ -51,8 +57,10 @@ public class ReturnRequestController {
             to = LocalDate.parse(toDate);
         }
 
+        Integer departmentId = (Integer) session.getAttribute("departmentId");
+
         List<ReturnRequestRespnse> list = returnRequestService
-                .searchRequest(1, keyword, status, from, to);
+                .searchRequest(departmentId, keyword, status, from, to);
 
         model.addAttribute("requests", list);
         model.addAttribute("keyword", keyword);
@@ -81,11 +89,13 @@ public class ReturnRequestController {
     }
 
     @GetMapping("/create")
-    public String showCreateForm(Model model) {
+    public String showCreateForm(Model model, HttpSession session) {
+
+        Integer departmentId = (Integer) session.getAttribute("departmentId");
 
         model.addAttribute("requestDto", new ReturnRequestCreateRequest());
 
-        model.addAttribute("assets", assetService.getAllByDepartmentId(1));
+        model.addAttribute("assets", assetService.getAllByDepartmentId(departmentId));
 
         model.addAttribute("canEdit", true);
 
@@ -93,35 +103,49 @@ public class ReturnRequestController {
     }
 
     @PostMapping("/save")
-    public String saveRequest(@ModelAttribute("requestDto") ReturnRequestCreateRequest requestDto,
-                              RedirectAttributes redirectAttributes) {
-        try {
-            if (requestDto.getDetails() == null || requestDto.getDetails().isEmpty()) {
-                throw new Exception("Danh sách chi tiết không để trống!");
-            }
+    public String saveRequest(
+            @Valid @ModelAttribute("requestDto") ReturnRequestCreateRequest requestDto,
+            BindingResult bindingResult,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
-            returnRequestService.createRequest(requestDto);
+        Integer departmentId = (Integer) session.getAttribute("departmentId");
 
-            redirectAttributes.addFlashAttribute("message", "Gửi yêu cầu thành công!");
+        if (bindingResult.hasErrors()) {
 
-            return "redirect:/department/return-request/list";
+            model.addAttribute("requestDto", requestDto);
+            model.addAttribute("assets", assetService.getAllByDepartmentId(departmentId));
+            model.addAttribute("canEdit", true);
 
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống: " + e.getMessage());
-            return "redirect:/department/return-request/create";
+            return "return/return_request_form";
         }
+
+        requestDto.setRequesterId((Integer) session.getAttribute("userId"));
+        requestDto.setRequestedDepartmentId(departmentId);
+        returnRequestService.createRequest(requestDto);
+
+
+        redirectAttributes.addFlashAttribute("message", "Gửi yêu cầu thành công!");
+
+        return "redirect:/department/return-request/list";
+
+
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(
             @PathVariable("id") Integer id,
+            HttpSession session,
             Model model) {
         // Lấy request cần update
         ReturnRequestRespnse dto = returnRequestService.getRequestById(id);
 
+        Integer departmentId = (Integer) session.getAttribute("departmentId");
+
         model.addAttribute("requestDto", dto);
 
-        model.addAttribute("assetNew", assetService.getAllByDepartmentId(1));
+        model.addAttribute("assetNew", assetService.getAllByDepartmentId(departmentId));
 
         model.addAttribute("assets", assetService.getAllByReturnRequestId(id));
 

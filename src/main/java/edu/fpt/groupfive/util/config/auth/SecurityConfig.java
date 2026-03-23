@@ -41,15 +41,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
         // tắt security
-        if (!securityEnable) {
-            httpSecurity
-                    .csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-            return httpSecurity.build();
-        }
+        // if (!securityEnable) {
+        // httpSecurity
+        // .csrf(csrf -> csrf.disable())
+        // .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        // return httpSecurity.build();
+        // }
 
         // bật bth
         httpSecurity
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(
                         authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
                                 .requestMatchers(WHITE_LIST)
@@ -60,8 +61,7 @@ public class SecurityConfig {
                                 // Domain URLs: không gắn với role
                                 .requestMatchers("/purchases/**")
                                 .hasAnyAuthority("ASSET_MANAGER", "DIRECTOR",
-                                        "PURCHASE_STAFF", "ASSET-MANAGER",
-                                        "ADMIN")
+                                        "PURCHASE_STAFF", "ADMIN")
                                 .requestMatchers("/quotations/**")
                                 .hasAnyAuthority("PURCHASE_STAFF", "DIRECTOR", "ADMIN")
                                 .requestMatchers("/purchase-orders/**")
@@ -73,6 +73,8 @@ public class SecurityConfig {
                                 .hasAnyAuthority("PURCHASE_STAFF", "ADMIN")
                                 .requestMatchers("/asset-manager/**")
                                 .hasAnyAuthority("ASSET_MANAGER", "ADMIN")
+                                .requestMatchers("/wh/**")
+                                .hasAnyAuthority("WAREHOUSE_STAFF")
                                 .anyRequest()
                                 .authenticated())
                 .authenticationProvider(authenticationProvider())

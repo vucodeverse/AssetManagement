@@ -1,21 +1,21 @@
 package edu.fpt.groupfive.service.impl;
 
+import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.dao.AssetHandoverDao;
+import edu.fpt.groupfive.dao.AssetHandoverDetailDao;
 import edu.fpt.groupfive.dao.ReturnReqDAO;
 import edu.fpt.groupfive.dao.ReturnReqDetailDAO;
-import edu.fpt.groupfive.dao.impl.ReturnReqDAOImpl;
 import edu.fpt.groupfive.dto.request.ReturnRequestCreateRequest;
-import edu.fpt.groupfive.dto.request.ReturnRequestDetailRequest;
 import edu.fpt.groupfive.dto.response.ReturnRequestRespnse;
 import edu.fpt.groupfive.mapper.ReturnRequestMapper;
-import edu.fpt.groupfive.model.AllocationRequestDetail;
-import edu.fpt.groupfive.model.ReturnRequest;
-import edu.fpt.groupfive.model.ReturnRequestDetail;
+import edu.fpt.groupfive.model.*;
 import edu.fpt.groupfive.service.ReturnRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,6 +25,8 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
     private final ReturnReqDAO returnReqDAO;
     private final ReturnReqDetailDAO returnReqDetailDAO;
     private final ReturnRequestMapper returnRequestMapper;
+    private final AssetHandoverDao assetHandoverDao;
+    private final AssetHandoverDetailDao assetHandoverDetailDao;
 
     @Override
     public List<ReturnRequestRespnse> getAllRequest(Integer departmentId) {
@@ -56,6 +58,35 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
         }
 
         returnReqDetailDAO.insertBatch(generatedId, details);
+
+        //=================================================================================
+        //============================ Xuống kho cho khánh ================================
+        //=================================================================================
+
+        AssetHandover handover = new AssetHandover();
+        handover.setHandoverType("RETURN");
+        handover.setAllocationRequestId(null);
+        handover.setReturnRequestId(generatedId);
+        handover.setToDepartmentId(null);
+        handover.setFromDepartmentId(returnRequest.getRequestedDepartmentId());
+        handover.setStatus(Status.PENDING);
+        handover.setNote("Bản ghi lệnh trả tạo tự động khi có yêu cầu trả #" + generatedId);
+        Integer handoverId = assetHandoverDao.insert(handover);
+
+        List<AssetHandoverDetail> handoverDetailList = new ArrayList<>();
+        for (ReturnRequestDetail reqDetail : details) {
+            AssetHandoverDetail hd = new AssetHandoverDetail();
+            hd.setHandoverId(handoverId);
+            hd.setAssetId(reqDetail.getAssetId());
+            hd.setQcReportId(null);
+            hd.setNote(reqDetail.getNote());
+
+            handoverDetailList.add(hd);
+
+        }
+
+        assetHandoverDetailDao.insertBatch(handoverId, handoverDetailList);
+
     }
 
     @Override

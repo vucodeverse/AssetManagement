@@ -7,6 +7,7 @@ import edu.fpt.groupfive.dto.response.warehouse.AssetTypeVolumeDTO;
 import edu.fpt.groupfive.model.warehouse.AssetCapacity;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.warehouse.WhAssetCapacityService;
+import edu.fpt.groupfive.service.warehouse.WhZoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class WhAssetCapacityServiceImpl implements WhAssetCapacityService {
 
     private final WhAssetCapacityDAO assetCapacityDAO;
     private final AssetTypeService assetTypeService;
+    private final WhZoneService whZoneService;
 
     @Override
     public List<AssetTypeVolumeDTO> getAllAssetTypeVolumes() {
@@ -44,5 +46,6 @@ public class WhAssetCapacityServiceImpl implements WhAssetCapacityService {
     @Override
     public void updateAssetVolume(AssetVolumeUpdateRequestDTO dto) {
         assetCapacityDAO.saveOrUpdate(dto.getAssetTypeId(), dto.getUnitVolume());
+        whZoneService.recalculateCapacityByAssetType(dto.getAssetTypeId(), dto.getUnitVolume());
     }
 }

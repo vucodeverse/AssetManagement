@@ -74,7 +74,7 @@ public class DepartmentDashboardService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         stats.setTotalAssetValue(totalValue);
 
-        List<AllocationRequest> allRequests = allocationReqDao.findAll(departmentId);
+        List<AllocationRequest> allRequests = allocationReqDao.findAllByDepartmentId(departmentId);
         long pendingCount = allRequests.stream()
                 .filter(r -> "PENDING".equals(r.getStatus()) || "SUBMITTED".equals(r.getStatus()))
                 .count();
@@ -111,7 +111,7 @@ public class DepartmentDashboardService {
 
 
     private List<RecentRequestDTO> getRecentRequests(Integer departmentId) {
-        List<AllocationRequest> requests = allocationReqDao.findAll(departmentId);
+        List<AllocationRequest> requests = allocationReqDao.findAllByDepartmentId(departmentId);
 
         return requests.stream()
                 .sorted((r1, r2) -> {

@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dto.request;
 
+import edu.fpt.groupfive.common.Priority;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -20,12 +21,8 @@ public class AllocationRequestCreateRequest {
     @NotBlank(message = "Lí do xin cấp chưa nhập")
     private String requestReason;
 
-    @NotBlank(message = "Độ ưu tiên chưa được chọn")
-    @Pattern(
-            regexp = "LOW|MEDIUM|HIGH|URGENT",
-            message = "Priority không hợp lệ"
-    )
-    private String priority;
+    @NotNull(message = "Độ ưu tiên chưa được chọn")
+    private Priority priority;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @FutureOrPresent(message = "Thời điểm cần nhận phải từ hôm nay trở đi")

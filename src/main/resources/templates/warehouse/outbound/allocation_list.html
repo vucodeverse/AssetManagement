@@ -3,6 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/warehouse-layout}">
 <head>
+    <title th:text="${pageTitle}">Danh sách Cấp phát</title>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
     </th:block>
@@ -33,7 +34,7 @@
                 </thead>
                 <tbody>
                     <tr th:each="alc : ${allocations}">
-                        <td th:text="'#ALC-' + ${alc.handoverId}">601</td>
+                        <td th:text="${alc.handoverId}">601</td>
                         <td th:text="${alc.toDepartmentName}">Phòng Đào tạo</td>
                         <td th:text="${#temporals.format(alc.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                         <td>

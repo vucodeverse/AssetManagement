@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.model;
 
+import edu.fpt.groupfive.common.Priority;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ public class AllocationRequest {
 
     private String requestReason;
 
-    private String priority;
+    private Priority priority;
 
     private LocalDate neededByDate;
 
