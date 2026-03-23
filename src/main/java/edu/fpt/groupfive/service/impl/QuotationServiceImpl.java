@@ -136,7 +136,8 @@ public class QuotationServiceImpl implements QuotationService {
 
         // map ngược lại
         Map<String, Integer> map = new HashMap<>();
-        for (Map.Entry<Integer, String> e : assetTypeService.getAssetTypeIdToNameMap().entrySet()) {
+        Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
+        for (Map.Entry<Integer, String> e : assetTypeMap.entrySet()) {
             map.put(e.getValue(), e.getKey());
         }
 
@@ -162,6 +163,9 @@ public class QuotationServiceImpl implements QuotationService {
 
         // check xem quotation này đã được tạo hay chưa
         if (quotationCreateRequest.getQuotationId() != null) {
+
+            quotationDAO.findById(quotationCreateRequest.getQuotationId()).orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
+
             q.setId(quotationCreateRequest.getQuotationId());
             q.setQuotationStatus(quotationStatus);
             quotationDAO.update(q);
