@@ -16,6 +16,8 @@ public interface WhZoneService {
     void createZone(ZoneCreateRequestDTO dto);
 
     void recalculateCapacityByAssetType(int assetTypeId, int unitVolume);
+    
+    void deleteZone(int zoneId);
 
     AssetLocationResponseDTO findAssetLocation(String assetCode);
 }

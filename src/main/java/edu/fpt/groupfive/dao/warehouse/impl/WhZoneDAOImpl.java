@@ -1,8 +1,10 @@
 package edu.fpt.groupfive.dao.warehouse.impl;
 
+import edu.fpt.groupfive.common.AssetStatus;
 import edu.fpt.groupfive.dao.warehouse.WhZoneDAO;
 import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
+import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.warehouse.WarehouseZone;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -70,6 +72,30 @@ public class WhZoneDAOImpl implements WhZoneDAO {
                      ") * ? " +
                      "WHERE asset_type_id = ?";
         jdbcTemplate.update(sql, unitVolume, assetTypeId);
+    }
+
+
+    @Override
+    public List<Asset> getAssetsByZoneId(int zoneId) {
+        String sql = "SELECT a.*, t.type_name FROM asset a " +
+                     "JOIN wh_asset_placement p ON a.asset_id = p.asset_id " +
+                     "LEFT JOIN asset_type t ON a.asset_type_id = t.asset_type_id " +
+                     "WHERE p.zone_id = ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Asset asset = new Asset();
+            asset.setAssetId(rs.getInt("asset_id"));
+            asset.setAssetName(rs.getString("asset_name"));
+            asset.setAssetTypeId(rs.getInt("asset_type_id"));
+            asset.setAssetTypeName(rs.getString("type_name"));
+            asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
+            return asset;
+        }, zoneId);
+    }
+
+    @Override
+    public void deleteZone(int zoneId) {
+        String sql = "UPDATE wh_zones SET status = 'DELETED' WHERE zone_id = ?";
+        jdbcTemplate.update(sql, zoneId);
     }
 
     @Override

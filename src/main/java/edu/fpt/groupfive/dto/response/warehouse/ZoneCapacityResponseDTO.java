@@ -1,10 +1,9 @@
 package edu.fpt.groupfive.dto.response.warehouse;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import edu.fpt.groupfive.model.Asset;
+import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,6 +19,7 @@ public class ZoneCapacityResponseDTO {
     private Integer assetTypeId;
     private String assetTypeName;
     private String status;
+    private List<Asset> assets;
 
     // Computed fields
     public int getFillPercentage() {
