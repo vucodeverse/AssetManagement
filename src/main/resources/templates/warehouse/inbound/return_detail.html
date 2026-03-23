@@ -27,6 +27,11 @@
             <span th:text="${successMessage}"></span>
         </div>
 
+        <div th:if="${errorMessage}" class="flash-message error">
+            <i class="fa-solid fa-circle-xmark"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
         <div class="wh-layout" style="grid-template-columns: 1fr 400px;">
             <!-- SCANNER FORM -->
             <div class="wh-panel">

@@ -134,12 +134,16 @@ public class WarehouseInboundController {
     // =========================================================
 
     @PostMapping("/return/{handover_id}/scan")
-    public String processReturnScan(
-            @PathVariable("handover_id") Integer handoverId,
-            @RequestParam("assetCode") String assetCode,
-            RedirectAttributes ra) {
-
-        ra.addFlashAttribute(SUCCESS_MSG, "Đã nhận tài sản " + assetCode + " (demo).");
+    public String processReturnScan(@PathVariable("handover_id") Integer handoverId,
+                                    @RequestParam("assetCode") String assetCode,
+                                    Principal principal,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            warehouseInboundService.processReturnScan(handoverId, assetCode, principal.getName());
+            redirectAttributes.addFlashAttribute("successMessage", "Đã quét và nhận kho tài sản thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
+        }
         return "redirect:/wh/inbound/return/" + handoverId;
     }
 

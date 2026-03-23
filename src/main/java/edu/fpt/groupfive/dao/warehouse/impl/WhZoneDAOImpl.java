@@ -87,7 +87,20 @@ public class WhZoneDAOImpl implements WhZoneDAO {
             asset.setAssetName(rs.getString("asset_name"));
             asset.setAssetTypeId(rs.getInt("asset_type_id"));
             asset.setAssetTypeName(rs.getString("type_name"));
-            asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
+            
+            String status = rs.getString("current_status");
+            if (status != null) {
+                String s = status.toUpperCase().trim();
+                if ("IN_USE".equals(s)) {
+                    asset.setCurrentStatus(AssetStatus.ASSIGNED);
+                } else {
+                    try {
+                        asset.setCurrentStatus(AssetStatus.valueOf(s));
+                    } catch (IllegalArgumentException e) {
+                        // Safe fallback
+                    }
+                }
+            }
             return asset;
         }, zoneId);
     }

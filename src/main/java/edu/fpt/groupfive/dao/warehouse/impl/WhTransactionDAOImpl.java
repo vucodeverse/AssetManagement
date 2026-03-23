@@ -135,6 +135,88 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
     }
 
     @Override
+    public void executeReturnInboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note) {
+        String updateAssetSql = "UPDATE asset SET current_status = 'AVAILABLE', department_id = NULL WHERE asset_id = ?";
+        String updateZoneSql = "UPDATE wh_zones SET current_capacity = current_capacity + (SELECT unit_volume FROM wh_asset_capacity WHERE asset_type_id = (SELECT asset_type_id FROM asset WHERE asset_id = ?)) WHERE zone_id = ?";
+        String insertPlacementSql = "INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, placed_at, note) VALUES (?, ?, ?, SYSDATETIME(), ?)";
+        String insertTransactionSql = "INSERT INTO wh_transactions (asset_id, zone_id, transaction_type, executed_by, executed_at, note) VALUES (?, ?, 'INBOUND', ?, SYSDATETIME(), ?)";
+        String insertMapSql = "INSERT INTO map_handover_transactions (asset_handover_id, transaction_id) VALUES (?, ?)";
+
+        Connection connection = null;
+        try {
+            connection = databaseConfig.getConnection();
+            connection.setAutoCommit(false);
+
+            try (
+                PreparedStatement psAsset = connection.prepareStatement(updateAssetSql);
+                PreparedStatement psZone = connection.prepareStatement(updateZoneSql);
+                PreparedStatement psPlacement = connection.prepareStatement(insertPlacementSql);
+                PreparedStatement psTrans = connection.prepareStatement(insertTransactionSql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement psMap = connection.prepareStatement(insertMapSql)
+            ) {
+                // 1. Update Asset
+                psAsset.setInt(1, assetId);
+                psAsset.executeUpdate();
+
+                // 2. Update Zone
+                psZone.setInt(1, assetId);
+                psZone.setInt(2, zoneId);
+                psZone.executeUpdate();
+
+                // 3. Insert Placement (if already exists, update instead)
+                try (PreparedStatement psDelPlace = connection.prepareStatement("DELETE FROM wh_asset_placement WHERE asset_id = ?")) {
+                    psDelPlace.setInt(1, assetId);
+                    psDelPlace.executeUpdate();
+                }
+                psPlacement.setInt(1, assetId);
+                psPlacement.setInt(2, zoneId);
+                psPlacement.setInt(3, executedBy);
+                psPlacement.setString(4, note);
+                psPlacement.executeUpdate();
+
+                // 4. Insert Transaction
+                psTrans.setInt(1, assetId);
+                psTrans.setInt(2, zoneId);
+                psTrans.setInt(3, executedBy);
+                psTrans.setString(4, "Thu hồi từ lệnh bàn giao #" + handoverId);
+                psTrans.executeUpdate();
+
+                int transId = -1;
+                try (ResultSet rs = psTrans.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        transId = rs.getInt(1);
+                    }
+                }
+
+                // 5. Map handover transaction
+                if (transId != -1) {
+                    psMap.setInt(1, handoverId);
+                    psMap.setInt(2, transId);
+                    psMap.executeUpdate();
+                }
+            }
+
+            connection.commit();
+        } catch (Exception e) {
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                }
+            }
+            throw new RuntimeException("Lỗi khi thực hiện nhập kho thu hồi: " + e.getMessage(), e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException ex) {
+                }
+            }
+        }
+    }
+
+    @Override
     public void executeOutboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note) {
         String deletePlacementSql = "DELETE FROM wh_asset_placement WHERE asset_id = ?";
         String insertTransactionSql = "INSERT INTO wh_transactions (asset_id, zone_id, transaction_type, executed_by, executed_at, note) VALUES (?, ?, 'OUTBOUND', ?, SYSDATETIME(), ?)";

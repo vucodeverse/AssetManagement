@@ -98,7 +98,17 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
                  SELECT 
                     ahd.asset_id,
                     CAST(a.asset_id AS NVARCHAR(50)) as asset_code,
-                    at.type_name AS asset_type_name
+                    at.type_name AS asset_type_name,
+                    CASE 
+                        WHEN EXISTS (
+                            SELECT 1 
+                            FROM map_handover_transactions mht
+                            JOIN wh_transactions wt ON mht.transaction_id = wt.transaction_id
+                            WHERE mht.asset_handover_id = ahd.handover_id 
+                              AND wt.asset_id = ahd.asset_id 
+                              AND wt.transaction_type = 'INBOUND'
+                        ) THEN 1 ELSE 0 
+                    END as is_scanned
                  FROM asset_handover_detail ahd
                  JOIN asset a ON ahd.asset_id = a.asset_id
                  JOIN asset_type at ON a.asset_type_id = at.asset_type_id
@@ -117,7 +127,7 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
                         .assetId(rs.getInt("asset_id"))
                         .assetCode(rs.getString("asset_code"))
                         .assetTypeName(rs.getString("asset_type_name"))
-                        .isScanned(false)
+                        .isScanned(rs.getInt("is_scanned") == 1)
                         .build());
             }
 

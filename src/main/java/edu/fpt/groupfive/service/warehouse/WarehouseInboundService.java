@@ -11,4 +11,5 @@ public interface WarehouseInboundService {
     List<HandoverResponseDTO> getPendingReturns();
     List<HandoverResponseDTO> getProcessedReturns();
     HandoverDetailResponseDTO getReturnDetail(Integer handoverId);
+    void processReturnScan(Integer handoverId, String assetCode, String username);
 }

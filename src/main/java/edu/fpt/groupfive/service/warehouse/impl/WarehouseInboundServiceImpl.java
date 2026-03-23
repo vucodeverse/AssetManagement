@@ -2,15 +2,16 @@ package edu.fpt.groupfive.service.warehouse.impl;
 
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
-import edu.fpt.groupfive.dao.AssetHandoverDao;
-import edu.fpt.groupfive.dao.AssetHandoverDetailDao;
-import edu.fpt.groupfive.dao.UserDAO;
+import edu.fpt.groupfive.common.PurchaseProcessStatus;
+import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dao.warehouse.WhTransactionDAO;
 import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.dto.response.warehouse.AssetTypeVolumeDTO;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
+import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.AssetHandover;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.warehouse.WarehouseInboundService;
@@ -32,10 +33,12 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
     private final OrderService orderService;
     private final WhTransactionDAO whTransactionDAO;
     private final UserDAO userDAO;
+    private final AssetDAO assetDAO;
     private final WhZoneService whZoneService;
     private final WhAssetCapacityService whAssetCapacityService;
     private final AssetHandoverDao assetHandoverDao;
     private final AssetHandoverDetailDao assetHandoverDetailDao;
+    private final ReturnReqDAO returnReqDAO;
 
     @Override
     public List<HandoverResponseDTO> getProcessedReturns() {
@@ -46,8 +49,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                 .toDepartmentName(h.getToDepartmentName())
                 .createdAt(h.getCreatedAt())
                 .status(h.getStatus().name())
-                .build()
-        ).collect(Collectors.toList());
+                .build()).collect(Collectors.toList());
     }
 
     @Override
@@ -59,8 +61,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                 .toDepartmentName(h.getToDepartmentName())
                 .createdAt(h.getCreatedAt())
                 .status(h.getStatus().name())
-                .build()
-        ).collect(Collectors.toList());
+                .build()).collect(Collectors.toList());
     }
 
     @Override
@@ -70,11 +71,13 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             throw new RuntimeException("Không tìm thấy lệnh bàn giao #" + handoverId);
         }
 
-        List<HandoverDetailResponseDTO.HandoverItemDTO> items = assetHandoverDetailDao.findItemsByHandoverId(handoverId);
+        List<HandoverDetailResponseDTO.HandoverItemDTO> items = assetHandoverDetailDao
+                .findItemsByHandoverId(handoverId);
 
         return HandoverDetailResponseDTO.builder()
                 .handoverId(handoverId)
-                .fromDepartmentName(handover.getFromDepartmentName()) // Note: findById doesn't join by default in current impl, I might need to update it
+                .fromDepartmentName(handover.getFromDepartmentName()) // Note: findById doesn't join by default in
+                                                                      // current impl, I might need to update it
                 .toDepartmentName(handover.getToDepartmentName())
                 .status(handover.getStatus().name())
                 .items(items)
@@ -94,14 +97,14 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                 .filter(dto -> dto.getAssetTypeId() != null)
                 .collect(Collectors.toMap(
                         AssetTypeVolumeDTO::getAssetTypeId,
-                        dto -> dto.getUnitVolume() != null ? dto.getUnitVolume() : 1
-                ));
+                        dto -> dto.getUnitVolume() != null ? dto.getUnitVolume() : 1));
 
         List<WhTransactionDAO.AssetPlacementPlan> placements = new ArrayList<>();
 
         if (poDetail != null && poDetail.getOrderDetails() != null) {
             for (PurchaseOrderDetailResponse item : poDetail.getOrderDetails()) {
-                if (item.getQuantity() == null || item.getQuantity() <= 0) continue;
+                if (item.getQuantity() == null || item.getQuantity() <= 0)
+                    continue;
 
                 int quantity = item.getQuantity();
                 int assetTypeId = item.getAssetTypeId();
@@ -111,7 +114,8 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                     ZoneCapacityResponseDTO chosenZone = findZoneForAllocation(activeZones, assetTypeId, unitVolume);
 
                     if (chosenZone == null) {
-                        throw new RuntimeException("Kho đã đầy, không tìm thấy Zone phù hợp để xếp tài sản: " + item.getAssetTypeName());
+                        throw new RuntimeException(
+                                "Kho đã đầy, không tìm thấy Zone phù hợp để xếp tài sản: " + item.getAssetTypeName());
                     }
 
                     // Update memory state
@@ -126,20 +130,23 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                             item.getPurchaseOrderDetailId(),
                             item.getPrice(),
                             chosenZone.getZoneId(),
-                            unitVolume
-                    ));
+                            unitVolume));
                 }
             }
         }
 
         // Execute batch database insertions
-        Map<Integer, List<Integer>> generatedIds = whTransactionDAO.executeInboundTransaction(poId, executedBy, placements);
+        Map<Integer, List<Integer>> generatedIds = whTransactionDAO.executeInboundTransaction(poId, executedBy,
+                placements);
+
+        orderService.updateStatus(poId, PurchaseProcessStatus.COMPLETED);
 
         // Build Response
         List<InboundSummaryResponseDTO.AssetGroupDTO> groups = new ArrayList<>();
         if (poDetail != null && poDetail.getOrderDetails() != null) {
             for (PurchaseOrderDetailResponse item : poDetail.getOrderDetails()) {
-                if (item.getQuantity() == null) continue;
+                if (item.getQuantity() == null)
+                    continue;
                 int qty = item.getQuantity();
                 if (qty > 0 && generatedIds.containsKey(item.getAssetTypeId())) {
                     groups.add(InboundSummaryResponseDTO.AssetGroupDTO.builder()
@@ -159,7 +166,66 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                 .build();
     }
 
-    private ZoneCapacityResponseDTO findZoneForAllocation(List<ZoneCapacityResponseDTO> zones, int assetTypeId, int unitVolume) {
+    @Override
+    public void processReturnScan(Integer handoverId, String assetCode, String username) {
+        Integer executedBy = userDAO.findUserIdByUsername(username);
+        Integer assetId;
+        try {
+            assetId = Integer.parseInt(assetCode);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Mã tài sản không hợp lệ: " + assetCode);
+        }
+
+        // 1. Check if asset belongs to handover
+        List<HandoverDetailResponseDTO.HandoverItemDTO> items = assetHandoverDetailDao
+                .findItemsByHandoverId(handoverId);
+        HandoverDetailResponseDTO.HandoverItemDTO match = items.stream()
+                .filter(i -> i.getAssetId().equals(assetId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Tài sản #" + assetId + " không thuộc lệnh thu hồi này."));
+
+        // 2. Check if already scanned
+        if (match.isScanned()) {
+            throw new RuntimeException("Tài sản #" + assetId + " đã được quét và nhận kho trước đó.");
+        }
+
+        // 3. Find asset details for allocation
+        Asset asset = assetDAO.findById(assetId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin tài sản #" + assetId));
+
+        List<AssetTypeVolumeDTO> assetVolumes = whAssetCapacityService.getAllAssetTypeVolumes();
+        Integer unitVolume = assetVolumes.stream()
+                .filter(v -> v.getAssetTypeId().equals(asset.getAssetTypeId()))
+                .map(AssetTypeVolumeDTO::getUnitVolume)
+                .findFirst()
+                .orElse(1);
+
+        List<ZoneCapacityResponseDTO> zones = whZoneService.getAllZones();
+        ZoneCapacityResponseDTO targetZone = findZoneForAllocation(zones, asset.getAssetTypeId(), unitVolume);
+
+        if (targetZone == null) {
+            throw new RuntimeException(
+                    "Không còn đủ không gian hoặc không tìm thấy khu vực phù hợp cho loại tài sản này.");
+        }
+
+        // 4. Execute transaction
+        whTransactionDAO.executeReturnInboundTransaction(handoverId, assetId, targetZone.getZoneId(), executedBy, null);
+
+        // 5. Update handover/return request status if all items scanned
+        List<HandoverDetailResponseDTO.HandoverItemDTO> updatedItems = assetHandoverDetailDao
+                .findItemsByHandoverId(handoverId);
+        boolean allScanned = updatedItems.stream().allMatch(HandoverDetailResponseDTO.HandoverItemDTO::isScanned);
+        if (allScanned) {
+            assetHandoverDao.updateStatus(handoverId, Status.COMPLETED);
+            AssetHandover handover = assetHandoverDao.findById(handoverId);
+            if (handover != null && handover.getReturnRequestId() != null) {
+                returnReqDAO.updateStatus(handover.getReturnRequestId(), Status.COMPLETED.name(), executedBy);
+            }
+        }
+    }
+
+    private ZoneCapacityResponseDTO findZoneForAllocation(List<ZoneCapacityResponseDTO> zones, int assetTypeId,
+            int unitVolume) {
         ZoneCapacityResponseDTO bestFillUpZone = null;
         ZoneCapacityResponseDTO firstNewZone = null;
 

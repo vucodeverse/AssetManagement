@@ -461,18 +461,18 @@ SET IDENTITY_INSERT asset ON;
 -- Tài sản cho Phòng Kỹ thuật (Sẽ thu hồi khác loại)
 IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 1001)
     INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, department_id, original_cost, acquisition_date)
-    VALUES (1001, N'MacBook Pro 14 M3 - KT 01', @Ret_TypeMBP, 'IN_USE', @Ret_KTDept, 44000000, DATEADD(MONTH, -10, GETDATE()));
+    VALUES (1001, N'MacBook Pro 14 M3 - KT 01', @Ret_TypeMBP, 'ASSIGNED', @Ret_KTDept, 44000000, DATEADD(MONTH, -10, GETDATE()));
 IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 1002)
     INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, department_id, original_cost, acquisition_date)
-    VALUES (1002, N'Dell Precision 3660 - KT 01', @Ret_TypeDell, 'IN_USE', @Ret_KTDept, 34500000, DATEADD(MONTH, -10, GETDATE()));
+    VALUES (1002, N'Dell Precision 3660 - KT 01', @Ret_TypeDell, 'ASSIGNED', @Ret_KTDept, 34500000, DATEADD(MONTH, -10, GETDATE()));
 
 -- Tài sản cho Phòng Hành chính (Sẽ thu hồi cùng loại)
 IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 1003)
     INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, department_id, original_cost, acquisition_date)
-    VALUES (1003, N'Ghế Aeron - HC 01', @Ret_TypeAeron, 'IN_USE', @Ret_HCDept, 24500000, DATEADD(YEAR, -2, GETDATE()));
+    VALUES (1003, N'Ghế Aeron - HC 01', @Ret_TypeAeron, 'ASSIGNED', @Ret_HCDept, 24500000, DATEADD(YEAR, -2, GETDATE()));
 IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 1004)
     INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, department_id, original_cost, acquisition_date)
-    VALUES (1004, N'Ghế Aeron - HC 02', @Ret_TypeAeron, 'IN_USE', @Ret_HCDept, 24500000, DATEADD(YEAR, -2, GETDATE()));
+    VALUES (1004, N'Ghế Aeron - HC 02', @Ret_TypeAeron, 'ASSIGNED', @Ret_HCDept, 24500000, DATEADD(YEAR, -2, GETDATE()));
 
 SET IDENTITY_INSERT asset OFF;
 
