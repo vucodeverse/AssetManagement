@@ -204,6 +204,7 @@
 .badge-full    { background: #fee2e2; color: #991b1b; }
 .badge-inactive { background: #f3f4f6; color: #9ca3af; }
 .badge-active  { background: #d1fae5; color: #065f46; }
+.badge-completed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 
 /* ---- Asset type chip inside zone row ---- */
 .asset-type-chip {

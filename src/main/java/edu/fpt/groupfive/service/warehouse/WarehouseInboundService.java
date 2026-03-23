@@ -9,5 +9,6 @@ import java.util.List;
 public interface WarehouseInboundService {
     InboundSummaryResponseDTO processInboundPO(Integer poId, String username);
     List<HandoverResponseDTO> getPendingReturns();
+    List<HandoverResponseDTO> getProcessedReturns();
     HandoverDetailResponseDTO getReturnDetail(Integer handoverId);
 }

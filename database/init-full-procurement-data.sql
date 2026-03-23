@@ -514,5 +514,20 @@ SET @Ret_Handover2 = SCOPE_IDENTITY();
 INSERT INTO asset_handover_detail (handover_id, asset_id, note) VALUES (@Ret_Handover2, 1003, NULL);
 INSERT INTO asset_handover_detail (handover_id, asset_id, note) VALUES (@Ret_Handover2, 1004, NULL);
 
-PRINT 'Asset Return flow dummy data created successfully.';
+-- 14.4. Một lệnh đã hoàn tất (APPROVED)
+DECLARE @Ret_RR3 INT, @Ret_Handover3 INT;
+INSERT INTO return_request (requester_id, requested_department_id, request_date, reason, status, created_at)
+VALUES (@Ret_AdminUser, @Ret_KTDept, DATEADD(DAY, -1, GETDATE()), N'Hoàn trả thiết bị hỏng định kỳ', 'APPROVED', DATEADD(DAY, -1, GETDATE()));
+SET @Ret_RR3 = SCOPE_IDENTITY();
+
+-- Thêm chi tiết cho RR3 (Asset 30 - Máy in HP từ mẫu gốc đã có sẵn)
+INSERT INTO return_request_detail (request_id, asset_id, note) VALUES (@Ret_RR3, 30, N'Hỏng đầu phun');
+
+INSERT INTO asset_handover (handover_type, return_request_id, from_department_id, to_department_id, executed_by_user_id, status, note, created_at, updated_at)
+VALUES ('RETURN', @Ret_RR3, @Ret_KTDept, NULL, @Ret_AdminUser, 'COMPLETED', N'Đã nhập kho hoàn thành', DATEADD(DAY, -1, GETDATE()), GETDATE());
+SET @Ret_Handover3 = SCOPE_IDENTITY();
+
+INSERT INTO asset_handover_detail (handover_id, asset_id, note) VALUES (@Ret_Handover3, 30, N'Hỏng đầu phun');
+
+PRINT 'Processed return sample data added.';
 

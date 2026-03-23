@@ -160,7 +160,7 @@ public class AssetHandoverDaoImpl implements AssetHandoverDao {
                  FROM asset_handover h
                  LEFT JOIN departments fd ON h.from_department_id = fd.department_id
                  LEFT JOIN departments td ON h.to_department_id = td.department_id
-                 WHERE h.handover_type = 'RETURN' AND h.status = 'APPROVED'
+                 WHERE h.handover_type = 'RETURN' AND h.status = 'COMPLETED'
                  ORDER BY h.updated_at DESC
                  """;
 
