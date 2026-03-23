@@ -134,7 +134,7 @@ public class AssetController {
             request.setAssetName(asset.getAssetName());
             request.setPurchaseOrderDetailId(asset.getPurchaseOrderDetailId());
             request.setWarrantyStartDate(asset.getWarrantyStartDate());
-            request.setCurrentStatus(AssetStatus.valueOf(asset.getCurrentStatus()));
+            request.setCurrentStatus(asset.getCurrentStatus());
             request.setWarrantyEndDate(asset.getWarrantyEndDate());
             request.setOriginalCost(asset.getOriginalCost());
             request.setAssetTypeId(asset.getAssetTypeId());

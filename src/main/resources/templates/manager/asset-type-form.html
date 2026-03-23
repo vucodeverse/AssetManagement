@@ -53,7 +53,7 @@
                                 <option value="">-- Chọn nhóm --</option>
                                 <option th:each="c : ${typeClasses}"
                                         th:value="${c}"
-                                        th:text="${c}">
+                                        th:text="${c.description}">
                                 </option>
                             </select>
 
@@ -102,7 +102,7 @@
                                 <option value="">-- Chọn phương pháp --</option>
                                 <option th:each="m : ${depreciationMethods}"
                                         th:value="${m}"
-                                        th:text="${m}">
+                                        th:text="${m.description}">
                                 </option>
                             </select>
 
