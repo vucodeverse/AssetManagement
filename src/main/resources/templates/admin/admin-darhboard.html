@@ -20,7 +20,7 @@
         <div class="user-avatar">A</div>
         <div class="user-info">
             <span class="user-name">Administrator</span>
-            <span class="user-role">Admin Manager</span>
+            <span class="user-role">Admin</span>
         </div>
         <a th:href="@{/logout}" class="logout-link" title="Đăng xuất">
             <i class="fas fa-sign-out-alt"></i>
@@ -37,7 +37,7 @@
             <div class="stat-card bg-primary-gradient text-white">
                 <div class="stat-icon"><i class="fas fa-boxes"></i></div>
                 <div class="stat-details">
-                    <h3>1,250</h3>
+                    <h3 th:text="${dashboardData.totalAssets}"></h3>
                     <p>Tổng số tài sản</p>
                 </div>
             </div>
@@ -46,7 +46,7 @@
             <div class="stat-card bg-success-gradient text-white">
                 <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
                 <div class="stat-details">
-                    <h3>342</h3>
+                    <h3 th:text="${dashboardData.totalUsers}"></h3>
                     <p>Người dùng</p>
                 </div>
             </div>
@@ -55,7 +55,7 @@
             <div class="stat-card bg-info-gradient text-white">
                 <div class="stat-icon"><i class="fas fa-sitemap"></i></div>
                 <div class="stat-details">
-                    <h3>12</h3>
+                    <h3 th:text="${dashboardData.totalDepartments}"></h3>
                     <p>Phòng ban</p>
                 </div>
             </div>
@@ -69,7 +69,7 @@
                     <div class="request-icon bg-warning-light"><i class="fas fa-shopping-cart text-warning"></i></div>
                     <div class="ml-3">
                         <h5 class="mb-0">Yêu cầu mua sắm</h5>
-                        <p class="text-muted mb-0"><strong>08</strong> đơn mới</p>
+                        <p class="text-muted mb-0"><strong th:text="${dashboardData.newPurchaseRequests}"></strong> đơn mới</p>
                     </div>
                 </div>
             </div>
@@ -81,7 +81,7 @@
                     </div>
                     <div class="ml-3">
                         <h5 class="mb-0">Yêu cầu cấp phát</h5>
-                        <p class="text-muted mb-0"><strong>15</strong> đơn mới</p>
+                        <p class="text-muted mb-0"><strong th:text="${dashboardData.newAllocationRequests}"></strong> đơn mới</p>
                     </div>
                 </div>
             </div>
@@ -91,8 +91,8 @@
                 <div class="d-flex align-items-center">
                     <div class="request-icon bg-danger-light"><i class="fas fa-exchange-alt text-danger"></i></div>
                     <div class="ml-3">
-                        <h5 class="mb-0">Yêu cầu điều chuyển</h5>
-                        <p class="text-muted mb-0"><strong>03</strong> đơn mới</p>
+                        <h5 class="mb-0">Yêu cầu trả</h5>
+                        <p class="text-muted mb-0"><strong th:text="${dashboardData.newReturnRequests}"></strong> đơn mới</p>
                     </div>
                 </div>
             </div>
@@ -110,30 +110,18 @@
                 <table class="table table-sm table-hover">
                     <thead class="thead-dark">
                     <tr>
-                        <th>ID</th>
+                        <th>Mã</th>
                         <th>Họ tên</th>
                         <th>Email</th>
                         <th>Vai trò</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>#101</td>
-                        <td>Nguyễn Văn A</td>
-                        <td>a.nguyen@company.com</td>
-                        <td>User</td>
-                    </tr>
-                    <tr>
-                        <td>#102</td>
-                        <td>Trần Thị B</td>
-                        <td>b.tran@company.com</td>
-                        <td>Manager</td>
-                    </tr>
-                    <tr>
-                        <td>#103</td>
-                        <td>Lê Văn C</td>
-                        <td>c.le@company.com</td>
-                        <td>User</td>
+                    <tr th:each="u : ${dashboardData.users}">
+                        <td th:text="${u.id}"></td>
+                        <td th:text="${u.fullName}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td th:text="${u.role}"></td>
                     </tr>
                     </tbody>
                 </table>
@@ -148,26 +136,16 @@
                 <table class="table table-sm table-hover">
                     <thead class="thead-dark">
                     <tr>
-                        <th>Mã PB</th>
+                        <th>Mã</th>
                         <th>Tên phòng ban</th>
                         <th>Nhân sự</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>IT_01</td>
-                        <td>Phòng CNTT</td>
-                        <td>15</td>
-                    </tr>
-                    <tr>
-                        <td>HR_02</td>
-                        <td>Phòng Nhân sự</td>
-                        <td>10</td>
-                    </tr>
-                    <tr>
-                        <td>KT_03</td>
-                        <td>Phòng Kế toán</td>
-                        <td>08</td>
+                    <tr th:each="d : ${dashboardData.departments}">
+                        <td th:text="${d.departmentId}"></td>
+                        <td th:text="${d.departmentName}"></td>
+                        <td th:text="${d.staffCount}"></td>
                     </tr>
                     </tbody>
                 </table>

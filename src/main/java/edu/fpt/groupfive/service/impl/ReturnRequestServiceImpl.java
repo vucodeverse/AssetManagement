@@ -139,4 +139,9 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
         return returnRequestMapper.toResponseList(returnReqDAO.search(departmentId, requestId, status, fromDate, toDate));
     }
 
+    @Override
+    public int getTotalPending() {
+        return returnReqDAO.countPendingRequest();
+    }
+
 }

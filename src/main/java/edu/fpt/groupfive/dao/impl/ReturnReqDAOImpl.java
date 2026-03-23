@@ -260,4 +260,26 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
 
         return list;
     }
+
+    @Override
+    public int countPendingRequest() {
+        String query = """
+                SELECT COUNT(*) FROM return_request WHERE status = 'PENDING_AM'
+                """;
+        try (
+                Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(query);
+                ResultSet rs = ps.executeQuery();
+        ) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+
+    }
 }

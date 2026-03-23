@@ -183,5 +183,10 @@ public class AllocationRequestServiceImpl implements AllocationRequestService {
         return allocationReqDao.search(departmentId, requestId, status, priority, fromDate, toDate);
     }
 
+    @Override
+    public int getTotalPending() {
+        return allocationReqDao.countPendingRequest();
+    }
+
 
 }
