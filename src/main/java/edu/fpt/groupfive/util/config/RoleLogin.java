@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RoleLogin {
 
+    // lấy ra role đang login hiện tại
     public String getRole() {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
