@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.security.Principal;
 
 import java.util.List;
 
@@ -23,7 +24,6 @@ public class WarehouseInboundController {
     private static final String ACTIVE_MENU = "activeMenu";
     private static final String MENU_INBOUND = "inbound";
     private static final String PAGE_TITLE = "pageTitle";
-    private static final String PENDING_STATUS = "PENDING";
     private static final String SUMMARY_ATTR = "summary";
 
     private final OrderService orderService;
@@ -66,7 +66,7 @@ public class WarehouseInboundController {
 
     @PostMapping("/po/{po_id}/confirm")
     public String confirmPO(@PathVariable("po_id") Integer poId, RedirectAttributes ra,
-            java.security.Principal principal) {
+            Principal principal) {
 
         if (principal == null) {
             return "redirect:/login";

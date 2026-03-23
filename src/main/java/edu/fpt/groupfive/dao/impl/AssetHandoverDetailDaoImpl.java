@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.dao.AssetHandoverDetailDao;
+import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO.HandoverItemDTO;
 import edu.fpt.groupfive.model.AssetHandoverDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
@@ -92,7 +93,7 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
     }
 
     @Override
-    public List<edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO.HandoverItemDTO> findItemsByHandoverId(Integer handoverId) {
+    public List<HandoverItemDTO> findItemsByHandoverId(Integer handoverId) {
         String sql = """
                  SELECT 
                     ahd.asset_id,
@@ -103,7 +104,7 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
                  JOIN asset_type at ON a.asset_type_id = at.asset_type_id
                  WHERE ahd.handover_id = ?
                  """;
-        List<edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO.HandoverItemDTO> list = new ArrayList<>();
+        List<HandoverItemDTO> list = new ArrayList<>();
 
         try (Connection con = databaseConfig.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -112,7 +113,7 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                list.add(edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO.HandoverItemDTO.builder()
+                list.add(HandoverItemDTO.builder()
                         .assetId(rs.getInt("asset_id"))
                         .assetCode(rs.getString("asset_code"))
                         .assetTypeName(rs.getString("asset_type_name"))

@@ -226,11 +226,11 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
         if (filter != null) {
             if (filter.getFromDate() != null) {
                 sql.append(" AND CAST(t.executed_at AS DATE) >= ?");
-                params.add(java.sql.Date.valueOf(filter.getFromDate()));
+                params.add(Date.valueOf(filter.getFromDate()));
             }
             if (filter.getToDate() != null) {
                 sql.append(" AND CAST(t.executed_at AS DATE) <= ?");
-                params.add(java.sql.Date.valueOf(filter.getToDate()));
+                params.add(Date.valueOf(filter.getToDate()));
             }
             if (filter.getTransactionType() != null && !filter.getTransactionType().isBlank()) {
                 sql.append(" AND t.transaction_type = ?");
