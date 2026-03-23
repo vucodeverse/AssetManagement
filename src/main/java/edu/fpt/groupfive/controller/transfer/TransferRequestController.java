@@ -151,6 +151,10 @@ public class TransferRequestController {
         if (departmentId == null || userId == null) {
             return "redirect:/auth/login";
         }
+
+//        Integer departmentId = 3;   // IT department id from your data
+//        Integer userId = 3;         // it_manager user id
+
         Users user = userService.findById(userId);
         List<TransferResponse> list = transferRequestService.getTransfersForDepartmentManager(departmentId);
         model.addAttribute("transfers", list);
