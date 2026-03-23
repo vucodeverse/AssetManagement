@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/department-layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết yêu cầu trả tài sản | Asset Management</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/return/return_request_detail.css}">
+    </th:block>
+</head>
+<body>
+
+<th:block layout:fragment="content">
+    <div class="detail-container">
+        
+        <!-- HEADER -->
+        <header class="detail-header">
+            <div class="header-left">
+                <h1>Chi tiết yêu cầu trả tài sản</h1>
+                <span class="request-id" th:text="'Yêu cầu số: AR-' + ${requestDto.requestId}"></span>
+            </div>
+            <div class="header-right">
+                <span class="status-badge" 
+                      th:classappend="'status-' + ${requestDto.status}"
+                      th:text="${requestDto.status}">
+                </span>
+            </div>
+        </header>
+
+        <!-- INFO GRID -->
+        <div class="info-grid">
+            
+            <!-- Request Information -->
+            <div class="info-card">
+                <div class="card-title">
+                    <i class="fas fa-info-circle"></i>
+                    THÔNG TIN CHUNG
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Ngày tạo</span>
+                    <span class="info-value" th:text="${#temporals.format(requestDto.createdAt, 'dd-MM-yyyy HH:mm')}"></span>
+                </div>
+                <!-- Reason (Full Width within card) -->
+                <div class="info-item" style="margin-top: 1.5rem;">
+                    <span class="info-label">Lý do trả tài sản</span>
+                    <div class="reason-text" th:text="${requestDto.requestReason}"></div>
+                </div>
+            </div>
+
+            <!-- Requester Information -->
+            <div class="info-card">
+                <div class="card-title">
+                    <i class="fas fa-user"></i>
+                    NGƯỜI YÊU CẦU
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Họ và tên</span>
+                    <span class="info-value" th:text="${requestDto.fullName}"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Phòng ban</span>
+                    <span class="info-value" th:text="${requestDto.departmentName}"></span>
+                </div>
+                <div class="info-item" th:if="${requestDto.requesterId != null}">
+                    <span class="info-label">ID nhân viên</span>
+                    <span class="info-value" th:text="${requestDto.requesterId}"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ASSET LIST -->
+        <div class="asset-section">
+            <div class="card-title">
+                <i class="fas fa-boxes"></i>
+                DANH SÁCH TÀI SẢN HOÀN TRẢ
+            </div>
+            <div class="table-responsive">
+                <table class="asset-table">
+                    <thead>
+                        <tr>
+                            <th>Mã tài sản</th>
+                            <th>Tên tài sản</th>
+                            <th>Ghi chú từ phòng ban</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="asset : ${assets}">
+                            <td class="asset-id-cell" th:text="'AST-' + ${asset.assetId}"></td>
+                            <td th:text="${asset.assetTypeName}"></td>
+                            <td class="note-cell" th:text="${asset.note ?: '-'}"></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(assets)}">
+                            <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                Không có tài sản nào trong danh sách.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <footer class="detail-footer">
+            <a th:href="@{/department/return-request/list}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại danh sách
+            </a>
+            
+            <div class="footer-right-actions">
+                <a th:if="${requestDto.status == 'PENDING_AM'}" 
+                   th:href="@{/department/return-request/edit/{id}(id=${requestDto.requestId})}" 
+                   class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Chỉnh sửa yêu cầu
+                </a>
+            </div>
+        </footer>
+
+    </div>
+</th:block>
+
+<th:block layout:fragment="extra-js">
+    <!-- Scripts specific to this page can go here -->
+</th:block>
+
+</body>
+</html>

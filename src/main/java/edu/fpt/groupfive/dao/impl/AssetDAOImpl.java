@@ -554,4 +554,27 @@ String sql ="select a.*, t.type_name from asset a\n" +
         return date != null ? date.toLocalDate() : null;
     }
 
+    @Override
+    public List<Asset> findByPoId(Integer poId) {
+        String sql = """
+                 SELECT a.*, t.type_name
+                 FROM asset a
+                 JOIN asset_type t ON a.asset_type_id = t.asset_type_id
+                 JOIN purchase_order_details pod ON a.purchase_order_detail_id = pod.purchase_order_detail_id
+                 WHERE pod.purchase_order_id = ?
+                 """;
+        List<Asset> list = new ArrayList<>();
+        try (Connection con = databaseConfig.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, poId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSet(rs));
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi tìm tài sản theo PO #" + poId, e);
+        }
+        return list;
+    }
 }

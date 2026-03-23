@@ -98,7 +98,7 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
                  SELECT 
                     ahd.asset_id,
                     CAST(a.asset_id AS NVARCHAR(50)) as asset_code,
-                    at.asset_type_name
+                    at.type_name AS asset_type_name
                  FROM asset_handover_detail ahd
                  JOIN asset a ON ahd.asset_id = a.asset_id
                  JOIN asset_type at ON a.asset_type_id = at.asset_type_id
