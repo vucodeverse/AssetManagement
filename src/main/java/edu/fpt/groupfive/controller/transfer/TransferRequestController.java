@@ -34,7 +34,7 @@ public class TransferRequestController {
     private final UserService userService;
     private final TransferRequestDetailServiceImpl transferRequestDetailServiceImpl;
 
-    @GetMapping("/add")
+    @GetMapping("/create-form")
     public String showCreateForm(
             @RequestParam(value = "fromDepartmentId", required = false) Integer fromDepartmentId,
             @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
@@ -104,10 +104,10 @@ public class TransferRequestController {
 
             if (fromDepartmentId == null) {
                 System.out.println("fromDepartmentId is null, redirecting to add without param");
-                return "redirect:/transfer-requests/add";
+                return "redirect:/transfer-requests/create-form";
             }
 
-            String redirectUrl = "/transfer-requests/add?fromDepartmentId=" + fromDepartmentId;
+            String redirectUrl = "/transfer-requests/create-form?fromDepartmentId=" + fromDepartmentId;
             if (request.getAssetIds() != null && !request.getAssetIds().isEmpty()) {
                 for (Integer id : request.getAssetIds()) {
                     redirectUrl += "&selectedIds=" + id;
@@ -127,9 +127,9 @@ public class TransferRequestController {
 
             Integer fromDepartmentId = request.getFromDepartmentId();
             if (fromDepartmentId != null) {
-                return "redirect:/transfer-requests/add?fromDepartmentId=" + fromDepartmentId;
+                return "redirect:/transfer-requests/create-form?fromDepartmentId=" + fromDepartmentId;
             }
-            return "redirect:/transfer-requests/add";
+            return "redirect:/transfer-requests/create-form";
         }
     }
 
