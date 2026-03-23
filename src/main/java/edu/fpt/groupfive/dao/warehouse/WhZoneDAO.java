@@ -2,6 +2,7 @@ package edu.fpt.groupfive.dao.warehouse;
 
 import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
+import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.warehouse.WarehouseZone;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public interface WhZoneDAO {
 
     void updateCurrentCapacity(int assetTypeId, int unitVolume);
     
-    List<edu.fpt.groupfive.model.Asset> getAssetsByZoneId(int zoneId);
+    List<Asset> getAssetsByZoneId(int zoneId);
     
     void deleteZone(int zoneId);
 
