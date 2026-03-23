@@ -7,8 +7,6 @@ import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -586,6 +584,56 @@ public class AssetDAOImpl implements AssetDAO {
     }
 
     @Override
+    public int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate, Integer departmentId) {
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT COUNT(*)
+        FROM asset a
+        WHERE 1=1
+    """);
+
+        if (departmentId != null) {
+            sql.append(" AND a.department_id = ? ");
+        }
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append(" AND a.asset_name LIKE ? ");
+        }
+
+        if (status != null) {
+            sql.append(" AND a.current_status = ? ");
+        }
+
+        if (fromDate != null) {
+            sql.append(" AND a.acquisition_date >= ? ");
+        }
+
+        if (toDate != null) {
+            sql.append(" AND a.acquisition_date <= ? ");
+        }
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (departmentId != null) ps.setInt(index++, departmentId);
+            if (keyword != null && !keyword.isBlank()) ps.setString(index++, "%" + keyword + "%");
+            if (status != null) ps.setString(index++, status.name());
+            if (fromDate != null) ps.setDate(index++, Date.valueOf(fromDate));
+            if (toDate != null) ps.setDate(index++, Date.valueOf(toDate));
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+    }
+
+    @Override
     public int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate) {
 
         StringBuilder sql = new StringBuilder("""
@@ -611,7 +659,7 @@ public class AssetDAOImpl implements AssetDAO {
         }
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 

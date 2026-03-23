@@ -121,63 +121,26 @@
                     </table>
                 </div>
 
-                <!-- Pagination (server‑rendered, sử dụng pageNo 0‑based) -->
                 <div th:if="${totalPages > 1}" class="pagination-wrapper">
-                    <div class="table-summary">
-                        Hiển thị từ <span th:text="${currentPage * pageSize + 1}"></span> -
-                        <span th:text="${(currentPage + 1) * pageSize > totalRecords ? totalRecords : (currentPage + 1) * pageSize}"></span>
-                        của <span th:text="${totalRecords}"></span> tài sản
-                    </div>
+                    <nav class="pagination">
+                        <a th:if="${currentPage > 0}"
+                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage - 1})}">
+                            Trước
+                        </a>
 
-                    <div th:if="${totalPages > 1}" class="pagination-wrapper">
-                        <nav class="pagination">
+                        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+            <a th:if="${i != currentPage}"
+               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${i})}"
+               th:text="${i+1}"></a>
+            <span th:if="${i == currentPage}" th:text="${i+1}" class="active"></span>
+        </span>
 
-                            <!-- Previous -->
-                            <a th:if="${currentPage > 0}"
-                               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage - 1})}"
-                               class="page-nav">
-                                <i data-lucide="chevron-left" style="width:16px;"></i>
-                                Trước
-                            </a>
-
-                            <!-- First page -->
-                            <a th:if="${currentPage > 2}"
-                               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=0)}"
-                               class="page-number">1</a>
-
-                            <!-- Left ellipsis -->
-                            <span th:if="${currentPage > 3}" class="ellipsis">...</span>
-
-                            <!-- Pages around current -->
-                            <span th:each="i : ${#numbers.sequence(currentPage - 1 > 0 ? currentPage - 1 : 0, currentPage+1 < totalPages-1 ? currentPage+1 : totalPages-1)}">
-                                <a th:if="${i != currentPage}"
-                                   th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${i})}"
-                                   class="page-number"
-                                   th:text="${i + 1}"></a>
-                                <span th:if="${i == currentPage}"
-                                      class="page-number active"
-                                      th:text="${i + 1}"></span>
-                            </span>
-
-                            <!-- Right ellipsis -->
-                            <span th:if="${currentPage < totalPages - 3}" class="ellipsis">...</span>
-
-                            <!-- Last page -->
-                            <a th:if="${currentPage < totalPages - 2}"
-                               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${totalPages - 1})}"
-                               class="page-number" th:text="${totalPages}"></a>
-
-                            <!-- Next -->
-                            <a th:if="${currentPage < totalPages - 1}"
-                               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage + 1})}"
-                               class="page-nav">
-                                Sau
-                                <i data-lucide="chevron-right" style="width:16px;"></i>
-                            </a>
-                        </nav>
-                    </div>
+                        <a th:if="${currentPage < totalPages - 1}"
+                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage+1})}">
+                            Sau
+                        </a>
+                    </nav>
                 </div>
-
                 <hr class="section-divider">
 
                 <h3 class="section-title">Bước 3: Thông tin điều chuyển</h3>

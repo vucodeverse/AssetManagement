@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao.impl;
 
+import edu.fpt.groupfive.dto.request.search.TransferSearchCriteria;
 import edu.fpt.groupfive.model.TransferRequest;
 import edu.fpt.groupfive.dao.TransferRequestDAO;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
@@ -268,5 +269,119 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
             throw new RuntimeException(e);
         }
         return list;
+    }
+
+    //pagination
+
+    private void appendFilters(StringBuilder sql, List<Object> params, TransferSearchCriteria criteria) {
+        if (criteria.getStatus() != null && !criteria.getStatus().isBlank()) {
+            sql.append(" AND status = ?");
+            params.add(criteria.getStatus());
+        }
+        if (criteria.getFromDate() != null) {
+            sql.append(" AND created_at >= ?");
+            params.add(criteria.getFromDate().atStartOfDay());
+        }
+        if (criteria.getToDate() != null) {
+            sql.append(" AND created_at <= ?");
+            params.add(criteria.getToDate().atTime(23,59,59));
+        }
+    }
+
+    private String getOrderByColumn(String sortField) {
+        if (sortField == null || sortField.isBlank()) {
+            return "created_at";
+        }
+        switch (sortField) {
+            case "transferId": return "transfer_id";
+            case "status": return "status";
+            case "createdAt": return "created_at";
+            default: return "created_at";
+        }
+    }
+
+    private List<TransferRequest> executeQuery(String sql, List<Object> params) {
+        List<TransferRequest> list = new ArrayList<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi thực thi truy vấn: " + sql, e);
+        }
+        return list;
+    }
+
+    private int executeCount(String sql, List<Object> params) {
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi đếm số lượng: " + sql, e);
+        }
+    }
+
+    @Override
+    public List<TransferRequest> search(TransferSearchCriteria criteria, int offset, int size, String sortField, String sortDir) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM transfer_request WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+        appendFilters(sql, params, criteria);
+
+        String orderBy = getOrderByColumn(sortField);
+        String direction = "desc".equalsIgnoreCase(sortDir) ? "DESC" : "ASC";
+        sql.append(" ORDER BY ").append(orderBy).append(" ").append(direction)
+                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(size);
+
+        return executeQuery(sql.toString(), params);
+    }
+
+    @Override
+    public int countSearch(TransferSearchCriteria criteria) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM transfer_request WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+        appendFilters(sql, params, criteria);
+        return executeCount(sql.toString(), params);
+    }
+
+    @Override
+    public List<TransferRequest> searchForDepartmentManager(int departmentId, TransferSearchCriteria criteria, int offset, int size, String sortField, String sortDir) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM transfer_request WHERE (from_department_id = ? OR to_department_id = ?)");
+        List<Object> params = new ArrayList<>();
+        params.add(departmentId);
+        params.add(departmentId);
+        appendFilters(sql, params, criteria);
+
+        String orderBy = getOrderByColumn(sortField);
+        String direction = "desc".equalsIgnoreCase(sortDir) ? "DESC" : "ASC";
+        sql.append(" ORDER BY ").append(orderBy).append(" ").append(direction)
+                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(size);
+
+        return executeQuery(sql.toString(), params);
+    }
+
+    @Override
+    public int countForDepartmentManager(int departmentId, TransferSearchCriteria criteria) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM transfer_request WHERE (from_department_id = ? OR to_department_id = ?)");
+        List<Object> params = new ArrayList<>();
+        params.add(departmentId);
+        params.add(departmentId);
+        appendFilters(sql, params, criteria);
+        return executeCount(sql.toString(), params);
     }
 }

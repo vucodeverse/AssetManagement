@@ -240,7 +240,8 @@ public class AssetServiceImpl implements AssetService {
                 criteria.getKeyword(),
                 criteria.getStatus(),
                 criteria.getAcquisitionFrom(),
-                criteria.getAcquisitionTo()
+                criteria.getAcquisitionTo(),
+                criteria.getDepartmentId()
         );
 
         List<AssetDetailResponse> responses = assets.stream()

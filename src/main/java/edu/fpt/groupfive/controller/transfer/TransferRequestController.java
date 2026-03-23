@@ -2,6 +2,7 @@ package edu.fpt.groupfive.controller.transfer;
 
 import edu.fpt.groupfive.common.TransferAction;
 import edu.fpt.groupfive.dto.request.search.AssetSearchCriteria;
+import edu.fpt.groupfive.dto.request.search.TransferSearchCriteria;
 import edu.fpt.groupfive.dto.request.transfer.TransferRequestCreate;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.PageResponse;
@@ -15,13 +16,12 @@ import edu.fpt.groupfive.service.impl.TransferRequestDetailServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -35,24 +35,11 @@ public class TransferRequestController {
     private final UserService userService;
     private final TransferRequestDetailServiceImpl transferRequestDetailServiceImpl;
 
-    @GetMapping("/am")
-    public String listAllTransfers(Model model, HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) return "redirect:/auth/login";
-        Users user = userService.findById(userId);
-        // Lấy tất cả các transfer
-        List<TransferResponse> list = transferRequestService.getAllTransfers();
-        model.addAttribute("transfers", list);
-        model.addAttribute("role", "ASSET_MANAGER");
-        model.addAttribute("currentUser", user);
-        model.addAttribute("activeMenu", "transfer");
-        return "transfer/list";
-    }
     @GetMapping("/add")
     public String showCreateForm(
             @RequestParam(value = "fromDepartmentId", required = false) Integer fromDepartmentId,
             @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
-            @RequestParam(value = "size", defaultValue = "3") int size,
+            @RequestParam(value = "size", defaultValue = "3") int size, // sửa default size
             @RequestParam(value = "selectedIds", required = false) List<Integer> selectedIds,
             Model model) {
 
@@ -67,6 +54,7 @@ public class TransferRequestController {
             AssetSearchCriteria criteria = new AssetSearchCriteria();
             criteria.setDepartmentId(fromDepartmentId);
 
+            // Sửa chỗ này: chỉ lấy 1 trang dữ liệu
             PageResponse<AssetDetailResponse> res =
                     assetService.searchAssets(criteria, pageNo, size);
 
@@ -148,48 +136,109 @@ public class TransferRequestController {
         }
     }
 
-//    @GetMapping("/{transferId}")
-//    public String viewTransferDetail(@PathVariable("transferId") int transferId, Model model) {
-//        List<TransferResponse transferResponse = transferRequestDetailServiceImpl.getDetailsByTransferId(transferId);
-//        model.addAttribute("transferResponse", transferResponse);
-//        return "transfer/detail";
-//    }
-
-
-
-
-    // Department Manager: xem tất cả lệnh liên quan (gửi + nhận)
     @GetMapping("/my")
-    public String listMyTransfers(Model model, HttpSession session) {
+    public String listMyTransfers(
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "fromDate", required = false) LocalDate fromDate,
+            @RequestParam(value = "toDate", required = false) LocalDate toDate,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size,
+            @RequestParam(value = "sortField", defaultValue = "createdAt") String sortField,
+            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
+            Model model, HttpSession session) {
         Integer departmentId = (Integer) session.getAttribute("departmentId");
         Integer userId = (Integer) session.getAttribute("userId");
-        if (departmentId == null || userId == null) {
-            return "redirect:/auth/login";
-        }
-
-//        Integer departmentId = 3;   // IT department id from your data
-//        Integer userId = 3;         // it_manager user id
-
+        if (departmentId == null || userId == null) return "redirect:/auth/login";
         Users user = userService.findById(userId);
-        List<TransferResponse> list = transferRequestService.getTransfersForDepartmentManager(departmentId);
-        model.addAttribute("transfers", list);
+
+        TransferSearchCriteria criteria = new TransferSearchCriteria();
+        criteria.setStatus(status);
+        criteria.setFromDate(fromDate);
+        criteria.setToDate(toDate);
+
+        PageResponse<TransferResponse> pageResponse = transferRequestService.searchForDepartmentManager(
+                departmentId, criteria, page, size, sortField, sortDir);
+
+        model.addAttribute("page", pageResponse);
+        model.addAttribute("transfers", pageResponse.getData());
+        model.addAttribute("status", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
         model.addAttribute("role", "DEPARTMENT_MANAGER");
         model.addAttribute("currentUser", user);
         model.addAttribute("activeMenu", "transfer");
         return "transfer/list";
     }
 
-    // Warehouse Staff: xem lệnh cần xử lý (status = SENDER_CONFIRMED)
+    // Warehouse Staff
     @GetMapping("/warehouse")
-    public String listWarehouse(Model model, HttpSession session) {
+    public String listWarehouse(
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "fromDate", required = false) LocalDate fromDate,
+            @RequestParam(value = "toDate", required = false) LocalDate toDate,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size,
+            @RequestParam(value = "sortField", defaultValue = "createdAt") String sortField,
+            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
+            Model model, HttpSession session) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/auth/login";
-        }
+        if (userId == null) return "redirect:/auth/login";
         Users user = userService.findById(userId);
-        List<TransferResponse> list = transferRequestService.getAllTransfers();
-        model.addAttribute("transfers", list);
+
+        TransferSearchCriteria criteria = new TransferSearchCriteria();
+        criteria.setStatus(status);
+        criteria.setFromDate(fromDate);
+        criteria.setToDate(toDate);
+
+        PageResponse<TransferResponse> pageResponse = transferRequestService.searchForWarehouse(
+                criteria, page, size, sortField, sortDir);
+
+        model.addAttribute("page", pageResponse);
+        model.addAttribute("transfers", pageResponse.getData());
+        model.addAttribute("status", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
         model.addAttribute("role", "WAREHOUSE_STAFF");
+        model.addAttribute("currentUser", user);
+        model.addAttribute("activeMenu", "transfer");
+        return "transfer/list";
+    }
+
+    // Asset Manager
+    @GetMapping("/am")
+    public String listAllTransfers(
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "fromDate", required = false) LocalDate fromDate,
+            @RequestParam(value = "toDate", required = false) LocalDate toDate,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size,
+            @RequestParam(value = "sortField", defaultValue = "createdAt") String sortField,
+            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
+            Model model, HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) return "redirect:/auth/login";
+        Users user = userService.findById(userId);
+
+        TransferSearchCriteria criteria = new TransferSearchCriteria();
+        criteria.setStatus(status);
+        criteria.setFromDate(fromDate);
+        criteria.setToDate(toDate);
+
+        PageResponse<TransferResponse> pageResponse = transferRequestService.searchForAssetManager(
+                criteria, page, size, sortField, sortDir);
+
+        model.addAttribute("page", pageResponse);
+        model.addAttribute("transfers", pageResponse.getData());
+        model.addAttribute("status", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("role", "ASSET_MANAGER");
         model.addAttribute("currentUser", user);
         model.addAttribute("activeMenu", "transfer");
         return "transfer/list";
@@ -244,11 +293,3 @@ public class TransferRequestController {
         return "redirect:/transfer-requests/am";
     }
 }
-
-
-
-
-
-
-
-

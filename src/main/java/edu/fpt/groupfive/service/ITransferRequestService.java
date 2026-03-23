@@ -1,7 +1,9 @@
 package edu.fpt.groupfive.service;
 
 import edu.fpt.groupfive.common.TransferAction;
+import edu.fpt.groupfive.dto.request.search.TransferSearchCriteria;
 import edu.fpt.groupfive.dto.request.transfer.TransferRequestCreate;
+import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.TransferResponse;
 import edu.fpt.groupfive.model.TransferRequest;
 
@@ -14,13 +16,9 @@ public interface ITransferRequestService {
 
     void processTransferAction(int transferId, int userId, TransferAction action, Boolean issue);
 
-//    TransferResponse createTransferRequest(TransferRequestCreate dto);
-//
-//    List<TransferRequest> findAll();
-//
-//    void updateStatus(int transferId, String status);
-//
-//    Optional<TransferRequest> getTransferRequestById(int transferId);
+    PageResponse<TransferResponse> searchForDepartmentManager(int departmentId, TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir);
+    PageResponse<TransferResponse> searchForWarehouse(TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir);
+    PageResponse<TransferResponse> searchForAssetManager(TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir);
 
 
     List<TransferResponse> getTransfersForSender(int departmentId);

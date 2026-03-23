@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dao;
 
+import edu.fpt.groupfive.dto.request.search.TransferSearchCriteria;
 import edu.fpt.groupfive.model.TransferRequest;
 
 import java.time.LocalDateTime;
@@ -25,4 +26,10 @@ public interface TransferRequestDAO {
     List<TransferRequest> findByFromDepartmentId(Integer fromDeptId);
     List<TransferRequest> findByToDepartmentId(Integer toDeptId);
     List<TransferRequest> findByStatus(String status);
+
+    List<TransferRequest> search(TransferSearchCriteria criteria, int offset, int size, String sortField, String sortDir);
+    int countSearch(TransferSearchCriteria criteria);
+
+    List<TransferRequest> searchForDepartmentManager(int departmentId, TransferSearchCriteria criteria, int offset, int size, String sortField, String sortDir);
+    int countForDepartmentManager(int departmentId, TransferSearchCriteria criteria);
 }

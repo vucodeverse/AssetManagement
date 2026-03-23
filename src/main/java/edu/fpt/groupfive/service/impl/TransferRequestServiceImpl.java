@@ -2,7 +2,9 @@ package edu.fpt.groupfive.service.impl;
 
 import edu.fpt.groupfive.common.TransferAction;
 import edu.fpt.groupfive.dao.*;
+import edu.fpt.groupfive.dto.request.search.TransferSearchCriteria;
 import edu.fpt.groupfive.dto.request.transfer.TransferRequestCreate;
+import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.TransferAssetDetailResponse;
 import edu.fpt.groupfive.dto.response.TransferResponse;
 import edu.fpt.groupfive.model.*;
@@ -272,4 +274,27 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
         combined.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
         return convertList(combined);
     }
+
+    @Override
+    public PageResponse<TransferResponse> searchForWarehouse(TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir) {
+        int offset = page * size;
+        List<TransferRequest> list = transferRequestDAO.search(criteria, offset, size, sortField, sortDir);
+        int total = transferRequestDAO.countSearch(criteria);
+        return new PageResponse<>(convertList(list), page, size, total);
+    }
+
+    @Override
+    public PageResponse<TransferResponse> searchForAssetManager(TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir) {
+        return searchForWarehouse(criteria, page, size, sortField, sortDir);
+    }
+
+    @Override
+    public PageResponse<TransferResponse> searchForDepartmentManager(int departmentId, TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir) {
+        int offset = page * size;
+        List<TransferRequest> list = transferRequestDAO.searchForDepartmentManager(departmentId, criteria, offset, size, sortField, sortDir);
+        int total = transferRequestDAO.countForDepartmentManager(departmentId, criteria);
+        return new PageResponse<>(convertList(list), page, size, total);
+    }
+
+
 }
