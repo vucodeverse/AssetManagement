@@ -77,10 +77,10 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
             redirectUrl += "/manager/dashboard";
         }
 
-        if (authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
-            redirectUrl += "/asset-manager/allocation-request/list";
-        }
+//        if (authentication.getAuthorities().stream()
+//                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
+//            redirectUrl += "/asset-manager/allocation-request/list";
+//        }
 
         response.sendRedirect(redirectUrl);
     }

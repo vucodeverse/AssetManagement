@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <body>
+
 <aside th:fragment="sidebar(activeMenu, activeSub)" class="sidebar">
 
     <div class="sidebar-logo">
@@ -32,11 +33,12 @@
         </a>
 
         <!-- TRANSFER  -->
-        <a th:href="@{/department/transfer-request/list}"
+        <a th:href="@{/transfer-requests/my}"
            th:classappend="${activeMenu == 'transfer'} ? 'active'"
            class="nav-item">
             <i class="fas fa-exchange-alt"></i>YÊU CẦU ĐIỀU CHUYỂN
         </a>
+
 
     </nav>
 

@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.controller.supplier;
 
 import edu.fpt.groupfive.dto.request.SupplierCreateRequest;
-import edu.fpt.groupfive.dto.request.SupplierSearchCriteria;
+import edu.fpt.groupfive.dto.request.search.SupplierSearchCriteria;
 import edu.fpt.groupfive.dto.request.SupplierUpdateRequest;
 import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.SupplierResponse;
@@ -31,10 +31,10 @@ public class SupplierController {
     @GetMapping
     public String getSuppliers(
             @ModelAttribute("searchCriteria") SupplierSearchCriteria searchCriteria,
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "supplierCode") String sortField,
-            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(name = "pageNo", defaultValue = "0") int pageNo,
+            @RequestParam(name = "size", defaultValue = "5") int size,
+            @RequestParam(name = "sortField", defaultValue = "supplierCode") String sortField,
+            @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir,
             Model model) {
 
         PageResponse<SupplierResponse> page =

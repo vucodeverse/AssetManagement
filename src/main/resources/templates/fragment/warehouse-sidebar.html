@@ -85,6 +85,12 @@
             <span>Sổ cái giao dịch</span>
         </a>
 
+        <a th:href="@{/transfer-requests/warehouse}"
+           th:classappend="${activeMenu == 'transfer'} ? 'active'"
+           class="nav-item">
+            <i class="fas fa-warehouse"></i> ĐIỀU CHUYỂN
+        </a>
+
     </nav>
 
     <!-- Footer: user info + logout -->

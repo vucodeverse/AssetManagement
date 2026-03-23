@@ -1,7 +1,7 @@
 package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.dao.SupplierDAO;
-import edu.fpt.groupfive.dto.request.SupplierSearchCriteria;
+import edu.fpt.groupfive.dto.request.search.SupplierSearchCriteria;
 import edu.fpt.groupfive.model.Supplier;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
@@ -182,66 +182,66 @@ public class SupplierDAOImpl implements SupplierDAO {
         }
     }
 
-    //paginated search
-    @Override
-    public List<Supplier> search(
-            SupplierSearchCriteria criteria,
-            int offset,
-            int size,
-            String sortField,
-            String sortDir) {
+        //paginated search
+        @Override
+        public List<Supplier> search(
+                SupplierSearchCriteria criteria,
+                int offset,
+                int size,
+                String sortField,
+                String sortDir) {
 
-        StringBuilder query = new StringBuilder(
-                "SELECT supplier_id, supplier_name, phone_number, email, address, " +
-                        "supplier_code, tax_code, status, created_date, updated_date " +
-                        "FROM supplier WHERE 1=1"
-        );
+            StringBuilder query = new StringBuilder(
+                    "SELECT supplier_id, supplier_name, phone_number, email, address, " +
+                            "supplier_code, tax_code, status, created_date, updated_date " +
+                            "FROM supplier WHERE 1=1"
+            );
 
-        List<Object> params = new ArrayList<>();
+            List<Object> params = new ArrayList<>();
 
-        appendFilters(query, params, criteria);
+            appendFilters(query, params, criteria);
 
-        String orderByColumn;
-        if (sortField == null || sortField.isBlank()) {
-            sortField = "supplierCode";
-        }
-        switch (sortField) {
-            case "supplierName" -> orderByColumn = "supplier_name";
-            case "taxCode" -> orderByColumn = "tax_code";
-            case "createdDate" -> orderByColumn = "created_date";
-            case "status" -> orderByColumn = "status";
-            default -> orderByColumn = "supplier_code";
-        }
-
-        String direction = "desc".equalsIgnoreCase(sortDir) ? "DESC" : "ASC";
-
-        query.append(" ORDER BY ")
-                .append(orderByColumn)
-                .append(" ")
-                .append(direction)
-                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-
-        params.add(offset);
-        params.add(size);
-
-        try (
-                Connection connection = databaseConfig.getConnection();
-                PreparedStatement ps = connection.prepareStatement(query.toString())
-        ) {
-            setParameters(ps, params);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                List<Supplier> result = new ArrayList<>();
-                while (rs.next()) {
-                    result.add(mapRow(rs));
-                }
-                return result;
+            String orderByColumn;
+            if (sortField == null || sortField.isBlank()) {
+                sortField = "supplierCode";
+            }
+            switch (sortField) {
+                case "supplierName" -> orderByColumn = "supplier_name";
+                case "taxCode" -> orderByColumn = "tax_code";
+                case "createdDate" -> orderByColumn = "created_date";
+                case "status" -> orderByColumn = "status";
+                default -> orderByColumn = "supplier_code";
             }
 
-        } catch (SQLException e) {
-            throw new RuntimeException("Lỗi khi tìm kiếm danh sách nhà cung cấp.", e);
+            String direction = "desc".equalsIgnoreCase(sortDir) ? "DESC" : "ASC";
+
+            query.append(" ORDER BY ")
+                    .append(orderByColumn)
+                    .append(" ")
+                    .append(direction)
+                    .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+            params.add(offset);
+            params.add(size);
+
+            try (
+                    Connection connection = databaseConfig.getConnection();
+                    PreparedStatement ps = connection.prepareStatement(query.toString())
+            ) {
+                setParameters(ps, params);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    List<Supplier> result = new ArrayList<>();
+                    while (rs.next()) {
+                        result.add(mapRow(rs));
+                    }
+                    return result;
+                }
+
+            } catch (SQLException e) {
+                throw new RuntimeException("Lỗi khi tìm kiếm danh sách nhà cung cấp.", e);
+            }
         }
-    }
 
     @Override
     public int countSearch(SupplierSearchCriteria criteria) {
@@ -258,7 +258,7 @@ public class SupplierDAOImpl implements SupplierDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);
-                }
+                    }
                 return 0;
             }
         } catch (SQLException e) {
