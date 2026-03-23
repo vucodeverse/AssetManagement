@@ -24,8 +24,10 @@ public class WhZoneServiceImpl implements WhZoneService {
 
     @Override
     public ZoneCapacityResponseDTO getZoneById(int zoneId) {
-        return whZoneDAO.getZoneById(zoneId)
+        ZoneCapacityResponseDTO zone = whZoneDAO.getZoneById(zoneId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy zone có ID: " + zoneId));
+        zone.setAssets(whZoneDAO.getAssetsByZoneId(zoneId));
+        return zone;
     }
 
     @Override
@@ -46,6 +48,15 @@ public class WhZoneServiceImpl implements WhZoneService {
     @Override
     public void recalculateCapacityByAssetType(int assetTypeId, int unitVolume) {
         whZoneDAO.updateCurrentCapacity(assetTypeId, unitVolume);
+    }
+
+    @Override
+    public void deleteZone(int zoneId) {
+        ZoneCapacityResponseDTO zone = getZoneById(zoneId);
+        if (zone.getCurrentCapacity() != null && zone.getCurrentCapacity() > 0) {
+            throw new IllegalArgumentException("Không thể xóa Zone đang chứa tài sản (Sức chứa hiện tại > 0).");
+        }
+        whZoneDAO.deleteZone(zoneId);
     }
 
     @Override

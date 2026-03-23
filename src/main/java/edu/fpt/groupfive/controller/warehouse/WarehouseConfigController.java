@@ -150,6 +150,18 @@ public class WarehouseConfigController {
         }
     }
 
+    @PostMapping("/zones/{zoneId}/delete")
+    public String deleteZone(@PathVariable("zoneId") int zoneId, RedirectAttributes ra) {
+        try {
+            whZoneService.deleteZone(zoneId);
+            ra.addFlashAttribute(SUCCESS_MSG, "Xóa zone thành công.");
+            return REDIRECT_ZONES;
+        } catch (Exception e) {
+            ra.addFlashAttribute(ERROR_MSG, "Lỗi khi xóa zone: " + e.getMessage());
+            return "redirect:/wh/config/zones/" + zoneId;
+        }
+    }
+
     // =========================================================
     //  ASSET CAPACITY CONFIG  —  GET /wh/config/capacities
     // =========================================================

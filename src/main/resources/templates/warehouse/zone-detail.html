@@ -353,6 +353,48 @@
                              th:text="${zone.currentCapacity} + ' / ' + ${zone.maxCapacity} + ' đơn vị sử dụng'"></div>
                     </div>
                 </div>
+
+                <!-- Asset List Section -->
+                <div class="info-card" style="margin-top: 1.5rem;">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-list-ul"></i> Danh sách tài sản trong Zone
+                    </div>
+                    <div style="padding: 1rem 0;">
+                        <table th:if="${not #lists.isEmpty(zone.assets)}" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên tài sản</th>
+                                    <th>Loại tài sản</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="asset : ${zone.assets}">
+                                    <td th:text="${asset.assetId}">101</td>
+                                    <td>
+                                        <div class="zone-name" th:text="${asset.assetName}">Máy tính Dell</div>
+                                    </td>
+                                    <td>
+                                        <span class="asset-type-chip">
+                                            <i class="fa-solid fa-tag"></i>
+                                            <span th:text="${asset.assetTypeName}">Laptop</span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${'badge-' + #strings.toLowerCase(asset.currentStatus)}" 
+                                              th:text="${asset.currentStatus}">AVAILABLE</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div th:if="${#lists.isEmpty(zone.assets)}" style="text-align: center; padding: 3rem 1.5rem; color: #9ca3af;">
+                            <i class="fa-solid fa-box-open" style="font-size: 2.5rem; display: block; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p style="font-size: 0.9rem; font-weight: 500;">Không có tài sản nào trong zone này.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- RIGHT COLUMN -->
@@ -390,11 +432,23 @@
                     </a>
                     <a href="/wh/config/zones"
                        style="display:flex; align-items:center; justify-content:center; gap:0.5rem;
-                              padding:0.75rem; background:white; color:#374151; border:1px solid #e5e7eb;
-                              border-radius:10px; text-decoration:none; font-size:0.8rem; font-weight:700;
-                              text-transform:uppercase; letter-spacing:0.06em; transition:background 0.15s;">
+                               padding:0.75rem; background:white; color:#374151; border:1px solid #e5e7eb;
+                               border-radius:10px; text-decoration:none; font-size:0.8rem; font-weight:700;
+                               text-transform:uppercase; letter-spacing:0.06em; transition:background 0.15s;">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
                     </a>
+
+                    <form th:if="${zone.statusFlag == 'EMPTY'}" th:action="@{'/wh/config/zones/' + ${zone.zoneId} + '/delete'}" method="post"
+                          style="margin-top: 1rem;"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa Zone này không? Thao tác này không thể hoàn tác.')">
+                        <button type="submit"
+                                style="display:flex; align-items:center; justify-content:center; gap:0.5rem;
+                                       width: 100%; padding:0.75rem; background:#ef4444; color:white; border:none;
+                                       border-radius:10px; font-size:0.8rem; font-weight:800;
+                                       text-transform:uppercase; letter-spacing:0.06em; cursor:pointer; transition:background 0.15s;">
+                            <i class="fa-solid fa-trash-can"></i> Xóa Zone
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

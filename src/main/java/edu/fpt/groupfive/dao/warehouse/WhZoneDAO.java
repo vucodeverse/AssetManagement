@@ -17,6 +17,10 @@ public interface WhZoneDAO {
     void createZone(WarehouseZone zone);
 
     void updateCurrentCapacity(int assetTypeId, int unitVolume);
+    
+    List<edu.fpt.groupfive.model.Asset> getAssetsByZoneId(int zoneId);
+    
+    void deleteZone(int zoneId);
 
     Optional<AssetLocationResponseDTO> getAssetLocation(int assetId);
 
