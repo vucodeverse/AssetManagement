@@ -120,7 +120,8 @@
                                         <div th:if="${p.status != null
                                  && p.status.name() != 'APPROVED' && p.status.name() != 'ORDERED'
                                  && p.status.name() != 'REJECTED'
-                                    && p.status.name() != 'DRAFT'}">
+                                    && p.status.name() != 'DRAFT'
+                                    && p.status.name() != 'COMPLETED'}">
 
                                             <button type="submit" name="action" value="a" class="btn-approve">
                                                 DUYỆT
