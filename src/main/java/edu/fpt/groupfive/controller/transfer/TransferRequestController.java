@@ -12,6 +12,7 @@ import edu.fpt.groupfive.service.DepartmentService;
 import edu.fpt.groupfive.service.ITransferRequestService;
 import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.service.impl.TransferRequestDetailServiceImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -83,14 +84,15 @@ public class TransferRequestController {
 
     @PostMapping("/create")
     public String processCreateForm(@ModelAttribute("transferRequest") TransferRequestCreate request,
-                                    RedirectAttributes redirectAttributes) {
-        System.out.println("========== START processCreateForm ==========");
-        System.out.println("Request received:");
-        System.out.println("  - fromDepartmentId: " + request.getFromDepartmentId());
-        System.out.println("  - toDepartmentId: " + request.getToDepartmentId());
-        System.out.println("  - assetManagerId: " + request.getAssetManagerId());
-        System.out.println("  - reason: " + request.getReason());
-        System.out.println("  - assetIds: " + request.getAssetIds());
+                                    RedirectAttributes redirectAttributes,
+                                    HttpServletRequest httpRequest) {
+        Integer assetManagerId = (Integer) httpRequest.getSession().getAttribute("userId");
+        if (assetManagerId == null) {
+            redirectAttributes.addFlashAttribute("error", "Bạn chưa đăng nhập");
+            return "redirect:/login";
+        }
+        request.setAssetManagerId(assetManagerId);
+
 
         try {
             TransferResponse response = transferRequestService.createTransferRequest(request);

@@ -46,7 +46,7 @@
 
         <!-- Step 1: Department Selection -->
         <h3 class="section-title">Bước 1: Chọn phòng ban nguồn</h3>
-        <form method="get" th:action="@{/transfer-requests/create-form}" class="department-form">
+        <form method="get" th:action="@{/transfer-requests/add}" class="department-form">
             <div class="form-group">
                 <label>Phòng ban gửi <span class="required">*</span></label>
                 <select name="fromDepartmentId" onchange="this.form.submit()" class="form-select" required>
@@ -134,7 +134,7 @@
 
                             <!-- Previous -->
                             <a th:if="${currentPage > 0}"
-                               th:href="@{/transfer-requests/create-form(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage - 1})}"
+                               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage - 1})}"
                                class="page-nav">
                                 <i data-lucide="chevron-left" style="width:16px;"></i>
                                 Trước
@@ -142,7 +142,7 @@
 
                             <!-- First page -->
                             <a th:if="${currentPage > 2}"
-                               th:href="@{/transfer-requests/create-form(fromDepartmentId=${selectedDepartmentId}, pageNo=0)}"
+                               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=0)}"
                                class="page-number">1</a>
 
                             <!-- Left ellipsis -->
@@ -151,7 +151,7 @@
                             <!-- Pages around current -->
                             <span th:each="i : ${#numbers.sequence(currentPage - 1 > 0 ? currentPage - 1 : 0, currentPage+1 < totalPages-1 ? currentPage+1 : totalPages-1)}">
                                 <a th:if="${i != currentPage}"
-                                   th:href="@{/transfer-requests/create-form(fromDepartmentId=${selectedDepartmentId}, pageNo=${i})}"
+                                   th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${i})}"
                                    class="page-number"
                                    th:text="${i + 1}"></a>
                                 <span th:if="${i == currentPage}"
@@ -164,12 +164,12 @@
 
                             <!-- Last page -->
                             <a th:if="${currentPage < totalPages - 2}"
-                               th:href="@{/transfer-requests/create-form(fromDepartmentId=${selectedDepartmentId}, pageNo=${totalPages - 1})}"
+                               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${totalPages - 1})}"
                                class="page-number" th:text="${totalPages}"></a>
 
                             <!-- Next -->
                             <a th:if="${currentPage < totalPages - 1}"
-                               th:href="@{/transfer-requests/create-form(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage + 1})}"
+                               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage + 1})}"
                                class="page-nav">
                                 Sau
                                 <i data-lucide="chevron-right" style="width:16px;"></i>
