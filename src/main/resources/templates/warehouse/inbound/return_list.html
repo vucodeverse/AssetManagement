@@ -47,6 +47,39 @@
                     </tr>
                 </tbody>
             </table>
+        <div class="wh-panel" style="margin-top: 2rem;">
+            <div class="wh-panel-header" style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+                <span class="wh-panel-title" style="color: #495057;"><i class="fa-solid fa-history"></i> Lệnh đã xử lý (Gần đây)</span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã Lệnh</th>
+                        <th>Phòng ban hoàn trả</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th class="action-cell">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ret : ${processedReturns}">
+                        <td th:text="'#RTN-' + ${ret.handoverId}">501</td>
+                        <td th:text="${ret.fromDepartmentName}">Phòng IT</td>
+                        <td th:text="${#temporals.format(ret.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                            <span class="badge badge-completed" th:text="${ret.status}">COMPLETED</span>
+                        </td>
+                        <td class="action-cell">
+                            <a th:href="@{'/wh/inbound/return/' + ${ret.handoverId}}" class="btn-sm secondary">
+                                <i class="fa-solid fa-eye"></i> Xem lại
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(processedReturns)}">
+                        <td colspan="5" style="text-align: center; color: #999; padding: 20px;">Chưa có lệnh nào được xử lý hoàn tất.</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </th:block>

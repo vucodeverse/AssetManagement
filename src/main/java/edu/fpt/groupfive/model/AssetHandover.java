@@ -19,6 +19,8 @@ public class AssetHandover {
     private Integer toDepartmentId;
     private Status status;
     private String note;
+    private String fromDepartmentName;
+    private String toDepartmentName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

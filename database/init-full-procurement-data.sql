@@ -439,3 +439,95 @@ SET IDENTITY_INSERT asset_handover OFF;
 
 PRINT 'All extra dummy data created successfully.';
 
+
+-- =============================================
+-- 14. PHIÊN THU HỒI TÀI SẢN (RETURN FLOW)
+-- =============================================
+PRINT 'Adding Asset Return flow dummy data...';
+
+DECLARE @Ret_AdminUser INT, @Ret_KTDept INT, @Ret_HCDept INT;
+DECLARE @Ret_TypeMBP INT, @Ret_TypeDell INT, @Ret_TypeAeron INT;
+
+SELECT @Ret_AdminUser = user_id FROM users WHERE username = 'admin';
+SELECT @Ret_KTDept = department_id FROM departments WHERE department_name = N'Phòng Kỹ thuật';
+SELECT @Ret_HCDept = department_id FROM departments WHERE department_name = N'Phòng Hành chính';
+SELECT @Ret_TypeMBP = asset_type_id FROM asset_type WHERE type_name = N'MacBook Pro 14 M3';
+SELECT @Ret_TypeDell = asset_type_id FROM asset_type WHERE type_name = N'Dell Precision 3660';
+SELECT @Ret_TypeAeron = asset_type_id FROM asset_type WHERE type_name = N'Herman Miller Aeron';
+
+-- 14.1. Tạo tài sản đang được sử dụng (IN_USE) để thu hồi
+SET IDENTITY_INSERT asset ON;
+
+-- Tài sản cho Phòng Kỹ thuật (Sẽ thu hồi khác loại)
+IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 1001)
+    INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, department_id, original_cost, acquisition_date)
+    VALUES (1001, N'MacBook Pro 14 M3 - KT 01', @Ret_TypeMBP, 'ASSIGNED', @Ret_KTDept, 44000000, DATEADD(MONTH, -10, GETDATE()));
+IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 1002)
+    INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, department_id, original_cost, acquisition_date)
+    VALUES (1002, N'Dell Precision 3660 - KT 01', @Ret_TypeDell, 'ASSIGNED', @Ret_KTDept, 34500000, DATEADD(MONTH, -10, GETDATE()));
+
+-- Tài sản cho Phòng Hành chính (Sẽ thu hồi cùng loại)
+IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 1003)
+    INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, department_id, original_cost, acquisition_date)
+    VALUES (1003, N'Ghế Aeron - HC 01', @Ret_TypeAeron, 'ASSIGNED', @Ret_HCDept, 24500000, DATEADD(YEAR, -2, GETDATE()));
+IF NOT EXISTS (SELECT 1 FROM asset WHERE asset_id = 1004)
+    INSERT INTO asset (asset_id, asset_name, asset_type_id, current_status, department_id, original_cost, acquisition_date)
+    VALUES (1004, N'Ghế Aeron - HC 02', @Ret_TypeAeron, 'ASSIGNED', @Ret_HCDept, 24500000, DATEADD(YEAR, -2, GETDATE()));
+
+SET IDENTITY_INSERT asset OFF;
+
+-- 14.2. Tạo Yêu cầu thu hồi (Return Request)
+DECLARE @Ret_RR1 INT, @Ret_RR2 INT;
+
+-- Request 1: Kỹ thuật trả Laptop + Workstation (Khác loại)
+INSERT INTO return_request (requester_id, requested_department_id, request_date, reason, status, created_at)
+VALUES (@Ret_AdminUser, @Ret_KTDept, GETDATE(), N'Dự án AI kết thúc, hoàn trả thiết bị cấu hình cao', 'APPROVED', GETDATE());
+SET @Ret_RR1 = SCOPE_IDENTITY();
+
+INSERT INTO return_request_detail (request_id, asset_id, note) VALUES (@Ret_RR1, 1001, N'Cần vệ sinh máy');
+INSERT INTO return_request_detail (request_id, asset_id, note) VALUES (@Ret_RR1, 1002, N'Lỗi phím esc');
+
+-- Request 2: Hành chính trả 2 ghế (Cùng loại)
+INSERT INTO return_request (requester_id, requested_department_id, request_date, reason, status, created_at)
+VALUES (@Ret_AdminUser, @Ret_HCDept, GETDATE(), N'Thay đổi layout văn phòng, thừa thiết bị', 'APPROVED', GETDATE());
+SET @Ret_RR2 = SCOPE_IDENTITY();
+
+INSERT INTO return_request_detail (request_id, asset_id, note) VALUES (@Ret_RR2, 1003, NULL);
+INSERT INTO return_request_detail (request_id, asset_id, note) VALUES (@Ret_RR2, 1004, NULL);
+
+-- 14.3. Tạo Lệnh bàn giao (Asset Handover - RETURN)
+DECLARE @Ret_Handover1 INT, @Ret_Handover2 INT;
+
+-- Handover 1 cho Request 1
+INSERT INTO asset_handover (handover_type, return_request_id, from_department_id, to_department_id, executed_by_user_id, status, note, created_at)
+VALUES ('RETURN', @Ret_RR1, @Ret_KTDept, NULL, @Ret_AdminUser, 'PENDING', N'Lệnh thu hồi thiết bị KT - 1001,1002', GETDATE());
+SET @Ret_Handover1 = SCOPE_IDENTITY();
+
+INSERT INTO asset_handover_detail (handover_id, asset_id, note) VALUES (@Ret_Handover1, 1001, N'Cần vệ sinh');
+INSERT INTO asset_handover_detail (handover_id, asset_id, note) VALUES (@Ret_Handover1, 1002, N'Lỗi phím esc');
+
+-- Handover 2 cho Request 2
+INSERT INTO asset_handover (handover_type, return_request_id, from_department_id, to_department_id, executed_by_user_id, status, note, created_at)
+VALUES ('RETURN', @Ret_RR2, @Ret_HCDept, NULL, @Ret_AdminUser, 'PENDING', N'Lệnh thu hồi nội thất HC - 1003,1004', GETDATE());
+SET @Ret_Handover2 = SCOPE_IDENTITY();
+
+INSERT INTO asset_handover_detail (handover_id, asset_id, note) VALUES (@Ret_Handover2, 1003, NULL);
+INSERT INTO asset_handover_detail (handover_id, asset_id, note) VALUES (@Ret_Handover2, 1004, NULL);
+
+-- 14.4. Một lệnh đã hoàn tất (APPROVED)
+DECLARE @Ret_RR3 INT, @Ret_Handover3 INT;
+INSERT INTO return_request (requester_id, requested_department_id, request_date, reason, status, created_at)
+VALUES (@Ret_AdminUser, @Ret_KTDept, DATEADD(DAY, -1, GETDATE()), N'Hoàn trả thiết bị hỏng định kỳ', 'APPROVED', DATEADD(DAY, -1, GETDATE()));
+SET @Ret_RR3 = SCOPE_IDENTITY();
+
+-- Thêm chi tiết cho RR3 (Asset 30 - Máy in HP từ mẫu gốc đã có sẵn)
+INSERT INTO return_request_detail (request_id, asset_id, note) VALUES (@Ret_RR3, 30, N'Hỏng đầu phun');
+
+INSERT INTO asset_handover (handover_type, return_request_id, from_department_id, to_department_id, executed_by_user_id, status, note, created_at, updated_at)
+VALUES ('RETURN', @Ret_RR3, @Ret_KTDept, NULL, @Ret_AdminUser, 'COMPLETED', N'Đã nhập kho hoàn thành', DATEADD(DAY, -1, GETDATE()), GETDATE());
+SET @Ret_Handover3 = SCOPE_IDENTITY();
+
+INSERT INTO asset_handover_detail (handover_id, asset_id, note) VALUES (@Ret_Handover3, 30, N'Hỏng đầu phun');
+
+PRINT 'Processed return sample data added.';
+
