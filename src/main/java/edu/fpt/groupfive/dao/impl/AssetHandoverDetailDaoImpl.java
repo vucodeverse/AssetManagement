@@ -90,4 +90,40 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
 
         return list;
     }
+
+    @Override
+    public List<edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO.HandoverItemDTO> findItemsByHandoverId(Integer handoverId) {
+        String sql = """
+                 SELECT 
+                    ahd.asset_id,
+                    CAST(a.asset_id AS NVARCHAR(50)) as asset_code,
+                    at.asset_type_name
+                 FROM asset_handover_detail ahd
+                 JOIN asset a ON ahd.asset_id = a.asset_id
+                 JOIN asset_type at ON a.asset_type_id = at.asset_type_id
+                 WHERE ahd.handover_id = ?
+                 """;
+        List<edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO.HandoverItemDTO> list = new ArrayList<>();
+
+        try (Connection con = databaseConfig.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, handoverId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO.HandoverItemDTO.builder()
+                        .assetId(rs.getInt("asset_id"))
+                        .assetCode(rs.getString("asset_code"))
+                        .assetTypeName(rs.getString("asset_type_name"))
+                        .isScanned(false)
+                        .build());
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
 }

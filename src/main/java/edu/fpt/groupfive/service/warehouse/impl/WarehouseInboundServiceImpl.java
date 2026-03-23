@@ -1,5 +1,9 @@
 package edu.fpt.groupfive.service.warehouse.impl;
 
+import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
+import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
+import edu.fpt.groupfive.dao.AssetHandoverDao;
+import edu.fpt.groupfive.dao.AssetHandoverDetailDao;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.dao.warehouse.WhTransactionDAO;
 import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
@@ -7,6 +11,7 @@ import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.dto.response.warehouse.AssetTypeVolumeDTO;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
+import edu.fpt.groupfive.model.AssetHandover;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.warehouse.WarehouseInboundService;
 import edu.fpt.groupfive.service.warehouse.WhAssetCapacityService;
@@ -29,6 +34,39 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
     private final UserDAO userDAO;
     private final WhZoneService whZoneService;
     private final WhAssetCapacityService whAssetCapacityService;
+    private final AssetHandoverDao assetHandoverDao;
+    private final AssetHandoverDetailDao assetHandoverDetailDao;
+
+    @Override
+    public List<HandoverResponseDTO> getPendingReturns() {
+        List<AssetHandover> handovers = assetHandoverDao.findAllPendingReturns();
+        return handovers.stream().map(h -> HandoverResponseDTO.builder()
+                .handoverId(h.getHandoverId())
+                .fromDepartmentName(h.getFromDepartmentName())
+                .toDepartmentName(h.getToDepartmentName())
+                .createdAt(h.getCreatedAt())
+                .status(h.getStatus().name())
+                .build()
+        ).collect(Collectors.toList());
+    }
+
+    @Override
+    public HandoverDetailResponseDTO getReturnDetail(Integer handoverId) {
+        AssetHandover handover = assetHandoverDao.findById(handoverId);
+        if (handover == null) {
+            throw new RuntimeException("Không tìm thấy lệnh bàn giao #" + handoverId);
+        }
+
+        List<HandoverDetailResponseDTO.HandoverItemDTO> items = assetHandoverDetailDao.findItemsByHandoverId(handoverId);
+
+        return HandoverDetailResponseDTO.builder()
+                .handoverId(handoverId)
+                .fromDepartmentName(handover.getFromDepartmentName()) // Note: findById doesn't join by default in current impl, I might need to update it
+                .toDepartmentName(handover.getToDepartmentName())
+                .status(handover.getStatus().name())
+                .items(items)
+                .build();
+    }
 
     @Override
     public InboundSummaryResponseDTO processInboundPO(Integer poId, String username) {

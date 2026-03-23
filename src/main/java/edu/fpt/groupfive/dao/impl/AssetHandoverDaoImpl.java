@@ -151,8 +151,88 @@ public class AssetHandoverDaoImpl implements AssetHandoverDao {
     }
 
     @Override
+    public List<AssetHandover> findAllProcessedReturns() {
+        String query = """
+                 SELECT 
+                    h.*, 
+                    fd.department_name as from_department_name,
+                    td.department_name as to_department_name
+                 FROM asset_handover h
+                 LEFT JOIN departments fd ON h.from_department_id = fd.department_id
+                 LEFT JOIN departments td ON h.to_department_id = td.department_id
+                 WHERE h.handover_type = 'RETURN' AND h.status = 'APPROVED'
+                 ORDER BY h.updated_at DESC
+                 """;
+
+        List<AssetHandover> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                AssetHandover h = mapRowToHandover(rs);
+                h.setFromDepartmentName(rs.getString("from_department_name"));
+                h.setToDepartmentName(rs.getString("to_department_name"));
+                list.add(h);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public List<AssetHandover> findAllPendingReturns() {
+        String query = """
+                 SELECT 
+                    h.*, 
+                    fd.department_name as from_department_name,
+                    td.department_name as to_department_name
+                 FROM asset_handover h
+                 LEFT JOIN departments fd ON h.from_department_id = fd.department_id
+                 LEFT JOIN departments td ON h.to_department_id = td.department_id
+                 WHERE h.handover_type = 'RETURN' AND h.status = 'PENDING'
+                 ORDER BY h.created_at DESC
+                 """;
+
+        List<AssetHandover> list = new ArrayList<>();
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                AssetHandover h = mapRowToHandover(rs);
+                // I need to set the department names in AssetHandover model
+                h.setFromDepartmentName(rs.getString("from_department_name"));
+                h.setToDepartmentName(rs.getString("to_department_name"));
+                list.add(h);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
     public AssetHandover findById(Integer id) {
-        String query = "SELECT handover_id, handover_type, allocation_request_id, return_request_id, from_department_id, to_department_id, status, created_at, updated_at FROM asset_handover WHERE handover_id = ?";
+        String query = """
+                 SELECT 
+                    h.*, 
+                    fd.department_name as from_department_name,
+                    td.department_name as to_department_name
+                 FROM asset_handover h
+                 LEFT JOIN departments fd ON h.from_department_id = fd.department_id
+                 LEFT JOIN departments td ON h.to_department_id = td.department_id
+                 WHERE h.handover_id = ?
+                 """;
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query)) {
@@ -161,7 +241,10 @@ public class AssetHandoverDaoImpl implements AssetHandoverDao {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                return mapRowToHandover(rs);
+                AssetHandover h = mapRowToHandover(rs);
+                h.setFromDepartmentName(rs.getString("from_department_name"));
+                h.setToDepartmentName(rs.getString("to_department_name"));
+                return h;
             }
 
         } catch (Exception e) {

@@ -12,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -106,11 +105,10 @@ public class WarehouseInboundController {
     public String returnListPage(Model model) {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Nhập kho Thu hồi - Warehouse");
-        model.addAttribute("returns", List.of(
-                HandoverResponseDTO.builder().handoverId(501).fromDepartmentName("Phòng IT")
-                        .createdAt(LocalDateTime.now().minusHours(5)).status(PENDING_STATUS).build(),
-                HandoverResponseDTO.builder().handoverId(502).fromDepartmentName("Phòng HR")
-                        .createdAt(LocalDateTime.now().minusDays(1)).status(PENDING_STATUS).build()));
+
+        List<HandoverResponseDTO> pendingReturns = warehouseInboundService.getPendingReturns();
+
+        model.addAttribute("returns", pendingReturns);
         return "warehouse/inbound/return_list";
     }
 
@@ -122,14 +120,10 @@ public class WarehouseInboundController {
     public String returnDetailPage(@PathVariable("handover_id") Integer handoverId, Model model) {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Chi tiết Thu hồi #" + handoverId);
-        model.addAttribute("handover", HandoverDetailResponseDTO.builder()
-                .handoverId(handoverId).fromDepartmentName("Phòng IT").status(PENDING_STATUS)
-                .items(List.of(
-                        HandoverDetailResponseDTO.HandoverItemDTO.builder().assetId(10).assetCode("AST-991")
-                                .assetTypeName("Laptop Dell").isScanned(false).build(),
-                        HandoverDetailResponseDTO.HandoverItemDTO.builder().assetId(11).assetCode("AST-992")
-                                .assetTypeName("Chuột Logitech").isScanned(false).build()))
-                .build());
+
+        HandoverDetailResponseDTO detail = warehouseInboundService.getReturnDetail(handoverId);
+        model.addAttribute("handover", detail);
+
         return "warehouse/inbound/return_detail";
     }
 
