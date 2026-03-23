@@ -5,5 +5,7 @@ import edu.fpt.groupfive.model.AssetHandoverDetail;
 import java.util.List;
 
 public interface AssetHandoverDetailDao {
+    void insert(AssetHandoverDetail detail);
     void insertBatch(Integer requestId, List<AssetHandoverDetail> details);
+    List<AssetHandoverDetail> findAllByHandoverId(Integer handoverId);
 }

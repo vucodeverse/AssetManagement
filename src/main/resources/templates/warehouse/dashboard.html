@@ -53,9 +53,9 @@
                          style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: #fff;">
                         <div style="font-weight: 700; margin-bottom: 0.5rem;" th:text="${zone.zoneName}">A-01</div>
                         <div class="capacity-bar-wrap" th:with="pct=${zone.fillPercentage}">
-                             <div class="capacity-bar" style="height: 8px;">
-                                <div class="capacity-bar-fill" th:style="'width:' + ${pct} + '%'"
-                                     th:classappend="${pct < 50 ? 'fill-low' : (pct < 85 ? 'fill-mid' : 'fill-high')}"></div>
+                             <div class="capacity-bar" style="height: 8px;"
+                                  th:classappend="${pct == 0 ? 'fill-empty' : (pct < 50 ? 'fill-low' : (pct < 85 ? 'fill-mid' : 'fill-high'))}">
+                                <div class="capacity-bar-fill" th:style="'width:' + ${pct} + '%'"></div>
                             </div>
                             <span style="font-size: 0.75rem; color: #6b7280;" th:text="${pct} + '%'"></span>
                         </div>

@@ -123,6 +123,9 @@ public class AssetDAOImpl implements AssetDAO {
             throw new RuntimeException("Xóa tài sản thất bại", e);
         }
     }
+
+
+
     @Override
     public List<Integer> findValidAssetIds(List<Integer> assetIds, int departmentId) {
 
@@ -165,6 +168,8 @@ public class AssetDAOImpl implements AssetDAO {
         }
         return validIds;
     }
+
+
 
     @Override
     public void updateAssetDepartment(List<Integer> assetIds, int newDepartmentId) {
@@ -385,6 +390,12 @@ public class AssetDAOImpl implements AssetDAO {
 
                     dto.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
                     dto.setOriginalCost(rs.getBigDecimal("original_cost"));
+                    dto.setAssetTypeId(rs.getInt("asset_type_id"));
+
+                    String statusStr = rs.getString("current_status");
+                    if (statusStr != null) {
+                        dto.setCurrentStatus(AssetStatus.valueOf(statusStr.toUpperCase()));
+                    }
 
                     dto.setAssetTypeName(rs.getString("type_name"));
 
@@ -653,6 +664,19 @@ String sql ="select a.*, t.type_name from asset a\n" +
             throw new RuntimeException(e);
         }
         return list;
+    }
+
+    @Override
+    public void updateStatus(Integer assetId, AssetStatus status) {
+        String sql = "UPDATE asset SET current_status = ? WHERE asset_id = ?";
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status.name());
+            ps.setInt(2, assetId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Cập nhật trạng thái tài sản thất bại", e);
+        }
     }
     @Override
     public List<Asset> findByDepartmentId(Integer departmentId) {

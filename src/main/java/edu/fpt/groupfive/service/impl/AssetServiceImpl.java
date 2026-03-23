@@ -149,6 +149,12 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
+    @Transactional
+    public void updateStatus(Integer id, AssetStatus status) {
+        assetDAO.updateStatus(id, status);
+    }
+
+    @Override
     public AssetDetailResponse getDetailById(Integer id) {
         return assetDAO.findDetailById(id)
                 .orElseThrow(() ->
