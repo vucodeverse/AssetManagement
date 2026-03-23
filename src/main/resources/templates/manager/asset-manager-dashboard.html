@@ -111,22 +111,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="recent-card">
-                <div class="section-title">YÊU CẦU CẤP PHÁT GẦN ĐÂY</div>
-                <table class="mini-table">
-                    <thead><tr><th>ID</th><th>Người yêu cầu</th><th>Ngày tạo</th></tr></thead>
-                    <tbody>
-                    <tr th:each="req : ${dashboard.recentAllocations}">
-                        <td th:text="'AR-' + ${req.requestId}">AR-001</td>
-                        <td th:text="${req.requesterName}">Người dùng</td>
-                        <td th:text="${#temporals.format(req.createdAt, 'dd-MM-yyyy')}">-</td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(dashboard.recentAllocations)}">
-                        <td colspan="3" class="text-muted">Chưa có yêu cầu</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+
         </div>
     </div>
 </th:block>

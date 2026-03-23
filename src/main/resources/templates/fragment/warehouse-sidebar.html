@@ -85,6 +85,12 @@
             <span>Sổ cái giao dịch</span>
         </a>
 
+        <a th:href="@{/transfer-requests/warehouse}"
+           th:classappend="${activeMenu == 'transfer'} ? 'active'"
+           class="nav-item">
+            <i class="fas fa-warehouse"></i> ĐIỀU CHUYỂN
+        </a>
+
     </nav>
 
     <!-- Footer: user info + logout -->
@@ -95,12 +101,9 @@
             <span class="user-role">Nhân viên kho</span>
         </div>
         <div class="user-actions">
-            <form th:action="@{/logout}" method="post" style="margin:0;">
-                <button type="submit" class="action-btn logout-btn" title="Đăng xuất"
-                        style="background:none; border:none; cursor:pointer;">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
-            </form>
+            <a th:href="@{/logout}" class="action-btn logout-btn" title="Đăng xuất">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
         </div>
     </div>
 

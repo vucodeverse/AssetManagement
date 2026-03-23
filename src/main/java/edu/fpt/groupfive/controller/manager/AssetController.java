@@ -135,7 +135,7 @@ public class AssetController {
             request.setPurchaseOrderDetailId(asset.getPurchaseOrderDetailId());
             request.setWarrantyStartDate(asset.getWarrantyStartDate());
             
-            String currentStatus = asset.getCurrentStatus();
+            String currentStatus = asset.getCurrentStatus().name();
             if (currentStatus != null) {
                 String s = currentStatus.toUpperCase().trim();
                 if ("IN_USE".equals(s)) {

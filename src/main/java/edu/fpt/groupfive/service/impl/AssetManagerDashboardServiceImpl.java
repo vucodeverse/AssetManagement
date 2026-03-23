@@ -63,10 +63,6 @@ public class AssetManagerDashboardServiceImpl implements AssetManagerDashboardSe
 
         //  5 yêu cầu cấp phát gần đây (tất cả)
         List<AllocationRequest> allRequests = allocationReqDao.findAllOrderByCreatedAtDesc();
-        List<AllocationRequestResponse> recentAllocs = allRequests.stream()
-                .limit(5)
-                .map(this::toAllocationResponse)
-                .collect(Collectors.toList());
 
         return AssetManagerDashboardResponse.builder()
                 .totalAssets(totalAssets)
@@ -76,7 +72,6 @@ public class AssetManagerDashboardServiceImpl implements AssetManagerDashboardSe
                 .pendingAllocations(pendingResponses)
                 .expiringWarranties(expiringList)
                 .recentAssets(recentAssets)
-                .recentAllocations(recentAllocs)
                 .build();
     }
 
@@ -106,7 +101,7 @@ public class AssetManagerDashboardServiceImpl implements AssetManagerDashboardSe
         return AssetResponse.builder()
                 .assetId(asset.getAssetId())
                 .assetName(asset.getAssetName())
-                .currentStatus(asset.getCurrentStatus().name())
+                .currentStatus(asset.getCurrentStatus())
                 .originalCost(asset.getOriginalCost())
                 .assetTypeName(asset.getAssetTypeName())
                 .acquisitionDate(asset.getAcquisitionDate())

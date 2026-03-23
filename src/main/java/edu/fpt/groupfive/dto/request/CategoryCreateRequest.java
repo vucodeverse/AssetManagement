@@ -14,7 +14,7 @@ import lombok.Setter;
 public class CategoryCreateRequest {
 
     @NotBlank(message = "Tên danh mục không được để trống")
-    @Size(max = 50, message = "Tên danh mục chứa tối đa 30 ký tự")
+    @Size(max = 50, message = "Tên danh mục chứa tối đa 50 ký tự")
     private String categoryName;
     private String description;
 

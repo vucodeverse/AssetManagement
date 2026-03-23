@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dto.response;
 
+import edu.fpt.groupfive.common.AssetStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -15,7 +16,7 @@ public class AssetResponse {
     private Integer assetId;
     private String assetName;
     private  Integer purchaseOrderDetailId;
-    private String currentStatus;
+    private AssetStatus currentStatus;
 
     private LocalDate warrantyStartDate;
 

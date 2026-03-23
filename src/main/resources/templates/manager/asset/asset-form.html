@@ -123,7 +123,7 @@
                             <option value="">-- Chọn trạng thái tài sản --</option>
                             <option th:each="status : ${statuses}"
                                     th:value="${status}"
-                                    th:text="${status}">
+                                    th:text="${status.description}">
                             </option>
                         </select>
 

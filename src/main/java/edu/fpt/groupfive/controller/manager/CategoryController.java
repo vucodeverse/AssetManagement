@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -29,7 +30,6 @@ public class CategoryController {
     public String viewPage(
             @RequestParam(value = "id", required = false) Integer id,
             @RequestParam(value = "page", defaultValue = "1") int page,
-
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "sort", required = false) String sort,
             Model model
@@ -43,7 +43,7 @@ public class CategoryController {
         }
         //load view form ben trai
 
-        loadCategoryPage(model,keyword,direction,page);
+        loadCategoryPage(model, keyword, direction, page);
         model.addAttribute("keyword", keyword);
         String mode = "create";
 
@@ -72,11 +72,14 @@ public class CategoryController {
 
     //create
     @PostMapping(params = "add")
-    public String create(@Valid @ModelAttribute("category") CategoryCreateRequest request, BindingResult result, Model model) {
+    public String create(@Valid @ModelAttribute("category") CategoryCreateRequest request, BindingResult result, Model model, RedirectAttributes redirectAttributes) {
 
         if (!result.hasErrors()) {
             try {
                 categoryService.create(request);
+                redirectAttributes.addFlashAttribute("success", "Thêm danh mục thành công");
+                return "redirect:/manager/categories";
+
             } catch (InvalidDataException e) {
 
                 // thêm lỗi vào BindingResult
@@ -99,11 +102,14 @@ public class CategoryController {
 
     //update
     @PostMapping(params = "save")
-    public String update(@Valid @ModelAttribute("category") CategoryUpdateRequest request, BindingResult result, Model model) {
+    public String update(@Valid @ModelAttribute("category") CategoryUpdateRequest request, BindingResult result, Model model, RedirectAttributes redirectAttributes) {
 
         if (!result.hasErrors()) {
             try {
                 categoryService.update(request);
+                redirectAttributes.addFlashAttribute("success", "Cập nhật danh mục thành công.");
+                return "redirect:/manager/categories";
+
             } catch (InvalidDataException e) {
                 result.rejectValue("categoryName", null, e.getMessage());
             }
@@ -120,9 +126,18 @@ public class CategoryController {
 
     //delete
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable("id") Integer id) {
-        categoryService.delete(id);
+    public String delete(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+
+        try {
+            categoryService.delete(id);
+            redirectAttributes.addFlashAttribute("success", "Xóa danh mục thành công.");
+
+        } catch (InvalidDataException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+
+        }
         return "redirect:/manager/categories";
+
     }
 
 

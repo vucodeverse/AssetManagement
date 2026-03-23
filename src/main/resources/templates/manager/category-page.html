@@ -16,6 +16,12 @@
     </header>
 
     <div class="content-wrapper">
+
+        <!-- Flash Messages -->
+        <div th:if="${success}" class="my-alert my-alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="my-alert my-alert-danger" th:text="${error}"></div>
+
+
         <!-- Search bar -->
         <form method="get" th:action="@{/manager/categories}" class="search-bar">
             <div class="search-input-group">
@@ -130,7 +136,7 @@
                         <div class="form-field">
                             <label class="form-label">TÊN DANH MỤC</label>
                             <input type="text" th:field="*{categoryName}" class="form-input"
-                                   placeholder="Nhập tên danh mục..." required/>
+                                   placeholder="Nhập tên danh mục..."/>
                             <div class="error text-danger" th:errors="*{categoryName}"></div>
                         </div>
 

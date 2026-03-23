@@ -48,7 +48,7 @@
                 <option value="">Tất cả</option>
                 <option th:each="s : ${T(edu.fpt.groupfive.common.AssetStatus).values()}"
                         th:value="${s}"
-                        th:text="${s}"
+                        th:text="${s.description}"
                         th:selected="${status == s}">
                 </option>
             </select>
@@ -122,7 +122,7 @@
 
                 <td th:text="${asset.assetTypeName}"></td>
 
-                <td th:text="${asset.currentStatus}"></td>
+                <td th:text="${asset.currentStatus.description}"></td>
 
                 <td th:text="${#numbers.formatDecimal(asset.originalCost,0,'COMMA',0,'POINT')}"></td>
 

@@ -191,4 +191,37 @@ public class UserServiceImpl implements UserService {
         return userMap;
     }
 
+    @Override
+    public List<UserResponse> findAll() {
+        return userDAO.findAll()
+                .stream()
+                .map(user -> new UserResponse(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getPhoneNumber(),
+                        user.getStatus(),
+                        user.getRole(),
+                        user.getCreatedDate(),
+                        user.getUpdatedDate(),
+                        user.getDepartmentId()
+                ))
+                .toList();
+    }
+
+
+    @Override
+    public Users findByUsername(String username) {
+        return userDAO.findUserByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user: " + username));
+    }
+
+
+    @Override
+    public Users findById(Integer id) {
+        return userDAO.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy user id = "+id));
+    }
+
 }

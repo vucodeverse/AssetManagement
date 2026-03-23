@@ -19,5 +19,4 @@ public class AssetManagerDashboardResponse {
     private List<AllocationRequestResponse> pendingAllocations;
     private List<ExpiringWarrantyAssetResponse> expiringWarranties;
     private List<AssetResponse> recentAssets;
-    private List<AllocationRequestResponse> recentAllocations;
 }

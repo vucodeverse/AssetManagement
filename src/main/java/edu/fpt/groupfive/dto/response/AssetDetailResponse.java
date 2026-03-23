@@ -5,7 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
+@Builder
 @Getter
 @Setter
 @ToString
@@ -24,11 +24,8 @@ public class AssetDetailResponse {
     private LocalDate inServiceDate;
     private LocalDate warrantyStartDate;
     private LocalDate warrantyEndDate;
-
     private String assetTypeName;
     private String departmentName;
-
-
     private  Integer purchaseOrderId;
     private LocalDate orderDate;
     private String supplierName;

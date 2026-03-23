@@ -1,15 +1,20 @@
 package edu.fpt.groupfive.common;
 
 public enum AssetStatus {
-    NEW, // Vừa tạo, chưa được kho tiếp nhận
+    NEW("Mới tạo"),
+    AVAILABLE("Sẵn sàng"),
+    ALLOCATED("Đang chờ cấp phát"),
+    ASSIGNED("Đã bàn giao"),
+    UNDER_MAINTENANCE("Đang sửa chữa"),
+    DISPOSED("Thanh lý");
 
-    AVAILABLE, // Đã ở kho và sẵn sàng sử dụng
+    private final String description;
 
-    ALLOCATED, // Đã được gán cho lệnh cấp phát, đang chờ bàn giao
+    AssetStatus(String description) {
+        this.description = description;
+    }
 
-    ASSIGNED, // Đã bàn giao cho người dùng
-
-    UNDER_MAINTENANCE, // Đang sửa chữa
-
-    DISPOSED// Thanh lý / ngừng sử dụng
+    public String getDescription() {
+        return description;
+    }
 }

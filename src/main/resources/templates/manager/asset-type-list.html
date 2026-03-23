@@ -72,7 +72,7 @@
                     <option value="">Tất cả</option>
                     <option th:each="t : ${typeClasses}"
                             th:value="${t}"
-                            th:text="${t}"
+                            th:text="${t.description}"
                             th:selected="${t == typeClass}">
                     </option>
                 </select>
@@ -84,7 +84,7 @@
                     <option value="">Tất cả</option>
                     <option th:each="d : ${depreciationMethods}"
                             th:value="${d}"
-                            th:text="${d}"
+                            th:text="${d.description}"
                             th:selected="${d == depreciationMethod}">
                     </option>
                 </select>
@@ -135,9 +135,9 @@
                 <tr th:each="type : ${assetTypes}">
                     <td th:text="${type.typeId}"></td>
                     <td th:text="${type.typeName}"></td>
-                    <td th:text="${type.typeClass}"></td>
+                    <td th:text="${type.typeClass.description}"></td>
                     <td th:text="${type.categoryName}"></td>
-                    <td th:text="${type.defaultDepreciationMethod}"></td>
+                    <td th:text="${type.defaultDepreciationMethod.description}"></td>
                     <td th:text="${type.defaultUsefulLifeMonths}"></td>
                     <td class="action-cell">
                         <a th:href="@{'/manager/asset-types/edit/' + ${type.typeId}}"
