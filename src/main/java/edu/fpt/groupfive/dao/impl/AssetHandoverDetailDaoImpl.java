@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.dao.AssetHandoverDetailDao;
+import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO.HandoverItemDTO;
 import edu.fpt.groupfive.model.AssetHandoverDetail;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +83,52 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
                 d.setAssetId(rs.getInt("asset_id"));
                 d.setNote(rs.getString("note"));
                 list.add(d);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public List<HandoverItemDTO> findItemsByHandoverId(Integer handoverId) {
+        String sql = """
+                 SELECT 
+                    ahd.asset_id,
+                    CAST(a.asset_id AS NVARCHAR(50)) as asset_code,
+                    at.type_name AS asset_type_name,
+                    CASE 
+                        WHEN EXISTS (
+                            SELECT 1 
+                            FROM map_handover_transactions mht
+                            JOIN wh_transactions wt ON mht.transaction_id = wt.transaction_id
+                            WHERE mht.asset_handover_id = ahd.handover_id 
+                              AND wt.asset_id = ahd.asset_id 
+                              AND wt.transaction_type = 'INBOUND'
+                        ) THEN 1 ELSE 0 
+                    END as is_scanned
+                 FROM asset_handover_detail ahd
+                 JOIN asset a ON ahd.asset_id = a.asset_id
+                 JOIN asset_type at ON a.asset_type_id = at.asset_type_id
+                 WHERE ahd.handover_id = ?
+                 """;
+        List<HandoverItemDTO> list = new ArrayList<>();
+
+        try (Connection con = databaseConfig.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, handoverId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(HandoverItemDTO.builder()
+                        .assetId(rs.getInt("asset_id"))
+                        .assetCode(rs.getString("asset_code"))
+                        .assetTypeName(rs.getString("asset_type_name"))
+                        .isScanned(rs.getInt("is_scanned") == 1)
+                        .build());
             }
 
         } catch (Exception e) {

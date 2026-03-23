@@ -9,6 +9,8 @@ public interface AssetHandoverDao {
     Integer insert(AssetHandover assetHandover);
     List<AssetHandover> findAllByAllocationRequest();
     List<AssetHandover> findAllByReturnRequest();
+    List<AssetHandover> findAllPendingReturns();
+    List<AssetHandover> findAllProcessedReturns();
     AssetHandover findById(Integer id);
     void updateStatus(Integer id, Status status);
 }
