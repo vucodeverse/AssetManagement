@@ -21,6 +21,7 @@ public class HandoverDetailResponseDTO {
     public static class HandoverItemDTO {
         private Integer assetId;
         private String assetCode;
+        private String assetName;
         private String assetTypeName;
         private boolean isScanned;
     }

@@ -60,11 +60,13 @@ public class AssetHandoverServiceImpl implements AssetHandoverService {
             Optional<Asset> assetOpt = assetDAO.findById(d.getAssetId());
             String assetCode = assetOpt.isPresent() ? "AST-" + assetOpt.get().getAssetId() : "AST-" + d.getAssetId();
             String assetName = assetOpt.isPresent() ? assetOpt.get().getAssetName() : "Unknown";
+            String assetTypeName = assetOpt.isPresent() ? assetOpt.get().getAssetTypeName() : "Unknown";
             
             return HandoverDetailResponseDTO.HandoverItemDTO.builder()
                     .assetId(d.getAssetId())
                     .assetCode(assetCode)
-                    .assetTypeName(assetName)
+                    .assetName(assetName)
+                    .assetTypeName(assetTypeName)
                     .isScanned(true)
                     .build();
         }).toList();
