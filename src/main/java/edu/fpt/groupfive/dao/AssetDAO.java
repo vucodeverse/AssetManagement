@@ -14,6 +14,8 @@ public interface AssetDAO {
 
     void update(Asset asset);
 
+    void updateStatus(Integer assetId, AssetStatus status);
+
     void delete(Integer id);
 
     Optional<Asset> findById(Integer id);

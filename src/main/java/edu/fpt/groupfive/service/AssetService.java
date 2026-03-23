@@ -24,6 +24,8 @@ public interface AssetService {
 
     void update(Integer id, AssetUpdateRequest request);
 
+    void updateStatus(Integer id, AssetStatus status);
+
     void delete(Integer id);
 
     AssetDetailResponse getDetailById(Integer id);

@@ -40,7 +40,11 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
         List<ZoneCapacityResponseDTO> activeZones = whZoneService.getAllZones();
         List<AssetTypeVolumeDTO> assetVolumes = whAssetCapacityService.getAllAssetTypeVolumes();
         Map<Integer, Integer> unitVolumeMap = assetVolumes.stream()
-                .collect(Collectors.toMap(AssetTypeVolumeDTO::getAssetTypeId, AssetTypeVolumeDTO::getUnitVolume));
+                .filter(dto -> dto.getAssetTypeId() != null)
+                .collect(Collectors.toMap(
+                        AssetTypeVolumeDTO::getAssetTypeId,
+                        dto -> dto.getUnitVolume() != null ? dto.getUnitVolume() : 1
+                ));
 
         List<WhTransactionDAO.AssetPlacementPlan> placements = new ArrayList<>();
 

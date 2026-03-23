@@ -307,7 +307,7 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setString(1, status);
-            ps.setInt(4, id);
+            ps.setInt(2, id);
 
             ps.executeUpdate();
         } catch (Exception e) {

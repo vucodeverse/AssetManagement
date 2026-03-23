@@ -99,9 +99,10 @@ public class AssetHandoverDaoImpl implements AssetHandoverDao {
     @Override
     public List<AssetHandover> findAllByAllocationRequest() {
         String query = """
-                SELECT * FROM asset_handover
-                        WHERE handover_type = 'ALLOCATION'
-                            OR allocation_request_id IS NOT NULL
+                SELECT handover_id, handover_type, allocation_request_id, return_request_id, from_department_id, to_department_id, status, created_at, updated_at 
+                FROM asset_handover
+                WHERE handover_type = 'ALLOCATION'
+                   OR allocation_request_id IS NOT NULL
                 """;
 
         List<AssetHandover> list = new ArrayList<>();
@@ -125,10 +126,11 @@ public class AssetHandoverDaoImpl implements AssetHandoverDao {
     @Override
     public List<AssetHandover> findAllByReturnRequest() {
         String query = """
-                SELECT * FROM asset_handover
-                         WHERE handover_type = 'RETURN'
-                            OR return_request_id IS NOT NULL
-                """;
+                 SELECT handover_id, handover_type, allocation_request_id, return_request_id, from_department_id, to_department_id, status, created_at, updated_at 
+                 FROM asset_handover
+                 WHERE handover_type = 'RETURN'
+                    OR return_request_id IS NOT NULL
+                 """;
 
         List<AssetHandover> list = new ArrayList<>();
 
@@ -146,5 +148,39 @@ public class AssetHandoverDaoImpl implements AssetHandoverDao {
         }
 
         return list;
+    }
+
+    @Override
+    public AssetHandover findById(Integer id) {
+        String query = "SELECT handover_id, handover_type, allocation_request_id, return_request_id, from_department_id, to_department_id, status, created_at, updated_at FROM asset_handover WHERE handover_id = ?";
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return mapRowToHandover(rs);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    @Override
+    public void updateStatus(Integer id, Status status) {
+        String query = "UPDATE asset_handover SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE handover_id = ?";
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, status.name());
+            ps.setInt(2, id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Cập nhật trạng thái AssetHandover thất bại", e);
+        }
     }
 }
