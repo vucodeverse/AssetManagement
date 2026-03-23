@@ -196,7 +196,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
     }
 
     @Override
-    public List<TransferResponse> getTransfersForWarehouse() {
+    public List<TransferResponse> getAllTransfers() {
         List<TransferRequest> list = transferRequestDAO.findAll();
         list.sort((a,b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
 

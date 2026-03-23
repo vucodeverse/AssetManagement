@@ -25,7 +25,7 @@ public interface ITransferRequestService {
 
     List<TransferResponse> getTransfersForSender(int departmentId);
     List<TransferResponse> getTransfersForReceiver(int departmentId);
-    List<TransferResponse> getTransfersForWarehouse();
+    List<TransferResponse> getAllTransfers();
     TransferResponse getTransferDetail(int transferId);
 
     List<TransferResponse> getTransfersForDepartmentManager(int departmentId);
