@@ -182,7 +182,7 @@ public class TransferRequestController {
 
     // Chi tiết lệnh (dùng chung)
     @GetMapping("/{id}")
-    public String detail(@PathVariable int id, Model model, HttpSession session) {
+    public String detail(@PathVariable("id") int id, Model model, HttpSession session) {
         Integer userId = (Integer) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/auth/login";
@@ -197,7 +197,7 @@ public class TransferRequestController {
 
     // Xử lý action (xác nhận gửi, nhận, hủy)
     @PostMapping("/{id}/action")
-    public String processAction(@PathVariable int id,
+    public String processAction(@PathVariable("id") int id,
                                 @RequestParam TransferAction action,
                                 @RequestParam(required = false) Boolean issue,
                                 HttpSession session,

@@ -19,13 +19,12 @@ public class TransferRequest {
     private Integer assetManagerId;
     private LocalDateTime transferDate;
     private String reason;
-    private String status;// PENDING, SENDER_CONFIRMED, WAREHOUSE_CONFIRMED, RECEIVER_CONFIRMED, CANCELLED
+    private String status;// PENDING, SENDER_CONFIRMED, RECEIVER_CONFIRMED, CANCELLED
 
     private Integer senderConfirmedBy;
     private LocalDateTime senderConfirmedAt;
 
-    private Integer whConfirmedBy;
-    private LocalDateTime whConfirmedAt;
+
 
     private Integer receiverConfirmedBy;
     private LocalDateTime receiverConfirmedAt;

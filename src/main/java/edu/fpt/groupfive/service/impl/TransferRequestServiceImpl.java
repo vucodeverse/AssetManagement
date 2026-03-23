@@ -136,46 +136,43 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
         System.out.println("========== END createTransferRequest SUCCESS ==========");
         return response;
     }
+
     @Override
     public void processTransferAction(int transferId, int userId, TransferAction action, Boolean issue) {
-
         TransferRequest transfer = transferRequestDAO.findById(transferId)
                 .orElseThrow(() -> new IllegalArgumentException("Transfer không tồn tại"));
 
         String currentStatus = transfer.getStatus();
 
         switch (action) {
-
             case CONFIRM_SENDER:
-                validateStatus(currentStatus, "PENDING");
-
+                if (!"PENDING".equals(currentStatus)) {
+                    throw new IllegalStateException("Lệnh không ở trạng thái PENDING");
+                }
                 transferRequestDAO.updateSenderConfirm(transferId, userId, LocalDateTime.now());
                 transferRequestDAO.updateStatus(transferId, "SENDER_CONFIRMED");
                 break;
 
-            case    CONFIRM_WAREHOUSE:
-                validateStatus(currentStatus, "SENDER_CONFIRMED");
-
-                if (Boolean.TRUE.equals(issue)) {
-                    transferRequestDAO.updateStatus(transferId, "CANCELLED");
-                } else {
-//                    transferRequestDAO.updateWarehouseConfirm(transferId, userId, LocalDateTime.now());
-                    transferRequestDAO.updateStatus(transferId, "QUALITY_OK");
-                }
-                break;
-
             case CONFIRM_RECEIVER:
-                validateStatus(currentStatus, "QUALITY_OK");
-
+                if (!"SENDER_CONFIRMED".equals(currentStatus)) {
+                    throw new IllegalStateException("Lệnh chưa được bên gửi xác nhận");
+                }
                 transferRequestDAO.updateReceiverConfirm(transferId, userId, LocalDateTime.now());
-                transferRequestDAO.updateStatus(transferId, "COMPLETED");
+                transferRequestDAO.updateStatus(transferId, "RECEIVER_CONFIRMED");
+
+                // Cập nhật phòng ban cho các tài sản
+                List<TransferRequestDetail> details = transferRequestDetailDAO.findByTransferId(transferId);
+                for (TransferRequestDetail detail : details) {
+                    Asset asset = assetDAO.findById(detail.getAssetId()).orElseThrow();
+                    asset.setDepartmentId(transfer.getToDepartmentId());
+                    assetDAO.update(asset);
+                }
                 break;
 
             case CANCEL:
-                if ("COMPLETED".equals(currentStatus)) {
-                    throw new IllegalStateException("Không thể hủy khi đã hoàn thành");
+                if ("RECEIVER_CONFIRMED".equals(currentStatus)) {
+                    throw new IllegalStateException("Không thể hủy lệnh đã hoàn thành");
                 }
-
                 transferRequestDAO.updateStatus(transferId, "CANCELLED");
                 break;
 
@@ -183,15 +180,6 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
                 throw new IllegalArgumentException("Action không hợp lệ");
         }
     }
-
-    private void validateStatus(String current, String expected) {
-        if (!expected.equals(current)) {
-            throw new IllegalStateException(
-                    "Trạng thái không hợp lệ. Yêu cầu: " + expected + ", hiện tại: " + current
-            );
-        }
-    }
-
 
 
     // ========== CÁC PHƯƠNG THỨC MỚI ==========
