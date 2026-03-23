@@ -33,7 +33,6 @@
         <h3>Danh sách tài sản</h3>
         <table class="table table-bordered">
             <thead>
-            32
             <th>Mã tài sản</th>
             <th>Tên tài sản</th>
             <th>Tình trạng (bên gửi)</th>
@@ -56,6 +55,8 @@
             </tbody>
         </table>
 
+        <!-- DEBUG -->
+        <p>currentUser.role: [[${currentUser.role.name()}]], status: [[${transfer.status}]], currentDept: [[${currentUser.departmentId}]], fromDept: [[${transfer.fromDepartmentId}]], toDept: [[${transfer.toDepartmentId}]]</p>
         <div class="mt-3">
             <!-- Nút xác nhận gửi -->
             <form th:if="${currentUser.role.name() == 'DEPARTMENT_MANAGER' and transfer.status == 'PENDING' and currentUser.departmentId == transfer.fromDepartmentId}"

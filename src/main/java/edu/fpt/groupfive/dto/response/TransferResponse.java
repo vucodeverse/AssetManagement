@@ -13,6 +13,10 @@ import java.util.List;
 @Setter
 public class TransferResponse {
     private Integer transferId;
+
+    private Integer fromDepartmentId;
+    private Integer toDepartmentId;
+
     private String fromDepartmentName;
     private String toDepartmentName;
     private String assetManagerName;
