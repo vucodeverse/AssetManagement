@@ -115,6 +115,32 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
         }
 
         returnReqDetailDAO.insertBatch(id, details);
+
+        //=================================================================================
+        //============================ Xuống kho cho khánh ================================
+        //=================================================================================
+
+        AssetHandover handover = assetHandoverDao.findByReturnRequestId(id);
+        if (handover != null) {
+
+            // Xóa chi tiết bàn giao cũ
+            assetHandoverDetailDao.deleteByHandoverId(handover.getHandoverId());
+
+            // Thêm mới chi tiết dựa trên danh sách tài sản đã update
+            List<AssetHandoverDetail> handoverDetailList = new ArrayList<>();
+            for (ReturnRequestDetail reqDetail : details) {
+                AssetHandoverDetail hd = new AssetHandoverDetail();
+                hd.setHandoverId(handover.getHandoverId());
+                hd.setAssetId(reqDetail.getAssetId());
+                hd.setQcReportId(null);
+                hd.setNote(reqDetail.getNote());
+                handoverDetailList.add(hd);
+            }
+
+            assetHandoverDetailDao.insertBatch(handover.getHandoverId(), handoverDetailList);
+        }
+
+
     }
 
     @Override
@@ -128,6 +154,16 @@ public class ReturnRequestServiceImpl implements ReturnRequestService {
         if (!"PENDING_AM".equals(returnRequest.getStatus())) {
             throw new RuntimeException("Chỉ được xóa khi ở trạng thái PENDING_AM!");
         }
+
+        AssetHandover handover = assetHandoverDao.findByReturnRequestId(id);
+        if (handover != null) {
+            // Xóa chi tiết tài sản của lần bàn giao đó
+            assetHandoverDetailDao.deleteByHandoverId(handover.getHandoverId());
+
+            // Xóa lệnh bàn giao
+            assetHandoverDao.delete(handover.getHandoverId());
+        }
+
 
         returnReqDetailDAO.deleteByRequestId(id);
         returnReqDAO.delete(id);

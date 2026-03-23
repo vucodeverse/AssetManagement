@@ -44,4 +44,21 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void deleteByHandoverId(Integer handoverId) {
+        String query = """
+                DELETE FROM asset_handover_detail WHERE handover_id = ?
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, handoverId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 }

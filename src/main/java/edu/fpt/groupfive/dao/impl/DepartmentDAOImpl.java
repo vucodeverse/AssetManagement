@@ -129,7 +129,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
                 if (firstName != null) {
                     department.setManagerName(firstName + " " + lastName);
                 } else {
-                    department.setManagerName("No Manager");
+                    department.setManagerName("N/A");
                 }
 
                 Timestamp created = rs.getTimestamp("created_date");
@@ -254,7 +254,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         String sql = """
                     SELECT d.*, u.first_name, u.last_name
                     FROM Departments d LEFT JOIN Users u
-                    ON d.manager_user_id = u.user_id
+                        ON d.manager_user_id = u.user_id
                     WHERE d.status = 'ACTIVE'
                     ORDER BY d.department_id
                     OFFSET ? ROWS FETCH NEXT ? ROWS ONLY

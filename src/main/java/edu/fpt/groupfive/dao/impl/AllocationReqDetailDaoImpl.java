@@ -98,7 +98,7 @@ public class AllocationReqDetailDaoImpl implements AllocationReqDetailDao {
     @Override
     public List<AllocationRequestDetail> findAllByHandoverId(Integer handoverId) {
         String query = """
-                SELECT ard.* 
+                SELECT ard.*
                 FROM allocation_request_detail ard
                     JOIN asset_handover ah ON ard.request_id = ah.allocation_request_id
                 WHERE ah.handover_id = ?
