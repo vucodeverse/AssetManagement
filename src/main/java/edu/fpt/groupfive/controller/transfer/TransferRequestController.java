@@ -198,8 +198,8 @@ public class TransferRequestController {
     // Xử lý action (xác nhận gửi, nhận, hủy)
     @PostMapping("/{id}/action")
     public String processAction(@PathVariable("id") int id,
-                                @RequestParam TransferAction action,
-                                @RequestParam(required = false) Boolean issue,
+                                @RequestParam("action") TransferAction action,
+                                @RequestParam(value = "issue", required = false) Boolean issue,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         Integer userId = (Integer) session.getAttribute("userId");

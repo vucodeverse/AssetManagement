@@ -7,7 +7,7 @@
 <head>
     <title>Chi tiết lệnh #[[${transfer.transferId}]]</title>
     <th:block layout:fragment="extra-css">
-        <link rel="stylesheet" th:href="@{/css/transfer/transfer-detail.css}">
+        <link rel="stylesheet" th:href="@{/css/transfer/detail.css}">
     </th:block>
 </head>
 <body>
@@ -55,8 +55,6 @@
             </tbody>
         </table>
 
-        <!-- DEBUG -->
-        <p>currentUser.role: [[${currentUser.role.name()}]], status: [[${transfer.status}]], currentDept: [[${currentUser.departmentId}]], fromDept: [[${transfer.fromDepartmentId}]], toDept: [[${transfer.toDepartmentId}]]</p>
         <div class="mt-3">
             <!-- Nút xác nhận gửi -->
             <form th:if="${currentUser.role.name() == 'DEPARTMENT_MANAGER' and transfer.status == 'PENDING' and currentUser.departmentId == transfer.fromDepartmentId}"
