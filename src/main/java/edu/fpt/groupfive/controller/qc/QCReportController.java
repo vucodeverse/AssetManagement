@@ -2,18 +2,16 @@ package edu.fpt.groupfive.controller.qc;
 
 import edu.fpt.groupfive.dto.request.qc.QCReportRequest;
 import edu.fpt.groupfive.dto.response.QCReportResponse;
-import edu.fpt.groupfive.service.IQCReportService;
 import edu.fpt.groupfive.service.AssetService;
+import edu.fpt.groupfive.service.IQCReportService;
 import edu.fpt.groupfive.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/qc-reports")
@@ -24,47 +22,30 @@ public class QCReportController {
     private final AssetService assetService;
     private final UserService userService;
 
-//    @GetMapping("/create")
-//    public String showCreateForm(
-//            @RequestParam(value = "assetId", required = false) Integer assetId,
-//            Model model) {
-//
-//        if (!model.containsAttribute("qcReport")) {
-//            QCReportRequest qcReport = new QCReportRequest();
-//            if (assetId != null) {
-//                qcReport.setAssetId(assetId);   }
-//            model.addAttribute("qcReport", qcReport);
-//        }
-//
-//        model.addAttribute("assets", assetService.findAll());
-//        model.addAttribute("users", userService.findAll());
-//
-//        if (assetId != null) {
-//            model.addAttribute("selectedAssetId", assetId);
-//        }
-//
-//        return "qc/create";
-//    }
+    // ==================== CREATE ====================
+    @GetMapping("/create")
+    public String showCreateForm(
+            @RequestParam(value = "assetId", required = false) Integer assetId,
+            Model model) {
+
+        QCReportRequest qcReport = new QCReportRequest();
+        if (assetId != null) qcReport.setAssetId(assetId);
+
+        model.addAttribute("qcReport", qcReport);
+        model.addAttribute("assets", assetService.findAll());
+        model.addAttribute("users", userService.findAll());
+
+        return "qc/create";
+    }
 
     @PostMapping("/create")
     public String processCreateForm(
             @ModelAttribute("qcReport") QCReportRequest request,
-            @RequestParam(value = "file", required = false) MultipartFile file,
             RedirectAttributes redirectAttributes) {
-
         try {
-
-            if (file != null && !file.isEmpty()) {
-            }
-
-            qcReportService.createQCReport(request);
-
-            redirectAttributes.addFlashAttribute(
-                    "message",
-                    "Tạo báo cáo QC thành công cho assetId: " + request.getAssetId()
-            );
-
-            return "redirect:/qc-reports/list";
+            QCReportResponse created = qcReportService.createQCReport(request);
+            redirectAttributes.addFlashAttribute("message", "Tạo báo cáo QC thành công.");
+            return "redirect:/qc-reports/" + created.getReportId();
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -78,54 +59,96 @@ public class QCReportController {
         }
     }
 
+    // ==================== READ ====================
     @GetMapping("/list")
-    public String listReports(Model model) {
-        List<QCReportResponse> reports = qcReportService.findAll();
+    public String listReports(
+            @RequestParam(value = "status", required = false) String status,
+            Model model) {
+
+        List<QCReportResponse> reports = (status != null && !status.isBlank())
+                ? qcReportService.findByStatus(status)
+                : qcReportService.findAll();
+
         model.addAttribute("reports", reports);
+        model.addAttribute("selectedStatus", status);
         return "qc/list";
     }
 
     @GetMapping("/{reportId}")
-    public String viewReport(@PathVariable("reportId") int reportId, Model model, RedirectAttributes redirectAttributes) {
-        Optional<QCReportResponse> opt = qcReportService.findById(reportId);
-        if (opt.isPresent()) {
-            model.addAttribute("report", opt.get());
+    public String viewReport(
+            @PathVariable int reportId,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("report", qcReportService.findById(reportId));
             return "qc/detail";
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Báo cáo QC không tồn tại: " + reportId);
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/qc-reports/list";
         }
     }
 
-    @PostMapping("/{reportId}/update-status")
-    public String updateStatus(@PathVariable("reportId") int reportId,
-                               @RequestParam("status") String status,
-                               @RequestParam(value = "note", required = false) String note,
-                               RedirectAttributes redirectAttributes) {
+    // ==================== UPDATE ====================
+    @GetMapping("/{reportId}/edit")
+    public String showEditForm(
+            @PathVariable int reportId,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         try {
-            int updated = qcReportService.updateQCStatus(reportId, status, note);
-            if (updated > 0) {
-                redirectAttributes.addFlashAttribute("message", "Cập nhật trạng thái thành công.");
-            } else {
-                redirectAttributes.addFlashAttribute("error", "Cập nhật thất bại hoặc không thay đổi.");
-            }
+            QCReportResponse report = qcReportService.findById(reportId);
+
+            QCReportRequest request = new QCReportRequest();
+            request.setAssetId(report.getAssetId());
+            request.setStatus(report.getStatus());
+            request.setInspectedBy(report.getInspectedBy());
+            request.setNote(report.getNote());
+
+            model.addAttribute("qcReport", request);
+            model.addAttribute("reportId", reportId);
+            model.addAttribute("assets", assetService.findAll());
+            model.addAttribute("users", userService.findAll());
+            return "qc/edit";
+
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống khi cập nhật trạng thái.");
+            return "redirect:/qc-reports/list";
         }
-        return "redirect:/qc-reports/" + reportId;
     }
 
-    @PostMapping("/{reportId}/delete")
-    public String deleteReport(@PathVariable("reportId") int reportId, RedirectAttributes redirectAttributes) {
+    @PostMapping("/{reportId}/edit")
+    public String processEditForm(
+            @PathVariable int reportId,
+            @ModelAttribute("qcReport") QCReportRequest request,
+            RedirectAttributes redirectAttributes) {
         try {
-            int deleted = qcReportService.deleteById(reportId);
-            if (deleted > 0) {
-                redirectAttributes.addFlashAttribute("message", "Xóa báo cáo QC thành công.");
-            } else {
-                redirectAttributes.addFlashAttribute("error", "Xóa thất bại.");
-            }
+            qcReportService.updateQCReport(reportId, request);
+            redirectAttributes.addFlashAttribute("message", "Cập nhật báo cáo QC thành công.");
+            return "redirect:/qc-reports/" + reportId;
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("qcReport", request);
+            return "redirect:/qc-reports/" + reportId + "/edit";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống. Vui lòng thử lại.");
+            return "redirect:/qc-reports/" + reportId + "/edit";
+        }
+    }
+
+    // ==================== DELETE ====================
+    @PostMapping("/{reportId}/delete")
+    public String deleteReport(
+            @PathVariable int reportId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            qcReportService.deleteById(reportId);
+            redirectAttributes.addFlashAttribute("message", "Xóa báo cáo QC thành công.");
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống khi xóa báo cáo.");
         }

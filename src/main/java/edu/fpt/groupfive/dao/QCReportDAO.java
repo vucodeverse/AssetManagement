@@ -7,17 +7,29 @@ import java.util.Optional;
 
 public interface QCReportDAO {
 
-    void createQCReport(QualityControlReport qcReport);
 
-    int updateQCStatus(int id, String qcStatus, String note);
+    // ==================== CREATE ====================
+    QualityControlReport createQCReport(QualityControlReport qc);
 
+    // ==================== READ ====================
     Optional<QualityControlReport> findById(int id);
-
-    boolean existsInspectorById(int inspectorId);
 
     List<QualityControlReport> findByAssetId(int assetId);
 
+    List<QualityControlReport> findByStatus(String status);
+
     List<QualityControlReport> findAll();
 
-    int deleteById(int id);
+    // ==================== UPDATE ====================
+    QualityControlReport updateQCReport(QualityControlReport qc);
+
+    // ==================== DELETE ====================
+    void deleteById(int id);
+
+    // ==================== EXISTS ====================
+    boolean existsById(int id);
+
+    boolean existsAssetById(int assetId);
+
+    boolean existsInspectorById(int inspectorId);
 }

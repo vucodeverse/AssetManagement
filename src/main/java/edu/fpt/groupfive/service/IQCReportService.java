@@ -7,15 +7,22 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IQCReportService {
-    void createQCReport(QCReportRequest request);
 
-    int updateQCStatus(int id, String qcStatus, String note);
+    // ==================== CREATE ====================
+    QCReportResponse createQCReport(QCReportRequest request);
 
-    Optional<QCReportResponse> findById(int id);
+    // ==================== READ ====================
+    QCReportResponse findById(int id);
 
     List<QCReportResponse> findByAssetId(int assetId);
 
+    List<QCReportResponse> findByStatus(String status);
+
     List<QCReportResponse> findAll();
 
-    int deleteById(int id);
+    // ==================== UPDATE ====================
+    QCReportResponse updateQCReport(int id, QCReportRequest request);
+
+    // ==================== DELETE ====================
+    void deleteById(int id);
 }
