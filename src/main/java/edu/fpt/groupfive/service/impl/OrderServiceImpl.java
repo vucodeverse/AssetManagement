@@ -79,7 +79,6 @@ public class OrderServiceImpl implements OrderService {
         // check quotation có đang tồn tịaij hay ko
         Quotation quotation = quotationDAO.findById(quotationId)
                 .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
-
         // lấy ra list quotation detiail
         List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(quotationId).stream()
                 .filter(qd -> PurchaseProcessStatus.APPROVED == qd.getQuotationDetailStatus()
@@ -388,5 +387,6 @@ public class OrderServiceImpl implements OrderService {
 
         return true;
     }
+
 
 }
