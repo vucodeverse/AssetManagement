@@ -37,9 +37,9 @@
                                         th:text="'QT-' + ${q.quotationId}"></span></div>
                                 <div style="font-size: 12px; color: var(--muted2); font-weight: 500;"
                                     th:text="${q.supplierName}"></div>
-                                <div style="margin-top: 8px;" th:if="${q.quotationStatus != null}">
-                                    <span th:class="'status-tag ' + ${q.quotationStatus.description}"
-                                        th:text="${q.quotationStatus?.description}"></span>
+                                <div style="margin-top: 8px;" th:if="${q.status != null}">
+                                    <span th:class="'status-tag ' + ${q.status.description}"
+                                        th:text="${q.status?.description}"></span>
                                 </div>
                             </th>
                         </tr>
@@ -146,7 +146,7 @@
                             <td class="sticky-col">THAO TÁC BÁO GIÁ TỔNG</td>
                             <td th:each="q : ${quotations}">
                                 <div style="display: flex; gap: 10px; justify-content: center;"
-                                    th:if="${#strings.toString(q.quotationStatus) == 'PENDING'}"
+                                    th:if="${#strings.toString(q.status) == 'PENDING'}"
                                      sec:authorize="hasAuthority('DIRECTOR')">
                                     <form method="post" th:action="@{/quotations/{id}/actions(id=${q.quotationId})}">
                                         <button type="submit" name="action" value="r" class="btn-bw btn-bw-reject">

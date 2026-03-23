@@ -11,6 +11,7 @@ public interface ReturnReqDAO {
     Integer insert(ReturnRequest request);
     void update(ReturnRequest request);
     void delete(Integer id);
+    void updateStatus(Integer id, String status, Integer whConfirmedBy);
     List<ReturnRequest> search(Integer departmentId, String keyword,
                                String status, LocalDate fromDate, LocalDate toDate);
 }

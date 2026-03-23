@@ -23,7 +23,6 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
 
-
         // Lấy username từ authentication
         String username = authentication.getName();
 
@@ -35,7 +34,7 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
         session.setAttribute("userId", user.getUserId());
         session.setAttribute("departmentId", user.getDepartmentId());
         session.setAttribute("fullName", user.getFullName());
-
+        session.setAttribute("role", user.getRole().name());
 
         String redirectUrl = request.getContextPath();
 
@@ -50,26 +49,37 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
             redirectUrl += "/purchase-staff/dashboard";
         }
 
-        if (authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
-            redirectUrl += "/admin/home";
-        }
+        // if (authentication.getAuthorities().stream().
+        // anyMatch(grantedAuthority ->
+        // grantedAuthority.getAuthority().equals("ADMIN"))) {
+        // if (authentication.getAuthorities().stream()
+        // .anyMatch(grantedAuthority ->
+        // grantedAuthority.getAuthority().equals("ADMIN"))) {
+        // redirectUrl += "/admin/home";
+        // }
 
         if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("WAREHOUSE_STAFF"))) {
             redirectUrl += "/wh/dashboard";
         }
 
-
-        if(authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
+        if (authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
             redirectUrl += "/admin/users";
         }
 
-        if(authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DEPARTMENT_MANAGER"))) {
+        if (authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DEPARTMENT_MANAGER"))) {
             redirectUrl += "/department/allocation-request/list";
         }
-        if(authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
+        if (authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
             redirectUrl += "/manager/dashboard";
+        }
+
+        if (authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
+            redirectUrl += "/asset-manager/allocation-request/list";
         }
 
         response.sendRedirect(redirectUrl);

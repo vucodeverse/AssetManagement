@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.dto.response;
 
+import edu.fpt.groupfive.common.Priority;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -20,7 +21,7 @@ public class AllocationRequestResponse {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate neededByDate;
 
-    private String priority;
+    private Priority priority;
     private String requestReason;
     private String status;
 

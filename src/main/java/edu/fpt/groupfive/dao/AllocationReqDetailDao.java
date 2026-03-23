@@ -10,4 +10,6 @@ public interface AllocationReqDetailDao {
     List<AllocationRequestDetail> findByRequestId(Integer requestId);
 
     void deleteByRequestId(Integer requestId);
+
+    List<AllocationRequestDetail> findAllByHandoverId(Integer handoverId);
 }

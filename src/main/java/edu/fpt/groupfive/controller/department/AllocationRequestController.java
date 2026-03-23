@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.controller.department;
 
+import edu.fpt.groupfive.common.Priority;
 import edu.fpt.groupfive.dto.request.AllocationRequestCreateRequest;
 import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
 import edu.fpt.groupfive.model.AllocationRequest;
@@ -29,7 +30,7 @@ public class AllocationRequestController {
     public String showList(HttpSession session, Model model) {
         Integer departmentId = (Integer) session.getAttribute("departmentId");
 
-        List<AllocationRequest> requests = allocationRequestService.getAllAllocationRequest(departmentId);
+        List<AllocationRequest> requests = allocationRequestService.getAllAllocationRequestByDepartmentId(departmentId);
 
         model.addAttribute("requests", requests);
 
@@ -48,7 +49,7 @@ public class AllocationRequestController {
             HttpSession session,
             @RequestParam(required = false, name = "keyword") String keyword,
             @RequestParam(required = false, name = "status") String status,
-            @RequestParam(required = false, name = "priority") String priority,
+            @RequestParam(required = false, name = "priority") Priority priority,
             @RequestParam(required = false, name = "fromDate") String fromDate,
             @RequestParam(required = false, name = "toDate") String toDate,
             Model model) {
@@ -113,8 +114,6 @@ public class AllocationRequestController {
             model.addAttribute("assetType", assetTypeService.getAll());
             model.addAttribute("canEdit", true);
 
-            System.out.println(bindingResult);
-
             return "allocation/allocation_request_form";
         }
 
@@ -151,8 +150,7 @@ public class AllocationRequestController {
             @PathVariable("id") Integer id,
             Model model) {
         // Lấy request cần update
-        AllocationRequestResponse dto =
-                allocationRequestService.getRequestById(id);
+        AllocationRequestResponse dto = allocationRequestService.getRequestById(id);
 
         model.addAttribute("requestDto", dto);
 
@@ -170,26 +168,17 @@ public class AllocationRequestController {
             @ModelAttribute("requestDto") @Valid AllocationRequestCreateRequest dto,
             RedirectAttributes redirectAttributes) {
 
-        try {
 
-            allocationRequestService.updateRequest(id, dto);
+        allocationRequestService.updateRequest(id, dto);
 
-            redirectAttributes.addFlashAttribute(
-                    "message",
-                    "Cập nhật thành công!"
-            );
+        redirectAttributes.addFlashAttribute(
+                "message",
+                "Cập nhật thành công!"
+        );
 
-            return "redirect:/department/allocation-request/list";
+        return "redirect:/department/allocation-request/list";
 
-        } catch (Exception e) {
 
-            redirectAttributes.addFlashAttribute(
-                    "error",
-                    e.getMessage()
-            );
-
-            return "redirect:/department/allocation-request/edit/" + id;
-        }
     }
 
     @PostMapping("/delete/{id}")

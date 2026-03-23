@@ -2,6 +2,7 @@ package edu.fpt.groupfive.dto.request;
 
 import edu.fpt.groupfive.model.ReturnRequestDetail;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -18,6 +19,6 @@ public class ReturnRequestCreateRequest {
     private String status;
     @NotBlank(message = "Lí do không để trống!")
     private String requestReason;
-    @NotNull(message = "Danh sách chi tiết không được để trống!")
+    @NotEmpty(message = "Danh sách chi tiết không được để trống!")
     private List<ReturnRequestDetailRequest> details;
 }
