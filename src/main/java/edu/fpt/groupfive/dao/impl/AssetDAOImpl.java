@@ -201,19 +201,6 @@ public class AssetDAOImpl implements AssetDAO {
         }
     }
 
-    @Override
-    public void updateStatus(Integer assetId, AssetStatus status) {
-        String sql = "UPDATE asset SET current_status = ? WHERE asset_id = ?";
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status.name());
-            ps.setInt(2, assetId);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            throw new RuntimeException("Cập nhật trạng thái tài sản thất bại", e);
-        }
-    }
-
     // find asset by id
     @Override
     public Optional<Asset> findById(Integer id) {
