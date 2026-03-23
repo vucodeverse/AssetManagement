@@ -53,7 +53,7 @@ public interface AssetDAO {
 
     List<Asset> findExpiringWarranties(int days);
 
-
+    List<Asset> findByPoId(Integer poId);
 
     List<Asset> findByDepartmentId(Integer departmentId);
 }

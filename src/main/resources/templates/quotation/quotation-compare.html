@@ -61,20 +61,8 @@
 
                             <td th:each="q : ${quotations}">
                                 <div class="quotation-column-content">
-                                    <!-- Iterate through all details of this quotation -->
                                     <th:block th:each="qDetail : ${q.quotationDetails}">
-                                        <!-- Only show if it matches the current purchase detail -->
                                         <div th:if="${qDetail.purchaseDetailId == pd.id}" class="detail-card">
-                                            <div th:if="${qDetail.status != null && qDetail.status.name() != 'APPROVED'}">
-                                                <form method="post"
-                                                    th:action="@{/quotations/details/{id}/actions(id=${qDetail.quotationDetailId})}"
-                                                    style="position: absolute; top: 8px; right: 8px;">
-                                                    <button type="submit" class="btn-remove-detail" name="actions"
-                                                        value="r">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
 
                                             <div class="detail-header" th:text="${qDetail.assetTypeName}"></div>
                                             <div class="detail-spec" th:text="${qDetail.specificationRequirement}"></div>

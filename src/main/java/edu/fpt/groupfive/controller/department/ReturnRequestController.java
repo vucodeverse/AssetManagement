@@ -84,7 +84,7 @@ public class ReturnRequestController {
 
         model.addAttribute("canEdit", false);
 
-        return "return/return_request_form";
+        return "return/return_request_detail";
 
     }
 

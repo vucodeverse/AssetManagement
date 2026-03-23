@@ -2,6 +2,7 @@ package edu.fpt.groupfive.dao.warehouse;
 
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
 import edu.fpt.groupfive.dto.response.warehouse.LedgerRecordResponseDTO;
 import edu.fpt.groupfive.dto.request.warehouse.TransactionFilterRequestDTO;
 
@@ -10,13 +11,13 @@ public interface WhTransactionDAO {
             Integer assetTypeId, 
             String assetTypeName, 
             Integer poDetailId, 
-            java.math.BigDecimal price, 
+            BigDecimal price, 
             Integer targetZoneId, 
             Integer unitVolume
     ) {}
 
     Map<Integer, List<Integer>> executeInboundTransaction(Integer poId, Integer executedBy, List<AssetPlacementPlan> placements);
-
+    void executeReturnInboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note);
     void executeOutboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note);
 
     List<LedgerRecordResponseDTO> getAllTransactions(TransactionFilterRequestDTO filter);

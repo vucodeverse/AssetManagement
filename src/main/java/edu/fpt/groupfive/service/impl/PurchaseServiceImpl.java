@@ -22,8 +22,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -139,6 +141,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         List<Purchase> purchases = purchaseDAO.findAll();
 
         purchases = author(purchases);
+        purchases = sortPurchases(purchases);
         return purchases.stream().map(p -> {
 
             // map sang response để trả về client
@@ -165,6 +168,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         List<Purchase> purchases = purchaseDAO.search(p);
 
         purchases = author(purchases);
+        purchases = sortPurchases(purchases);
 
         return purchases.stream()
                 .map(pr -> {
@@ -235,13 +239,26 @@ public class PurchaseServiceImpl implements PurchaseService {
                     .filter(p -> !PurchaseProcessStatus.DRAFT.equals(p.getStatus()))
                     .toList();
 
-
+        List<PurchaseProcessStatus> excludedStatuses = List.of(
+                PurchaseProcessStatus.REJECTED,
+                PurchaseProcessStatus.PENDING
+        );
         if (Role.PURCHASE_STAFF.name().equals(roleLogin.getRole()))
             purchases = purchases.stream()
-                    .filter(p -> !PurchaseProcessStatus.REJECTED.equals(p.getStatus()))
+                    .filter(p -> !excludedStatuses.contains(p.getStatus()))
                     .toList();
 
         return purchases;
+    }
+
+    private List<Purchase> sortPurchases(List<Purchase> purchases) {
+        return purchases.stream()
+                .sorted(Comparator.comparing((Purchase p) -> {
+                    if (PurchaseProcessStatus.DRAFT.equals(p.getStatus())) return 0;
+                    if (PurchaseProcessStatus.PENDING.equals(p.getStatus())) return 1;
+                    return 2;
+                }).thenComparing(Purchase::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
     }
 
 }

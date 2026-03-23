@@ -5,6 +5,7 @@ import edu.fpt.groupfive.dto.request.warehouse.ZoneCreateRequestDTO;
 import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
 import edu.fpt.groupfive.model.warehouse.WarehouseZone;
+import edu.fpt.groupfive.dao.warehouse.WhWarehouseDAO;
 import edu.fpt.groupfive.service.warehouse.WhZoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.List;
 public class WhZoneServiceImpl implements WhZoneService {
 
     private final WhZoneDAO whZoneDAO;
+    private final WhWarehouseDAO whWarehouseDAO;
 
     @Override
     public List<ZoneCapacityResponseDTO> getAllZones() {
@@ -24,8 +26,10 @@ public class WhZoneServiceImpl implements WhZoneService {
 
     @Override
     public ZoneCapacityResponseDTO getZoneById(int zoneId) {
-        return whZoneDAO.getZoneById(zoneId)
+        ZoneCapacityResponseDTO zone = whZoneDAO.getZoneById(zoneId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy zone có ID: " + zoneId));
+        zone.setAssets(whZoneDAO.getAssetsByZoneId(zoneId));
+        return zone;
     }
 
     @Override
@@ -36,7 +40,14 @@ public class WhZoneServiceImpl implements WhZoneService {
     @Override
     public void createZone(ZoneCreateRequestDTO dto) {
         WarehouseZone zone = new WarehouseZone();
-        zone.setWarehouseId(1); // Mặc định kho số 1
+        
+        // Find first available warehouse instead of hardcoding ID 1
+        int warehouseId = whWarehouseDAO.getAllWarehouses().stream()
+                .findFirst()
+                .map(w -> w.getWarehouseId())
+                .orElseThrow(() -> new RuntimeException("Chưa có kho nào được tạo trong hệ thống."));
+        
+        zone.setWarehouseId(warehouseId);
         zone.setZoneName(dto.getZoneName());
         zone.setMaxCapacity(dto.getMaxCapacity());
         zone.setStatus("ACTIVE");
@@ -46,6 +57,15 @@ public class WhZoneServiceImpl implements WhZoneService {
     @Override
     public void recalculateCapacityByAssetType(int assetTypeId, int unitVolume) {
         whZoneDAO.updateCurrentCapacity(assetTypeId, unitVolume);
+    }
+
+    @Override
+    public void deleteZone(int zoneId) {
+        ZoneCapacityResponseDTO zone = getZoneById(zoneId);
+        if (zone.getCurrentCapacity() != null && zone.getCurrentCapacity() > 0) {
+            throw new IllegalArgumentException("Không thể xóa Zone đang chứa tài sản (Sức chứa hiện tại > 0).");
+        }
+        whZoneDAO.deleteZone(zoneId);
     }
 
     @Override

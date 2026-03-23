@@ -41,7 +41,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
             ps.setString(3, asset.getCurrentStatus().name());
@@ -297,13 +297,11 @@ public class AssetDAOImpl implements AssetDAO {
     }
 
     private Asset mapResultSet2(ResultSet rs) throws SQLException {
-
         Asset asset = new Asset();
-
         asset.setAssetId(rs.getInt("asset_id"));
         asset.setAssetName(rs.getString("asset_name"));
         asset.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
-        asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
+        asset.setCurrentStatus(parseStatus(rs.getString("current_status")));
 
         asset.setOriginalCost(rs.getBigDecimal("original_cost"));
         asset.setAssetTypeId(rs.getInt("asset_type_id"));
@@ -311,6 +309,18 @@ public class AssetDAOImpl implements AssetDAO {
         asset.setWarrantyStartDate(toLocalDate(rs.getDate("warranty_start_date")));
         asset.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
         asset.setAcquisitionDate(toLocalDate(rs.getDate("acquisition_date")));
+        
+        // Map inServiceDate if column exists in ResultSet
+        try {
+            asset.setInServiceDate(toLocalDate(rs.getDate("in_service_date")));
+        } catch (SQLException ignored) {
+            // Some queries might not include this column
+        }
+
+        int deptId = rs.getInt("department_id");
+        if (!rs.wasNull()) {
+            asset.setDepartmentId(deptId);
+        }
         asset.setNote(rs.getString("note"));
 
         return asset;
@@ -391,6 +401,7 @@ public class AssetDAOImpl implements AssetDAO {
                     dto.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
                     dto.setOriginalCost(rs.getBigDecimal("original_cost"));
                     dto.setAssetTypeId(rs.getInt("asset_type_id"));
+
 
                     String statusStr = rs.getString("current_status");
                     if (statusStr != null) {
@@ -646,15 +657,15 @@ public class AssetDAOImpl implements AssetDAO {
 
     @Override
     public List<Asset> findExpiringWarranties(int days) {
-String sql ="select a.*, t.type_name from asset a\n" +
-        "left join asset_type t on a.asset_type_id=t.asset_type_id\n" +
-        "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date))\n" +
-        "order by a.warranty_end_date asc";
-
+        String sql = "select a.*, t.type_name from asset a\n" +
+                "left join asset_type t on a.asset_type_id=t.asset_type_id\n" +
+                "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date))\n"
+                +
+                "order by a.warranty_end_date asc";
 
         List<Asset> list = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, days);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -713,13 +724,12 @@ String sql ="select a.*, t.type_name from asset a\n" +
     }
 
     private Asset mapResultSet(ResultSet rs) throws SQLException {
-
         Asset asset = new Asset();
 
         asset.setAssetId(rs.getInt("asset_id"));
         asset.setAssetName(rs.getString("asset_name"));
         asset.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
-        asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
+        asset.setCurrentStatus(parseStatus(rs.getString("current_status")));
 
         asset.setOriginalCost(rs.getBigDecimal("original_cost"));
         asset.setAssetTypeId(rs.getInt("asset_type_id"));
@@ -728,7 +738,31 @@ String sql ="select a.*, t.type_name from asset a\n" +
         asset.setWarrantyEndDate(toLocalDate(rs.getDate("warranty_end_date")));
         asset.setAcquisitionDate(toLocalDate(rs.getDate("acquisition_date")));
 
+        // Map inServiceDate if column exists in ResultSet
+        try {
+            asset.setInServiceDate(toLocalDate(rs.getDate("in_service_date")));
+        } catch (SQLException ignored) {
+        }
+        
+        int deptId = rs.getInt("department_id");
+        if (!rs.wasNull()) {
+            asset.setDepartmentId(deptId);
+        }
+
         return asset;
+    }
+
+    private AssetStatus parseStatus(String status) {
+        if (status == null || status.isBlank()) return null;
+        String s = status.toUpperCase().trim();
+        // Handle common legacy mappings if any
+        if ("IN_USE".equals(s)) return AssetStatus.ASSIGNED;
+        
+        try {
+            return AssetStatus.valueOf(s);
+        } catch (IllegalArgumentException e) {
+            return null; // or a default value
+        }
     }
 
     private void setDate(PreparedStatement ps, int index, java.time.LocalDate date)
@@ -753,4 +787,27 @@ String sql ="select a.*, t.type_name from asset a\n" +
         return date != null ? date.toLocalDate() : null;
     }
 
+    @Override
+    public List<Asset> findByPoId(Integer poId) {
+        String sql = """
+                SELECT a.*, t.type_name
+                FROM asset a
+                JOIN asset_type t ON a.asset_type_id = t.asset_type_id
+                JOIN purchase_order_details pod ON a.purchase_order_detail_id = pod.purchase_order_detail_id
+                WHERE pod.purchase_order_id = ?
+                """;
+        List<Asset> list = new ArrayList<>();
+        try (Connection con = databaseConfig.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, poId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSet(rs));
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi tìm tài sản theo PO #" + poId, e);
+        }
+        return list;
+    }
 }

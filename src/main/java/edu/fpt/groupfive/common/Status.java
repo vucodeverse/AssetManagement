@@ -4,6 +4,7 @@ public enum Status {
     DRAFT("Tạm thời"),
     PENDING("Đang chờ"),
     APPROVED("Đã chấp nhận"),
+    COMPLETED("Đã hoàn tất"),
     REJECTED("Từ chối"),
     DELETED("Đã bị xóa");
 

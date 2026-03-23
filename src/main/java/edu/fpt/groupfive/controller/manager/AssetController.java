@@ -134,7 +134,21 @@ public class AssetController {
             request.setAssetName(asset.getAssetName());
             request.setPurchaseOrderDetailId(asset.getPurchaseOrderDetailId());
             request.setWarrantyStartDate(asset.getWarrantyStartDate());
-            request.setCurrentStatus(asset.getCurrentStatus());
+            
+            String currentStatus = asset.getCurrentStatus();
+            if (currentStatus != null) {
+                String s = currentStatus.toUpperCase().trim();
+                if ("IN_USE".equals(s)) {
+                    request.setCurrentStatus(AssetStatus.ASSIGNED);
+                } else {
+                    try {
+                        request.setCurrentStatus(AssetStatus.valueOf(s));
+                    } catch (IllegalArgumentException e) {
+                        // Safe fallback if needed
+                    }
+                }
+            }
+            
             request.setWarrantyEndDate(asset.getWarrantyEndDate());
             request.setOriginalCost(asset.getOriginalCost());
             request.setAssetTypeId(asset.getAssetTypeId());
