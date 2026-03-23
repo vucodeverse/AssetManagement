@@ -2,6 +2,7 @@ package edu.fpt.groupfive.controller.qc;
 
 import edu.fpt.groupfive.dto.request.qc.QCReportRequest;
 import edu.fpt.groupfive.dto.response.QCReportResponse;
+import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.IQCReportService;
 import edu.fpt.groupfive.service.UserService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/qc-reports")
@@ -22,22 +24,33 @@ public class QCReportController {
     private final AssetService assetService;
     private final UserService userService;
 
-    // ==================== CREATE ====================
     @GetMapping("/create")
     public String showCreateForm(
             @RequestParam(value = "assetId", required = false) Integer assetId,
+            @RequestParam(value = "transferId", required = false) Integer transferId,
             Model model) {
 
         QCReportRequest qcReport = new QCReportRequest();
         if (assetId != null) qcReport.setAssetId(assetId);
 
         model.addAttribute("qcReport", qcReport);
-        model.addAttribute("assets", assetService.findAll());
         model.addAttribute("users", userService.findAll());
+
+        if (assetId != null) {
+            Optional<Asset> assetOpt = assetService.findById(assetId);
+            if (assetOpt.isPresent()) {
+                model.addAttribute("asset", assetOpt.get());
+            } else {
+                model.addAttribute("error", "Không tìm thấy tài sản với ID: " + assetId);
+            }
+        }
+
+        if (transferId != null) {
+            model.addAttribute("transferId", transferId);
+        }
 
         return "qc/create";
     }
-
     @PostMapping("/create")
     public String processCreateForm(
             @ModelAttribute("qcReport") QCReportRequest request,

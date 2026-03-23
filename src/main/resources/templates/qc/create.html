@@ -1,72 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Tạo báo cáo QC</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" th:href="@{/css/qc/style.css}"/>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/qc/style.css}">
+    </th:block>
 </head>
+
 <body>
-
-<!-- SIDEBAR -->
-<div class="sidebar">
-    <div class="sidebar-brand">
-        <div class="brand-icon">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-        </div>
-        <div class="brand-text">
-            <div class="brand-name">Precision Atelier</div>
-            <div class="brand-sub">QC Management</div>
-        </div>
-    </div>
-    <nav class="sidebar-nav">
-        <a th:href="@{/}" class="nav-item">
-            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-            </svg>
-            Trang chủ
-        </a>
-        <a th:href="@{/qc-reports/list}" class="nav-item active">
-            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
-            Báo cáo QC
-        </a>
-    </nav>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-    <!-- TOP NAV -->
-    <div class="topnav">
-        <div class="topnav-tabs"></div>
-        <div class="topnav-actions">
-            <button class="icon-btn">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                </svg>
-            </button>
-            <div class="avatar-btn">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <!-- CONTENT -->
+<th:block layout:fragment="content">
     <div class="content">
         <!-- BREADCRUMB -->
         <div class="breadcrumb">
-            <a th:href="@{/}">Trang chủ</a>
+            <a th:href="@{/warehouse}">Trang chủ</a>
             <span class="sep">›</span>
             <a th:href="@{/qc-reports/list}">Báo cáo QC</a>
             <span class="sep">›</span>
@@ -81,74 +31,35 @@
 
         <!-- FORM CARD -->
         <div class="card">
-            <div class="form-tabs">
-                <span class="form-tab active">Thông tin chung</span>
-                <span class="form-tab">Chi tiết kiểm tra</span>
-                <span class="form-tab">Đính kèm</span>
-            </div>
-
             <form th:action="@{/qc-reports/create}" method="post" th:object="${qcReport}" class="qc-form">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
                 <div class="form-grid">
-                    <!-- TÀI SẢN -->
+
+                    <!-- TÀI SẢN (CHỈ HIỂN THỊ, KHÔNG CHỌN) -->
                     <div class="form-group">
-                        <label class="form-label" for="assetId">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                            </svg>
+                        <label class="form-label" for="assetName">
                             TÀI SẢN <span class="required">*</span>
                         </label>
-                        <select id="assetId" th:field="*{assetId}" class="form-control" required>
-                            <option value="">Chọn tài sản cần kiểm tra...</option>
-                            <option th:each="asset : ${assets}"
-                                    th:value="${asset.assetId}"
-                                    th:text="${asset.assetName + ' (Mã: ' + asset.assetId + ')'}">
-                            </option>
-                        </select>
+                        <input type="text" id="assetName"
+                               th:value="${asset.assetName + ' (Mã: ' + asset.assetId + ')'}"
+                               class="form-control" disabled/>
+                        <input type="hidden" th:field="*{assetId}" th:value="${asset.assetId}"/>
                     </div>
 
                     <!-- TRẠNG THÁI -->
                     <div class="form-group">
-                        <label class="form-label" for="status">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            TRẠNG THÁI <span class="required">*</span>
-                        </label>
+                        <label class="form-label" for="status">TRẠNG THÁI <span class="required">*</span></label>
                         <select id="status" th:field="*{status}" class="form-control" required>
                             <option value="">-- Chọn trạng thái --</option>
-                            <option value="PASSED">✓ PASSED - Đạt yêu cầu</option>
-                            <option value="FAILED">✗ FAILED - Không đạt</option>
-                            <option value="PENDING">⏱ PENDING - Chờ xử lý</option>
-                        </select>
-                    </div>
-
-                    <!-- NGƯỜI KIỂM TRA -->
-                    <div class="form-group">
-                        <label class="form-label" for="inspectedBy">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            NGƯỜI KIỂM TRA <span class="required">*</span>
-                        </label>
-                        <select id="inspectedBy" th:field="*{inspectedBy}" class="form-control" required>
-                            <option value="">-- Chọn người kiểm tra --</option>
-                            <option th:each="user : ${users}"
-                                    th:value="${user.userId}"
-                                    th:text="${user.firstName + ' ' + user.lastName + ' (Mã: ' + user.userId + ')'}">
-                            </option>
+                            <option value="PASSED">PASSED - Đạt yêu cầu</option>
+                            <option value="FAILED">FAILED - Không đạt</option>
+                            <option value="PENDING">PENDING - Chờ xử lý</option>
                         </select>
                     </div>
 
                     <!-- GHI CHÚ -->
                     <div class="form-group full-width">
-                        <label class="form-label" for="note">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                            GHI CHÚ
-                        </label>
+                        <label class="form-label" for="note">GHI CHÚ</label>
                         <textarea id="note" th:field="*{note}" class="form-control" rows="4"
                                   placeholder="Mô tả chi tiết kết quả kiểm tra hoặc các điểm bất thường..."
                                   maxlength="2000"></textarea>
@@ -157,64 +68,27 @@
                             <span class="char-counter"><span id="charCount">0</span>/2000</span>
                         </div>
                     </div>
+
                 </div>
 
                 <!-- ACTIONS -->
                 <div class="form-actions">
-                    <a th:href="@{/qc-reports/list}" class="btn btn-secondary">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                        Hủy
-                    </a>
-                    <button class="btn btn-primary" type="submit">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Tạo báo cáo
-                    </button>
+                    <a th:href="@{/qc-reports/list}" class="btn btn-secondary">Hủy</a>
+                    <button class="btn btn-primary" type="submit">Tạo báo cáo</button>
                 </div>
+
             </form>
         </div>
-
-        <!-- BOTTOM PANELS -->
-        <div class="bottom-panels">
-            <div class="info-panel">
-                <div class="info-panel-icon">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div class="info-panel-body">
-                    <h4>Hướng dẫn quy chuẩn</h4>
-                    <p>Đảm bảo rằng tất cả các tài sản được kiểm tra theo định kỳ 24h. Báo cáo không đạt (FAIL) sẽ tự động gửi thông báo đến bộ phận bảo trì.</p>
-                </div>
-            </div>
-            <div class="danger-panel">
-                <div class="danger-panel-header">
-                    <span class="danger-badge">
-                        <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
-                        CẢNH BÁO
-                    </span>
-                </div>
-                <div class="danger-count">12</div>
-                <div class="danger-label">Lỗi nghiêm trọng trong tuần này</div>
-            </div>
-        </div>
-
-        <div class="page-footer">© 2024 PRECISION ATELIER QC MANAGEMENT SYSTEM • HỆ THỐNG QUẢN LÝ CHẤT LƯỢNG DOANH NGHIỆP</div>
     </div>
-</div>
 
-<script>
-    const note = document.getElementById('note');
-    const counter = document.getElementById('charCount');
-    if (note && counter) {
-        note.addEventListener('input', () => { counter.textContent = note.value.length; });
-        counter.textContent = note.value.length;
-    }
-</script>
+    <script>
+        const note = document.getElementById('note');
+        const counter = document.getElementById('charCount');
+        if (note && counter) {
+            note.addEventListener('input', () => { counter.textContent = note.value.length; });
+            counter.textContent = note.value.length;
+        }
+    </script>
+</th:block>
 </body>
 </html>

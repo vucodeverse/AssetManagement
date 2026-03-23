@@ -7,9 +7,11 @@ import edu.fpt.groupfive.dto.request.search.AssetSearchCriteria;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetResponse;
 import edu.fpt.groupfive.dto.response.PageResponse;
+import edu.fpt.groupfive.model.Asset;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface AssetService {
     PageResponse<AssetDetailResponse> searchAssets(
@@ -46,4 +48,6 @@ public interface AssetService {
     List<AssetDetailResponse> findAll();
 
     List<AssetDetailResponse> findByDepartment(Integer departmentId);
+
+    Optional<Asset> findById(Integer id);
 }
