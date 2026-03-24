@@ -36,6 +36,7 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
             request.setUpdateAt(updated.toLocalDateTime());
 
         request.setFullName(rs.getString("full_name"));
+        request.setDepartmentName(rs.getString("department_name"));
 
 
         return request;
@@ -46,9 +47,11 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
         String query = """
                 SELECT
                      r.*,
-                     u.first_name + ' ' + u.last_name AS full_name
+                     u.first_name + ' ' + u.last_name AS full_name,
+                     d.department_name
                  FROM return_request r
                      JOIN dbo.users u on u.user_id = r.requester_id
+                    JOIN dbo.departments d on d.department_id = r.requested_department_id
                  WHERE requested_department_id = ?
                  ORDER BY request_id ASC
                 """;
@@ -75,11 +78,13 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
     @Override
     public ReturnRequest findById(Integer id) {
         String query = """
-                SELECT 
+                SELECT
                     r.*,
-                    u.first_name + ' ' + u.last_name AS full_name
+                    u.first_name + ' ' + u.last_name AS full_name,
+                    d.department_name
                 FROM return_request r
                      JOIN dbo.users u on u.user_id = r.requester_id
+                    JOIN dbo.departments d on d.department_id = r.requested_department_id
                 WHERE request_id = ?
                 """;
 

@@ -50,7 +50,7 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
             redirectUrl += "/wh/dashboard";
         } else if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
-            redirectUrl += "/admin/users";
+            redirectUrl += "/admin/dashboard";
         } else if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DEPARTMENT_MANAGER"))) {
             redirectUrl += "/department/allocation-request/list";
