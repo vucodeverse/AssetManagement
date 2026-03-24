@@ -18,6 +18,8 @@ public interface QCReportDAO {
 
     List<QualityControlReport> findByStatus(String status);
 
+    String getInspectorName(int userId);
+
     List<QualityControlReport> findAll();
 
     // ==================== UPDATE ====================

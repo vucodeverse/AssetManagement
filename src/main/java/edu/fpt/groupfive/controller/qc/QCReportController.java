@@ -6,7 +6,9 @@ import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.IQCReportService;
 import edu.fpt.groupfive.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/qc-reports")
+@RequestMapping("/wh/qc-reports")
 @RequiredArgsConstructor
 public class QCReportController {
 
@@ -24,6 +26,12 @@ public class QCReportController {
     private final AssetService assetService;
     private final UserService userService;
 
+    @Autowired
+    private HttpSession session;
+
+    private Integer getCurrentUserId() {
+        return (Integer) session.getAttribute("userId");
+    }
     @GetMapping("/create")
     public String showCreateForm(
             @RequestParam(value = "assetId", required = false) Integer assetId,
@@ -34,7 +42,6 @@ public class QCReportController {
         if (assetId != null) qcReport.setAssetId(assetId);
 
         model.addAttribute("qcReport", qcReport);
-        model.addAttribute("users", userService.findAll());
 
         if (assetId != null) {
             Optional<Asset> assetOpt = assetService.findById(assetId);
@@ -55,20 +62,30 @@ public class QCReportController {
     public String processCreateForm(
             @ModelAttribute("qcReport") QCReportRequest request,
             RedirectAttributes redirectAttributes) {
-        try {
-            QCReportResponse created = qcReportService.createQCReport(request);
-            redirectAttributes.addFlashAttribute("message", "Tạo báo cáo QC thành công.");
-            return "redirect:/qc-reports/" + created.getReportId();
 
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            redirectAttributes.addFlashAttribute("qcReport", request);
-            return "redirect:/qc-reports/create";
+        try {
+            Integer currentUserId = getCurrentUserId();
+
+            System.out.println("===== DEBUG =====");
+            System.out.println("assetId: " + request.getAssetId());
+            System.out.println("status: " + request.getStatus());
+            System.out.println("userId: " + currentUserId);
+
+            if (currentUserId == null) {
+                throw new RuntimeException("User chưa login");
+            }
+
+            request.setInspectedBy(currentUserId);
+
+            qcReportService.createQCReport(request);
+
+            return "redirect:/wh/qc-reports/list";
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống. Vui lòng thử lại.");
-            redirectAttributes.addFlashAttribute("qcReport", request);
-            return "redirect:/qc-reports/create";
+            e.printStackTrace(); // 🔥 QUAN TRỌNG NHẤT
+
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/wh/qc-reports/create?assetId=" + request.getAssetId();
         }
     }
 
@@ -98,7 +115,7 @@ public class QCReportController {
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/qc-reports/list";
+            return "redirect:/wh/qc-reports/list";
         }
     }
 
@@ -125,7 +142,7 @@ public class QCReportController {
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/qc-reports/list";
+            return "redirect:/wh/qc-reports/list";
         }
     }
 
@@ -137,16 +154,16 @@ public class QCReportController {
         try {
             qcReportService.updateQCReport(reportId, request);
             redirectAttributes.addFlashAttribute("message", "Cập nhật báo cáo QC thành công.");
-            return "redirect:/qc-reports/" + reportId;
+            return "redirect:/wh/qc-reports/" + reportId;
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             redirectAttributes.addFlashAttribute("qcReport", request);
-            return "redirect:/qc-reports/" + reportId + "/edit";
+            return "redirect:/wh/qc-reports/" + reportId + "/edit";
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống. Vui lòng thử lại.");
-            return "redirect:/qc-reports/" + reportId + "/edit";
+            return "redirect:/wh/qc-reports/" + reportId + "/edit";
         }
     }
 
@@ -165,6 +182,6 @@ public class QCReportController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống khi xóa báo cáo.");
         }
-        return "redirect:/qc-reports/list";
+        return "redirect:/wh/qc-reports/list";
     }
 }

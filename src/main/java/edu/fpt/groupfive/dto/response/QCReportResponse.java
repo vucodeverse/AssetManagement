@@ -10,6 +10,7 @@ public class QCReportResponse {
     private int assetId;
     private String status;
     private int inspectedBy;
+    private String inspectorName;
     private LocalDateTime qcDate;
     private String note;
 }

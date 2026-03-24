@@ -48,7 +48,14 @@ public class QCReportDAOImpl implements QCReportDAO {
     // ==================== READ ====================
     @Override
     public Optional<QualityControlReport> findById(int id) {
-        String query = "SELECT * FROM qc_report WHERE id = ?";
+        String query = """
+        SELECT q.*,
+               (ISNULL(u.first_name, '') + ' ' + ISNULL(u.last_name, '')) AS inspector_name
+        FROM qc_report q
+        LEFT JOIN users u ON q.inspected_by = u.user_id
+        WHERE q.id = ?
+    """;
+
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
@@ -80,7 +87,15 @@ public class QCReportDAOImpl implements QCReportDAO {
 
     @Override
     public List<QualityControlReport> findByStatus(String status) {
-        String query = "SELECT * FROM qc_report WHERE qc_status = ? ORDER BY qc_date DESC";
+        String query = """
+        SELECT q.*,
+               (ISNULL(u.first_name, '') + ' ' + ISNULL(u.last_name, '')) AS inspector_name
+        FROM qc_report q
+        LEFT JOIN users u ON q.inspected_by = u.user_id
+        WHERE q.qc_status = ?
+        ORDER BY q.qc_date DESC
+    """;
+
         List<QualityControlReport> reports = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
@@ -96,8 +111,38 @@ public class QCReportDAOImpl implements QCReportDAO {
     }
 
     @Override
+    public String getInspectorName(int userId) {
+        String sql = """
+        SELECT (ISNULL(first_name, '') + ' ' + ISNULL(last_name, '')) AS full_name
+        FROM users
+        WHERE user_id = ?
+    """;
+
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) return rs.getString("full_name");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return "Unknown";
+    }
+
+    @Override
     public List<QualityControlReport> findAll() {
-        String query = "SELECT * FROM qc_report ORDER BY qc_date DESC";
+        String query = """
+        SELECT q.*,
+               (ISNULL(u.first_name, '') + ' ' + ISNULL(u.last_name, '')) AS inspector_name
+        FROM qc_report q
+        LEFT JOIN users u ON q.inspected_by = u.user_id
+        ORDER BY q.qc_date DESC
+    """;
+
         List<QualityControlReport> reports = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
@@ -185,7 +230,7 @@ public class QCReportDAOImpl implements QCReportDAO {
 
     @Override
     public boolean existsInspectorById(int inspectorId) {
-        String query = "SELECT COUNT(1) FROM staff WHERE staff_id = ?";
+        String query = "SELECT COUNT(1) FROM users WHERE user_id = ?";
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
@@ -201,12 +246,21 @@ public class QCReportDAOImpl implements QCReportDAO {
     // ==================== ROW MAPPER ====================
     private QualityControlReport mapRow(ResultSet rs) throws SQLException {
         QualityControlReport qc = new QualityControlReport();
+
         qc.setReportId(rs.getInt("id"));
         qc.setAssetId(rs.getInt("asset_id"));
         qc.setStatus(rs.getString("qc_status"));
         qc.setInspectedBy(rs.getInt("inspected_by"));
         qc.setCreatedDate(rs.getTimestamp("qc_date").toLocalDateTime());
-        qc.setNote(rs.getString("note"));
+        String inspectorName;
+        try {
+            inspectorName = rs.getString("inspector_name");
+        } catch (SQLException e) {
+            inspectorName = null;
+        }
+
+        qc.setNote(inspectorName != null ? inspectorName : rs.getString("note"));
+
         return qc;
     }
 }

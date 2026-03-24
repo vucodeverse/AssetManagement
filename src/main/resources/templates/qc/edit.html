@@ -32,8 +32,8 @@
     <!-- BREADCRUMB -->
     <div class="breadcrumb">
         <a th:href="@{/}">Trang chủ</a> &nbsp;/&nbsp;
-        <a th:href="@{/qc-reports/list}">Báo cáo QC</a> &nbsp;/&nbsp;
-        <a th:href="@{/qc-reports/{id}(id=${reportId})}" th:text="'#' + ${reportId}"></a> &nbsp;/&nbsp;
+        <a th:href="@{/wh/qc-reports/list}">Báo cáo QC</a> &nbsp;/&nbsp;
+        <a th:href="@{/wh/qc-reports/{id}(id=${reportId})}" th:text="'#' + ${reportId}"></a> &nbsp;/&nbsp;
         Chỉnh sửa
     </div>
 
@@ -56,8 +56,7 @@
     <div class="card">
         <div class="section-title">Thông tin báo cáo</div>
 
-        <form th:action="@{/qc-reports/{id}/edit(id=${reportId})}" method="post" th:object="${qcReport}">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <form th:action="@{/wh/qc-reports/{id}/edit(id=${reportId})}" method="post" th:object="${qcReport}">
 
             <div class="form-grid">
 
@@ -118,7 +117,7 @@
             </div>
 
             <div class="form-actions">
-                <a th:href="@{/qc-reports/{id}(id=${reportId})}" class="btn btn-outline">Hủy</a>
+                <a th:href="@{/wh/qc-reports/{id}(id=${reportId})}" class="btn btn-outline">Hủy</a>
                 <button type="submit" class="btn btn-primary">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

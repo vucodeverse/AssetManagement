@@ -39,7 +39,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
             ps.setString(3, asset.getCurrentStatus().name());
@@ -84,7 +84,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
@@ -112,7 +112,7 @@ public class AssetDAOImpl implements AssetDAO {
         String sql = "DELETE FROM asset WHERE asset_id = ?";
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();
@@ -215,7 +215,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -246,8 +246,8 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 list.add(mapResultSet(rs));
@@ -278,7 +278,7 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, departmentId);
             ResultSet rs = ps.executeQuery();
@@ -328,7 +328,7 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, requestId);
             ResultSet rs = ps.executeQuery();
@@ -374,7 +374,7 @@ public class AssetDAOImpl implements AssetDAO {
                 WHERE a.asset_id = ?
                 """;
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -387,7 +387,7 @@ public class AssetDAOImpl implements AssetDAO {
                     dto.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
                     dto.setOriginalCost(rs.getBigDecimal("original_cost"));
                     dto.setAssetTypeId(rs.getInt("asset_type_id"));
-                    
+
                     String statusStr = rs.getString("current_status");
                     if (statusStr != null) {
                         dto.setCurrentStatus(AssetStatus.valueOf(statusStr.toUpperCase()));
@@ -419,7 +419,7 @@ public class AssetDAOImpl implements AssetDAO {
 
     @Override
     public List<Asset> searchAssets(String keyword, AssetStatus status, LocalDate fromDate,
-            LocalDate toDate, String direction, int offset, int pageSize) {
+                                    LocalDate toDate, String direction, int offset, int pageSize) {
 
         StringBuilder sql = new StringBuilder("""
                 SELECT a.*, t.type_name
@@ -462,7 +462,7 @@ public class AssetDAOImpl implements AssetDAO {
         sql.append(" offset ? rows fetch next ? rows only ");
         List<Asset> assets = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 
@@ -656,7 +656,7 @@ public class AssetDAOImpl implements AssetDAO {
         }
 
         try (Connection conn = databaseConfig.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 
@@ -691,10 +691,10 @@ public class AssetDAOImpl implements AssetDAO {
 
     @Override
     public List<Asset> findExpiringWarranties(int days) {
-String sql ="select a.*, t.type_name from asset a\n" +
-        "left join asset_type t on a.asset_type_id=t.asset_type_id\n" +
-        "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date))\n" +
-        "order by a.warranty_end_date asc";
+        String sql ="select a.*, t.type_name from asset a\n" +
+                "left join asset_type t on a.asset_type_id=t.asset_type_id\n" +
+                "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date))\n" +
+                "order by a.warranty_end_date asc";
 
 
         List<Asset> list = new ArrayList<>();
@@ -822,7 +822,7 @@ String sql ="select a.*, t.type_name from asset a\n" +
                 """;
         List<Asset> list = new ArrayList<>();
         try (Connection con = databaseConfig.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, poId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

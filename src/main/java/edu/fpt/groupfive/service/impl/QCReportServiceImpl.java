@@ -97,6 +97,7 @@ public class QCReportServiceImpl implements IQCReportService {
         res.setAssetId(qc.getAssetId());
         res.setStatus(qc.getStatus());
         res.setInspectedBy(qc.getInspectedBy());
+        res.setInspectorName(qcReportDAO.getInspectorName(qc.getInspectedBy()));
         res.setQcDate(qc.getCreatedDate());
         res.setNote(qc.getNote());
         return res;

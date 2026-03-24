@@ -41,7 +41,7 @@
         <!-- Toolbar -->
         <div class="toolbar">
             <div class="toolbar-left">
-                <form th:action="@{/qc-reports/list}" method="get">
+                <form th:action="@{/wh/qc-reports/list}" method="get">
                     <select class="filter-select" name="status" onchange="this.form.submit()">
                         <option value="" th:selected="${selectedStatus == null}">Tất cả trạng thái</option>
                         <option value="PASSED" th:selected="${selectedStatus == 'PASSED'}">PASSED</option>
@@ -50,7 +50,7 @@
                     </select>
                 </form>
             </div>
-            <a th:href="@{/qc-reports/create}" class="btn btn-primary">
+            <a th:href="@{/wh/qc-reports/create}" class="btn btn-primary">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -83,13 +83,13 @@
                                                                    (${report.status == 'FAILED'} ? 'badge-failed' : 'badge-pending')"
                                   th:text="${report.status}"></span>
                         </td>
-                        <td th:text="${report.inspectedBy}"></td>
+                        <td th:text="${report.note}"></td>
                         <td th:text="${#temporals.format(report.qcDate, 'dd/MM/yyyy HH:mm')}"></td>
                         <td>
                             <div class="table-actions">
-                                <a th:href="@{/qc-reports/{id}(id=${report.reportId})}"
+                                <a th:href="@{/wh/qc-reports/{id}(id=${report.reportId})}"
                                    class="btn btn-outline btn-sm">Chi tiết</a>
-                                <a th:href="@{/qc-reports/{id}/edit(id=${report.reportId})}"
+                                <a th:href="@{/wh/qc-reports/{id}/edit(id=${report.reportId})}"
                                    class="btn btn-outline btn-sm">Sửa</a>
                                 <button type="button" class="btn btn-danger btn-sm"
                                         th:onclick="|openDeleteModal(${report.reportId})|">Xóa</button>
@@ -109,7 +109,7 @@
                           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0120 9.414V19a2 2 0 01-2 2z"/>
                 </svg>
                 <p>Chưa có báo cáo QC nào</p>
-                <a th:href="@{/qc-reports/create}" class="btn btn-primary">Tạo báo cáo đầu tiên</a>
+                <a th:href="@{/wh/qc-reports/create}" class="btn btn-primary">Tạo báo cáo đầu tiên</a>
             </div>
         </div>
     </div>
@@ -122,7 +122,6 @@
             <div class="modal-actions">
                 <button type="button" class="btn btn-outline" onclick="closeDeleteModal()">Hủy</button>
                 <form id="deleteForm" method="post">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <button type="submit" class="btn btn-danger">Xóa</button>
                 </form>
             </div>
@@ -133,7 +132,7 @@
 <th:block layout:fragment="extra-js">
     <script>
         function openDeleteModal(reportId) {
-            document.getElementById('deleteForm').action = '/qc-reports/' + reportId + '/delete';
+            document.getElementById('deleteForm').action = '/wh/qc-reports/' + reportId + '/delete';
             document.getElementById('deleteModal').classList.add('active');
         }
 
@@ -148,3 +147,5 @@
 </th:block>
 </body>
 </html>
+
+

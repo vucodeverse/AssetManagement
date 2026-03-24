@@ -12,13 +12,14 @@
 </head>
 
 <body>
+<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 <th:block layout:fragment="content">
     <div class="content">
         <!-- BREADCRUMB -->
         <div class="breadcrumb">
             <a th:href="@{/warehouse}">Trang chủ</a>
             <span class="sep">›</span>
-            <a th:href="@{/qc-reports/list}">Báo cáo QC</a>
+            <a th:href="@{/wh/qc-reports/list}">Báo cáo QC</a>
             <span class="sep">›</span>
             <span class="current">Tạo mới</span>
         </div>
@@ -31,7 +32,7 @@
 
         <!-- FORM CARD -->
         <div class="card">
-            <form th:action="@{/qc-reports/create}" method="post" th:object="${qcReport}" class="qc-form">
+            <form th:action="@{/wh/qc-reports/create}" method="post" th:object="${qcReport}" class="qc-form">
 
                 <div class="form-grid">
 
@@ -41,9 +42,12 @@
                             TÀI SẢN <span class="required">*</span>
                         </label>
                         <input type="text" id="assetName"
+                               th:if="${asset != null}"
                                th:value="${asset.assetName + ' (Mã: ' + asset.assetId + ')'}"
                                class="form-control" disabled/>
-                        <input type="hidden" th:field="*{assetId}" th:value="${asset.assetId}"/>
+                        <input th:unless="${asset != null}" type="text" class="form-control"
+                               th:value="'Không tìm thấy tài sản với ID: ' + *{assetId}" disabled/>
+                        <input type="hidden" th:field="*{assetId}"/>
                     </div>
 
                     <!-- TRẠNG THÁI -->
@@ -73,7 +77,7 @@
 
                 <!-- ACTIONS -->
                 <div class="form-actions">
-                    <a th:href="@{/qc-reports/list}" class="btn btn-secondary">Hủy</a>
+                    <a th:href="@{/wh/qc-reports/list}" class="btn btn-secondary">Hủy</a>
                     <button class="btn btn-primary" type="submit">Tạo báo cáo</button>
                 </div>
 
