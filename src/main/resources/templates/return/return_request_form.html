@@ -252,36 +252,7 @@
 
         });
 
-/*
-        const rows = document.querySelectorAll("#assetTable tbody tr");
 
-        let index = 0;
-
-        rows.forEach(row => {
-
-            const chk = row.querySelector(".chkAsset");
-
-            if (!chk) return;
-
-            if (chk.checked) {
-
-                const assetId = chk.value;
-
-                const note = row.querySelector(".noteInput").value;
-
-                container.innerHTML += `
-                <input type="hidden"
-                       name="details[${index}].assetId"
-                       value="${assetId}">
-
-                <input type="hidden"
-                       name="details[${index}].note"
-                       value="${note}">
-            `;
-                index++;
-            }
-        });
-*/
     }
 
     document.querySelector("form").addEventListener("submit", function () {

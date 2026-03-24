@@ -23,9 +23,10 @@ public interface AllocationRequestService {
 
     void updateStatus(Integer id, String status, Integer amApprovedBy, String reasonReject);
 
-    List<AllocationRequest> search(
-            Integer departmentId, String  requestId, String status, Priority priority,
+    List<AllocationRequest> search(Integer departmentId, String  requestId, String status, Priority priority,
             LocalDate fromDate, LocalDate toDate
     );
+
+    int getTotalPending();
 
 }

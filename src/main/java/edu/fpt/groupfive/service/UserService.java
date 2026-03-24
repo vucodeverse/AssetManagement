@@ -18,14 +18,10 @@ public interface UserService {
     void removeUser(Integer id);
     Integer getUserIdByUsername(String username);
 
-    List<UserResponse> searchUsers(
-            int page, int size,
-            String status, Integer departmentId,
+    List<UserResponse> searchUsers(int page, int size, String status, Integer departmentId,
             Role role, String keyword);
 
-    int getTotalPagesWithFilter(
-            int size,
-            String status, Integer departmentId,
+    int getTotalPagesWithFilter(int size, String status, Integer departmentId,
             Role role, String keyword);
 
     UserResponse getUserById(Integer id);

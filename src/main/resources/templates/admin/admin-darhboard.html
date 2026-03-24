@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Dashboard Quản Trị</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/admin/dashboard.css}">
+</head>
+<body>
+
+<div class="sidebar">
+    <h4 class="text-center mb-4">Admin Panel</h4>
+    <div class="sidebar-nav">
+        <a href="/admin/dashboard" class="active"><i class="fas fa-chart-line mr-2"></i> Trang tổng quan</a>
+        <a href="/admin/users"><i class="fas fa-users mr-2"></i> Quản lí người dùng</a>
+        <a href="/admin/departments"><i class="fas fa-building mr-2"></i> Quản lí phòng ban</a>
+    </div>
+    <div class="sidebar-user">
+        <div class="user-avatar">A</div>
+        <div class="user-info">
+            <span class="user-name">Administrator</span>
+            <span class="user-role">Admin</span>
+        </div>
+        <a th:href="@{/logout}" class="logout-link" title="Đăng xuất">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </div>
+</div>
+
+<div class="content">
+    <h2 class="header-title"><i class="fas fa-tachometer-alt"></i> Tổng quan hệ thống</h2>
+    <hr/>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card bg-primary-gradient text-white">
+                <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                <div class="stat-details">
+                    <h3 th:text="${dashboardData.totalAssets}"></h3>
+                    <p>Tổng số tài sản</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-success-gradient text-white">
+                <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
+                <div class="stat-details">
+                    <h3 th:text="${dashboardData.totalUsers}"></h3>
+                    <p>Người dùng</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-info-gradient text-white">
+                <div class="stat-icon"><i class="fas fa-sitemap"></i></div>
+                <div class="stat-details">
+                    <h3 th:text="${dashboardData.totalDepartments}"></h3>
+                    <p>Phòng ban</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="request-card shadow-sm border-left-warning">
+                <div class="d-flex align-items-center">
+                    <div class="request-icon bg-warning-light"><i class="fas fa-shopping-cart text-warning"></i></div>
+                    <div class="ml-3">
+                        <h5 class="mb-0">Yêu cầu mua sắm</h5>
+                        <p class="text-muted mb-0"><strong th:text="${dashboardData.newPurchaseRequests}"></strong> đơn mới</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="request-card shadow-sm border-left-success">
+                <div class="d-flex align-items-center">
+                    <div class="request-icon bg-success-light"><i class="fas fa-hand-holding mr-2 text-success"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h5 class="mb-0">Yêu cầu cấp phát</h5>
+                        <p class="text-muted mb-0"><strong th:text="${dashboardData.newAllocationRequests}"></strong> đơn mới</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="request-card shadow-sm border-left-danger">
+                <div class="d-flex align-items-center">
+                    <div class="request-icon bg-danger-light"><i class="fas fa-exchange-alt text-danger"></i></div>
+                    <div class="ml-3">
+                        <h5 class="mb-0">Yêu cầu trả</h5>
+                        <p class="text-muted mb-0"><strong th:text="${dashboardData.newReturnRequests}"></strong> đơn mới</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card-container h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 font-weight-bold text-dark"><i class="fas fa-user-clock mr-2"></i>Người dùng gần đây
+                    </h5>
+                    <a href="/admin/users" class="btn btn-sm btn-link">Xem tất cả</a>
+                </div>
+                <table class="table table-sm table-hover">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th>Mã</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Vai trò</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="u : ${dashboardData.users}">
+                        <td th:text="${u.id}"></td>
+                        <td th:text="${u.fullName}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td th:text="${u.role}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="card-container h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 font-weight-bold text-dark"><i class="fas fa-building mr-2"></i>Phòng ban</h5>
+                    <a href="/admin/departments" class="btn btn-sm btn-link">Chi tiết</a>
+                </div>
+                <table class="table table-sm table-hover">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên phòng ban</th>
+                        <th>Nhân sự</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="d : ${dashboardData.departments}">
+                        <td th:text="${d.departmentId}"></td>
+                        <td th:text="${d.departmentName}"></td>
+                        <td th:text="${d.staffCount}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

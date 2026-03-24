@@ -57,6 +57,12 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
         // grantedAuthority.getAuthority().equals("ADMIN"))) {
         // redirectUrl += "/admin/home";
         // }
+//        if (authentication.getAuthorities().stream().
+//                anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
+//            if (authentication.getAuthorities().stream()
+//                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
+//                redirectUrl += "/admin/home";
+//            }
 
         if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("WAREHOUSE_STAFF"))) {
@@ -65,7 +71,7 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
 
         if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"))) {
-            redirectUrl += "/admin/users";
+            redirectUrl += "/admin/dashboard";
         }
 
         if (authentication.getAuthorities().stream()
@@ -83,5 +89,7 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
         }
 
         response.sendRedirect(redirectUrl);
+            response.sendRedirect(redirectUrl);
+//        }
     }
 }

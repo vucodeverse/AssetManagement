@@ -25,4 +25,6 @@ public interface PurchaseDAO {
     void update(Purchase purchase);
 
     List<Object[]> getItemOnDB();
+
+    int countRequestPending();
 }

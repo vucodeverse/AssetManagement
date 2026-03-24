@@ -266,4 +266,37 @@ public class AssetHandoverDaoImpl implements AssetHandoverDao {
             throw new RuntimeException("Cập nhật trạng thái AssetHandover thất bại", e);
         }
     }
+
+    @Override
+    public AssetHandover findByReturnRequestId(Integer returnRequestId) {
+        String query = """
+                SELECT * FROM asset_handover WHERE return_request_id = ?
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, returnRequestId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return mapRowToHandover(rs);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    @Override
+    public void delete(Integer handoverId) {
+        String query = "DELETE FROM asset_handover WHERE handover_id = ?";
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, handoverId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

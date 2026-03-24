@@ -52,9 +52,12 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
              PreparedStatement ps = connection.prepareStatement(query)) {
 
             for (AssetHandoverDetail detail : details) {
+                // ID lấy từ bảng cha vừa insert
                 ps.setInt(1, handoverId);
                 ps.setInt(2, detail.getAssetId());
                 ps.setString(3, detail.getNote());
+
+                // Thêm vào hàng đợi xử lý
                 ps.addBatch();
             }
 
@@ -137,4 +140,21 @@ public class AssetHandoverDetailDaoImpl implements AssetHandoverDetailDao {
 
         return list;
     }
+
+    @Override
+    public void deleteByHandoverId(Integer handoverId) {
+        String query = """
+                DELETE FROM asset_handover_detail WHERE handover_id = ?
+                """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, handoverId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 }

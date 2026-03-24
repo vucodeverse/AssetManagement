@@ -33,4 +33,8 @@ public class UserResponse {
 
     //Foreign key of table Department
     private Integer departmentId;
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }
