@@ -74,11 +74,16 @@ public class WarehouseInboundController {
 
         String username = principal.getName();
 
-        InboundSummaryResponseDTO summary = warehouseInboundService.processInboundPO(poId, username);
+        try{
+            InboundSummaryResponseDTO summary = warehouseInboundService.processInboundPO(poId, username);
+            ra.addFlashAttribute(SUMMARY_ATTR, summary);
+            ra.addFlashAttribute(SUCCESS_MSG, "Đã tạo tài sản và nhập kho thành công cho PO #" + poId);
+            return "redirect:/wh/inbound/po/" + poId + "/summary";
+        }catch (Exception e){
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/wh/inbound/po/" + poId;
+        }
 
-        ra.addFlashAttribute(SUMMARY_ATTR, summary);
-        ra.addFlashAttribute(SUCCESS_MSG, "Đã tạo tài sản và nhập kho thành công cho PO #" + poId);
-        return "redirect:/wh/inbound/po/" + poId + "/summary";
     }
 
     // =========================================================

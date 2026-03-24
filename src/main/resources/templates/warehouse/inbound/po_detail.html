@@ -31,6 +31,10 @@
     <div class="content-wrapper">
         <div class="asset-grid" style="margin-bottom: 24px;">
             <div class="wh-panel">
+                <div th:if="${error != null}" th:text="${error}" class="alert alert-danger">
+
+                </div>
+
                 <div class="wh-panel-header">
                     <span class="wh-panel-title"><i class="fa-solid fa-circle-info"></i> Thông tin Đơn hàng</span>
                 </div>

@@ -13,6 +13,7 @@ import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
 import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.AssetHandover;
+import edu.fpt.groupfive.model.PurchaseDetail;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.warehouse.WarehouseInboundService;
 import edu.fpt.groupfive.service.warehouse.WhAssetCapacityService;
@@ -89,6 +90,11 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
         Integer executedBy = userDAO.findUserIdByUsername(username);
 
         PurchaseOrderResponse poDetail = orderService.getPurchaseOrderById(poId);
+
+        for (PurchaseOrderDetailResponse pd : poDetail.getOrderDetails()){
+            if(pd.getDeliveryDate() == null)
+                throw new RuntimeException("Ngày nhập chưa được update, không thể nhập kho");
+        }
 
         // Fetch configs
         List<ZoneCapacityResponseDTO> activeZones = whZoneService.getAllZones();
