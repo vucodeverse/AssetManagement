@@ -166,8 +166,17 @@ public class AllocationRequestController {
     public String updateRequest(
             @PathVariable("id") Integer id,
             @ModelAttribute("requestDto") @Valid AllocationRequestCreateRequest dto,
+            BindingResult bindingResult,
+            Model model,
             RedirectAttributes redirectAttributes) {
 
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("requestDto", dto);
+            model.addAttribute("assetType", assetTypeService.getAll());
+            model.addAttribute("canEdit", true);
+
+            return "allocation/allocation_request_form";
+        }
 
         allocationRequestService.updateRequest(id, dto);
 
