@@ -24,7 +24,10 @@
 <div class="dashboard-wrapper">
 
     <!-- SIDEBAR -->
-    <div th:replace="~{fragment/department-sidebar :: sidebar(${activeMenu}, ${activeSub})}"></div>
+    <div th:replace="${session.role == 'ASSET_MANAGER'}
+        ? ~{fragment/manager-sidebar :: sidebar(${activeMenu}, ${activeSub})}
+        : ~{fragment/department-sidebar :: sidebar(${activeMenu}, ${activeSub})}">
+    </div>
 
     <!-- CONTENT -->
     <div class="content-container">

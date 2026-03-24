@@ -274,27 +274,43 @@ CREATE TABLE return_request_detail (
 -- 7. LỆNH THỰC HIỆN (HANDOVER)
 -- =============================================
 
+CREATE TABLE qc_report (
+                           id           INT IDENTITY(1,1) PRIMARY KEY,
+                           asset_id     INT NOT NULL REFERENCES asset(asset_id),
+                           qc_status    NVARCHAR(40) NOT NULL,
+                           inspected_by INT NOT NULL REFERENCES users(user_id),
+                           qc_date      DATETIME2 DEFAULT SYSDATETIME(),
+                           note         NVARCHAR(MAX)
+);
+
 CREATE TABLE asset_handover (
                                 handover_id             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
                                 handover_type           NVARCHAR(40) NOT NULL,
-                                allocation_request_id   INT NULL REFERENCES allocation_request(request_id),
-                                return_request_id       INT NULL REFERENCES return_request(request_id),
-                                from_department_id      INT NULL REFERENCES departments(department_id),
-                                to_department_id        INT NULL REFERENCES departments(department_id),
-                                executed_by_user_id     INT NOT NULL REFERENCES users(user_id),
-                                handover_date           DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                                status                  NVARCHAR(40) NOT NULL,
-                                note                    NVARCHAR(500) NULL,
+
+                                allocation_request_id   INT NULL,
+                                return_request_id       INT NULL,
+
+                                from_department_id      INT NULL, -- Null nếu xuất thẳng từ kho chưa quy định dept
+                                to_department_id        INT NULL, -- Null nếu thu về kho
+
+                                status                  NVARCHAR(40) NOT NULL, -- DRAFT, COMPLETED, CANCELLED
+
                                 created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                                updated_at              DATETIME2(0) NULL
+                                updated_at              DATETIME2(0) NULL,
+
+                                CONSTRAINT FK_ho_alloc_req FOREIGN KEY (allocation_request_id) REFERENCES allocation_request(request_id),
+                                CONSTRAINT FK_ho_ret_req FOREIGN KEY (return_request_id) REFERENCES return_request(request_id),
+                                CONSTRAINT FK_ho_from_dept FOREIGN KEY (from_department_id) REFERENCES departments(department_id),
+                                CONSTRAINT FK_ho_to_dept FOREIGN KEY (to_department_id) REFERENCES departments(department_id),
 );
 
 CREATE TABLE asset_handover_detail (
-                                       handover_detail_id      INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                                       handover_id             INT NOT NULL REFERENCES asset_handover(handover_id),
-                                       asset_id                INT NOT NULL REFERENCES asset(asset_id),
-                                       condition_status        NVARCHAR(100) NULL,
-                                       note                    NVARCHAR(255) NULL
+                               handover_detail_id      INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                               handover_id             INT NOT NULL REFERENCES asset_handover(handover_id),
+                               asset_id                INT NOT NULL REFERENCES asset(asset_id),
+                               qc_report_id            INT NULL REFERENCES qc_report(id),
+                               note                    NVARCHAR(255) NULL
 );
 
 -- =============================================
@@ -334,17 +350,6 @@ CREATE INDEX idx_return_detail_asset ON return_request_detail(asset_id, request_
 CREATE INDEX idx_return_request_status_id ON return_request(status, request_id);
 
 
-
-CREATE TABLE qc_report (
-                           id           INT IDENTITY(1,1) PRIMARY KEY,
-                           asset_id     INT NOT NULL,
-                           qc_status    NVARCHAR(40) NOT NULL,
-                           inspected_by INT NOT NULL,
-                           qc_date      DATETIME2 DEFAULT SYSDATETIME(),
-                           note         NVARCHAR(MAX),
-                           CONSTRAINT FK_qc_report_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
-                           CONSTRAINT FK_qc_report_inspected_by FOREIGN KEY (inspected_by) REFERENCES users(user_id)
-);
 
 -- =============================================
 -- 9. MODULE KHO: SETUP KHÔNG GIAN LƯU TRỮ
