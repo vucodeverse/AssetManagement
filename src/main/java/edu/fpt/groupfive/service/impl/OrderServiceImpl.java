@@ -273,6 +273,8 @@ public class OrderServiceImpl implements OrderService {
 
         Map<Integer, String> map = supplierService.getSupplierIdToNameMap();
         Map<Integer, String> assetTypeNames = assetTypeService.getAssetTypeIdToNameMap();
+        Map<Integer, String> userMap = userService.getUserIdToUsernameMap();
+
 
         // lấy ra list po detail theo po id
         List<OrderDetail> poDetails = orderDetailDAO.findByOrderId(orderId);
@@ -298,6 +300,7 @@ public class OrderServiceImpl implements OrderService {
 
         PurchaseOrderResponse response = orderMapper.toPurchaseOrderResponse(order);
         response.setSupplierName(map.getOrDefault(order.getSupplierId(), notFoundFallbackMsg));
+        response.setApprovedByName(userMap.getOrDefault(order.getApprovedBy(), notFoundFallbackMsg));
         response.setOrderDetails(items);
         response.setSubtotal(calculated[0]);
         response.setTotalDiscount(calculated[1]);
@@ -350,6 +353,7 @@ public class OrderServiceImpl implements OrderService {
     public List<PurchaseOrderResponse> getOrderWithPending() {
 
         Map<Integer, String> map = userService.getUserIdToUsernameMap();
+        Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
 
         return (List<PurchaseOrderResponse>) orderDAO.findRecent().stream().filter(o -> PurchaseProcessStatus.PENDING == o.getOrderStatus()).map(o -> PurchaseOrderResponse.builder()
                         .orderId(o.getId())
@@ -357,7 +361,8 @@ public class OrderServiceImpl implements OrderService {
                 .createdAt(o.getCreatedAt())
                 .orderStatus(o.getOrderStatus().name())
                 .purchaseId(o.getPurchaseId())
-                .approvedByName(map.getOrDefault(o.getUpdatedBy(), "Hiện chưa được chấp nhận"))
+                .supplierName(supplierMap.getOrDefault(o.getSupplierId(), notFoundFallbackMsg))
+                .approvedByName(map.getOrDefault(o.getApprovedBy(), "Hiện chưa được chấp nhận"))
                 .totalAmount(o.getTotalAmount()).build()).toList();
     }
 
