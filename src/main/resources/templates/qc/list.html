@@ -83,7 +83,7 @@
                                                                    (${report.status == 'FAILED'} ? 'badge-failed' : 'badge-pending')"
                                   th:text="${report.status}"></span>
                         </td>
-                        <td th:text="${report.note}"></td>
+                        <td th:text="${report.inspectorName}"></td>
                         <td th:text="${#temporals.format(report.qcDate, 'dd/MM/yyyy HH:mm')}"></td>
                         <td>
                             <div class="table-actions">

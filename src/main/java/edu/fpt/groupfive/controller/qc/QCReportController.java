@@ -110,7 +110,10 @@ public class QCReportController {
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
-            model.addAttribute("report", qcReportService.findById(reportId));
+            QCReportResponse report = qcReportService.findById(reportId);
+
+            model.addAttribute("report", report);
+
             return "qc/detail";
 
         } catch (IllegalArgumentException e) {

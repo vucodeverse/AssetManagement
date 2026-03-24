@@ -46,7 +46,7 @@
                 <td th:text="${asset.conditionFromSender}">-</td>
                 <td th:text="${asset.note}">-</td>
                 <td th:if="${currentUser.role.name() == 'WAREHOUSE_STAFF' and transfer.status == 'SENDER_CONFIRMED'}">
-                    <a th:href="@{/qc-reports/create(assetId=${asset.assetId}, transferId=${transfer.transferId})}" class="btn btn-sm btn-warning">Tạo QC</a>
+                    <a th:href="@{/wh/qc-reports/create(assetId=${asset.assetId}, transferId=${transfer.transferId})}" class="btn btn-sm btn-warning">Tạo QC</a>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(transfer.transferAssets)}">

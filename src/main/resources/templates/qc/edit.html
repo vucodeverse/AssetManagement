@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Chỉnh sửa báo cáo QC</title>
-    <link rel="stylesheet" th:href="@{/css/qc.css}"/>
+    <link rel="stylesheet" th:href="@{/css/qc/edit.css}"/>
 </head>
 <body>
 
@@ -101,7 +101,7 @@
                         <option value="">-- Chọn người kiểm tra --</option>
                         <option th:each="user : ${users}"
                                 th:value="${user.userId}"
-                                th:text="${user.firstName + ' ' + user.lastName + ' (#' + user.userId + ')'}">
+                                th:text="${user.firstName + ' ' + user.lastName + ' (#' + user.user Id + ')'}">
                         </option>
                     </select>
                 </div>
