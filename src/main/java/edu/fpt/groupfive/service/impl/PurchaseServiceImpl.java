@@ -233,6 +233,11 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     }
 
+    @Override
+    public int getTotalRequest() {
+        return purchaseDAO.countRequestPending();
+    }
+
     private List<Purchase> author(List<Purchase> purchases){
         if (!Role.ASSET_MANAGER.name().equals(roleLogin.getRole()))
             purchases = purchases.stream()

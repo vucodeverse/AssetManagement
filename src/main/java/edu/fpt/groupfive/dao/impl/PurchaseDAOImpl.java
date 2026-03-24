@@ -343,6 +343,26 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         }
     }
 
+    @Override
+    public int countRequestPending() {
+        String sql = "select count(*) from purchase_request p where p.status = 'PENDING'";
+
+        try (
+                Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();
+        ) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+    }
+
     // update purchase request nếu là draft
     @Override
     public void update(Purchase purchase) {

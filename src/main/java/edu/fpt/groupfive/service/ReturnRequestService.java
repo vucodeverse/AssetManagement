@@ -15,4 +15,5 @@ public interface ReturnRequestService {
     void deleteRequest(Integer id);
     List<ReturnRequestRespnse> searchRequest(Integer departmentId, String requestId,
                                              String status, LocalDate fromDate, LocalDate toDate);
+    int getTotalPending();
 }

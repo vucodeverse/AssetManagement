@@ -21,4 +21,6 @@ public interface PurchaseService {
 
     PurchaseRequestCreateRequest preparePurchaseRequestForm(Integer purchaseId);
 
+    int getTotalRequest();
+
 }

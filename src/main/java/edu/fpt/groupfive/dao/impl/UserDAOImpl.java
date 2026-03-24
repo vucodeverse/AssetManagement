@@ -379,10 +379,8 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public int countUsersInDepartment(Integer departmentId) {
         String sql = """
-                    SELECT COUNT(*)
-                    FROM Users
-                    WHERE department_id = ?
-                      AND status = 'ACTIVE'
+                    SELECT COUNT(*) FROM Users
+                    WHERE department_id = ? AND status = 'ACTIVE'
                 """;
 
         try (Connection c = databaseConfig.getConnection();

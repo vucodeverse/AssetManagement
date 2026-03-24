@@ -387,6 +387,29 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
     }
 
     @Override
+    public int countPendingRequest() {
+        String query = """
+                SELECT COUNT(*) FROM allocation_request WHERE status = 'PENDING_AM'
+                """;
+        try (
+                Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(query);
+                ResultSet rs = ps.executeQuery();
+        ) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return 0;
+
+    }
+
+
+    @Override
     public List<AllocationRequest> findAllAllocation() {
         String sql = "select * from allocation_request order by request_id asc";
         List<AllocationRequest> list = new ArrayList<>();

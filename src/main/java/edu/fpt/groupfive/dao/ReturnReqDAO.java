@@ -14,4 +14,5 @@ public interface ReturnReqDAO {
     void updateStatus(Integer id, String status, Integer whConfirmedBy);
     List<ReturnRequest> search(Integer departmentId, String keyword,
                                String status, LocalDate fromDate, LocalDate toDate);
+    int countPendingRequest();
 }

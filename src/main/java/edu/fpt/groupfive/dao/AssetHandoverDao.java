@@ -13,4 +13,6 @@ public interface AssetHandoverDao {
     List<AssetHandover> findAllProcessedReturns();
     AssetHandover findById(Integer id);
     void updateStatus(Integer id, Status status);
+    AssetHandover findByReturnRequestId(Integer returnRequestId);
+    void delete(Integer handoverId);
 }
