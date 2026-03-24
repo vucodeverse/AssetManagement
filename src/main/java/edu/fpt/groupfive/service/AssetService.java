@@ -3,14 +3,22 @@ package edu.fpt.groupfive.service;
 import edu.fpt.groupfive.common.AssetStatus;
 import edu.fpt.groupfive.dto.request.AssetCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetUpdateRequest;
+import edu.fpt.groupfive.dto.request.search.AssetSearchCriteria;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetResponse;
 import edu.fpt.groupfive.dto.response.PageResponse;
+import edu.fpt.groupfive.model.Asset;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface AssetService {
+    PageResponse<AssetDetailResponse> searchAssets(
+            AssetSearchCriteria criteria,
+            int page,
+            int pageSize
+    );
 
     List<AssetResponse> getAll();
 
@@ -37,4 +45,9 @@ public interface AssetService {
             LocalDate toDate,            String direction,
             int page
     );
+    List<AssetDetailResponse> findAll();
+
+    List<AssetDetailResponse> findByDepartment(Integer departmentId);
+
+    Optional<Asset> findById(Integer id);
 }

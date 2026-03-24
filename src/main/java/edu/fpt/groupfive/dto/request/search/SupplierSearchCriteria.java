@@ -1,4 +1,4 @@
-package edu.fpt.groupfive.dto.request;
+package edu.fpt.groupfive.dto.request.search;
 
 import lombok.*;
 

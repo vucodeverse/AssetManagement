@@ -2,11 +2,12 @@ package edu.fpt.groupfive.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.util.List;
-
-@Getter
+@NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class PageResponse<T> {
     private List<T> data;
     private int currentPage;
@@ -29,6 +30,7 @@ public class PageResponse<T> {
     public boolean isEmpty() {
         return data.isEmpty();
     }
+
 
 
 }

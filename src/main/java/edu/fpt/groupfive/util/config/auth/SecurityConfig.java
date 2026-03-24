@@ -41,12 +41,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
         // tắt security
-        // if (!securityEnable) {
-        // httpSecurity
-        // .csrf(csrf -> csrf.disable())
-        // .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        // return httpSecurity.build();
-        // }
+        if (!securityEnable) {
+            httpSecurity
+                    .csrf(csrf -> csrf.disable())
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+            return httpSecurity.build();
+        }
 
         // bật bth
         httpSecurity

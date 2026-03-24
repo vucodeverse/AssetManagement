@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.dao;
 
-import edu.fpt.groupfive.dto.request.SupplierSearchCriteria;
+import edu.fpt.groupfive.dto.request.search.SupplierSearchCriteria;
 import edu.fpt.groupfive.model.Supplier;
 
 import javax.swing.text.html.Option;

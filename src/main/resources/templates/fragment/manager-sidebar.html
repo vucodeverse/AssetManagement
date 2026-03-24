@@ -36,18 +36,25 @@
                 <i class="fas fa-file-invoice"></i> YÊU CẦU MUA SẮM
             </a>
 
-            <a th:href="@{/manager/reports}" class="nav-item">
-                <i class="fas fa-chart-bar"></i> BÁO CÁO
+            <a th:href="@{/transfer-requests/am}" class="nav-item">
+                <i class="fas fa-chart-bar"></i> YÊU CẦU ĐIỀU CHUYỂN
             </a>
         </nav>
 
-        <!--    khối thông tin-->
+
+
+
+
         <div class="sidebar-user">
-            <div class="user-avatar">A</div>
+            <div class="user-avatar" th:text="${userInitials} ?: 'SM'">SM</div>
             <div class="user-info">
-                <span class="user-name">Quản Trị Viên</span>
-                <span class="user-role">Quản Lý Tài Sản</span>
-                <a th:href="@{/logout}" class="logout-link">ĐĂNG XUẤT</a>
+                <span class="user-name" th:text="${userName} ?: 'Quản lý tài sản'">Quản lý tài sản</span>
+                <span class="user-role" th:text="${userRole} ?: 'Quản lí tài sản'">Quản lí tài sản</span>
+            </div>
+            <div class="user-actions">
+                <a th:href="@{/logout}" class="action-btn logout-btn" title="Đăng xuất">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
             </div>
         </div>
     </aside>

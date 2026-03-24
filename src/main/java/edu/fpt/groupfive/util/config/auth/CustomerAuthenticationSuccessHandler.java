@@ -23,7 +23,6 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
-
         // Lấy username từ authentication
         String username = authentication.getName();
 
@@ -36,7 +35,6 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
         session.setAttribute("departmentId", user.getDepartmentId());
         session.setAttribute("fullName", user.getFullName());
         session.setAttribute("role", user.getRole().name());
-
 
         String redirectUrl = request.getContextPath();
 

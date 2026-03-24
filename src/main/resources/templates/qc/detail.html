@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+
+<head>
+    <title>Chi tiết báo cáo QC</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/qc/detail.css}"/>
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+    <div class="content">
+
+        <!-- BREADCRUMB -->
+        <div class="breadcrumb">
+            <a th:href="@{/}">Trang chủ</a>
+            <span class="sep">›</span>
+            <a th:href="@{/wh/qc-reports/list}">Báo cáo QC</a>
+            <span class="sep">›</span>
+            <span class="current" th:text="'#' + ${report.reportId}"></span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <h1 th:text="'Báo cáo QC #' + ${report.reportId}"></h1>
+            <p>Thông tin chi tiết kiểm tra chất lượng tài sản</p>
+        </div>
+
+        <!-- CARD -->
+        <div class="card qc-detail-card">
+
+            <div class="detail-grid">
+
+                <div class="detail-item">
+                    <span class="label">Mã báo cáo</span>
+                    <span class="value" th:text="'#' + ${report.reportId}"></span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="label">Asset ID</span>
+                    <span class="value" th:text="${report.assetId}"></span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="label">Trạng thái</span>
+                    <span class="badge"
+                          th:classappend="${report.status == 'PASSED'} ? 'badge-passed' :
+                                          (${report.status == 'FAILED'} ? 'badge-failed' : 'badge-pending')"
+                          th:text="${report.status}">
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="label">Người kiểm tra</span>
+                    <span class="value" th:text="${report.inspectorName}"></span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="label">Ngày kiểm tra</span>
+                    <span class="value"
+                          th:text="${#temporals.format(report.qcDate, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+
+                <div class="detail-item full">
+                    <span class="label">Ghi chú</span>
+                    <div class="note"
+                         th:text="${report.note != null and !#strings.isEmpty(report.note)} ? ${report.note} : '—'">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="actions">
+                <a th:href="@{/wh/qc-reports/list}" class="btn btn-secondary">Quay lại</a>
+                <a th:href="@{/wh/qc-reports/{id}/edit(id=${report.reportId})}" class="btn btn-secondary">Sửa</a>
+                <button class="btn btn-primary danger" onclick="openDeleteModal()">Xóa</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- DELETE MODAL -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <h3>Xác nhận xóa</h3>
+            <p>
+                Bạn có chắc chắn muốn xóa báo cáo
+                <strong th:text="'#' + ${report.reportId}"></strong>?
+            </p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+                <form th:action="@{/wh/qc-reports/{id}/delete(id=${report.reportId})}" method="post">
+                    <button type="submit" class="btn btn-primary danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</th:block>
+
+<th:block layout:fragment="extra-js">
+    <script>
+        function openDeleteModal() {
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+    </script>
+</th:block>
+
+</body>
+</html>
