@@ -1,4 +1,4 @@
-﻿-- =============================================
+﻿﻿-- =============================================
 -- 0. DỌN DẸP DỮ LIỆU CŨ (DROP TABLES)
 -- =============================================
 
@@ -425,4 +425,36 @@ CREATE TABLE map_handover_transactions (
 );
 
 
-select * from users
+
+-- =============================================
+-- 12. BẢNG LỊCH SỬ TÀI SẢN (ASSET LOGS)
+-- =============================================
+
+CREATE TABLE asset_logs (
+                            asset_log_id        INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            asset_id            INT NOT NULL,
+                            action_type         NVARCHAR(50) NOT NULL,               -- CREATE, ALLOCATE, TRANSFER, RETURN, STATUS_CHANGE, DISPOSE, ...
+                            from_department_id  INT NULL,
+                            to_department_id    INT NULL,
+                            action_date         DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+                            old_status          NVARCHAR(40) NULL,
+                            new_status          NVARCHAR(40) NULL,
+                            related_allocation_id INT NULL,
+                            related_transfer_id   INT NULL,
+                            related_return_id     INT NULL,
+                            note                NVARCHAR(500) NULL,
+                            created_by          INT NULL,                            -- user_id người thực hiện
+                            CONSTRAINT FK_asset_logs_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
+                            CONSTRAINT FK_asset_logs_from_dept FOREIGN KEY (from_department_id) REFERENCES departments(department_id),
+                            CONSTRAINT FK_asset_logs_to_dept FOREIGN KEY (to_department_id) REFERENCES departments(department_id),
+                            CONSTRAINT FK_asset_logs_allocation FOREIGN KEY (related_allocation_id) REFERENCES allocation_request(request_id),
+                            CONSTRAINT FK_asset_logs_transfer FOREIGN KEY (related_transfer_id) REFERENCES transfer_request(transfer_id),
+                            CONSTRAINT FK_asset_logs_return FOREIGN KEY (related_return_id) REFERENCES return_request(request_id),
+                            CONSTRAINT FK_asset_logs_created_by FOREIGN KEY (created_by) REFERENCES users(user_id)
+);
+
+-- Tạo chỉ mục để tối ưu truy vấn theo tài sản và thời gian
+CREATE INDEX idx_asset_logs_asset ON asset_logs(asset_id);
+CREATE INDEX idx_asset_logs_action_date ON asset_logs(action_date);
+
+
