@@ -426,6 +426,5 @@ public class TransferRequestController {
             redirect.addFlashAttribute("error", e.getMessage());
         }
 
-        return "redirect:/transfer-requests/" + id;
-    }
+        return "redirect:/transfer-requests/detail/" + id;    }
 }

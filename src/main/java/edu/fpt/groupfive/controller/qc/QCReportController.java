@@ -7,8 +7,11 @@ import edu.fpt.groupfive.model.TransferRequest;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.IQCReportService;
 import edu.fpt.groupfive.service.ITransferRequestService;
+import groovy.util.logging.Slf4j;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +20,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.util.List;
-
+@Slf4j
 @Controller
 @RequestMapping("/qc-reports")
 @RequiredArgsConstructor
 public class QCReportController {
 
-
+    private static final Logger log = LoggerFactory.getLogger(QCReportController.class);
     private final IQCReportService qcReportService;
     private final AssetService assetService;
     private final ITransferRequestService transferRequestService;
@@ -123,36 +126,45 @@ public class QCReportController {
             @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "sourceType", required = false) String sourceType,
             @RequestParam(value = "sourceId", required = false) Integer sourceId,
+            @RequestParam(value = "assetId", required = false) Integer assetIdParam,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
         try {
             Integer userId = getCurrentUserId(session);
-            if (userId == null) {
-                throw new RuntimeException("Bạn chưa đăng nhập");
-            }
+            if (userId == null) throw new RuntimeException("Bạn chưa đăng nhập");
 
-            if (request.getAssetId() == null) {
+            // In ra log để debug
+            log.debug("request.getAssetId() = {}", request.getAssetId());
+            log.debug("assetIdParam = {}", assetIdParam);
+
+            // Lấy assetId: ưu tiên từ model attribute, nếu null thì lấy từ param
+            Integer assetId = request.getAssetId();
+            if (assetId == null) assetId = assetIdParam;
+            if (assetId == null) {
                 throw new IllegalArgumentException("Thiếu assetId. QC chỉ được tạo theo tài sản.");
             }
+            request.setAssetId(assetId);
 
             request.setInspectedBy(userId);
-
-            if (file != null && !file.isEmpty()) {
-                request.setAttachment(saveFile(file));
-            }
+            if (file != null && !file.isEmpty()) request.setAttachment(saveFile(file));
 
             qcReportService.createQCReport(request);
-
             redirectAttributes.addFlashAttribute("message", "Tạo QC thành công");
             return "redirect:" + resolveReturnUrl(sourceType, sourceId);
 
         } catch (Exception e) {
+            log.error("Error creating QC: ", e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:" + buildQcCreateUrl(request.getAssetId(), sourceType, sourceId);
+            // Lấy lại assetId từ request hoặc param
+            Integer assetId = request.getAssetId() != null ? request.getAssetId() : assetIdParam;
+            if (assetId != null) {
+                return "redirect:" + buildQcCreateUrl(assetId, sourceType, sourceId);
+            } else {
+                return "redirect:/qc-reports/list";
+            }
         }
     }
-
     // ================= LIST =================
     @GetMapping("/list")
     public String listReports(
@@ -262,14 +274,16 @@ public class QCReportController {
 
     // ================= FILE HELPER =================
     private String saveFile(MultipartFile file) throws Exception {
-        String uploadDir = "uploads/qc/";
+        String uploadDir = System.getProperty("user.dir") + "/uploads/qc/";
         File dir = new File(uploadDir);
-        if (!dir.exists()) dir.mkdirs();
-
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+                throw new RuntimeException("Không thể tạo thư mục: " + dir.getAbsolutePath());
+            }
+        }
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        File dest = new File(uploadDir + fileName);
-
+        File dest = new File(dir, fileName);
         file.transferTo(dest);
-        return uploadDir + fileName;
+        return dest.getAbsolutePath();
     }
 }

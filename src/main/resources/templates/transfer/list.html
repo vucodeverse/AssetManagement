@@ -161,7 +161,7 @@
         <td><span th:text="${t.status}"></span></td>
 
         <td>
-          <a th:href="@{/transfer-requests/{id}(id=${t.transferId})}" class="btn-view">Xem</a>
+          <a th:href="@{/transfer-requests/detail/{id}(id=${t.transferId})}" class="btn-view">Xem</a>
           <a th:if="${role == 'ASSET_MANAGER' and t.status != 'RECEIVER_CONFIRMED' and t.status != 'CANCELLED'}"
              th:href="@{/transfer-requests/{id}/cancel(id=${t.transferId})}" class="btn-cancel">Hủy</a>
         </td>
