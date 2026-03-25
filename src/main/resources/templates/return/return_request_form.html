@@ -8,6 +8,14 @@
     <title>Yêu cầu trả tài sản</title>
 
     <link rel="stylesheet" th:href="@{/css/return/return_request_form.css}">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <style>
+        .dataTables_wrapper { font-size: 12px; padding: 10px; }
+        .dataTables_length, .dataTables_filter { margin-bottom: 10px; }
+        table.dataTable.no-footer { border-bottom: 1px solid #edf2f7; }
+        table.dataTable thead th, table.dataTable thead td { border-bottom: 1px solid #edf2f7; }
+    </style>
 </head>
 
 <body>
@@ -94,11 +102,14 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
 
 
-                        <div class="table-column" th:if="${requestDto.requestId != null && canEdit}">
-                            <!-- Bảng tài sản chọn thêm -->
-                            <div style="margin-top: 5px;" class="section-title">CHỌN THÊM TÀI SẢN</div>
+                    <div class="table-column" style="margin-bottom: 5px;"
+                         th:if="${requestDto.requestId != null && canEdit}">
+                        <!-- Bảng tài sản chọn thêm -->
+                        <div class="section-title">CHỌN THÊM TÀI SẢN</div>
+                        <div class="table-container">
                             <table class="pr-table" id="assetTableNew">
                                 <thead>
                                 <tr>
@@ -162,12 +173,38 @@
     </div>
 
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
+        $(document).ready(function() {
+            const dtConfig = {
+                "pageLength": 5,
+                "lengthChange": false,
+                "searching": false,
+                "language": {
+                    "paginate": {
+                        "first": "Đầu",
+                        "last": "Cuối",
+                        "next": "Sau",
+                        "previous": "Trước"
+                    },
+                    "info": "Hiển thị _START_ đến _END_ trên _TOTAL_",
+                    "infoEmpty": "Không có dữ liệu",
+                    "emptyTable": "Không có tài sản nào"
+                }
+            };
+
+            if($('#assetTable').length) {
+                $('#assetTable').DataTable(dtConfig);
+            }
+            if($('#assetTableNew').length) {
+                $('#assetTableNew').DataTable(dtConfig);
+            }
+        });
 
         function toggleRow(chk) {
             const row = chk.closest("tr");
             const noteInput = row.querySelector(".noteInput");
-            // noteInput.disabled = !chk.checked;
             noteInput.readOnly = !chk.checked;
             buildDetails();
         }
@@ -175,33 +212,46 @@
         function buildDetails() {
             const container = document.getElementById("detailsContainer");
             container.innerHTML = "";
-            const tables = ["assetTable", "assetTableNew"];
             let index = 0;
-            tables.forEach(id => {
-                const rows = document.querySelectorAll("#" + id + " tbody tr");
-                rows.forEach(row => {
-                    const chk = row.querySelector(".chkAsset");
-                    if (!chk) return;
-                    if (chk.checked) {
-                        const assetId = chk.value;
-                        const note = row.querySelector(".noteInput").value;
-                        container.innerHTML += `
-                <input type="hidden"
-                       name="details[${index}].assetId"
-                       value="${assetId}">
 
-                <input type="hidden"
-                       name="details[${index}].note"
-                       value="${note}">
-            `;
-                        index++;
+            const tables = ["assetTable", "assetTableNew"];
+            tables.forEach(id => {
+                if ($.fn.DataTable.isDataTable('#' + id)) {
+                    const table = $('#' + id).DataTable();
+                    table.$('tr').each(function() {
+                        const chk = $(this).find('.chkAsset')[0];
+                        if (chk && chk.checked) {
+                            const assetId = chk.value;
+                            const note = $(this).find('.noteInput').val();
+                            container.innerHTML += `
+                                <input type="hidden" name="details[${index}].assetId" value="${assetId}">
+                                <input type="hidden" name="details[${index}].note" value="${note}">
+                            `;
+                            index++;
+                        }
+                    });
+                } else {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        const rows = el.querySelectorAll("tbody tr");
+                        rows.forEach(row => {
+                            const chk = row.querySelector(".chkAsset");
+                            if (chk && chk.checked) {
+                                const assetId = chk.value;
+                                const note = row.querySelector(".noteInput").value;
+                                container.innerHTML += `
+                                    <input type="hidden" name="details[${index}].assetId" value="${assetId}">
+                                    <input type="hidden" name="details[${index}].note" value="${note}">
+                                `;
+                                index++;
+                            }
+                        });
                     }
-                });
+                }
             });
         }
         document.querySelector("form").addEventListener("submit", function () {
             buildDetails();
-
         });
     </script>
 </th:block>
