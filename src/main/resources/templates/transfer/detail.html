@@ -24,7 +24,6 @@
         <!-- ================= INFO ================= -->
         <div class="card mb-3">
             <div class="card-body">
-
                 <p><strong>Trạng thái:</strong>
                     <span class="badge bg-info" th:text="${transfer.status}"></span>
                 </p>
@@ -62,7 +61,6 @@
                     [[${transfer.receiverConfirmedBy}]]
                     lúc [[${#temporals.format(transfer.receiverConfirmedAt, 'dd-MM-yyyy HH:mm')}]]
                 </p>
-
             </div>
         </div>
 
@@ -71,17 +69,16 @@
 
         <table class="table table-bordered">
             <thead>
-            <tr>
-                <th>Mã</th>
-                <th>Tên</th>
-                <th>Tình trạng gửi</th>
-                <th>Ghi chú</th>
-
-                <!-- QC column -->
-                <th th:if="${currentUser.role.name() == 'WAREHOUSE_STAFF'
-                        and transfer.status == 'SENDER_CONFIRMED'}">
-                    QC
-                </th>
+            32
+            <th>Mã</th>
+            <th>Tên</th>
+            <th>Tình trạng gửi</th>
+            <th>Ghi chú</th>
+            <th>QC Status</th>
+            <th>QC Note</th>
+            <th>Người kiểm tra</th>
+            <th>Ngày QC</th>
+            <th>Hành động</th>
             </tr>
             </thead>
 
@@ -92,20 +89,41 @@
                 <td th:text="${asset.conditionFromSender} ?: '-'"></td>
                 <td th:text="${asset.note} ?: '-'"></td>
 
-                <!-- QC button -->
-                <td th:if="${currentUser.role.name() == 'WAREHOUSE_STAFF'
-                        and transfer.status == 'SENDER_CONFIRMED'}">
-
-                    <a th:href="@{/qc-reports/create(assetId=${asset.assetId})}"
-                       class="btn btn-warning btn-sm">
-                        Tạo QC
-                    </a>
-
-                </td>
+                <!-- QC columns -->
+                <th:block th:with="qc=${latestQcReports != null ? latestQcReports[asset.assetId] : null}">
+                    <td>
+                        <span th:if="${qc != null}" th:text="${qc.status}"></span>
+                        <span th:unless="${qc != null}">Chưa có</span>
+                    </td>
+                    <td>
+                        <span th:if="${qc != null}" th:text="${qc.note} ?: '-'"></span>
+                        <span th:unless="${qc != null}">-</span>
+                    </td>
+                    <td>
+                        <span th:if="${qc != null}" th:text="${qc.inspectorName} ?: '-'"></span>
+                        <span th:unless="${qc != null}">-</span>
+                    </td>
+                    <td>
+                        <span th:if="${qc != null and qc.qcDate != null}" th:text="${#temporals.format(qc.qcDate, 'dd-MM-yyyy HH:mm')}"></span>
+                        <span th:unless="${qc != null and qc.qcDate != null}">-</span>
+                    </td>
+                    <td>
+                        <a th:if="${qc != null}"
+                           th:href="@{/qc-reports/{id}(id=${qc.reportId})}"
+                           class="btn btn-sm btn-info">
+                            Xem chi tiết
+                        </a>
+                        <a th:if="${qc == null and role == 'WAREHOUSE_STAFF' and transfer.status == 'SENDER_CONFIRMED'}"
+                           th:href="@{/qc-reports/create(assetId=${asset.assetId}, sourceType='TRANSFER', sourceId=${transfer.transferId})}"
+                           class="btn btn-sm btn-warning">
+                            Tạo QC
+                        </a>
+                    </td>
+                </th:block>
             </tr>
 
             <tr th:if="${#lists.isEmpty(transfer.transferAssets)}">
-                <td colspan="5" class="text-center">Không có tài sản</td>
+                <td colspan="9" class="text-center">Không có tài sản</td>
             </tr>
             </tbody>
         </table>
@@ -113,80 +131,68 @@
         <!-- ================= ACTION BUTTON ================= -->
         <div class="mt-4 d-flex gap-2 flex-wrap">
 
-            <!-- ===== SENDER CONFIRM ===== -->
-            <form th:if="${currentUser.role.name() == 'DEPARTMENT_MANAGER'
+            <!-- SENDER CONFIRM -->
+            <form th:if="${role == 'DEPARTMENT_MANAGER'
                       and transfer.status == 'PENDING'
-                      and currentUser.departmentId == transfer.fromDepartmentId}"
+                      and departmentId == transfer.fromDepartmentId}"
                   th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}"
                   method="post">
-
                 <input type="hidden" name="action" value="CONFIRM_SENDER"/>
-                <button class="btn btn-primary">
-                    Xác nhận đã chuyển
-                </button>
+                <button class="btn btn-primary">Xác nhận đã chuyển</button>
             </form>
 
-            <!-- ===== WAREHOUSE CONFIRM ===== -->
-            <form th:if="${currentUser.role.name() == 'WAREHOUSE_STAFF'
+            <!-- WAREHOUSE CONFIRM -->
+            <form th:if="${role == 'WAREHOUSE_STAFF'
                       and transfer.status == 'SENDER_CONFIRMED'}"
                   th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}"
                   method="post">
-
                 <input type="hidden" name="action" value="CONFIRM_WAREHOUSE"/>
-                <button class="btn btn-success">
-                    Xác nhận QC hoàn tất
-                </button>
+                <button class="btn btn-success">Xác nhận QC hoàn tất</button>
             </form>
 
-            <!-- ===== RECEIVER CONFIRM ===== -->
-            <form th:if="${currentUser.role.name() == 'DEPARTMENT_MANAGER'
-                      and transfer.status == 'QUALITY_OK'
-                      and currentUser.departmentId == transfer.toDepartmentId}"
+            <!-- RECEIVER CONFIRM -->
+            <form th:if="${role == 'DEPARTMENT_MANAGER'
+                      and transfer.status == 'WAREHOUSE_CONFIRMED'
+                      and departmentId == transfer.toDepartmentId}"
                   th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}"
                   method="post">
-
                 <input type="hidden" name="action" value="CONFIRM_RECEIVER"/>
-                <button class="btn btn-success">
-                    Xác nhận đã nhận
-                </button>
+                <button class="btn btn-success">Xác nhận đã nhận</button>
             </form>
 
-            <!-- ===== CANCEL ===== -->
+            <!-- CANCEL -->
             <form th:if="${transfer.status != 'COMPLETED' and transfer.status != 'CANCELLED'}"
                   th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}"
                   method="post">
-
                 <input type="hidden" name="action" value="CANCEL"/>
-                <button class="btn btn-danger">
-                    Hủy lệnh
-                </button>
+                <button class="btn btn-danger">Hủy lệnh</button>
             </form>
-
         </div>
 
         <!-- ================= BACK ================= -->
         <div class="mt-3">
             <a th:href="@{/transfer-requests/my}"
-               th:if="${currentUser.role.name() == 'DEPARTMENT_MANAGER'}"
+               th:if="${role == 'DEPARTMENT_MANAGER'}"
                class="btn btn-secondary">
-                ← Quay lại
+                ← Quay lại danh sách gửi
             </a>
-
+            <a th:href="@{/transfer-requests/incoming}"
+               th:if="${role == 'DEPARTMENT_MANAGER'}"
+               class="btn btn-secondary">
+                ← Quay lại danh sách nhận
+            </a>
             <a th:href="@{/transfer-requests/warehouse}"
-               th:if="${currentUser.role.name() == 'WAREHOUSE_STAFF'}"
+               th:if="${role == 'WAREHOUSE_STAFF'}"
                class="btn btn-secondary">
                 ← Quay lại kho
             </a>
-
             <a th:href="@{/transfer-requests/am}"
-               th:if="${currentUser.role.name() == 'ASSET_MANAGER'}"
+               th:if="${role == 'ASSET_MANAGER'}"
                class="btn btn-secondary">
-                ← Quay lại
+                ← Quay lại danh sách của tôi
             </a>
         </div>
-
     </div>
-
 </th:block>
 </body>
 </html>

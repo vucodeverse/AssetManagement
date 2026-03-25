@@ -40,4 +40,10 @@ public interface TransferRequestDAO {
     List<TransferRequest> searchByAssetManagerId(int assetManagerId, TransferSearchCriteria criteria, int offset, int size, String sortField, String sortDir);
 
     int countByAssetManagerId(int assetManagerId, TransferSearchCriteria criteria);
+
+    // Outgoing (from department)
+    List<TransferRequest> searchOutgoing(int departmentId, TransferSearchCriteria criteria,
+                                         int offset, int size, String sortField, String sortDir);
+
+    int countOutgoing(int departmentId, TransferSearchCriteria criteria);
 }

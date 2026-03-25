@@ -14,6 +14,9 @@ public interface ITransferRequestService {
 
     TransferResponse createTransferRequest(TransferRequestCreate dto);
 
+    PageResponse<TransferResponse> searchOutgoing(int departmentId, TransferSearchCriteria criteria,
+                                                  int page, int size, String sortField, String sortDir);
+
     void processTransferAction(int transferId, int userId, TransferAction action, Boolean issue);
 
     PageResponse<TransferResponse> searchForDepartmentManager(int departmentId, TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir);

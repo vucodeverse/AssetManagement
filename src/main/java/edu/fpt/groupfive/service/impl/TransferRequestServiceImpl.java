@@ -72,7 +72,17 @@
                     .status(request.getStatus())
                     .build();
         }
-
+        @Override
+        public PageResponse<TransferResponse> searchOutgoing(int departmentId, TransferSearchCriteria criteria,
+                                                             int page, int size, String sortField, String sortDir) {
+            int offset = page * size;
+            List<TransferRequest> list = transferRequestDAO.searchOutgoing(departmentId, criteria, offset, size, sortField, sortDir);
+            int total = transferRequestDAO.countOutgoing(departmentId, criteria);
+            return new PageResponse<>(
+                    list.stream().map(this::mapToResponse).toList(),
+                    page, size, total
+            );
+        }
         // ================= PROCESS =================
         @Override
         public void processTransferAction(int transferId, int userId,
