@@ -1,25 +1,25 @@
-﻿﻿-- =============================================
+﻿create database  AssetManager
+
+-- =============================================
 -- 0. DỌN DẸP DỮ LIỆU CŨ (DROP TABLES)
 -- =============================================
-
---create database AssetManager
-
-
 SET NOCOUNT ON;
 
--- Module Kho (Warehouse) - Xóa trước do có FK tham chiếu các bảng cơ bản
+-- Module Kho (Warehouse) & Giao dịch mapping
+DROP TABLE IF EXISTS map_handover_transactions;
+DROP TABLE IF EXISTS map_po_transactions;
 DROP TABLE IF EXISTS map_allocation_transactions;
 DROP TABLE IF EXISTS map_return_transactions;
-DROP TABLE IF EXISTS map_po_transactions;
 DROP TABLE IF EXISTS wh_transactions;
+DROP TABLE IF EXISTS wh_receipts;  -- New table
 DROP TABLE IF EXISTS wh_asset_placement;
 DROP TABLE IF EXISTS wh_zones;
 DROP TABLE IF EXISTS wh_asset_capacity;
 DROP TABLE IF EXISTS wh_warehouses;
 
 -- Module Giao dịch & Cấp phát
-DROP TABLE IF EXISTS transfer_order_detail;
-DROP TABLE IF EXISTS transfer_order;
+DROP TABLE IF EXISTS transfer_request_detail;
+DROP TABLE IF EXISTS transfer_request;
 DROP TABLE IF EXISTS asset_handover_detail;
 DROP TABLE IF EXISTS asset_handover;
 DROP TABLE IF EXISTS return_request_detail;
@@ -39,7 +39,6 @@ DROP TABLE IF EXISTS purchase_request;
 DROP TABLE IF EXISTS supplier;
 
 -- Danh mục & Người dùng
--- Lưu ý: Xóa FK vòng trước khi xóa bảng departments/users
 IF OBJECT_ID('departments', 'U') IS NOT NULL
 ALTER TABLE departments DROP CONSTRAINT IF EXISTS FK_departments_manager;
 
@@ -157,7 +156,6 @@ CREATE TABLE quotation (
                            supplier_id         INT NOT NULL REFERENCES supplier(supplier_id),
                            status              NVARCHAR(255) NOT NULL,
                            total_amount        NUMERIC(19) NULL,
-                           reject_reason       NVARCHAR(255) NULL,
                            created_at          DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
                            updated_at          DATETIME2(0) NULL
 );
@@ -201,6 +199,7 @@ CREATE TABLE purchase_order_details (
                                         note                   NVARCHAR(255) NULL,
                                         quotation_detail_id    INT NULL REFERENCES quotation_detail(quotation_detail_id),
                                         delivery_date          DATETIME2(0) NULL,
+                                        received_quantity      INT NOT NULL DEFAULT 0, -- New column
                                         created_at             DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
                                         updated_at             DATETIME2(0) NULL
 );
@@ -279,26 +278,41 @@ CREATE TABLE return_request_detail (
 -- 7. LỆNH THỰC HIỆN (HANDOVER)
 -- =============================================
 
+
+
+CREATE TABLE qc_report (
+                           id           INT IDENTITY(1,1) PRIMARY KEY,
+                           asset_id     INT NOT NULL,
+                           qc_status    NVARCHAR(40) NOT NULL,
+                           inspected_by INT NOT NULL,
+                           qc_date      DATETIME2 DEFAULT SYSDATETIME(),
+                           note         NVARCHAR(MAX),
+                           CONSTRAINT FK_qc_report_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
+                           CONSTRAINT FK_qc_report_inspected_by FOREIGN KEY (inspected_by) REFERENCES users(user_id)
+);
+
+
 CREATE TABLE asset_handover (
                                 handover_id             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
                                 handover_type           NVARCHAR(40) NOT NULL,
-                                allocation_request_id   INT NULL REFERENCES allocation_request(request_id),
-                                return_request_id       INT NULL REFERENCES return_request(request_id),
-                                from_department_id      INT NULL REFERENCES departments(department_id),
-                                to_department_id        INT NULL REFERENCES departments(department_id),
-                                executed_by_user_id     INT NOT NULL REFERENCES users(user_id),
-                                handover_date           DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                                status                  NVARCHAR(40) NOT NULL,
-                                note                    NVARCHAR(500) NULL,
+                                allocation_request_id   INT NULL,
+                                return_request_id       INT NULL,
+                                from_department_id      INT NULL, -- Null nếu xuất thẳng từ kho chưa quy định dept
+                                to_department_id        INT NULL, -- Null nếu thu về kho
+                                status                  NVARCHAR(40) NOT NULL, -- DRAFT, COMPLETED, CANCELLED
                                 created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
-                                updated_at              DATETIME2(0) NULL
+                                updated_at              DATETIME2(0) NULL,
+                                CONSTRAINT FK_ho_alloc_req FOREIGN KEY (allocation_request_id) REFERENCES allocation_request(request_id),
+                                CONSTRAINT FK_ho_ret_req FOREIGN KEY (return_request_id) REFERENCES return_request(request_id),
+                                CONSTRAINT FK_ho_from_dept FOREIGN KEY (from_department_id) REFERENCES departments(department_id),
+                                CONSTRAINT FK_ho_to_dept FOREIGN KEY (to_department_id) REFERENCES departments(department_id)
 );
 
 CREATE TABLE asset_handover_detail (
                                        handover_detail_id      INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
                                        handover_id             INT NOT NULL REFERENCES asset_handover(handover_id),
                                        asset_id                INT NOT NULL REFERENCES asset(asset_id),
-                                       condition_status        NVARCHAR(100) NULL,
+                                       qc_report_id            INT NULL REFERENCES qc_report(id),
                                        note                    NVARCHAR(255) NULL
 );
 
@@ -317,8 +331,6 @@ CREATE TABLE transfer_request (
                                   status                  NVARCHAR(40) NOT NULL,
                                   sender_confirmed_by     INT NULL REFERENCES users(user_id),
                                   sender_confirmed_at     DATETIME2(0) NULL,
-                                  wh_confirmed_by		  INT NULL REFERENCES users(user_id),
-                                  wh_confirmed_at		  DATETIME2(0) NULL,
                                   receiver_confirmed_by   INT NULL REFERENCES users(user_id),
                                   receiver_confirmed_at   DATETIME2(0) NULL,
                                   created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
@@ -340,18 +352,6 @@ CREATE INDEX idx_asset_department ON asset(department_id, asset_id);
 CREATE INDEX idx_return_detail_asset ON return_request_detail(asset_id, request_id);
 CREATE INDEX idx_return_request_status_id ON return_request(status, request_id);
 
-
-
-CREATE TABLE qc_report (
-                           id           INT IDENTITY(1,1) PRIMARY KEY,
-                           asset_id     INT NOT NULL,
-                           qc_status    NVARCHAR(40) NOT NULL,
-                           inspected_by INT NOT NULL,
-                           qc_date      DATETIME2 DEFAULT SYSDATETIME(),
-                           note         NVARCHAR(MAX),
-                           CONSTRAINT FK_qc_report_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
-                           CONSTRAINT FK_qc_report_inspected_by FOREIGN KEY (inspected_by) REFERENCES users(user_id)
-);
 
 -- =============================================
 -- 9. MODULE KHO: SETUP KHÔNG GIAN LƯU TRỮ
@@ -396,14 +396,27 @@ CREATE TABLE wh_asset_placement (
 );
 
 -- =============================================
--- 11. MODULE KHO: NHẬT KÝ GIAO DỊCH & ÁNH XẠ
+-- 11. MODULE KHO: PHIẾU NHẬP & GIAO DỊCH
 -- =============================================
 
--- 11.1 Sổ cái giao dịch kho (Lõi)
+-- 11.1 Phiếu Nhập Kho (Master Record cho mỗi đợt nhập)
+CREATE TABLE wh_receipts (
+                             receipt_id          INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                             receipt_no          NVARCHAR(50) NOT NULL UNIQUE, -- vd: PN-YYYYMMDD-XXX
+                             purchase_order_id   INT NULL REFERENCES purchase_orders(purchase_order_id),
+                             asset_handover_id   INT NULL REFERENCES asset_handover(handover_id), -- Cho trường hợp thu hồi
+                             receipt_type        NVARCHAR(20) NOT NULL, -- 'INBOUND_PO', 'INBOUND_RETURN'
+                             created_at          DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+                             created_by          INT NOT NULL REFERENCES users(user_id),
+                             note                NVARCHAR(500) NULL
+);
+
+-- 11.2 Sổ cái giao dịch kho (Lõi)
 CREATE TABLE wh_transactions (
                                  transaction_id   INT IDENTITY(1,1) PRIMARY KEY,
                                  asset_id         INT NOT NULL REFERENCES asset(asset_id),
-                                 zone_id          INT NOT NULL REFERENCES wh_zones(zone_id), -- Zone đích (nhập) hoặc Zone nguồn (xuất)
+                                 zone_id          INT NOT NULL REFERENCES wh_zones(zone_id),
+                                 receipt_id       INT NULL REFERENCES wh_receipts(receipt_id), -- New column to group by Receipt
                                  transaction_type NVARCHAR(20) NOT NULL, -- 'INBOUND' hoặc 'OUTBOUND'
                                  executed_by      INT NOT NULL REFERENCES users(user_id),
                                  executed_at      DATETIME2(0) DEFAULT SYSDATETIME(),
@@ -426,6 +439,7 @@ CREATE TABLE map_handover_transactions (
 
 
 
+
 -- =============================================
 -- 12. BẢNG LỊCH SỬ TÀI SẢN (ASSET LOGS)
 -- =============================================
@@ -443,18 +457,163 @@ CREATE TABLE asset_logs (
                             related_transfer_id   INT NULL,
                             related_return_id     INT NULL,
                             note                NVARCHAR(500) NULL,
-                            created_by          INT NULL,                            -- user_id người thực hiện
                             CONSTRAINT FK_asset_logs_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id),
                             CONSTRAINT FK_asset_logs_from_dept FOREIGN KEY (from_department_id) REFERENCES departments(department_id),
                             CONSTRAINT FK_asset_logs_to_dept FOREIGN KEY (to_department_id) REFERENCES departments(department_id),
                             CONSTRAINT FK_asset_logs_allocation FOREIGN KEY (related_allocation_id) REFERENCES allocation_request(request_id),
                             CONSTRAINT FK_asset_logs_transfer FOREIGN KEY (related_transfer_id) REFERENCES transfer_request(transfer_id),
-                            CONSTRAINT FK_asset_logs_return FOREIGN KEY (related_return_id) REFERENCES return_request(request_id),
-                            CONSTRAINT FK_asset_logs_created_by FOREIGN KEY (created_by) REFERENCES users(user_id)
+                            CONSTRAINT FK_asset_logs_return FOREIGN KEY (related_return_id) REFERENCES return_request(request_id)
 );
 
 -- Tạo chỉ mục để tối ưu truy vấn theo tài sản và thời gian
 CREATE INDEX idx_asset_logs_asset ON asset_logs(asset_id);
 CREATE INDEX idx_asset_logs_action_date ON asset_logs(action_date);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- =============================================
+-- CHÈN DỮ LIỆU MẪU ĐÃ SỬA (Chạy sau khi tạo bảng xong)
+-- =============================================
+SET NOCOUNT ON;
+
+-- 1. Category
+SET IDENTITY_INSERT category ON;
+INSERT INTO category (category_id, category_name, description, status)
+VALUES
+    (1, N'Thiết bị CNTT', N'Các thiết bị công nghệ thông tin', N'ACTIVE'),
+    (2, N'Máy văn phòng', N'Máy in, máy fax, điện thoại', N'ACTIVE'),
+    (3, N'Nội thất', N'Bàn ghế, tủ, kệ', N'ACTIVE'),
+    (4, N'Vật tư tiêu hao', N'Giấy, mực in, linh kiện', N'ACTIVE'),
+    (5, N'Phần mềm', N'Phần mềm bản quyền', N'ACTIVE');
+SET IDENTITY_INSERT category OFF;
+
+-- 2. Asset_type
+SET IDENTITY_INSERT asset_type ON;
+INSERT INTO asset_type (asset_type_id, type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, specification, category_id, model)
+VALUES
+    (1, N'Laptop Dell', N'Laptop Dell Latitude 5420', N'HARDWARE', N'ACTIVE', N'STRAIGHT_LINE', 36, N'Core i5, 8GB RAM, 256GB SSD', 1, N'Latitude 5420'),
+    (2, N'Laptop HP', N'Laptop HP ProBook 440', N'HARDWARE', N'ACTIVE', N'STRAIGHT_LINE', 36, N'Core i5, 8GB RAM, 256GB SSD', 1, N'ProBook 440'),
+    (3, N'Màn hình Dell', N'Màn hình Dell 24 inch', N'HARDWARE', N'ACTIVE', N'STRAIGHT_LINE', 36, N'Full HD, IPS', 1, N'P2422H'),
+    (4, N'Máy in HP', N'Máy in laser HP', N'EQUIPMENT', N'ACTIVE', N'STRAIGHT_LINE', 60, N'In đen trắng, tốc độ 20ppm', 2, N'LaserJet Pro'),
+    (5, N'Bàn làm việc', N'Bàn nhân viên', N'FURNITURE', N'ACTIVE', N'STRAIGHT_LINE', 120, N'Kích thước 1.2m x 0.6m', 3, N'Model B01');
+SET IDENTITY_INSERT asset_type OFF;
+
+-- 3. Departments
+SET IDENTITY_INSERT departments ON;
+INSERT INTO departments (department_id, department_name, manager_user_id, status, created_date, description)
+VALUES
+    (1, N'Phòng Công nghệ thông tin', NULL, N'ACTIVE', GETDATE(), N'Phụ trách hệ thống CNTT'),
+    (2, N'Phòng Kinh doanh', NULL, N'ACTIVE', GETDATE(), N'Kinh doanh và bán hàng'),
+    (3, N'Phòng Kế toán', NULL, N'ACTIVE', GETDATE(), N'Tài chính kế toán'),
+    (4, N'Phòng Nhân sự', NULL, N'ACTIVE', GETDATE(), N'Quản lý nhân sự'),
+    (5, N'Kho trung tâm', NULL, N'ACTIVE', GETDATE(), N'Kho lưu trữ tập trung');
+SET IDENTITY_INSERT departments OFF;
+
+-- 4. Users
+SET IDENTITY_INSERT users ON;
+INSERT INTO users (user_id, username, password_hash, first_name, last_name, phone_number, email, status, role, created_date, department_id)
+VALUES
+    (1, N'am',    N'$2a$10$abc123hash', N'Quản lý', N'Tài sản',     N'0912345678', N'asset.manager@company.com',    N'ACTIVE', N'ASSET_MANAGER',    GETDATE(), 1),
+    (2, N'ps',   N'$2a$10$abc123hash', N'Nhân viên', N'Mua sắm',   N'0912345679', N'purchase.staff@company.com',   N'ACTIVE', N'PURCHASE_STAFF',   GETDATE(), 1),
+    (3, N'wh',  N'$2a$10$abc123hash', N'Nhân viên', N'Kho',       N'0912345680', N'warehouse.staff@company.com',  N'ACTIVE', N'WAREHOUSE_STAFF',  GETDATE(), 5),
+    (4, N'dept_it',  N'$2a$10$abc123hash', N'Trưởng', N'Phòng IT',     N'0912345681', N'dept.it@company.com',          N'ACTIVE', N'DEPARTMENT_MANAGER', GETDATE(), 1),
+    (5, N'dept_sale',N'$2a$10$abc123hash', N'Trưởng', N'Phòng KD',     N'0912345682', N'dept.sale@company.com',        N'ACTIVE', N'DEPARTMENT_MANAGER', GETDATE(), 2);
+SET IDENTITY_INSERT users OFF;
+
+-- Cập nhật trưởng phòng
+UPDATE departments SET manager_user_id = 4 WHERE department_id = 1;
+UPDATE departments SET manager_user_id = 5 WHERE department_id = 2;
+UPDATE departments SET manager_user_id = 3 WHERE department_id = 5;
+
+-- 5. Supplier
+INSERT INTO supplier (supplier_name, phone_number, email, address, supplier_code, tax_code, status, created_date)
+VALUES
+    (N'Công ty TNHH Dell Việt Nam',     N'02839123456', N'dell.vn@supplier.com',     N'Q1, TP.HCM', N'SUP001', N'010123456789', N'ACTIVE', GETDATE()),
+    (N'Công ty CP HP Việt Nam',         N'02839123457', N'hp.vn@supplier.com',       N'Q3, TP.HCM', N'SUP002', N'010987654321', N'ACTIVE', GETDATE()),
+    (N'Công ty Nội thất ABC',           N'02839123458', N'noithatabc@supplier.com', N'Q7, TP.HCM', N'SUP003', N'010555666777', N'ACTIVE', GETDATE());
+
+-- 6. Purchase_request
+INSERT INTO purchase_request (status, request_reason, note, creator_id, needed_by_date, priority, approved_by_director_id, created_at)
+VALUES
+    (N'APPROVED', N'Mua laptop và màn hình cho phòng IT & KD', N'Ưu tiên cao', 2, DATEADD(day, 30, GETDATE()), N'HIGH', 1, SYSDATETIME()),
+    (N'APPROVED', N'Mua máy in cho kế toán', N'', 2, DATEADD(day, 20, GETDATE()), N'MEDIUM', 1, SYSDATETIME()),
+    (N'APPROVED', N'Mua bàn làm việc', N'', 2, DATEADD(day, 25, GETDATE()), N'MEDIUM', 1, SYSDATETIME());
+
+-- 7. Quotation
+INSERT INTO quotation (purchase_request_id, supplier_id, status, total_amount, created_at)
+VALUES
+    (1, 1, N'ACCEPTED', 48000000, SYSDATETIME()),
+    (2, 2, N'ACCEPTED',  5500000, SYSDATETIME()),
+    (3, 3, N'ACCEPTED',  8500000, SYSDATETIME());
+
+-- 8. Purchase_orders (ĐÃ SỬA - không còn NULL)
+SET IDENTITY_INSERT purchase_orders ON;
+INSERT INTO purchase_orders (purchase_order_id, total_amount, note, status, purchase_request_id, supplier_id, quotation_id, approved_by, created_at)
+VALUES
+    (1, 48000000, N'Đơn mua laptop và màn hình', N'COMPLETED', 1, 1, 1, 1, GETDATE()),
+    (2,  5500000, N'Đơn mua máy in',             N'COMPLETED', 2, 2, 2, 1, GETDATE()),
+    (3,  8500000, N'Đơn mua bàn làm việc',       N'COMPLETED', 3, 3, 3, 1, GETDATE());
+SET IDENTITY_INSERT purchase_orders OFF;
+
+-- 9. Purchase_order_details
+SET IDENTITY_INSERT purchase_order_details ON;
+INSERT INTO purchase_order_details (purchase_order_detail_id, quantity, unit_price, tax_rate, purchase_order_id, asset_type_id, discount, note, received_quantity, created_at)
+VALUES
+    (1, 2, 15000000, 10, 1, 1, 0, N'Laptop Dell Latitude 5420', 2, GETDATE()),
+    (2, 1, 15000000, 10, 1, 2, 0, N'Laptop HP ProBook 440',     1, GETDATE()),
+    (3, 3,  3000000, 10, 1, 3, 0, N'Màn hình Dell 24 inch',     3, GETDATE()),
+    (4, 1,  5000000, 10, 2, 4, 0, N'Máy in HP LaserJet Pro',    1, GETDATE()),
+    (5, 2,  4000000, 10, 3, 5, 0, N'Bàn làm việc Model B01',    2, GETDATE());
+SET IDENTITY_INSERT purchase_order_details OFF;
+
+-- 10. Asset
+SET IDENTITY_INSERT asset ON;
+INSERT INTO asset (asset_id, asset_name, asset_type_id, purchase_order_detail_id, current_status, original_cost, department_id, acquisition_date, in_service_date, warranty_start_date, warranty_end_date)
+VALUES
+    (1, N'Laptop Dell Latitude 5420 - SN001', 1, 1, N'ASSIGNED',     15000000, 1, CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), DATEADD(year, 1, GETDATE())),
+    (2, N'Laptop Dell Latitude 5420 - SN002', 1, 1, N'AVAILABLE',    15000000, 5, CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), DATEADD(year, 1, GETDATE())),
+    (3, N'Laptop HP ProBook 440 - SN001',     2, 2, N'ASSIGNED',     15000000, 2, CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), DATEADD(year, 1, GETDATE())),
+    (4, N'Màn hình Dell P2422H - SN001',      3, 3, N'ASSIGNED',      3000000, 1, CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), DATEADD(year, 1, GETDATE())),
+    (5, N'Màn hình Dell P2422H - SN002',      3, 3, N'AVAILABLE',     3000000, 5, CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), DATEADD(year, 1, GETDATE())),
+    (6, N'Máy in HP LaserJet Pro - SN001',    4, 4, N'UNDER_MAINTENANCE', 5000000, 3, CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), CAST(GETDATE() AS DATE), DATEADD(year, 1, GETDATE())),
+    (7, N'Bàn làm việc Model B01 - SN001',    5, 5, N'DISPOSED',      4000000, NULL, CAST(GETDATE() AS DATE), NULL, NULL, NULL),
+    (8, N'Bàn làm việc Model B01 - SN002',    5, 5, N'NEW',           4000000, NULL, CAST(GETDATE() AS DATE), NULL, NULL, NULL);
+SET IDENTITY_INSERT asset OFF;
+
+-- 11. Asset_logs (giữ nguyên logic cũ của bạn)
+SET IDENTITY_INSERT asset_logs ON;
+INSERT INTO asset_logs (asset_log_id, asset_id, action_type, from_department_id, to_department_id, action_date, old_status, new_status, note)
+VALUES
+    (1, 1, N'CREATE',   NULL, NULL, GETDATE(), NULL, N'NEW', N'Tạo mới laptop Dell 1'),
+    (2, 1, N'ALLOCATE', 5, 1, DATEADD(minute, 5, GETDATE()), N'NEW', N'ASSIGNED', N'Cấp phát cho phòng IT'),
+    (3, 2, N'CREATE',   NULL, NULL, GETDATE(), NULL, N'NEW', N'Tạo mới laptop Dell 2'),
+    (4, 2, N'TRANSFER', 5, 2, DATEADD(minute, 10, GETDATE()), N'NEW', N'ASSIGNED', N'Điều chuyển sang phòng KD'),
+    (5, 3, N'CREATE',   NULL, NULL, GETDATE(), NULL, N'NEW', N'Tạo mới laptop HP'),
+    (6, 3, N'ALLOCATE', 5, 2, DATEADD(minute, 5, GETDATE()), N'NEW', N'ASSIGNED', N'Cấp phát cho phòng KD'),
+    (7, 4, N'CREATE',   NULL, NULL, GETDATE(), NULL, N'NEW', N'Tạo mới màn hình 1'),
+    (8, 4, N'ALLOCATE', 5, 1, DATEADD(minute, 5, GETDATE()), N'NEW', N'ASSIGNED', N'Cấp phát màn hình cho IT'),
+    (9, 5, N'CREATE',   NULL, NULL, GETDATE(), NULL, N'NEW', N'Tạo mới màn hình 2'),
+    (10,6, N'CREATE',   NULL, NULL, GETDATE(), NULL, N'NEW', N'Tạo mới máy in'),
+    (11,6, N'STATUS_CHANGE', NULL, NULL, DATEADD(day, -5, GETDATE()), N'AVAILABLE', N'UNDER_MAINTENANCE', N'Chuyển sang bảo trì'),
+    (12,7, N'CREATE',   NULL, NULL, DATEADD(day, -10, GETDATE()), NULL, N'NEW', N'Tạo bàn 1'),
+    (13,7, N'DISPOSE',  NULL, NULL, DATEADD(day, -2, GETDATE()), N'NEW', N'DISPOSED', N'Thanh lý do hư hỏng'),
+    (14,8, N'CREATE',   NULL, NULL, DATEADD(day, -1, GETDATE()), NULL, N'NEW', N'Tạo bàn 2');
+SET IDENTITY_INSERT asset_logs OFF;
+
 
 
