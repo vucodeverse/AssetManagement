@@ -19,4 +19,6 @@ public class QualityControlReport {
     private String inspectorName;
     private LocalDateTime createdDate;
     private String note;
+    private String attachment;
+
 }
