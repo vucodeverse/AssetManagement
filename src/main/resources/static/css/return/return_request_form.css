@@ -1,0 +1,161 @@
+:root {
+    --primary-color: #000000;
+    --primary-hover: #333333;
+    --bg-light: #f6f7fb;
+    --border-color: #e5e7eb;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    --radius-lg: 12px;
+    --radius-md: 8px;
+}
+
+.pr-container {
+    max-width: 1200px; /* Tăng độ rộng để chứa 2 bảng */
+    width: 95%;
+    margin: 2rem auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+
+.tables-grid {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+}
+
+.table-column {
+    flex: 1;
+    min-width: 0;
+}
+
+.form-section {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    max-height: 500px; /* Cuộn dọc nếu quá nhiều tài sản */
+}
+
+.pr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.pr-table th {
+    background: #f9fafb;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--primary-color);
+    position: sticky; /* Giữ tiêu đề khi cuộn */
+    top: 0;
+    z-index: 10;
+}
+
+.pr-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* Input trong bảng */
+.noteInput {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: 0.2s;
+}
+
+.noteInput:read-only {
+    background: #fdfdfd;
+    border-color: transparent;
+    color: #999;
+}
+
+/* Form Grid cho Thông tin chung */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.full-width { grid-column: span 2; }
+
+.form-group label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+}
+
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-sizing: border-box;
+}
+
+/* Buttons */
+.pr-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+}
+
+.btn-submit-custom { background: var(--primary-color); color: white; }
+.btn-back-custom { background: white; border: 1px solid var(--border-color); color: var(--text-main); }
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .tables-grid {
+        flex-direction: column;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

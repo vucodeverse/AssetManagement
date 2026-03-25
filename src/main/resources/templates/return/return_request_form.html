@@ -7,235 +7,185 @@
     <meta charset="UTF-8"/>
     <title>Yêu cầu trả tài sản</title>
 
-    <link rel="stylesheet" th:href="@{/css/allocation/allocation-request-form.css}">
+    <link rel="stylesheet" th:href="@{/css/return/return_request_form.css}">
 </head>
 
 <body>
 <th:block layout:fragment="content">
-<div class="pr-container">
-
-    <!-- HEADER -->
-    <header class="pr-header">
-        <h1 th:text="${requestDto.requestId != null
+    <div class="pr-container">
+        <!-- HEADER -->
+        <header class="pr-header">
+            <h1 style="margin-bottom: 5px;" th:text="${requestDto.requestId != null
                 ? (canEdit ? 'Sửa yêu cầu trả tài sản' : 'Chi tiết yêu cầu trả tài sản')
                 : 'Tạo yêu cầu trả tài sản'}">
-        </h1>
-    </header>
+            </h1>
+        </header>
 
-
-    <!-- FORM -->
-    <form th:action="@{${requestDto.requestId != null
+        <!-- FORM -->
+        <form th:action="@{${requestDto.requestId != null
             ? '/department/return-request/update/' + requestDto.requestId
             : '/department/return-request/save'}}" th:object="${requestDto}" method="post">
 
+            <!-- ================= THÔNG TIN CHUNG ================= -->
+            <section class="form-section">
+                <div class="section-title">THÔNG TIN CHUNG</div>
+                <div class="form-grid">
+                    <!-- reason -->
+                    <div class="form-group full-width">
+                        <label>LÝ DO TRẢ TÀI SẢN</label>
 
-        <!-- ================= THÔNG TIN CHUNG ================= -->
-        <section class="form-section">
+                        <input type="text"
+                               th:field="*{requestReason}"
+                               th:readonly="${canEdit != null && !canEdit}"
+                               placeholder="VD: Thiết bị hỏng, nhân viên nghỉ việc"
+                               required/>
+                    </div>
+                    <!-- created date -->
+                    <div class="form-group"
+                         th:if="${requestDto.requestId != null && !canEdit}">
+                        <label>NGÀY TẠO</label>
+                        <input type="text" readonly
+                               th:value="${#temporals.format(requestDto.createdAt, 'dd-MM-yyyy HH:mm')}"/>
+                    </div>
+                </div>
+            </section>
 
-            <div class="section-title">THÔNG TIN CHUNG</div>
+            <!-- ================= DANH SÁCH TÀI SẢN ================= -->
+            <section class="form-section">
+                <input type="hidden" th:field="*{requestId}">
+                <div th:class="${requestDto.requestId != null && canEdit ? 'tables-grid' : ''}">
+                    <!-- Bảng tài sản đã chọn -->
+                    <div class="table-column" style="margin-bottom: 5px;">
+                        <div class="section-title">DANH SÁCH TÀI SẢN</div>
+                        <div class="table-container">
+                            <table class="pr-table" id="assetTable">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên tài sản</th>
+                                    <th>Ghi chú</th>
+                                    <th>Chọn</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="a,stat : ${assets}">
+                                    <!-- id -->
+                                    <td th:text="${a.assetId}"></td>
+                                    <!-- name -->
+                                    <td th:text="${a.assetTypeName}"></td>
+                                    <!-- note -->
+                                    <td>
+                                        <input type="text"
+                                               style="padding: 8px;"
+                                               class="noteInput"
+                                               th:readonly="${canEdit != null && !canEdit}"
+                                               th:value="${a.note}">
+                                    </td>
+                                    <!-- tick -->
+                                    <td>
+                                        <input type="checkbox"
+                                               class="chkAsset"
+                                               th:value="${a.assetId}"
+                                               th:if="${canEdit}"
+                                               th:checked="${requestDto.requestId != null}"
+                                               onchange="toggleRow(this)">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-            <div class="form-grid">
-                <!-- reason -->
-                <div class="form-group full-width">
-                    <label>LÝ DO TRẢ TÀI SẢN</label>
 
-                    <input type="text"
-                           th:field="*{requestReason}"
-                           th:readonly="${canEdit != null && !canEdit}"
-                           placeholder="VD: Thiết bị hỏng, nhân viên nghỉ việc"
-                           required/>
+                        <div class="table-column" th:if="${requestDto.requestId != null && canEdit}">
+                            <!-- Bảng tài sản chọn thêm -->
+                            <div style="margin-top: 5px;" class="section-title">CHỌN THÊM TÀI SẢN</div>
+                            <table class="pr-table" id="assetTableNew">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên</th>
+                                    <th>Ghi chú</th>
+                                    <th>Chọn</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="a : ${assetNew}">
+                                    <td th:text="${a.assetId}"></td>
+                                    <td th:text="${a.assetTypeName}"></td>
+                                    <td>
+                                        <input type="text"
+                                               style="padding: 8px;"
+                                               class="noteInput">
+                                    </td>
+                                    <td>
+                                        <input type="checkbox"
+                                               class="chkAsset"
+                                               th:value="${a.assetId}"
+                                               onchange="toggleRow(this)">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="detailsContainer"></div>
+
+            <!-- ================= FOOTER ================= -->
+            <footer class="pr-footer">
+
+                <div class="footer-left">
+                    <a th:href="@{/department/return-request/list}"
+                       class="btn btn-back-custom">
+                        <- Quay lại
+                    </a>
                 </div>
 
-                <!-- created date -->
-                <div class="form-group"
-                     th:if="${requestDto.requestId != null && !canEdit}">
-                    <label>NGÀY TẠO</label>
-                    <input type="text" readonly
-                           th:value="${#temporals.format(requestDto.createdAt, 'dd-MM-yyyy HH:mm')}"/>
+                <div class="footer-right">
+                    <button type="reset"
+                            th:if="${canEdit}"
+                            class="btn btn-reset-custom">
+                        Nhập lại
+                    </button>
+
+                    <button type="submit"
+                            th:if="${canEdit}"
+                            class="btn btn-submit-custom">
+                        Gửi yêu cầu
+                    </button>
                 </div>
 
-            </div>
-
-        </section>
-
-
-        <!-- ================= DANH SÁCH TÀI SẢN ================= -->
-        <section class="form-section">
-
-            <input type="hidden"
-                   th:field="*{requestId}">
-            <!-- Bảng tài sản đã chọn -->
-            <div class="section-title">DANH SÁCH TÀI SẢN</div>
-
-            <div class="table-container">
-
-                <table class="pr-table" id="assetTable">
-
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tên tài sản</th>
-                        <th>Ghi chú</th>
-                        <th>Chọn</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-
-                    <tr th:each="a,stat : ${assets}">
-
-                        <!-- id -->
-                        <td th:text="${a.assetId}"></td>
-                        <!-- name -->
-                        <td th:text="${a.assetTypeName}"></td>
-                        <!-- note -->
-                        <td>
-                            <input type="text"
-                                   style="padding: 8px; width: 400px"
-                                   class="noteInput"
-                                   th:readonly="${canEdit != null && !canEdit}"
-                                   th:value="${a.note}">
-                        </td>
-                        <!-- tick -->
-                        <td>
-                            <input type="checkbox"
-                                   class="chkAsset"
-                                   th:value="${a.assetId}"
-                                   th:if="${canEdit}"
-                                   th:checked="${requestDto.requestId != null}"
-                                   onchange="toggleRow(this)">
-                        </td>
-
-                    </tr>
-
-                    </tbody>
-
-                </table>
+            </footer>
+        </form>
+    </div>
 
 
-                <div th:if="${requestDto.requestId != null && canEdit}">
+    <script>
 
-                    <!-- Bảng tài sản chọn thêm -->
-                    <div class="section-title">CHỌN THÊM TÀI SẢN</div>
+        function toggleRow(chk) {
+            const row = chk.closest("tr");
+            const noteInput = row.querySelector(".noteInput");
+            // noteInput.disabled = !chk.checked;
+            noteInput.readOnly = !chk.checked;
+            buildDetails();
+        }
 
-                    <table class="pr-table" id="assetTableNew">
-
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên</th>
-                            <th>Ghi chú</th>
-                            <th>Chọn</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-
-                        <tr th:each="a : ${assetNew}">
-
-                            <td th:text="${a.assetId}"></td>
-
-                            <td th:text="${a.assetTypeName}"></td>
-
-                            <td>
-                                <input type="text"
-                                       style="padding: 8px; width: 400px"
-                                       class="noteInput">
-                            </td>
-
-                            <td>
-                                <input type="checkbox"
-                                       class="chkAsset"
-                                       th:value="${a.assetId}"
-                                       onchange="toggleRow(this)">
-                            </td>
-
-                        </tr>
-
-                        </tbody>
-
-                    </table>
-                </div>
-
-            </div>
-
-        </section>
-
-        <div id="detailsContainer"></div>
-
-        <!-- ================= FOOTER ================= -->
-        <footer class="pr-footer">
-
-            <div class="footer-left">
-                <a th:href="@{/department/return-request/list}"
-                   class="btn btn-back-custom">
-                    <- Quay lại
-                </a>
-            </div>
-
-            <div class="footer-right">
-                <button type="reset"
-                        th:if="${canEdit}"
-                        class="btn btn-reset-custom">
-                    Nhập lại
-                </button>
-
-                <button type="submit"
-                        th:if="${canEdit}"
-                        class="btn btn-submit-custom">
-                    Gửi yêu cầu
-                </button>
-            </div>
-
-        </footer>
-
-    </form>
-
-</div>
-
-
-<script>
-
-    function toggleRow(chk) {
-
-        const row = chk.closest("tr");
-
-        const noteInput = row.querySelector(".noteInput");
-
-        // noteInput.disabled = !chk.checked;
-        noteInput.readOnly = !chk.checked;
-
-        buildDetails();
-    }
-
-
-    function buildDetails() {
-
-        const container = document.getElementById("detailsContainer");
-
-        container.innerHTML = "";
-
-        const tables = ["assetTable", "assetTableNew"];
-
-        let index = 0;
-
-        tables.forEach(id => {
-
-            const rows = document.querySelectorAll("#" + id + " tbody tr");
-
-            rows.forEach(row => {
-
-                const chk = row.querySelector(".chkAsset");
-
-                if (!chk) return;
-
-                if (chk.checked) {
-
-                    const assetId = chk.value;
-
-                    const note = row.querySelector(".noteInput").value;
-
-                    container.innerHTML += `
+        function buildDetails() {
+            const container = document.getElementById("detailsContainer");
+            container.innerHTML = "";
+            const tables = ["assetTable", "assetTableNew"];
+            let index = 0;
+            tables.forEach(id => {
+                const rows = document.querySelectorAll("#" + id + " tbody tr");
+                rows.forEach(row => {
+                    const chk = row.querySelector(".chkAsset");
+                    if (!chk) return;
+                    if (chk.checked) {
+                        const assetId = chk.value;
+                        const note = row.querySelector(".noteInput").value;
+                        container.innerHTML += `
                 <input type="hidden"
                        name="details[${index}].assetId"
                        value="${assetId}">
@@ -244,23 +194,16 @@
                        name="details[${index}].note"
                        value="${note}">
             `;
-
-                    index++;
-                }
-
+                        index++;
+                    }
+                });
             });
+        }
+        document.querySelector("form").addEventListener("submit", function () {
+            buildDetails();
 
         });
-
-
-    }
-
-    document.querySelector("form").addEventListener("submit", function () {
-
-        buildDetails();
-
-    });
-</script>
+    </script>
 </th:block>
 </body>
 </html>
