@@ -165,7 +165,8 @@
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                 <a th:href="@{/wh/inbound/po}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách PO</a>
             </div>
-            <h1 class="page-title">Tổng kết Nhập kho PO #<span th:text="${summary.purchaseOrderId}"></span></h1>
+            <h1 class="page-title">Tổng kết Nhập kho - Phiếu nhập #<span th:text="${summary.receiptNo}"></span></h1>
+            <p class="page-subtitle">Liên kết tới Đơn mua hàng PO #<span th:text="${summary.purchaseOrderId}"></span></p>
         </div>
     </header>
 

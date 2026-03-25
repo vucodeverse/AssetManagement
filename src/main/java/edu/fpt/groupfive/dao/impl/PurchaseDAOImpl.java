@@ -213,7 +213,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
         // khai báo dynamic sql
         StringBuilder sql = new StringBuilder(
-                "select p.*" +
+                "select p.* " +
                         "from purchase_request p left join users u on p.creator_id = u.user_id where 1 = 1 and p" +
                         ".status <> 'DELETED'");
         List<Purchase> purchases = new ArrayList<>();
@@ -236,12 +236,12 @@ public class PurchaseDAOImpl implements PurchaseDAO {
         }
 
         if (p.getTo() != null) {
-            sql.append(" and p.needed_by_date < ? ");
+            sql.append(" and p.needed_by_date <= ? ");
             params.add(Date.valueOf(p.getTo()));
         }
 
         if (p.getKeyword() != null && !p.getKeyword().isBlank()) {
-            sql.append(" and (");
+            sql.append(" and ( ");
             String keyword = p.getKeyword().trim();
 
             if (keyword.matches("\\d+")) {
@@ -249,8 +249,13 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 params.add(Integer.parseInt(keyword));
             }
 
-            sql.append(" lower(u.first_name) like ? or lower(u.last_name) like ? )");
+            sql.append(" lower(u.first_name) like ? " +
+                    "or lower(u.last_name) like ? " +
+                    "or lower(u.first_name + ' ' + u.last_name) like ? ");
 
+            sql.append(" )");
+
+            params.add("%" + keyword.toLowerCase() + "%");
             params.add("%" + keyword.toLowerCase() + "%");
             params.add("%" + keyword.toLowerCase() + "%");
         }

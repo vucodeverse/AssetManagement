@@ -60,7 +60,8 @@ public class PurchaseController {
 
     // search and filter cho màn purchase list
     @GetMapping("/search")
-    public String searchPurchases(@ModelAttribute("searchAndFilter") PurchaseRequestSearchCriteria criteria,
+    public String searchPurchases(
+            @ModelAttribute("searchAndFilter") PurchaseRequestSearchCriteria criteria,
             Model model) {
 
         List<PurchaseRequestResponse> purchaseRequestResponses = List.of();

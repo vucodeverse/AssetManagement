@@ -8,6 +8,7 @@ public enum PurchaseProcessStatus {
     REJECTED("Từ chối"),
     DELETED("Đã bị xóa"),
     COMPLETED("Đã hoàn thành"),
+    PARTIALLY_RECEIVED("Nhập kho một phần"),
     CANCELLED("Đã bị hủy");
 
     private String description;

@@ -20,4 +20,5 @@ public class PurchaseOrderDetailResponse {
     private BigDecimal taxRate;
     private BigDecimal discountRate;
     private LocalDate deliveryDate;
+    private Integer receivedQuantity;
 }

@@ -67,7 +67,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
     @Override
     public List<OrderDetail> findByOrderId(Integer orderId) {
         String sql = "select purchase_order_detail_id, quantity, unit_price, tax_rate, " +
-                "discount, note, asset_type_id, quotation_detail_id, delivery_date " +
+                "discount, note, asset_type_id, quotation_detail_id, delivery_date, received_quantity " +
                 "from purchase_order_details " +
                 "where purchase_order_id = ?";
 
@@ -90,6 +90,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
                 detail.setDeliveryDate(rs.getDate("delivery_date") != null
                         ? rs.getDate("delivery_date").toLocalDate()
                         : null);
+                detail.setReceivedQuantity(rs.getInt("received_quantity"));
 
                 results.add(detail);
             }
@@ -132,6 +133,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
                 detail.setDeliveryDate(rs.getDate("delivery_date") != null
                         ? rs.getDate("delivery_date").toLocalDate()
                         : null);
+                detail.setReceivedQuantity(rs.getInt("received_quantity"));
 
                 results.add(detail);
             }

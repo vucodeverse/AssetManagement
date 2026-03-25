@@ -1,5 +1,6 @@
 package edu.fpt.groupfive.controller.warehouse;
 
+import edu.fpt.groupfive.dto.request.warehouse.InboundRequestDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 
 import java.util.List;
+import edu.fpt.groupfive.model.warehouse.WhReceipt;
 
 @Controller
 @RequestMapping("/wh/inbound")
@@ -57,6 +59,9 @@ public class WarehouseInboundController {
         PurchaseOrderResponse poDetail = orderService.getPurchaseOrderById(poId);
         model.addAttribute("po", poDetail);
 
+        List<WhReceipt> receipts = warehouseInboundService.getReceiptsByPOId(poId);
+        model.addAttribute("receipts", receipts);
+
         return "warehouse/inbound/po_detail";
     }
 
@@ -65,25 +70,27 @@ public class WarehouseInboundController {
     // =========================================================
 
     @PostMapping("/po/{po_id}/confirm")
-    public String confirmPO(@PathVariable("po_id") Integer poId, RedirectAttributes ra,
-            Principal principal) {
+    public String confirmPO(@PathVariable("po_id") Integer poId,
+                            @ModelAttribute InboundRequestDTO request,
+                            RedirectAttributes ra,
+                            Principal principal) {
 
         if (principal == null) {
             return "redirect:/login";
         }
 
         String username = principal.getName();
+        request.setPoId(poId);
 
-        try{
-            InboundSummaryResponseDTO summary = warehouseInboundService.processInboundPO(poId, username);
+        try {
+            InboundSummaryResponseDTO summary = warehouseInboundService.processInboundPO(request, username);
             ra.addFlashAttribute(SUMMARY_ATTR, summary);
-            ra.addFlashAttribute(SUCCESS_MSG, "Đã tạo tài sản và nhập kho thành công cho PO #" + poId);
+            ra.addFlashAttribute(SUCCESS_MSG, "Đã nhập kho thành công cho PO #" + poId + ". Mã phiếu nhập: " + summary.getPurchaseOrderId());
             return "redirect:/wh/inbound/po/" + poId + "/summary";
-        }catch (Exception e){
+        } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/wh/inbound/po/" + poId;
         }
-
     }
 
     // =========================================================

@@ -139,6 +139,7 @@
                                             <form method="post"
                                                 th:action="@{/quotations/details/{id}/actions(id=${item.quotationDetailId})}"
                                                 style="margin:0;">
+                                                <input type="hidden" name="qoId" th:value="${quotation.quotationId}">
                                                 <button type="submit" class="btn-bw btn-bw-approve" name="actions"
                                                     value="a">DUYỆT</button>
                                                 <button type="submit" class="btn-bw btn-bw-reject" name="actions"
@@ -182,6 +183,7 @@
                                 VNĐ</span>
                         </div>
                         <div class="summary-line">
+                            <span>Thuế dự kiến</span>
                             <span>Thuế dự kiến</span>
                             <span
                                 th:text="${#numbers.formatDecimal(quotation.totalTax, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0

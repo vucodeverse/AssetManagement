@@ -393,13 +393,22 @@ public class QuotationServiceImpl implements QuotationService {
 
 
     @Override
-    public void processQuotationDetailAction(Integer id, String actions) {
+    public void processQuotationDetailAction(Integer id, String actions, Integer qoId) {
         quotationDetailDAO.findById(id).orElseThrow(() -> new InvalidDataException(quotationDetailNotFoundMsg));
 
         if ("a".equals(actions)) {
             quotationDetailDAO.update(id, PurchaseProcessStatus.APPROVED);
         } else if ("r".equals(actions)) {
             quotationDetailDAO.update(id, PurchaseProcessStatus.REJECTED);
+            List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(qoId);
+
+            boolean isRejectAll =
+                    quotationDetails.stream().allMatch(qd -> PurchaseProcessStatus.REJECTED.equals(qd.getQuotationDetailStatus()));
+
+
+            if(isRejectAll) {
+                quotationDAO.updateStatus(qoId, PurchaseProcessStatus.REJECTED);
+            }
         }
     }
 

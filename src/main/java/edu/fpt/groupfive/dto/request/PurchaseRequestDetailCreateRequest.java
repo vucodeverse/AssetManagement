@@ -16,8 +16,7 @@ public class PurchaseRequestDetailCreateRequest {
     @Min(value = 1, message = "Số lượng phải lớn hơn 0")
     private Integer quantity;
 
-    @NotBlank(message = "Đặc tả Không được để trống")
-    @Size(min=1, max=255, message = "Độ dài không quá 255 kí tự")
+    @Size( max=255, message = "Độ dài không quá 255 kí tự")
     @Pattern(regexp = "^[a-zA-Z0-9À-ỹ ]*$", message = "Không được chứa ký tự đặc biệt")
     private String specificationRequirement;
 

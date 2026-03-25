@@ -170,6 +170,7 @@ public class OrderServiceImpl implements OrderService {
             orderDetail.setTaxRate(qd.getTaxRate());
             orderDetail.setDiscountRate(qd.getDiscountRate());
             orderDetail.setAssetTypeId(qd.getAssetTypeId());
+            orderDetail.setDeliveryDate(LocalDate.now().plusDays(7));
 
             orderDetails.add(orderDetail);
         }

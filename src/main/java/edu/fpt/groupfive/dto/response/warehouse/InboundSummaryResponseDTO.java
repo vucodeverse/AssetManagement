@@ -12,6 +12,8 @@ import java.util.List;
 @Builder
 public class InboundSummaryResponseDTO {
     private Integer purchaseOrderId;
+    private Integer receiptId;
+    private String receiptNo;
     private String supplierName;
     private LocalDateTime inboundDate;
     private List<AssetGroupDTO> assetGroups;

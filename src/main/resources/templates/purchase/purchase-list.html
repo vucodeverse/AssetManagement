@@ -88,7 +88,8 @@
                             th:attr="onclick=|window.location.href='@{/purchases/{id}(id=${p.purchaseId})}'|">
 
                             <td class="cell-id" th:text="'PR-' + ${p.purchaseId}"></td>
-                            <td th:data-order="${p.status.name() == 'DRAFT' ? 2 : (p.status.name() == 'PENDING' ? 1 : 0)}">
+                            <td
+                                    th:data-order="${p.status.name() == 'DRAFT' ? 0 : (p.status.name() == 'PENDING' ? 1 : (p.status.name() == 'APPROVED' ? 2 : (p.status.name() == 'ORDERED' ? 3 : (p.status.name() == 'COMPLETED' ? 4 : 5))))}">
                                 <span th:if="${p.status != null}" class="badge"
                                     th:classappend="'badge-' + ${p.status.name()}"
                                     th:text="${p.status.description}"></span>

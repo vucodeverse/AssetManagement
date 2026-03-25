@@ -18,4 +18,5 @@ public class OrderDetail extends AbstractEntity<Integer> {
     private Integer assetTypeId;
     private Integer quotationDetailId;
     private LocalDate deliveryDate;
+    private Integer receivedQuantity;
 }

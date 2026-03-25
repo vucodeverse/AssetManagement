@@ -23,5 +23,5 @@ public interface QuotationService {
 
     List<QuotationDetailCreateRequest> prepareQuotationForm(Integer purchaseId);
 
-    void processQuotationDetailAction(Integer id, String actions);
+    void processQuotationDetailAction(Integer id, String actions, Integer qoId);
 }

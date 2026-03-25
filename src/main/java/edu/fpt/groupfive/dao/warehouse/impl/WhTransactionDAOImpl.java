@@ -21,15 +21,15 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
     private final DatabaseConfig databaseConfig;
 
     @Override
-    public Map<Integer, List<Integer>> executeInboundTransaction(Integer poId, Integer executedBy, List<AssetPlacementPlan> placements) {
+    public Map<Integer, List<Integer>> executeInboundTransaction(Integer poId, Integer executedBy, List<AssetPlacementPlan> placements, Integer receiptId) {
         Map<Integer, List<Integer>> generatedAssetIdsMap = new HashMap<>();
 
         String updateZoneSql = "UPDATE wh_zones SET current_capacity = current_capacity + ?, asset_type_id = ? WHERE zone_id = ?";
         String insertAssetSql = "INSERT INTO asset (asset_name, asset_type_id, purchase_order_detail_id, current_status, original_cost, acquisition_date) VALUES (?, ?, ?, 'AVAILABLE', ?, SYSDATETIME())";
         String insertPlacementSql = "INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, placed_at, note) VALUES (?, ?, ?, SYSDATETIME(), ?)";
-        String insertTransactionSql = "INSERT INTO wh_transactions (asset_id, zone_id, transaction_type, executed_by, executed_at, note) VALUES (?, ?, 'INBOUND', ?, SYSDATETIME(), ?)";
+        String insertTransactionSql = "INSERT INTO wh_transactions (asset_id, zone_id, transaction_type, executed_by, executed_at, note, receipt_id) VALUES (?, ?, 'INBOUND', ?, SYSDATETIME(), ?, ?)";
         String insertMapSql = "INSERT INTO map_po_transactions (purchase_order_id, transaction_id) VALUES (?, ?)";
-        String updatePoStatusSql = "UPDATE purchase_orders SET status = 'COMPLETED' WHERE purchase_order_id = ?";
+        String updateReceivedQtySql = "UPDATE purchase_order_details SET received_quantity = received_quantity + 1 WHERE purchase_order_detail_id = ?";
 
         Connection connection = null;
         try {
@@ -42,7 +42,7 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
                  PreparedStatement psPlacement = connection.prepareStatement(insertPlacementSql);
                  PreparedStatement psTrans = connection.prepareStatement(insertTransactionSql, Statement.RETURN_GENERATED_KEYS);
                  PreparedStatement psMap = connection.prepareStatement(insertMapSql);
-                 PreparedStatement psUpdatePo = connection.prepareStatement(updatePoStatusSql)
+                 PreparedStatement psUpdateReceived = connection.prepareStatement(updateReceivedQtySql)
             ) {
                 for (AssetPlacementPlan plan : placements) {
                     int assetTypeId = plan.assetTypeId();
@@ -85,6 +85,7 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
                     psTrans.setInt(2, targetZoneId);
                     psTrans.setInt(3, executedBy);
                     psTrans.setString(4, "Nhập kho tự động (PO)");
+                    psTrans.setObject(5, receiptId); // LINK TO RECEIPT
                     psTrans.executeUpdate();
 
                     int newTransId = -1;
@@ -100,12 +101,12 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
                     psMap.setInt(1, poId);
                     psMap.setInt(2, newTransId);
                     psMap.executeUpdate();
-                }
 
-                // Update PO Status only if there were items
-                if (!placements.isEmpty()) {
-                    psUpdatePo.setInt(1, poId);
-                    psUpdatePo.executeUpdate();
+                    // Update Received Quantity in PO Detail
+                    if (plan.poDetailId() != null) {
+                        psUpdateReceived.setInt(1, plan.poDetailId());
+                        psUpdateReceived.executeUpdate();
+                    }
                 }
 
             }
@@ -135,11 +136,11 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
     }
 
     @Override
-    public void executeReturnInboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note) {
+    public void executeReturnInboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note, Integer receiptId) {
         String updateAssetSql = "UPDATE asset SET current_status = 'AVAILABLE', department_id = NULL WHERE asset_id = ?";
         String updateZoneSql = "UPDATE wh_zones SET current_capacity = current_capacity + (SELECT unit_volume FROM wh_asset_capacity WHERE asset_type_id = (SELECT asset_type_id FROM asset WHERE asset_id = ?)) WHERE zone_id = ?";
         String insertPlacementSql = "INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, placed_at, note) VALUES (?, ?, ?, SYSDATETIME(), ?)";
-        String insertTransactionSql = "INSERT INTO wh_transactions (asset_id, zone_id, transaction_type, executed_by, executed_at, note) VALUES (?, ?, 'INBOUND', ?, SYSDATETIME(), ?)";
+        String insertTransactionSql = "INSERT INTO wh_transactions (asset_id, zone_id, transaction_type, executed_by, executed_at, note, receipt_id) VALUES (?, ?, 'INBOUND', ?, SYSDATETIME(), ?, ?)";
         String insertMapSql = "INSERT INTO map_handover_transactions (asset_handover_id, transaction_id) VALUES (?, ?)";
 
         Connection connection = null;
@@ -179,6 +180,7 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
                 psTrans.setInt(2, zoneId);
                 psTrans.setInt(3, executedBy);
                 psTrans.setString(4, "Thu hồi từ lệnh bàn giao #" + handoverId);
+                psTrans.setObject(5, receiptId); // LINK TO RECEIPT
                 psTrans.executeUpdate();
 
                 int transId = -1;

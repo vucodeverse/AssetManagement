@@ -286,9 +286,6 @@ public class OrderDAOImpl implements OrderDAO {
             sql.append("s.supplier_name like ? ) ");
             params.add("%" + criteria.getKeyword() + "%");
         }
-
-        sql.append("order by po.purchase_request_id, po.created_at");
-
         List<Object[]> results = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -397,7 +394,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus) {
-        String sql = "update purchase_orders set status = ? where order_id = ?";
+        String sql = "update purchase_orders set status = ? where purchase_order_id = ?";
 
         try (Connection connection = databaseConfig.getConnection()) {
 
@@ -407,6 +404,7 @@ public class OrderDAOImpl implements OrderDAO {
 
                 preparedStatement.setString(1, orderStatus.name());
                 preparedStatement.setInt(2, orderId);
+                preparedStatement.executeUpdate(); // MISSING BEFORE
                 connection.commit();
 
             } catch (Exception e) {

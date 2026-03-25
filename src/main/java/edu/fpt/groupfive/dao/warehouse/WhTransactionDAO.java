@@ -16,8 +16,8 @@ public interface WhTransactionDAO {
             Integer unitVolume
     ) {}
 
-    Map<Integer, List<Integer>> executeInboundTransaction(Integer poId, Integer executedBy, List<AssetPlacementPlan> placements);
-    void executeReturnInboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note);
+    Map<Integer, List<Integer>> executeInboundTransaction(Integer poId, Integer executedBy, List<AssetPlacementPlan> placements, Integer receiptId);
+    void executeReturnInboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note, Integer receiptId);
     void executeOutboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note);
 
     List<LedgerRecordResponseDTO> getAllTransactions(TransactionFilterRequestDTO filter);

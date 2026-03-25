@@ -88,9 +88,10 @@ public class QuotationController {
     // duyt or reject quotation detail
     @PostMapping("/details/{id}/actions")
     public String processQuotationDetail(@PathVariable("id") Integer id, @RequestParam("actions") String actions,
+            @RequestParam("qoId") Integer qoId,
             RedirectAttributes redirectAttributes, @RequestHeader(value = "Referer", required = false) String referer) {
 
-        quotationService.processQuotationDetailAction(id, actions);
+        quotationService.processQuotationDetailAction(id, actions, qoId);
         redirectAttributes.addFlashAttribute("message", successDetailActionMsg);
         return (referer != null) ? "redirect:" + referer : "redirect:/quotations";
 
@@ -278,13 +279,6 @@ public class QuotationController {
         prepareQuotationMenu(model);
         model.addAttribute("statuses", PurchaseProcessStatus.values());
         model.addAttribute("suppliers", supplierService.getAllSupplier());
-    }
-
-    // filter
-    private void prepareQuotationSearchModel(Model model) {
-        prepareQuotationMenu(model);
-        model.addAttribute("priorities", Priority.values());
-        model.addAttribute("status", PurchaseProcessStatus.values());
     }
 
     // thêm mới 1 dòng quotaton detail
