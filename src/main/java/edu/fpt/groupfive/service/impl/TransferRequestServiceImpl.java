@@ -12,13 +12,16 @@
     import edu.fpt.groupfive.service.IQCReportService;
     import edu.fpt.groupfive.service.ITransferRequestService;
     import lombok.RequiredArgsConstructor;
+    import lombok.extern.slf4j.Slf4j;
     import org.springframework.stereotype.Service;
 
     import java.time.LocalDateTime;
+    import java.util.ArrayList;
     import java.util.List;
 
     @Service
     @RequiredArgsConstructor
+    @Slf4j
     public class TransferRequestServiceImpl implements ITransferRequestService {
 
         private final TransferRequestDAO transferRequestDAO;
@@ -251,25 +254,33 @@
             boolean hasAnyPassed = details.stream()
                     .anyMatch(d -> qcReportService.isAssetPassed(d.getAssetId()));
             if (!hasAnyPassed) {
+                // Thêm log để xem cụ thể asset nào pass
+                for (TransferRequestDetail d : details) {
+                    log.info("Asset {} passed: {}", d.getAssetId(), qcReportService.isAssetPassed(d.getAssetId()));
+                }
                 throw new IllegalStateException("Không có tài sản đạt QC, không thể xác nhận nhận");
             }
 
             // Cập nhật thời gian xác nhận của receiver
             transferRequestDAO.updateReceiverConfirm(transferId, userId, LocalDateTime.now());
 
-            // Chỉ chuyển department cho asset đã pass
+            // Trong handleReceiverConfirm, thay vì cập nhật từng asset một:
+            List<Integer> passedAssetIds = new ArrayList<>();
             for (TransferRequestDetail detail : details) {
                 if (qcReportService.isAssetPassed(detail.getAssetId())) {
-                    Asset asset = assetDAO.findById(detail.getAssetId())
-                            .orElseThrow(() -> new RuntimeException("Asset không tồn tại"));
-                    asset.setDepartmentId(transfer.getToDepartmentId());
-                    assetDAO.update(asset);
+                    passedAssetIds.add(detail.getAssetId());
+                    log.info("Asset {} will be moved to department {}", detail.getAssetId(), transfer.getToDepartmentId());
+                } else {
+                    log.info("Asset {} NOT passed, skip update", detail.getAssetId());
                 }
-                // Asset fail: không làm gì, giữ nguyên phòng ban nguồn
+            }
+            if (!passedAssetIds.isEmpty()) {
+                assetDAO.updateAssetDepartment(passedAssetIds, transfer.getToDepartmentId());
             }
 
             transferRequestDAO.updateStatus(transferId, TransferStatus.COMPLETED.name());
         }
+
         private void handleCancel(int transferId, TransferStatus status) {
             if (status == TransferStatus.COMPLETED) {
                 throw new IllegalStateException("Không thể hủy khi đã hoàn thành");

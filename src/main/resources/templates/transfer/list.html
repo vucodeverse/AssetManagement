@@ -3,19 +3,20 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main-layout}">
-
 <head>
   <title>Danh sách điều chuyển</title>
   <th:block layout:fragment="extra-css">
     <link rel="stylesheet" th:href="@{/css/transfer/list.css}">
   </th:block>
 </head>
-
 <body>
 <th:block layout:fragment="content">
   <div class="container">
     <div class="page-header">
-      <h1 th:text="${role == 'DEPARTMENT_MANAGER'} ? (${listType == 'outgoing'} ? 'Danh sách lệnh đã gửi' : 'Danh sách lệnh cần nhận') : (${role == 'ASSET_MANAGER'} ? 'Quản lý lệnh điều chuyển' : 'Danh sách lệnh cần xử lý kho')"></h1>
+      <h1 th:if="${role == 'DEPARTMENT_MANAGER' and listType == 'outgoing'}">Danh sách lệnh đã gửi</h1>
+      <h1 th:if="${role == 'DEPARTMENT_MANAGER' and listType == 'incoming'}">Danh sách lệnh cần nhận</h1>
+      <h1 th:if="${role == 'ASSET_MANAGER'}">Quản lý lệnh điều chuyển</h1>
+      <h1 th:if="${role == 'WAREHOUSE_STAFF'}">Danh sách lệnh cần xử lý kho</h1>
       <a th:if="${role == 'ASSET_MANAGER'}" th:href="@{/transfer-requests/add}" class="btn-add">+ Tạo yêu cầu</a>
     </div>
 
@@ -23,7 +24,7 @@
     <div th:if="${error}" class="alert alert-danger">[[${error}]]</div>
 
     <!-- Bộ lọc -->
-    <form th:action="${baseUrl}" method="get" class="filter-bar">
+    <form th:action="@{${baseUrl}}" method="get" class="filter-bar">
       <div class="filter-item">
         <label>Trạng thái</label>
         <select name="status">
@@ -45,10 +46,7 @@
       </div>
       <div class="filter-buttons">
         <button type="submit" class="search-btn">Lọc</button>
-        <a th:href="${baseUrl}" th:if="${listType == 'outgoing'}" class="btn-reset">Reset</a>
-        <a th:href="${baseUrl}" th:if="${listType == 'incoming'}" class="btn-reset">Reset</a>
-        <a th:href="${baseUrl}" th:if="${role == 'WAREHOUSE_STAFF'}" class="btn-reset">Reset</a>
-        <a th:href="${baseUrl}" th:if="${role == 'ASSET_MANAGER'}" class="btn-reset">Reset</a>
+        <a th:href="@{${baseUrl}}" class="btn-reset">Reset</a>
       </div>
       <input type="hidden" name="sortField" th:value="${sortField}"/>
       <input type="hidden" name="sortDir" th:value="${sortDir}"/>
@@ -60,12 +58,31 @@
     <div class="table-container">
       <table class="table table-bordered">
         <thead>
-        <th><a th:href="${baseUrl}(sortField=transferId, sortDir=${sortDir == 'asc' ? 'desc' : 'asc'}, status=${status}, fromDate=${fromDate}, toDate=${toDate}, page=0, size=${page.pageSize})">ID</a></th>
+        32
+        <th>
+          <a th:href="@{${baseUrl}(sortField='transferId', sortDir=${sortField == 'transferId' and sortDir == 'asc' ? 'desc' : 'asc'}, status=${status}, fromDate=${fromDate}, toDate=${toDate}, page=0, size=${page.pageSize})}">
+            ID
+            <span class="sort-icon" th:classappend="${sortField == 'transferId'} ? 'active'"
+                  th:text="${sortField == 'transferId'} ? (${sortDir == 'asc'} ? '↑' : '↓') : '↕'"></span>
+          </a>
+        </th>
         <th>Từ phòng ban</th>
         <th>Đến phòng ban</th>
         <th>Lý do</th>
-        <th><a th:href="${baseUrl}(sortField=createdAt, sortDir=${sortDir == 'asc' ? 'desc' : 'asc'}, status=${status}, fromDate=${fromDate}, toDate=${toDate}, page=0, size=${page.pageSize})">Ngày tạo</a></th>
-        <th><a th:href="${baseUrl}(sortField=status, sortDir=${sortDir == 'asc' ? 'desc' : 'asc'}, status=${status}, fromDate=${fromDate}, toDate=${toDate}, page=0, size=${page.pageSize})">Trạng thái</a></th>
+        <th>
+          <a th:href="@{${baseUrl}(sortField='createdAt', sortDir=${sortField == 'createdAt' and sortDir == 'asc' ? 'desc' : 'asc'}, status=${status}, fromDate=${fromDate}, toDate=${toDate}, page=0, size=${page.pageSize})}">
+            Ngày tạo
+            <span class="sort-icon" th:classappend="${sortField == 'createdAt'} ? 'active'"
+                  th:text="${sortField == 'createdAt'} ? (${sortDir == 'asc'} ? '↑' : '↓') : '↕'"></span>
+          </a>
+        </th>
+        <th>
+          <a th:href="@{${baseUrl}(sortField='status', sortDir=${sortField == 'status' and sortDir == 'asc' ? 'desc' : 'asc'}, status=${status}, fromDate=${fromDate}, toDate=${toDate}, page=0, size=${page.pageSize})}">
+            Trạng thái
+            <span class="sort-icon" th:classappend="${sortField == 'status'} ? 'active'"
+                  th:text="${sortField == 'status'} ? (${sortDir == 'asc'} ? '↑' : '↓') : '↕'"></span>
+          </a>
+        </th>
         <th>Hành động</th>
         </tr>
         </thead>
@@ -80,8 +97,7 @@
           <td>
             <a th:href="@{/transfer-requests/detail/{id}(id=${t.transferId})}" class="btn-view">Xem</a>
             <form th:if="${role == 'ASSET_MANAGER' and (t.status != 'COMPLETED' and t.status != 'CANCELLED')}"
-                  th:action="@{/transfer-requests/{id}/action(id=${t.transferId})}"
-                  method="post" style="display:inline;">
+                  th:action="@{/transfer-requests/{id}/action(id=${t.transferId})}" method="post" style="display:inline;">
               <input type="hidden" name="action" value="CANCEL"/>
               <button type="submit" class="btn-cancel" onclick="return confirm('Hủy lệnh #' + ${t.transferId} + '?')">Hủy</button>
             </form>
@@ -99,15 +115,15 @@
       <span>Trang [[${page.currentPage + 1}]] / [[${page.totalPages}]]</span>
       <div class="pagination-controls">
         <a th:if="${page.currentPage > 0}"
-           th:href="${baseUrl}(page=${page.currentPage-1}, size=${page.pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${status}, fromDate=${fromDate}, toDate=${toDate})"
+           th:href="@{${baseUrl}(page=${page.currentPage - 1}, size=${page.pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${status}, fromDate=${fromDate}, toDate=${toDate})}"
            class="pagination-btn">Trước</a>
-        <a th:each="i : ${#numbers.sequence(0, page.totalPages-1)}"
-           th:href="${baseUrl}(page=${i}, size=${page.pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${status}, fromDate=${fromDate}, toDate=${toDate})"
+        <a th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+           th:href="@{${baseUrl}(page=${i}, size=${page.pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${status}, fromDate=${fromDate}, toDate=${toDate})}"
            th:text="${i+1}"
            th:classappend="${i == page.currentPage} ? 'active'"
            class="pagination-btn"></a>
         <a th:if="${page.currentPage + 1 < page.totalPages}"
-           th:href="${baseUrl}(page=${page.currentPage+1}, size=${page.pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${status}, fromDate=${fromDate}, toDate=${toDate})"
+           th:href="@{${baseUrl}(page=${page.currentPage+1}, size=${page.pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${status}, fromDate=${fromDate}, toDate=${toDate})}"
            class="pagination-btn">Tiếp</a>
       </div>
     </div>

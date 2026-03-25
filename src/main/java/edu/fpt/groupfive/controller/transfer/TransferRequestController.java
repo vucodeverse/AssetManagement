@@ -175,7 +175,7 @@ public class TransferRequestController {
         model.addAttribute("status", status);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
-
+        model.addAttribute("baseUrl", "/transfer-requests/my");
         return "transfer/list";
     }
 
@@ -219,7 +219,7 @@ public class TransferRequestController {
         model.addAttribute("status", status);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
-
+        model.addAttribute("baseUrl", "/transfer-requests/incoming");
         return "transfer/list";
     }
 
@@ -260,7 +260,7 @@ public class TransferRequestController {
         model.addAttribute("status", status);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
-
+        model.addAttribute("baseUrl", "/transfer-requests/warehouse");
         return "transfer/list";
     }
 
@@ -301,6 +301,7 @@ public class TransferRequestController {
         model.addAttribute("status", status);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
+        model.addAttribute("baseUrl", "/transfer-requests/am");
         return "transfer/list";
     }
     @GetMapping("/detail/{id}")
