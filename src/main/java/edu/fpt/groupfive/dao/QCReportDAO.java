@@ -33,6 +33,8 @@ public interface QCReportDAO {
 
     boolean isAllAssetPassed(int transferId);
 
+    boolean isAllAssetHasQC(int transferId);
+
     List<QualityControlReport> findByStatus(String status);
 
     String getInspectorName(int userId);

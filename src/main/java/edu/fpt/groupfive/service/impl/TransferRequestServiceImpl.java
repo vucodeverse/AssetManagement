@@ -226,17 +226,10 @@
                 throw new IllegalStateException("Phải sender confirm trước");
             }
 
-            // Lấy danh sách chi tiết transfer
-            List<TransferRequestDetail> details = transferRequestDetailDAO.findByTransferId(transferId);
-
             // Kiểm tra có ít nhất một asset đã pass QC
-            boolean hasAnyPassed = details.stream()
-                    .anyMatch(detail -> qcReportService.isAssetPassed(detail.getAssetId()));
-
-            if (!hasAnyPassed) {
-                throw new IllegalStateException("Không có tài sản nào đạt QC, không thể xác nhận");
+            if (!qcReportService.isAllAssetHasQC(transferId)) {
+                throw new IllegalStateException("Chưa có QC cho tất cả tài sản, không thể xác nhận");
             }
-
             // Cập nhật trạng thái transfer
             transferRequestDAO.updateStatus(transferId, TransferStatus.WAREHOUSE_CONFIRMED.name());
         }

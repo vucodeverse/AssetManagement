@@ -185,4 +185,9 @@ public class QCReportServiceImpl implements IQCReportService {
     public boolean hasAnyAssetPassed(int transferId) {
         return qcReportDAO.hasAnyAssetPassed(transferId);
     }
+
+    @Override
+    public boolean isAllAssetHasQC(int transferId) {
+        return qcReportDAO.isAllAssetHasQC(transferId);
+    }
 }

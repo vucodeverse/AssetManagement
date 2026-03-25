@@ -34,6 +34,8 @@ public interface IQCReportService {
 
     boolean hasAnyAssetPassed(int transferId);
 
+    boolean isAllAssetHasQC(int transferId);
+
     // ==================== CREATE ====================
 
 }

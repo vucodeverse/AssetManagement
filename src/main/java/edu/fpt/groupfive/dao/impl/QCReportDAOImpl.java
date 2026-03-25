@@ -254,7 +254,30 @@ public class QCReportDAOImpl implements QCReportDAO {
             throw new RuntimeException("Error check QC for transfer", e);
         }
     }
-
+    @Override
+    public boolean isAllAssetHasQC(int transferId) {
+        String sql = """
+        SELECT COUNT(*)
+        FROM transfer_request_detail trd
+        WHERE trd.transfer_id = ?
+          AND NOT EXISTS (
+              SELECT 1 FROM qc_report qcr
+              WHERE qcr.asset_id = trd.asset_id
+          )
+        """;
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, transferId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) == 0; // true if no asset missing QC
+                }
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking QC for transfer", e);
+        }
+    }
     @Override
     public List<QualityControlReport> findByStatus(String status) {
         String sql = """
