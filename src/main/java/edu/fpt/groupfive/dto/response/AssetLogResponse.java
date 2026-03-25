@@ -24,5 +24,4 @@ public class AssetLogResponse {
     private String newStatus;
 
     private String note;
-    private String createdByName;
 }

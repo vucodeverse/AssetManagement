@@ -106,3 +106,60 @@
 .btn-secondary:hover{
     background:#d1d5db;
 }
+
+/* Lịch sử tài sản */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.history-table th,
+.history-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #eef2f6;
+    text-align: left;
+    font-size: 13px;
+    color: #1e2a3e;
+}
+
+.history-table th {
+    background-color: #f9fafb;
+    font-weight: 700;
+    color: #2c3e50;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+/* Badge hành động */
+.badge-action {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+
+
+/* Ghi chú dài */
+.note-cell {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badge cho bảo trì */
+.badge-maintenance { background: #fff3e0; color: #b65c1e; }  /* màu cam nhạt */
+/* Badge cho thanh lý */
+.badge-dispose { background: #ffe8e8; color: #b91c1c; }      /* màu đỏ nhạt */
+
+/* Giữ nguyên các class khác */
+.badge-create { background: #e6f4ea; color: #2e6b3e; }
+.badge-allocate { background: #e6f0ff; color: #1e4a76; }
+.badge-transfer { background: #fff3e0; color: #b65c1e; }
+.badge-return { background: #f3e8ff; color: #6b3e8e; }
+.badge-status-change { background: #ffe8e8; color: #b91c1c; }

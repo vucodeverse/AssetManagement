@@ -4,12 +4,10 @@ import edu.fpt.groupfive.common.AssetStatus;
 import edu.fpt.groupfive.dto.request.AssetCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetUpdateRequest;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
+import edu.fpt.groupfive.dto.response.AssetLogResponse;
 import edu.fpt.groupfive.dto.response.AssetResponse;
 import edu.fpt.groupfive.dto.response.PageResponse;
-import edu.fpt.groupfive.service.AssetService;
-import edu.fpt.groupfive.service.AssetTypeService;
-import edu.fpt.groupfive.service.OrderService;
-import edu.fpt.groupfive.service.PurchaseService;
+import edu.fpt.groupfive.service.*;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +29,7 @@ public class AssetController {
     private final AssetService assetService;
     private final AssetTypeService assetTypeService;
     private final OrderService orderService;
-
+    private final AssetLogService assetLogService;
 
     @GetMapping
     public String list(
@@ -66,7 +64,10 @@ public class AssetController {
         try {
 
             AssetDetailResponse asset = assetService.getDetailById(id);
+            List<AssetLogResponse> logs = assetLogService.getLogsByAssetId(id);
+
             model.addAttribute("asset", asset);
+            model.addAttribute("logs", logs);
             model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-detail";
         } catch (InvalidDataException e) {
@@ -193,7 +194,7 @@ public class AssetController {
     public String delete(@PathVariable("id") Integer id,
                          RedirectAttributes redirectAttributes) {
 
-        try{
+        try {
             assetService.delete(id);
         } catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

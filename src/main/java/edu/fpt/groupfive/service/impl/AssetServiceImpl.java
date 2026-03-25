@@ -12,6 +12,7 @@ import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.mapper.AssetMapper;
 import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.AssetType;
+import edu.fpt.groupfive.service.AssetLogService;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class AssetServiceImpl implements AssetService {
     private final AssetDAO assetDAO;
     private final AssetTypeDAO assetTypeDAO;
     private final AssetMapper assetMapper;
+    private final AssetLogService assetLogService;
     private static final int PAGE_SIZE = 5;
 
     // get all
@@ -92,8 +94,11 @@ public class AssetServiceImpl implements AssetService {
 
         for (int i = 0; i < quantity; i++) {
             Asset asset = assetMapper.toAsset(request);
-            assetDAO.insert(asset);
+            int assetId = assetDAO.insert(asset);
+            if(assetId>0){
+                assetLogService.logCreate(assetId, "Tạo mới tài sản");
 
+            }
         }
     }
 
@@ -105,8 +110,6 @@ public class AssetServiceImpl implements AssetService {
         Asset existing = assetDAO.findById(id)
                 .orElseThrow(() ->
                         new InvalidDataException("Không tìm thấy tài sản với id = " + id));
-
-
 
 
         // Validate assetType nếu có đổi
@@ -125,9 +128,15 @@ public class AssetServiceImpl implements AssetService {
                 request.getAcquisitionDate()
         );
 
-        assetMapper.updateFromRequest(request, existing);
 
+        AssetStatus oldStatus = existing.getCurrentStatus();
+
+        assetMapper.updateFromRequest(request, existing);
         assetDAO.update(existing);
+
+        if (!oldStatus.equals(request.getCurrentStatus())) {
+            assetLogService.logStatusChange(id, oldStatus.name(), request.getCurrentStatus().name(), "Cập nhật trạng thái tài sản");
+        }
     }
 
     //DELETE
@@ -290,6 +299,7 @@ public class AssetServiceImpl implements AssetService {
                 })
                 .toList();
     }
+
     @Override
     public List<AssetDetailResponse> findByDepartment(Integer departmentId) {
 

@@ -21,5 +21,4 @@ public class AssetLog {
     private Integer relatedTransferId;
     private Integer relatedReturnId;
     private String note;
-    private Integer createdBy;
 }

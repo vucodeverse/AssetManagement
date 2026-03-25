@@ -8,7 +8,5 @@ public interface AssetLogDAO {
 
     void insert(AssetLog log);
 
-    List<AssetLog> findByAssetId(int assetId, int offset, int limit);
-
-    int countByAssetId(int assetId);
+    List<AssetLog> findByAssetId(int assetId);
 }

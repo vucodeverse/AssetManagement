@@ -45,7 +45,7 @@
                     <div class="form-group">
                         <label>Giá trị ban đầu (VNĐ)</label>
                         <div class="form-control-view"
-                             th:text="${#numbers.formatDecimal(asset.originalCost,0,'COMMA',0,'POINT')} + ' ₫'">                        </div>
+                             th:text="${#numbers.formatDecimal(asset.originalCost,0,'COMMA',0,'POINT')} + ' ₫'"></div>
                     </div>
 
                     <div class="form-group">
@@ -116,7 +116,101 @@
                 </div>
             </div>
 
+            <!-- Lịch sử tài sản -->
+            <div class="form-section">
+                <div class="form-section-title">Lịch sử tài sản</div>
+                <div class="table-responsive">
+                    <table class="history-table">
+                        <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Hành động</th>
+                            <th>Từ</th>
+                            <th>Đến</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="log : ${logs}">
+                            <td th:text="${#temporals.format(log.actionDate, 'dd-MM-yyyy HH:mm')}">-</td>
+                            <td>
+                                <th:block th:switch="${log.actionType.name()}">
+                                    <th:block th:case="'STATUS_CHANGE'">
+                                        <th:block th:switch="${log.newStatus}">
 
+                                            <th:block th:case="'UNDER_MAINTENANCE'">
+                                                <span class="badge-action badge-maintenance"
+                                                 th:text="${T(edu.fpt.groupfive.common.AssetStatus).UNDER_MAINTENANCE.description}">
+                                                </span>
+                                            </th:block>
+
+                                            <th:block th:case="'DISPOSED'">
+                                               <span class="badge-action badge-dispose"
+                                                     th:text="${T(edu.fpt.groupfive.common.AssetStatus).DISPOSED.description}">
+                                               </span>
+                                            </th:block>
+
+                                            <th:block th:case="*">
+                                                <span class="badge-action badge-status-change"
+                                                      th:text="${T(edu.fpt.groupfive.common.AssetStatus).valueOf(log.newStatus).description}">
+                                                </span>
+                                            </th:block>
+
+                                        </th:block>
+                                    </th:block>
+
+                                    <th:block th:case="'CREATE'">
+                                        <span class="badge-action badge-create"
+                                              th:text="${log.actionType.description}"></span>
+                                    </th:block>
+
+                                    <th:block th:case="'ALLOCATE'">
+                                        <span class="badge-action badge-allocate"
+                                              th:text="${log.actionType.description}"></span>
+                                    </th:block>
+
+                                    <th:block th:case="'TRANSFER'">
+                                        <span class="badge-action badge-transfer"
+                                              th:text="${log.actionType.description}"></span>
+                                    </th:block>
+
+                                    <th:block th:case="'RETURN'">
+                                        <span class="badge-action badge-return"
+                                              th:text="${log.actionType.description}"></span>
+                                    </th:block>
+
+                                    <th:block th:case="'DISPOSE'">
+                                        <span class="badge-action badge-dispose"
+                                              th:text="${log.actionType.description}"></span>
+                                    </th:block>
+
+                                    <th:block th:case="*">
+                                        <span class="badge-action" th:text="${log.actionType.description}"></span>
+                                    </th:block>
+                                </th:block>
+
+                            </td>
+
+
+                            <td th:text="${log.fromDepartmentName != null ? log.fromDepartmentName : '—'}">—</td>
+                            <td th:text="${log.toDepartmentName != null ? log.toDepartmentName : '—'}">—</td>
+                            <td class="note-cell" th:text="${log.note != null ? log.note : '—'}">—</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(logs)}">
+                            <td colspan="5" class="text-center">Không có dữ liệu</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <script th:inline="javascript">
+                $(document).ready(function () {
+                    $('#showHistoryBtn').click(function () {
+                        $('#historySection').toggle();
+                    });
+                });
+            </script>
 
             <!-- button -->
             <div class="form-actions">
