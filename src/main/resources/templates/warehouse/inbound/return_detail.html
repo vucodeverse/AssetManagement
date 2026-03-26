@@ -16,8 +16,14 @@
                 <span style="color: #cbd5e1;">/</span>
                 <span style="color: #94a3b8;">Chi tiết Thu hồi</span>
             </div>
-            <h1 class="page-title">Xử lý Thu hồi #<span th:text="${handover.handoverId}"></span></h1>
-            <p class="page-subtitle">Phòng ban: <strong th:text="${handover.fromDepartmentName}"></strong></p>
+            <h1 class="page-title">Lệnh Thu hồi #<span th:text="${handover.handoverId}"></span></h1>
+            <p class="page-subtitle">
+                Phòng ban: <strong th:text="${handover.fromDepartmentName}"></strong>
+                &nbsp;|&nbsp;
+                Trạng thái:
+                <span th:class="${handover.status == 'COMPLETED'} ? 'badge badge-completed' : 'badge badge-in-use'"
+                      th:text="${handover.status == 'COMPLETED'} ? 'Hoàn thành' : 'Chờ xử lý'"></span>
+            </p>
         </div>
     </header>
 
@@ -32,7 +38,8 @@
             <span th:text="${errorMessage}"></span>
         </div>
 
-        <div class="wh-layout" style="grid-template-columns: 1fr 400px;">
+        <!-- PENDING: show scanner + checklist side by side -->
+        <div th:if="${handover.status != 'COMPLETED'}" class="wh-layout" style="grid-template-columns: 1fr 400px;">
             <!-- SCANNER FORM -->
             <div class="wh-panel">
                 <div class="wh-panel-header">
@@ -44,7 +51,7 @@
                         <p style="margin-top: 1rem; color: #64748b;">Vui lòng đưa máy quét vào mã vạch trên thiết bị</p>
                     </div>
                     <form th:action="@{'/wh/inbound/return/' + ${handover.handoverId} + '/scan'}" method="post">
-                        <input type="text" name="assetCode" class="form-input" 
+                        <input type="text" name="assetCode" class="form-input"
                                style="max-width: 300px; text-align: center; font-size: 1.5rem; font-weight: 700;"
                                placeholder="Đang chờ quét..." autofocus autocomplete="off">
                         <div style="margin-top: 1rem;">
@@ -60,7 +67,7 @@
                     <span class="wh-panel-title"><i class="fa-solid fa-clipboard-check"></i> Danh sách Tài sản</span>
                 </div>
                 <div style="padding: 1rem;">
-                    <div th:each="item : ${handover.items}" 
+                    <div th:each="item : ${handover.items}"
                          style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 12px;">
                         <div th:class="${item.isScanned ? 'text-green' : 'text-gray'}" style="font-size: 1.25rem;">
                             <i th:class="${item.isScanned ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'}"></i>
@@ -75,6 +82,31 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- COMPLETED: show full-width asset list only -->
+        <div th:if="${handover.status == 'COMPLETED'}" class="wh-panel">
+            <div class="wh-panel-header">
+                <span class="wh-panel-title"><i class="fa-solid fa-clipboard-check"></i> Danh sách Tài sản đã thu hồi</span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã Tài sản</th>
+                        <th>Loại Tài sản</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${handover.items}">
+                        <td th:text="${item.assetCode}"></td>
+                        <td th:text="${item.assetTypeName}"></td>
+                        <td>
+                            <span class="badge badge-completed">Đã nhận</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </th:block>

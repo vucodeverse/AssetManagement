@@ -118,11 +118,8 @@ public class WarehouseInboundController {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Nhập kho Thu hồi - Warehouse");
 
-        List<HandoverResponseDTO> pendingReturns = warehouseInboundService.getPendingReturns();
-        List<HandoverResponseDTO> processedReturns = warehouseInboundService.getProcessedReturns();
-
-        model.addAttribute("returns", pendingReturns);
-        model.addAttribute("processedReturns", processedReturns);
+        List<HandoverResponseDTO> allReturns = warehouseInboundService.getAllReturns();
+        model.addAttribute("allReturns", allReturns);
         return "warehouse/inbound/return_list";
     }
 

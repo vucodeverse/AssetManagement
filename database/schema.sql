@@ -603,3 +603,79 @@ VALUES
 INSERT INTO asset_handover (handover_type, allocation_request_id, from_department_id, to_department_id, status)
 VALUES 
 (N'ALLOCATION', @AllocReqId_2, 3, 1, N'PENDING');
+
+-- ======================================================================
+-- BỔ SUNG DỮ LIỆU MẪU: LUỒNG THU HỒI TÀI SẢN (RETURN TO WAREHOUSE)
+-- ======================================================================
+
+-- ---------------------------------------------------------
+-- 1. Tạo Category và Asset Type mới (hoặc dùng lại để test)
+-- ---------------------------------------------------------
+DECLARE @CatPrinterId INT;
+DECLARE @TypePrinterId INT;
+
+-- Thêm Category: Thiết bị in ấn
+INSERT INTO category (category_name, description, status) 
+VALUES (N'Thiết bị in ấn', N'Máy in, máy scan các loại', N'ACTIVE');
+SET @CatPrinterId = SCOPE_IDENTITY();
+
+-- Thêm Asset Type: Máy in HP
+INSERT INTO asset_type (type_name, description, type_class, status, category_id, model) 
+VALUES (N'Máy in HP LaserJet', N'Máy in trắng đen cho văn phòng', 'HARDWARE', 'ACTIVE', @CatPrinterId, 'HP 107w');
+SET @TypePrinterId = SCOPE_IDENTITY();
+
+
+-- ---------------------------------------------------------
+-- 2. Tạo Tài sản (Asset) đang được sử dụng tại Phòng ban
+-- Giả sử Phòng IT (department_id = 2) đang giữ các tài sản này
+-- ---------------------------------------------------------
+DECLARE @AssetPrinter1 INT;
+DECLARE @AssetLaptop1 INT;
+
+-- Tạo 1 Máy in đang gán cho Phòng IT
+INSERT INTO asset (asset_name, asset_type_id, current_status, department_id, acquisition_date)
+VALUES (N'Máy in HP LaserJet - PRN-IT-01', @TypePrinterId, N'ASSIGNED', 2, '2025-01-10');
+SET @AssetPrinter1 = SCOPE_IDENTITY();
+
+-- Lấy loại tài sản Laptop Dell XPS (asset_type_id = 1 từ script gốc) để tạo 1 Laptop cũ
+INSERT INTO asset (asset_name, asset_type_id, current_status, department_id, acquisition_date)
+VALUES (N'Laptop Dell XPS Cũ - IT-OLD-99', 1, N'ASSIGNED', 2, '2024-06-15');
+SET @AssetLaptop1 = SCOPE_IDENTITY();
+
+
+-- ---------------------------------------------------------
+-- 3. Tạo Yêu cầu thu hồi (Return Request & Detail)
+-- Phòng IT (User 1) yêu cầu trả lại 2 tài sản trên về kho
+-- ---------------------------------------------------------
+DECLARE @ReturnReqId INT;
+
+-- Đơn yêu cầu trả tài sản đã được duyệt (APPROVED) để sẵn sàng bàn giao
+INSERT INTO return_request (requester_id, requested_department_id, reason, status)
+VALUES (1, 2, N'Tài sản hỏng (máy in) và nhân sự nghỉ việc (laptop)', N'APPROVED');
+SET @ReturnReqId = SCOPE_IDENTITY();
+
+-- Chi tiết yêu cầu thu hồi (Map với 2 tài sản vừa tạo)
+INSERT INTO return_request_detail (request_id, asset_id, note)
+VALUES 
+(@ReturnReqId, @AssetPrinter1, N'Máy in kẹt giấy liên tục, cần bảo hành hoặc thanh lý'),
+(@ReturnReqId, @AssetLaptop1, N'Thu hồi do nhân sự IT nghỉ việc');
+
+
+-- ---------------------------------------------------------
+-- 4. Tạo Lệnh bàn giao thu hồi (Asset Handover & Detail)
+-- Lệnh này đổ về cho nhân viên kho (Department 3) xử lý nhập kho
+-- ---------------------------------------------------------
+DECLARE @ReturnHandoverId INT;
+
+-- Tạo biên bản bàn giao (Status: PENDING chờ kho xác nhận)
+INSERT INTO asset_handover (handover_type, return_request_id, from_department_id, to_department_id, status)
+VALUES (N'RETURN', @ReturnReqId, 2, 3, N'PENDING');
+SET @ReturnHandoverId = SCOPE_IDENTITY();
+
+-- Chi tiết bàn giao thu hồi
+INSERT INTO asset_handover_detail (handover_id, asset_id, note)
+VALUES 
+(@ReturnHandoverId, @AssetPrinter1, N'Bàn giao máy in HP (trạng thái hỏng)'),
+(@ReturnHandoverId, @AssetLaptop1, N'Bàn giao Laptop Dell (trạng thái hoạt động bình thường)');
+
+GO

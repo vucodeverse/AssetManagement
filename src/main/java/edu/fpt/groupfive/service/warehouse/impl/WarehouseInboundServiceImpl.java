@@ -57,6 +57,18 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
     }
 
     @Override
+    public List<HandoverResponseDTO> getAllReturns() {
+        List<AssetHandover> handovers = assetHandoverDao.findAllReturns();
+        return handovers.stream().map(h -> HandoverResponseDTO.builder()
+                .handoverId(h.getHandoverId())
+                .fromDepartmentName(h.getFromDepartmentName())
+                .toDepartmentName(h.getToDepartmentName())
+                .createdAt(h.getCreatedAt())
+                .status(h.getStatus().name())
+                .build()).collect(Collectors.toList());
+    }
+
+    @Override
     public List<HandoverResponseDTO> getPendingReturns() {
         List<AssetHandover> handovers = assetHandoverDao.findAllPendingReturns();
         return handovers.stream().map(h -> HandoverResponseDTO.builder()

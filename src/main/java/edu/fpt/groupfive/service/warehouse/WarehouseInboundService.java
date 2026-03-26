@@ -14,6 +14,7 @@ public interface WarehouseInboundService {
     InboundSummaryResponseDTO processInboundPO(Integer poId, String username);
     List<HandoverResponseDTO> getPendingReturns();
     List<HandoverResponseDTO> getProcessedReturns();
+    List<HandoverResponseDTO> getAllReturns();
     HandoverDetailResponseDTO getReturnDetail(Integer handoverId);
     void processReturnScan(Integer handoverId, String assetCode, String username);
     List<WhReceipt> getReceiptsByPOId(Integer poId);
