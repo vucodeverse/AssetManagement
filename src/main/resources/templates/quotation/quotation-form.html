@@ -30,6 +30,17 @@
                               <span class="badge-prem status-badge-draft">BẢN NHÁP</span>
                          </div>
                     </header>
+                    
+                    <!-- Global Messages -->
+                    <div th:if="${message}" class="alert-success-banner">
+                         <i class="fas fa-check-circle"></i>
+                         <span th:text="${message}"></span>
+                    </div>
+
+                    <div th:if="${error}" class="alert-error-banner">
+                         <i class="fas fa-exclamation-circle"></i>
+                         <span th:text="${error}"></span>
+                    </div>
 
                     <div class="form-section-card">
                          <div class="grid-fields">
@@ -87,7 +98,7 @@
                                              <input type="hidden"
                                                   th:field="*{quotationDetailCreateRequests[__${stat.index}__].purchaseRequestDetailId}">
                                              <input type="text" class="input-table"
-                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].specificationRequirement}" required>
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].specificationRequirement}" >
                                         </td>
 
                                          <td class="td-item-name">
@@ -100,7 +111,7 @@
 
                                         <td class="td-item-qty">
                                              <input type="number" class="input-table"
-                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].quantity}" required>
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].quantity}" >
 
                                              <div class="error-msg"
                                                   th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].quantity')}"
@@ -120,7 +131,7 @@
 
                                         <td>
                                              <input type="number" class="input-table" placeholder="Tháng"
-                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].warrantyMonths}" required>
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].warrantyMonths}" >
                                              <div class="error-msg"
                                                   th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].warrantyMonths')}"
                                                   th:errors="*{quotationDetailCreateRequests[__${stat.index}__].warrantyMonths}">

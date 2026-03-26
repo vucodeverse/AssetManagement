@@ -21,15 +21,15 @@
 
                 <header class="top-bar">
                     <h1>QUẢN LÝ YÊU CẦU MUA SẮM</h1>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Tìm kiếm theo mã YC..." th:field="*{keyword}">
+                    </div>
                     <div class="top-actions">
                         <div sec:authorize="hasAuthority('ASSET_MANAGER')">
                             <a th:href="@{/purchases/create}" class="btn-create">
                                 <i class="fas fa-plus"></i> Tạo Yêu Cầu Mua Sắm
                             </a>
-                        </div>
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Tìm kiếm theo mã YC..." th:field="*{keyword}">
                         </div>
                     </div>
                 </header>

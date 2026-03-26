@@ -189,7 +189,7 @@ textarea.input-prem,
 /* Footer Actions */
 .pr-footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     border-top: 2px solid #000;
     padding-top: 40px;

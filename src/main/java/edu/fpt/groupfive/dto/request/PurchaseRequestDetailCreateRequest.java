@@ -28,6 +28,6 @@ public class PurchaseRequestDetailCreateRequest {
     private Integer typeId;
 
     @NotNull(message = "Giá ước tính Không được để trống")
-    @DecimalMin(value = "0.0", message = "Giá ước tính phải lớn hơn 0")
+    @DecimalMin(value = "1", message = "Giá ước tính phải lớn hơn 0")
     private BigDecimal estimatePrice;
 }

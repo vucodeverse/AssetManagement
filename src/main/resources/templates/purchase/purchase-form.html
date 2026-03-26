@@ -33,7 +33,7 @@
                         <!-- reason -->
                         <div class="form-group">
                             <label>LÝ DO YÊU CẦU</label>
-                            <input type="text" th:field="*{reason}" placeholder="Intern mới vào..." required>
+                            <input type="text" th:field="*{reason}" placeholder="Intern mới vào..." >
                             <div class="field-error" th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}"></div>
                         </div>
 
@@ -106,7 +106,7 @@
                                     <!-- Quantity -->
                                     <td>
                                         <input type="number" step="1" class="input-prem"
-                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].quantity}" required/>
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].quantity}" />
 
                                         <div class="field-error"
                                             th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].quantity')}"
@@ -117,7 +117,7 @@
                                     <!-- Estimate Price -->
                                     <td>
                                         <input type="number" step="0.01" class="input-prem"
-                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].estimatePrice}" required/>
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].estimatePrice}" />
 
                                         <div class="field-error"
                                             th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].estimatePrice')}"
@@ -128,7 +128,7 @@
                                     <!-- Specification Requirement -->
                                     <td>
                                         <input type="text" class="input-prem"
-                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].specificationRequirement}" required />
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].specificationRequirement}"  />
 
                                         <div class="field-error"
                                             th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].specificationRequirement')}"

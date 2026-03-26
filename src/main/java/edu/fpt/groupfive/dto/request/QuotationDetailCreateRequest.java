@@ -26,7 +26,7 @@ public class QuotationDetailCreateRequest {
     private Integer warrantyMonths;
 
     @NotNull(message = "Giá của sản phẩm không được để trôống")
-    @DecimalMin(value = "0.0", message = "Giá của sản phẩm không được nhở hơn 0")
+    @DecimalMin(value = "1", message = "Giá của sản phẩm không được nhở hơn 0")
     private BigDecimal price;
 
     @NotNull(message = "Thuế của sản phẩm không được để trống")

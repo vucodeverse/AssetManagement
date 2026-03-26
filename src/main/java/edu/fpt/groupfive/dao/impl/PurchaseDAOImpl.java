@@ -327,7 +327,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
                 "          (select count(*) from purchase_request p where p.status = 'PENDING'), " +
                 "          (select count(*) from quotation q where q.status = 'PENDING'), " +
                 "          (select coalesce(sum(po.total_amount), 0) from purchase_orders po where po.status <> 'DELETED' " +
-                "           and exists (select 1 from purchase_order_details pod where pod.purchase_order_id = po.purchase_order_id and year(pod.delivery_date) = year(getdate()))) ";
+                "           and po.status = 'COMPLETED') ";
 
         try(Connection connection = databaseConfig.getConnection();
         PreparedStatement ps = connection.prepareStatement(sql)) {

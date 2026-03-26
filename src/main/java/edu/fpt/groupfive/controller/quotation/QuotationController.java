@@ -132,6 +132,35 @@ public class QuotationController {
         return URL_QUOTATION_FORM;
     }
 
+    @IsPurchaseStaff
+    @PostMapping(value = "/create/{purchaseId}", params = "addDetail")
+    public String addQuotationDetail(@PathVariable("purchaseId") Integer purchaseId, @ModelAttribute(
+            "quotationCreateRequest") QuotationCreateRequest request,
+                                     @RequestParam(value = "addDetail", required = false) Integer addIndex,
+                                     Model model) {
+        // xử lí việc thêm 1 dùng detail mới
+        if (addIndex != null) {
+            addQuotationDetailRow(request, addIndex);
+        }
+        prepareQuotationFormModel(model, purchaseId);
+        return URL_QUOTATION_FORM;
+    }
+    @IsPurchaseStaff
+    @PostMapping(value = "/create/{purchaseId}", params = "removeDetail")
+    public String removeQuotationDetail(@PathVariable("purchaseId") Integer purchaseId,
+                                        @ModelAttribute("quotationCreateRequest") QuotationCreateRequest request,
+                                        @RequestParam(value = "removeDetail", required = false) Integer removeIndex,
+                                        Model model) {
+        // xóa 1 dùng detail
+        if (removeIndex != null) {
+            if (removeIndex >= 0 && request.getQuotationDetailCreateRequests().size() > 1) {
+                request.getQuotationDetailCreateRequests().remove(removeIndex.intValue());
+            }
+        }
+        prepareQuotationFormModel(model, purchaseId);
+        return URL_QUOTATION_FORM;
+    }
+
     // xử lí form tạo quotaiton
     @IsPurchaseStaff
     @PostMapping("/create/{purchaseId}")
@@ -140,27 +169,8 @@ public class QuotationController {
             @Valid @ModelAttribute("quotationCreateRequest") QuotationCreateRequest request,
             BindingResult result,
             @RequestParam(value = "actions", required = false) String action,
-            @RequestParam(value = "addDetail", required = false) Integer addIndex,
-            @RequestParam(value = "removeDetail", required = false) Integer removeIndex,
             Model model,
             RedirectAttributes redirectAttributes) {
-
-        // xử lí việc thêm 1 dùng detail mới
-        if (addIndex != null) {
-            addQuotationDetailRow(request, addIndex);
-            prepareQuotationFormModel(model, purchaseId);
-            return URL_QUOTATION_FORM;
-        }
-
-        // xóa 1 dùng detail
-        if (removeIndex != null) {
-
-            if (removeIndex >= 0 && request.getQuotationDetailCreateRequests().size() > 1) {
-                request.getQuotationDetailCreateRequests().remove(removeIndex.intValue());
-            }
-            prepareQuotationFormModel(model, purchaseId);
-            return URL_QUOTATION_FORM;
-        }
 
         // trả về form nếu có lỗi
         if (result.hasErrors()) {
