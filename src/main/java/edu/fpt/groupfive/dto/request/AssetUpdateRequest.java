@@ -17,23 +17,20 @@ public class AssetUpdateRequest {
 
     private Integer assetId;
 
-    @NotBlank(message = "Không được để trống tên tài sản")
+    @NotBlank(message = "Tên tài sản không được để trống")
     private String assetName;
 
-    private Integer purchaseOrderDetailId;
-
-    @NotNull(message = "Không được để trống trạng thái tài sản")
+    @NotNull(message = "Trạng thái không được để trống")
     private AssetStatus currentStatus;
 
-    @Min(value = 1000, message = "Nguyên giá tối thiểu 1000")
-    @NotNull(message = "Không được để trống nguyên giá")
-    private BigDecimal originalCost;
-    @NotNull(message = "Phải chọn loại tài sản")
-    private Integer assetTypeId;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate warrantyStartDate;
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate warrantyEndDate;
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate acquisitionDate;
+
+    private String note;
 }

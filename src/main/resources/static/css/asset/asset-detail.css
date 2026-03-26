@@ -264,3 +264,22 @@
     font-size: 12px;
     margin-top: 4px;
 }
+
+.alert-danger {
+    list-style: none;
+    padding-left: 0;
+}
+.alert-danger::before {
+    content: none; /* nếu có pseudo-element */
+}
+
+
+.alert-danger ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.alert-danger ul li {
+    list-style: none;
+}

@@ -17,7 +17,7 @@ public interface AssetDAO {
 
     void updateStatus(Integer assetId, AssetStatus status);
 
-    void delete(Integer id);
+
 
     List<Integer> findValidAssetIds(List<Integer> assetIds, int departmentId);
 
