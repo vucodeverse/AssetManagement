@@ -47,7 +47,7 @@ public class QCReportController {
         }
 
         if ("TRANSFER".equalsIgnoreCase(sourceType)) {
-            return "/transfer-requests/" + sourceId;
+            return "/transfer-requests/detail/" + sourceId;
         }
 
         if ("ALLOCATION".equalsIgnoreCase(sourceType)) {
@@ -86,7 +86,7 @@ public class QCReportController {
         String role = getRole(session);
         if (!"WAREHOUSE_STAFF".equals(role)) {
             redirectAttributes.addFlashAttribute("error", "Chỉ kho mới được tạo QC");
-            return "redirect:/transfer-requests/warehouse";
+            return "redirect:/auth/login";
         }
 
         if (assetId == null) {
