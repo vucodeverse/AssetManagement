@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import edu.fpt.groupfive.dto.response.warehouse.LedgerRecordResponseDTO;
 import edu.fpt.groupfive.dto.request.warehouse.TransactionFilterRequestDTO;
-import edu.fpt.groupfive.model.warehouse.InboundReceipt;
+import edu.fpt.groupfive.model.warehouse.InventoryVoucher;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
 
 public interface WhTransactionDAO {
@@ -17,19 +17,24 @@ public interface WhTransactionDAO {
             Integer unitVolume
     ) {}
 
-    record ReceiptResult(Integer receiptId, Map<Integer, List<Integer>> generatedAssetIds) {}
+    record ReceiptResult(Integer voucherId, Map<Integer, List<Integer>> generatedAssetIds) {}
 
-    ReceiptResult executeInboundTransaction(InboundReceipt receipt, List<AssetPlacementPlan> placements);
+    ReceiptResult executeInboundTransaction(InventoryVoucher voucher, List<AssetPlacementPlan> placements);
 
-    void executeOutboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note);
+    /**
+     * Thực hiện xuất kho cấp phát tài sản.
+     * @param voucher Phiếu xuất kho
+     * @param assets Danh sách tài sản được chọn xuất (assetId, zoneId)
+     */
+    void executeOutboundForHandover(InventoryVoucher voucher, Map<Integer, Integer> assets);
 
     List<LedgerRecordResponseDTO> getAllTransactions(TransactionFilterRequestDTO filter);
 
     Integer getReceivedQuantity(Integer poDetailId);
 
-    InboundSummaryResponseDTO getInboundReceiptSummary(Integer receiptId);
+    InboundSummaryResponseDTO getInboundReceiptSummary(Integer voucherId);
 
-    List<InboundReceipt> getReceiptsByPoId(Integer poId);
+    List<InventoryVoucher> getVouchersByPoId(Integer poId);
 
-    List<edu.fpt.groupfive.dto.response.warehouse.InboundReceiptResponseDTO> getAllInboundReceipts();
+    List<edu.fpt.groupfive.dto.response.warehouse.InventoryVoucherResponseDTO> getAllInboundVouchers();
 }

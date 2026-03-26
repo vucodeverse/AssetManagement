@@ -3,6 +3,7 @@ package edu.fpt.groupfive.service.warehouse;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service cho các hoạt động xuất kho (Outbound) trong module Kho.
@@ -24,11 +25,12 @@ public interface WarehouseOutboundService {
     HandoverDetailResponseDTO getHandoverDetail(Integer handoverId);
 
     /**
-     * Xử lý quét mã tài sản để xuất kho.
-     *
-     * @param handoverId ID của lệnh bàn giao
-     * @param assetCode  Mã tài sản (asset_id)
-     * @param executedBy ID người thực hiện
+     * Xác nhận xuất kho cho lệnh bàn giao.
+     * 
+     * @param handoverId ID lệnh bàn giao
+     * @param assets Map chứa assetId và zoneId của các tài sản được chọn
+     * @param username Tên đăng nhập người thực hiện
+     * @param note Ghi chú phiếu xuất
      */
-    boolean processScan(Integer handoverId, String assetCode, Integer executedBy);
+    void confirmOutbound(Integer handoverId, Map<Integer, Integer> assets, String username, String note);
 }

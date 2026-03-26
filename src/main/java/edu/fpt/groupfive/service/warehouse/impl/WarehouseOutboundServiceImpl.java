@@ -1,26 +1,22 @@
 package edu.fpt.groupfive.service.warehouse.impl;
 
-import edu.fpt.groupfive.common.AssetStatus;
 import edu.fpt.groupfive.common.Status;
-import edu.fpt.groupfive.dao.warehouse.WhAssetCapacityDAO;
+import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.dao.warehouse.WhTransactionDAO;
 import edu.fpt.groupfive.dto.response.AllocationRequestDetailResponse;
 import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
-import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetHandoverResponse;
 import edu.fpt.groupfive.dto.response.DepartmentResponse;
-import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
-import edu.fpt.groupfive.model.warehouse.AssetCapacity;
+import edu.fpt.groupfive.model.warehouse.InventoryVoucher;
 import edu.fpt.groupfive.service.*;
 import edu.fpt.groupfive.service.warehouse.WarehouseOutboundService;
-import edu.fpt.groupfive.service.warehouse.WhZoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +26,8 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     private final DepartmentService departmentService;
     private final AllocationRequestService allocationRequestService;
     private final AssetTypeService assetTypeService;
-    private final WhZoneService whZoneService;
     private final WhTransactionDAO whTransactionDAO;
-    private final AssetService assetService;
-    private final WhAssetCapacityDAO whAssetCapacityDAO;
+    private final UserDAO userDAO;
 
     @Override
     public List<HandoverResponseDTO> getPendingAllocations() {
@@ -70,104 +64,36 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     }
 
     @Override
-    @Transactional
-    public boolean processScan(Integer handoverId, String assetCode, Integer executedBy) {
-        // 0. Check Handover status
+    public void confirmOutbound(Integer handoverId, Map<Integer, Integer> assets, String username, String note) {
+        Integer executedBy = userDAO.findUserIdByUsername(username);
+        
+        // Prepare Voucher
+        InventoryVoucher voucher = InventoryVoucher.builder()
+                .voucherCode("XK-" + System.currentTimeMillis())
+                .voucherType("OUTBOUND")
+                .handoverId(handoverId)
+                .createdBy(executedBy)
+                .status("COMPLETED")
+                .note(note)
+                .build();
+        
+        // DAO handles:
+        // 1. Create wh_inventory_vouchers
+        // 2. For each asset:
+        //    - Create wh_inventory_voucher_details
+        //    - Create asset_handover_detail (Link asset to handover)
+        //    - Update asset status to 'ASSIGNED' and department_id
+        //    - Update Zone capacity
+        //    - Delete wh_asset_placement
+        //    - Insert wh_transactions
+        // 3. Update asset_handover status to 'COMPLETED'
+        whTransactionDAO.executeOutboundForHandover(voucher, assets);
+        
+        // Link to AllocationRequest status if exists
         AssetHandoverResponse handover = assetHandoverService.getHandoverById(handoverId);
-        if (handover == null) {
-            throw new RuntimeException("Lệnh bàn giao không tồn tại.");
+        if (handover != null && handover.getAllocationRequestId() != null) {
+            assetHandoverService.updateAllocationStatus(handover.getAllocationRequestId(), "COMPLETED");
         }
-        if (handover.getStatus() != Status.PENDING) {
-            throw new RuntimeException("Lệnh bàn giao này không ở trạng thái PENDING, không thể thực hiện quét mã.");
-        }
-
-        // 1. Find asset location (and verify it's in warehouse)
-        AssetLocationResponseDTO location = whZoneService.findAssetLocation(assetCode);
-        if (location == null || location.getZoneId() == null) {
-            throw new RuntimeException("Tài sản không có trong kho hoặc mã không hợp lệ.");
-        }
-
-        Integer assetId = location.getAssetId();
-        AssetDetailResponse assetDetail = assetService.getDetailById(assetId);
-
-        // Validation 1: Tài sản có trong kho (AVAILABLE)
-        if (assetDetail.getCurrentStatus() != AssetStatus.AVAILABLE) {
-            throw new RuntimeException("Tài sản không ở trạng thái 'Sẵn sàng sử dụng' (AVAILABLE). Trạng thái hiện tại: " + assetDetail.getCurrentStatus());
-        }
-
-        // 2. Get requirements for this handover
-        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService.getAllAllocationReqByHandoverId(handoverId);
-        
-        // Validation 2: Tài sản đúng loại tài sản theo yêu cầu
-        boolean isRequiredType = reqDetails.stream()
-                .anyMatch(req -> req.getAssetTypeId().equals(assetDetail.getAssetTypeId()));
-        
-        if (!isRequiredType) {
-            throw new RuntimeException("Tài sản này không thuộc loại yêu cầu trong lệnh cấp phát.");
-        }
-
-        // Validation 3: Kiểm tra số lượng đã gán để tránh vượt định mức
-        List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems = assetHandoverService.getHandoverDetails(handoverId);
-        String assetTypeName = assetTypeService.findNameById(assetDetail.getAssetTypeId());
-        
-        long currentAllocatedCount = allocatedItems.stream()
-                .filter(item -> item.getAssetTypeName().equals(assetTypeName))
-                .count();
-        
-        int requestedQuantityForThisType = reqDetails.stream()
-                .filter(req -> req.getAssetTypeId().equals(assetDetail.getAssetTypeId()))
-                .mapToInt(AllocationRequestDetailResponse::getRequestedQuantity)
-                .sum();
-        
-        if (currentAllocatedCount >= requestedQuantityForThisType) {
-            throw new RuntimeException("Đã quét đủ số lượng cho loại tài sản '" + assetTypeName + "' (" + requestedQuantityForThisType + ").");
-        }
-
-        // --- All checks passed ---
-
-        // 3. Update asset status to ALLOCATED
-        assetService.updateStatus(assetId, AssetStatus.ALLOCATED);
-
-        // 4. Execute outbound transaction
-        whTransactionDAO.executeOutboundTransaction(handoverId, assetId, location.getZoneId(), executedBy, "Xuất kho cấp phát");
-
-        // 5. Decrease zone capacity
-        int unitVolume = whAssetCapacityDAO.findByAssetTypeId(assetDetail.getAssetTypeId())
-                .map(AssetCapacity::getUnitVolume)
-                .orElse(0); 
-        
-        if (unitVolume > 0) {
-            whZoneService.decreaseCapacity(location.getZoneId(), unitVolume);
-        }
-
-        // 6. Add handover detail log
-        assetHandoverService.addHandoverDetail(handoverId, assetId);
-
-        // 7. Update Progress & Status for Handover & AllocationRequest
-        return updateProgressAndStatus(handoverId, handover.getAllocationRequestId());
-    }
-
-    private boolean updateProgressAndStatus(Integer handoverId, Integer allocationId) {
-        if (allocationId == null) return false;
-
-        List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems = assetHandoverService.getHandoverDetails(handoverId);
-        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService.getAllAllocationReqByHandoverId(handoverId);
-
-        int totalRequested = reqDetails.stream().mapToInt(AllocationRequestDetailResponse::getRequestedQuantity).sum();
-        int totalAllocated = allocatedItems.size();
-
-        if (totalAllocated > 0) {
-            if (totalAllocated < totalRequested) {
-                assetHandoverService.updateAllocationStatus(allocationId, "IN_PROGRESS");
-                return false;
-            } else {
-                // Fully allocated
-                assetHandoverService.updateAllocationStatus(allocationId, "COMPLETED");
-                assetHandoverService.updateStatus(handoverId, Status.APPROVED); // Mark handover as ready
-                return true;
-            }
-        }
-        return false;
     }
 
     private List<HandoverDetailResponseDTO.RequestedItemDTO> getRequestedItems(

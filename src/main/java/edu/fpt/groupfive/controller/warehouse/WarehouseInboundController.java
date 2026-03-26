@@ -4,7 +4,7 @@ import edu.fpt.groupfive.dto.request.warehouse.InboundRequestDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
-import edu.fpt.groupfive.dto.response.warehouse.InboundReceiptResponseDTO;
+import edu.fpt.groupfive.dto.response.warehouse.InventoryVoucherResponseDTO;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.warehouse.WarehouseInboundService;
@@ -49,11 +49,11 @@ public class WarehouseInboundController {
     }
 
     @GetMapping("/receipts")
-    public String receiptListPage(Model model) {
+    public String voucherListPage(Model model) {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Lịch sử Phiếu Nhập kho");
         
-        List<InboundReceiptResponseDTO> receipts = warehouseInboundService.getAllInboundReceipts();
+        List<InventoryVoucherResponseDTO> receipts = warehouseInboundService.getAllInboundVouchers();
         model.addAttribute("receipts", receipts);
         
         return "warehouse/inbound/receipt_list";
@@ -70,7 +70,7 @@ public class WarehouseInboundController {
 
         PurchaseOrderResponse poDetail = orderService.getPurchaseOrderById(poId);
         model.addAttribute("po", poDetail);
-        model.addAttribute("receipts", warehouseInboundService.getReceiptsByOrderId(poId));
+        model.addAttribute("receipts", warehouseInboundService.getVouchersByOrderId(poId));
 
         return "warehouse/inbound/po_detail";
     }
@@ -119,17 +119,17 @@ public class WarehouseInboundController {
         return "warehouse/inbound/summary";
     }
 
-    @GetMapping("/receipt/{receipt_id}")
-    public String viewReceipt(@PathVariable("receipt_id") Integer receiptId, Model model) {
+    @GetMapping("/receipt/{voucher_id}")
+    public String viewVoucher(@PathVariable("voucher_id") Integer voucherId, Model model) {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         
-        InboundSummaryResponseDTO summary = warehouseInboundService.getInboundReceiptSummary(receiptId);
+        InboundSummaryResponseDTO summary = warehouseInboundService.getInboundVoucherSummary(voucherId);
         if (summary == null) {
             return "redirect:/wh/inbound/po";
         }
         
         model.addAttribute(SUMMARY_ATTR, summary);
-        model.addAttribute(PAGE_TITLE, "Thông tin Phiếu Nhập #" + receiptId);
+        model.addAttribute(PAGE_TITLE, "Thông tin Phiếu Nhập #" + voucherId);
         return "warehouse/inbound/summary";
     }
 

@@ -36,17 +36,17 @@
                 </thead>
                 <tbody>
                     <tr th:each="r : ${receipts}">
-                        <td th:text="'#' + ${r.receiptId}"></td>
-                        <td th:text="${#temporals.format(r.receivedAt, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="'#' + ${r.voucherId}"></td>
+                        <td th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                         <td>
                             <a th:href="@{'/wh/inbound/po/' + ${r.purchaseOrderId}}" th:text="'PO #' + ${r.purchaseOrderId}" style="color: #2563eb; font-weight: 600;"></a>
                         </td>
                         <td th:text="${r.supplierName}"></td>
-                        <td th:text="${r.deliveryNote ?: '-'}"></td>
+                        <td th:text="${r.voucherCode ?: '-'}"></td>
                         <td class="text-center" th:text="${r.totalAssets}"></td>
-                        <td th:text="${r.receivedBy}"></td>
+                        <td th:text="${r.createdBy}"></td>
                         <td class="text-center">
-                            <a th:href="@{'/wh/inbound/receipt/' + ${r.receiptId}}" class="btn-secondary" style="padding: 4px 12px; font-size: 0.85rem;">
+                            <a th:href="@{'/wh/inbound/receipt/' + ${r.voucherId}}" class="btn-secondary" style="padding: 4px 12px; font-size: 0.85rem;">
                                 <i class="fa-solid fa-qrcode"></i> Xem & In QR
                             </a>
                         </td>

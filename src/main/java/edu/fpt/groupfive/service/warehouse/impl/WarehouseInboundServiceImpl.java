@@ -8,8 +8,8 @@ import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.dto.response.warehouse.AssetTypeVolumeDTO;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
-import edu.fpt.groupfive.dto.response.warehouse.InboundReceiptResponseDTO;
-import edu.fpt.groupfive.model.warehouse.InboundReceipt;
+import edu.fpt.groupfive.dto.response.warehouse.InventoryVoucherResponseDTO;
+import edu.fpt.groupfive.model.warehouse.InventoryVoucher;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.warehouse.WarehouseInboundService;
 import edu.fpt.groupfive.service.warehouse.WhAssetCapacityService;
@@ -101,16 +101,18 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             throw new RuntimeException("Không có tài sản nào được chọn để nhập kho.");
         }
 
-        // Prepare Receipt
-        InboundReceipt receipt = InboundReceipt.builder()
+        // Prepare Voucher
+        InventoryVoucher voucher = InventoryVoucher.builder()
+                .voucherCode(request.getDeliveryNote() != null ? request.getDeliveryNote() : "NK-" + System.currentTimeMillis())
+                .voucherType("INBOUND")
                 .purchaseOrderId(request.getPurchaseOrderId())
-                .deliveryNote(request.getDeliveryNote())
-                .receivedBy(executedBy)
+                .createdBy(executedBy)
                 .note(request.getNote())
+                .status("COMPLETED")
                 .build();
 
         // Execute batch database insertions
-        WhTransactionDAO.ReceiptResult result = whTransactionDAO.executeInboundTransaction(receipt, placements);
+        WhTransactionDAO.ReceiptResult result = whTransactionDAO.executeInboundTransaction(voucher, placements);
         Map<Integer, List<Integer>> generatedIdsMap = result.generatedAssetIds();
 
         // Build Response Summary
@@ -127,7 +129,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
         }
 
         return InboundSummaryResponseDTO.builder()
-                .receiptId(result.receiptId())
+                .receiptId(result.voucherId())
                 .purchaseOrderId(request.getPurchaseOrderId())
                 .supplierName(poDetail.getSupplierName())
                 .inboundDate(LocalDateTime.now())
@@ -136,18 +138,18 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
     }
 
     @Override
-    public List<InboundReceipt> getReceiptsByOrderId(Integer orderId) {
-        return whTransactionDAO.getReceiptsByPoId(orderId);
+    public List<InventoryVoucher> getVouchersByOrderId(Integer orderId) {
+        return whTransactionDAO.getVouchersByPoId(orderId);
     }
 
     @Override
-    public InboundSummaryResponseDTO getInboundReceiptSummary(Integer receiptId) {
-        return whTransactionDAO.getInboundReceiptSummary(receiptId);
+    public InboundSummaryResponseDTO getInboundVoucherSummary(Integer voucherId) {
+        return whTransactionDAO.getInboundReceiptSummary(voucherId);
     }
 
     @Override
-    public List<InboundReceiptResponseDTO> getAllInboundReceipts() {
-        return whTransactionDAO.getAllInboundReceipts();
+    public List<InventoryVoucherResponseDTO> getAllInboundVouchers() {
+        return whTransactionDAO.getAllInboundVouchers();
     }
 
     private ZoneCapacityResponseDTO findZoneForAllocation(List<ZoneCapacityResponseDTO> zones, int assetTypeId, int unitVolume) {

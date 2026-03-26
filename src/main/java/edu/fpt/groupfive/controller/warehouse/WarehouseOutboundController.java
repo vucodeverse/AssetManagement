@@ -9,6 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/wh/outbound")
 @RequiredArgsConstructor
@@ -47,22 +51,40 @@ public class WarehouseOutboundController {
         return "warehouse/outbound/allocation_detail";
     }
 
-    @PostMapping("/{handover_id}/scan")
-    public String processAllocationScan(
+    @PostMapping("/{handover_id}/confirm")
+    public String confirmOutbound(
             @PathVariable("handover_id") Integer handoverId,
-            @RequestParam("assetCode") String assetCode,
+            @RequestParam Map<String, String> allParams,
+            Principal principal,
             RedirectAttributes ra) {
+        
+        if (principal == null) return "redirect:/login";
+        
         try {
-            boolean isCompleted = warehouseOutboundService.processScan(handoverId, assetCode, 1); // Mock executedBy = 1
-            if (isCompleted) {
-                ra.addFlashAttribute(SUCCESS_MSG, "Đã quét đủ số lượng tài sản. Lệnh xuất kho #" + handoverId + " đã hoàn tất.");
-                return REDIRECT_OUTBOUND_LIST;
+            // Lọc các param có dạng asset_{id} = zoneId
+            Map<Integer, Integer> assetMap = new HashMap<>();
+            String note = allParams.getOrDefault("note", "");
+            
+            for (Map.Entry<String, String> entry : allParams.entrySet()) {
+                if (entry.getKey().startsWith("asset_")) {
+                    int assetId = Integer.parseInt(entry.getKey().substring(6));
+                    int zoneId = Integer.parseInt(entry.getValue());
+                    assetMap.put(assetId, zoneId);
+                }
             }
-            ra.addFlashAttribute(SUCCESS_MSG, "Đã quét và gán tài sản " + assetCode + " thành công.");
+            
+            if (assetMap.isEmpty()) {
+                throw new RuntimeException("Vui lòng chọn ít nhất một tài sản để xuất kho.");
+            }
+            
+            warehouseOutboundService.confirmOutbound(handoverId, assetMap, principal.getName(), note);
+            ra.addFlashAttribute(SUCCESS_MSG, "Đã thực hiện xuất kho và tạo phiếu xuất thành công cho lệnh #" + handoverId);
+            return REDIRECT_OUTBOUND_LIST;
+            
         } catch (Exception e) {
-            ra.addFlashAttribute(ERROR_MSG, "Lỗi khi quét tài sản: " + e.getMessage());
+            ra.addFlashAttribute(ERROR_MSG, "Lỗi khi thực hiện xuất kho: " + e.getMessage());
+            return REDIRECT_OUTBOUND_DETAIL + handoverId;
         }
-        return REDIRECT_OUTBOUND_DETAIL + handoverId;
     }
 
     @GetMapping("/{handover_id}/qc-report")
@@ -88,14 +110,5 @@ public class WarehouseOutboundController {
         
         ra.addFlashAttribute(SUCCESS_MSG, "Đã ghi nhận báo cáo QC.");
         return REDIRECT_OUTBOUND_DETAIL + handoverId;
-    }
-
-    @PostMapping("/{handover_id}/complete")
-    public String completeOutbound(
-            @PathVariable("handover_id") Integer handoverId,
-            RedirectAttributes ra) {
-        
-        ra.addFlashAttribute(SUCCESS_MSG, "Lệnh xuất kho #" + handoverId + " đã được hoàn tất thành công (giả định).");
-        return REDIRECT_OUTBOUND_LIST;
     }
 }

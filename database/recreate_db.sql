@@ -170,40 +170,7 @@ CREATE TABLE purchase_order_details (
     updated_at             DATETIME2(0) NULL
 );
 
--- 3.4 Tài sản (Core Asset)
-CREATE TABLE wh_inbound_receipt (
-    receipt_id        INT IDENTITY(1,1) PRIMARY KEY,
-    purchase_order_id INT NOT NULL REFERENCES purchase_orders(purchase_order_id),
-    delivery_note     NVARCHAR(255) NULL, -- Số phiếu giao hàng từ NCC
-    received_by       INT NOT NULL REFERENCES users(user_id),
-    received_at       DATETIME2(0) DEFAULT SYSDATETIME(),
-    note              NVARCHAR(MAX) NULL
-);
-
-CREATE TABLE wh_inbound_receipt_detail (
-    receipt_detail_id        INT IDENTITY(1,1) PRIMARY KEY,
-    receipt_id               INT NOT NULL REFERENCES wh_inbound_receipt(receipt_id),
-    purchase_order_detail_id INT NOT NULL REFERENCES purchase_order_details(purchase_order_detail_id),
-    asset_type_id            INT NOT NULL REFERENCES asset_type(asset_type_id),
-    quantity_received        INT NOT NULL
-);
-
-CREATE TABLE asset (
-    asset_id                 INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    asset_name               NVARCHAR(100) NOT NULL,
-    asset_type_id            INT NOT NULL REFERENCES asset_type(asset_type_id),
-    purchase_order_detail_id INT NULL REFERENCES purchase_order_details(purchase_order_detail_id),
-    receipt_detail_id        INT NULL REFERENCES wh_inbound_receipt_detail(receipt_detail_id),
-    current_status           NVARCHAR(40) NOT NULL,
-    original_cost            NUMERIC(19, 2) NULL,
-    department_id            INT NULL REFERENCES departments(department_id),
-    acquisition_date         DATE NULL,
-    in_service_date          DATE NULL,
-    warranty_start_date      DATE NULL,
-    warranty_end_date        DATE NULL
-);
-
--- 3.5 Cấp phát (Allocation)
+-- 3.4 Yêu cầu Cấp phát (Allocation)
 CREATE TABLE allocation_request (
     request_id              INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     requester_id            INT NOT NULL REFERENCES users(user_id),
@@ -228,7 +195,7 @@ CREATE TABLE allocation_request_detail (
     note                 NVARCHAR(255) NULL
 );
 
--- 3.6 Yêu cầu trả (Return)
+-- 3.5 Yêu cầu trả (Return)
 CREATE TABLE return_request (
     request_id              INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     requester_id            INT NOT NULL REFERENCES users(user_id),
@@ -242,14 +209,7 @@ CREATE TABLE return_request (
     updated_at              DATETIME2(0) NULL
 );
 
-CREATE TABLE return_request_detail (
-    request_detail_id    INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    request_id           INT NOT NULL REFERENCES return_request(request_id),
-    asset_id			 INT NOT NULL REFERENCES asset(asset_id),
-    note                 NVARCHAR(255) NULL
-);
-
--- 3.7 Lệnh thực hiện (Handover)
+-- 3.6 Lệnh thực hiện (Handover)
 CREATE TABLE asset_handover (
     handover_id             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     handover_type           NVARCHAR(40) NOT NULL,
@@ -265,6 +225,80 @@ CREATE TABLE asset_handover (
     updated_at              DATETIME2(0) NULL
 );
 
+-- 3.7 Module Kho: Setup không gian & Danh mục Kho
+CREATE TABLE wh_warehouses (
+    warehouse_id    INT IDENTITY(1,1) PRIMARY KEY,
+    name            NVARCHAR(100) NOT NULL,
+    address         NVARCHAR(255) NOT NULL,
+    manager_user_id INT NOT NULL REFERENCES users(user_id),
+    status          NVARCHAR(40) DEFAULT N'ACTIVE'
+);
+
+CREATE TABLE wh_asset_capacity (
+    asset_type_id   INT PRIMARY KEY REFERENCES asset_type(asset_type_id),
+    unit_volume     INT NOT NULL DEFAULT 1
+);
+
+CREATE TABLE wh_zones (
+    zone_id          INT IDENTITY(1,1) PRIMARY KEY,
+    warehouse_id     INT NOT NULL REFERENCES wh_warehouses(warehouse_id),
+    zone_name        NVARCHAR(100) NOT NULL,
+    max_capacity     INT NOT NULL,
+    current_capacity INT NOT NULL DEFAULT 0,
+    asset_type_id    INT NULL REFERENCES asset_type(asset_type_id),
+    status           NVARCHAR(40) DEFAULT N'ACTIVE'
+);
+
+-- 3.8 Phiếu kho (Inventory Vouchers) - Đã có PO và Handover để tham chiếu
+CREATE TABLE wh_inventory_vouchers (
+    voucher_id        INT IDENTITY(1,1) PRIMARY KEY,
+    voucher_code      NVARCHAR(50) NOT NULL UNIQUE, -- NK-2024-001, XK-2024-001
+    voucher_type      NVARCHAR(20) NOT NULL,        -- INBOUND, OUTBOUND
+    purchase_order_id INT NULL REFERENCES purchase_orders(purchase_order_id),
+    handover_id       INT NULL REFERENCES asset_handover(handover_id),
+    warehouse_id      INT NULL REFERENCES wh_warehouses(warehouse_id),
+    created_by        INT NOT NULL REFERENCES users(user_id),
+    created_at        DATETIME2(0) DEFAULT SYSDATETIME(),
+    status            NVARCHAR(40) NOT NULL,        -- COMPLETED, CANCELLED
+    note              NVARCHAR(MAX) NULL
+);
+
+CREATE TABLE wh_inventory_voucher_details (
+    voucher_detail_id        INT IDENTITY(1,1) PRIMARY KEY,
+    voucher_id               INT NOT NULL REFERENCES wh_inventory_vouchers(voucher_id),
+    asset_id                 INT NULL, -- Sẽ bổ sung FK sau khi tạo bảng asset
+    asset_type_id            INT NOT NULL REFERENCES asset_type(asset_type_id),
+    purchase_order_detail_id INT NULL REFERENCES purchase_order_details(purchase_order_detail_id),
+    quantity                 INT NOT NULL,
+    note                     NVARCHAR(255) NULL
+);
+
+-- 3.9 Tài sản (Core Asset)
+CREATE TABLE asset (
+    asset_id                 INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    asset_name               NVARCHAR(100) NOT NULL,
+    asset_type_id            INT NOT NULL REFERENCES asset_type(asset_type_id),
+    purchase_order_detail_id INT NULL REFERENCES purchase_order_details(purchase_order_detail_id),
+    voucher_detail_id        INT NULL REFERENCES wh_inventory_voucher_details(voucher_detail_id),
+    current_status           NVARCHAR(40) NOT NULL,
+    original_cost            NUMERIC(19, 2) NULL,
+    department_id            INT NULL REFERENCES departments(department_id),
+    acquisition_date         DATE NULL,
+    in_service_date          DATE NULL,
+    warranty_start_date      DATE NULL,
+    warranty_end_date        DATE NULL
+);
+
+-- Thêm Foreign Key từ wh_inventory_voucher_details sang asset (sau khi cả 2 bảng tồn tại)
+ALTER TABLE wh_inventory_voucher_details ADD CONSTRAINT FK_voucher_detail_asset FOREIGN KEY (asset_id) REFERENCES asset(asset_id);
+
+CREATE TABLE return_request_detail (
+    request_detail_id    INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    request_id           INT NOT NULL REFERENCES return_request(request_id),
+    asset_id			 INT NOT NULL REFERENCES asset(asset_id),
+    note                 NVARCHAR(255) NULL
+);
+
 CREATE TABLE asset_handover_detail (
     handover_detail_id      INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     handover_id             INT NOT NULL REFERENCES asset_handover(handover_id),
@@ -273,7 +307,7 @@ CREATE TABLE asset_handover_detail (
     note                    NVARCHAR(255) NULL
 );
 
--- 3.8 Điều chuyển (Transfer)
+-- 3.10 Điều chuyển & Vị trí (Placement)
 CREATE TABLE transfer_request (
     transfer_id             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     allocation_request_id   INT NULL REFERENCES allocation_request(request_id),
@@ -300,7 +334,6 @@ CREATE TABLE transfer_request_detail (
     note                         NVARCHAR(255) NULL
 );
 
--- 3.9 QC Report
 CREATE TABLE qc_report (
     id           INT IDENTITY(1,1) PRIMARY KEY,
     asset_id     INT NOT NULL REFERENCES asset(asset_id),
@@ -308,30 +341,6 @@ CREATE TABLE qc_report (
     inspected_by INT NOT NULL REFERENCES users(user_id),
     qc_date      DATETIME2 DEFAULT SYSDATETIME(),
     note         NVARCHAR(MAX)
-);
-
--- 3.10 Module Kho: Setup không gian
-CREATE TABLE wh_warehouses (
-    warehouse_id    INT IDENTITY(1,1) PRIMARY KEY,
-    name            NVARCHAR(100) NOT NULL,
-    address         NVARCHAR(255) NOT NULL,
-    manager_user_id INT NOT NULL REFERENCES users(user_id),
-    status          NVARCHAR(40) DEFAULT N'ACTIVE'
-);
-
-CREATE TABLE wh_asset_capacity (
-    asset_type_id   INT PRIMARY KEY REFERENCES asset_type(asset_type_id),
-    unit_volume     INT NOT NULL DEFAULT 1
-);
-
-CREATE TABLE wh_zones (
-    zone_id          INT IDENTITY(1,1) PRIMARY KEY,
-    warehouse_id     INT NOT NULL REFERENCES wh_warehouses(warehouse_id),
-    zone_name        NVARCHAR(100) NOT NULL,
-    max_capacity     INT NOT NULL,
-    current_capacity INT NOT NULL DEFAULT 0,
-    asset_type_id    INT NULL REFERENCES asset_type(asset_type_id),
-    status           NVARCHAR(40) DEFAULT N'ACTIVE'
 );
 
 CREATE TABLE wh_asset_placement (
@@ -352,16 +361,4 @@ CREATE TABLE wh_transactions (
     note             NVARCHAR(255) NULL
 );
 
-CREATE TABLE map_po_transactions (
-    purchase_order_id INT NOT NULL REFERENCES purchase_orders(purchase_order_id),
-    transaction_id    INT NOT NULL REFERENCES wh_transactions(transaction_id),
-    PRIMARY KEY (purchase_order_id, transaction_id)
-);
-
-CREATE TABLE map_handover_transactions (
-    asset_handover_id INT NOT NULL REFERENCES asset_handover(handover_id),
-    transaction_id    INT NOT NULL REFERENCES wh_transactions(transaction_id),
-    PRIMARY KEY (asset_handover_id, transaction_id)
-);
-
-PRINT 'All tables recreated successfully according to schema.';
+PRINT 'All tables recreated successfully according to new voucher schema.';
