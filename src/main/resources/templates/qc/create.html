@@ -12,75 +12,80 @@
 </head>
 
 <body>
-<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 <th:block layout:fragment="content">
+
     <div class="content">
-        <!-- BREADCRUMB -->
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
         <div class="breadcrumb">
             <a th:href="@{/warehouse}">Trang chủ</a>
             <span class="sep">›</span>
-            <a th:href="@{/wh/qc-reports/list}">Báo cáo QC</a>
+            <a th:href="@{/qc-reports/list}">Báo cáo QC</a>
             <span class="sep">›</span>
             <span class="current">Tạo mới</span>
         </div>
 
-        <!-- PAGE HEADER -->
         <div class="page-header">
             <h1>Tạo báo cáo QC</h1>
-            <p>Ghi lại thông tin kiểm soát chất lượng mới cho quy trình sản xuất.</p>
+            <p>Ghi nhận kết quả kiểm tra chất lượng theo tài sản.</p>
         </div>
 
-        <!-- FORM CARD -->
         <div class="card">
-            <form th:action="@{/wh/qc-reports/create}" method="post" th:object="${qcReport}" class="qc-form">
+            <form th:action="@{/qc-reports/create}" method="post" class="qc-form">
+                <input type="hidden" name="sourceType" th:value="${sourceType}"/>
+                <input type="hidden" name="sourceId" th:value="${sourceId}"/>
+                <input type="hidden" name="assetId" th:value="${asset.assetId}"/>
 
                 <div class="form-grid">
-
-                    <!-- TÀI SẢN (CHỈ HIỂN THỊ, KHÔNG CHỌN) -->
-                    <div class="form-group">
-                        <label class="form-label" for="assetName">
-                            TÀI SẢN <span class="required">*</span>
-                        </label>
-                        <input type="text" id="assetName"
-                               th:if="${asset != null}"
-                               th:value="${asset.assetName + ' (Mã: ' + asset.assetId + ')'}"
-                               class="form-control" disabled/>
-                        <input th:unless="${asset != null}" type="text" class="form-control"
-                               th:value="'Không tìm thấy tài sản với ID: ' + *{assetId}" disabled/>
-                        <input type="hidden" th:field="*{assetId}"/>
+                    <div class="form-group full-width">
+                        <label class="form-label">TÀI SẢN <span class="required">*</span></label>
+                        <input type="text" th:value="${asset.assetName + ' (ID: ' + asset.assetId + ')'}" class="form-control" disabled/>
                     </div>
 
-                    <!-- TRẠNG THÁI -->
                     <div class="form-group">
-                        <label class="form-label" for="status">TRẠNG THÁI <span class="required">*</span></label>
-                        <select id="status" th:field="*{status}" class="form-control" required>
+                        <label class="form-label">TRẠNG THÁI <span class="required">*</span></label>
+                        <select name="status" class="form-control" required>
                             <option value="">-- Chọn trạng thái --</option>
-                            <option value="PASSED">PASSED - Đạt yêu cầu</option>
+                            <option value="PASSED">PASSED - Đạt</option>
                             <option value="FAILED">FAILED - Không đạt</option>
                             <option value="PENDING">PENDING - Chờ xử lý</option>
                         </select>
                     </div>
 
-                    <!-- GHI CHÚ -->
-                    <div class="form-group full-width">
-                        <label class="form-label" for="note">GHI CHÚ</label>
-                        <textarea id="note" th:field="*{note}" class="form-control" rows="4"
-                                  placeholder="Mô tả chi tiết kết quả kiểm tra hoặc các điểm bất thường..."
-                                  maxlength="2000"></textarea>
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <span class="form-help">Tối đa 2000 ký tự</span>
-                            <span class="char-counter"><span id="charCount">0</span>/2000</span>
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">NGƯỜI KIỂM TRA</label>
+                        <input type="text" class="form-control" th:value="${session.userId != null ? 'User ID: ' + session.userId : 'Chưa đăng nhập'}" disabled/>
                     </div>
 
+                    <div class="form-group full-width">
+                        <label class="form-label">GHI CHÚ</label>
+                        <textarea name="note" id="note" class="form-control" rows="4" maxlength="2000" placeholder="Nhập ghi chú kiểm tra..."></textarea>
+                        <div class="d-flex justify-content-between">
+                            <span class="form-help">Tối đa 2000 ký tự</span>
+                            <span><span id="charCount">0</span>/2000</span>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">FILE MINH CHỨNG</label>
+                        <input type="file"
+                               name="file"
+                               class="form-control"
+                               accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"/>
+                        <span class="form-help">Hỗ trợ JPG, PNG, PDF, DOC, DOCX</span>
+                    </div>
+                    <div class="form-group full-width" th:if="${sourceType != null}">
+                        <label class="form-label">NGUỒN PHÁT SINH</label>
+                        <input type="text" class="form-control" th:value="${sourceType + (sourceId != null ? ' #' + sourceId : '')}" disabled/>
+                    </div>
                 </div>
 
-                <!-- ACTIONS -->
                 <div class="form-actions">
-                    <a th:href="@{/wh/qc-reports/list}" class="btn btn-secondary">Hủy</a>
-                    <button class="btn btn-primary" type="submit">Tạo báo cáo</button>
+                    <a th:if="${backUrl != null}" th:href="${backUrl}" class="btn btn-secondary">Quay lại</a>
+                    <a th:if="${backUrl == null}" th:href="@{/qc-reports/list}" class="btn btn-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary">Tạo báo cáo</button>
                 </div>
-
             </form>
         </div>
     </div>
@@ -88,11 +93,14 @@
     <script>
         const note = document.getElementById('note');
         const counter = document.getElementById('charCount');
+
         if (note && counter) {
-            note.addEventListener('input', () => { counter.textContent = note.value.length; });
-            counter.textContent = note.value.length;
+            const update = () => counter.textContent = note.value.length;
+            note.addEventListener('input', update);
+            update();
         }
     </script>
+
 </th:block>
 </body>
 </html>

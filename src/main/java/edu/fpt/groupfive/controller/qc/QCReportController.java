@@ -3,188 +3,287 @@ package edu.fpt.groupfive.controller.qc;
 import edu.fpt.groupfive.dto.request.qc.QCReportRequest;
 import edu.fpt.groupfive.dto.response.QCReportResponse;
 import edu.fpt.groupfive.model.Asset;
+import edu.fpt.groupfive.model.TransferRequest;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.IQCReportService;
-import edu.fpt.groupfive.service.UserService;
+import edu.fpt.groupfive.service.ITransferRequestService;
+import groovy.util.logging.Slf4j;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.File;
 import java.util.List;
-import java.util.Optional;
-
+@Slf4j
 @Controller
-@RequestMapping("/wh/qc-reports")
+@RequestMapping("/qc-reports")
 @RequiredArgsConstructor
 public class QCReportController {
 
+    private static final Logger log = LoggerFactory.getLogger(QCReportController.class);
     private final IQCReportService qcReportService;
     private final AssetService assetService;
-    private final UserService userService;
+    private final ITransferRequestService transferRequestService;
 
-    @Autowired
-    private HttpSession session;
-
-    private Integer getCurrentUserId() {
+    // ================= HELPER =================
+    private Integer getCurrentUserId(HttpSession session) {
         return (Integer) session.getAttribute("userId");
     }
+
+    private String getRole(HttpSession session) {
+        return (String) session.getAttribute("role");
+    }
+
+    private String resolveReturnUrl(String sourceType, Integer sourceId) {
+        if (sourceType == null || sourceId == null) {
+            return "/qc-reports/list";
+        }
+
+        if ("TRANSFER".equalsIgnoreCase(sourceType)) {
+            return "/transfer-requests/" + sourceId;
+        }
+
+        if ("ALLOCATION".equalsIgnoreCase(sourceType)) {
+            return "/allocations/" + sourceId;
+        }
+
+        if ("RETURN".equalsIgnoreCase(sourceType)) {
+            return "/returns/" + sourceId;
+        }
+
+        return "/qc-reports/list";
+    }
+
+    private String buildQcCreateUrl(Integer assetId, String sourceType, Integer sourceId) {
+        StringBuilder url = new StringBuilder("/qc-reports/create?assetId=").append(assetId);
+
+        if (sourceType != null && sourceId != null) {
+            url.append("&sourceType=").append(sourceType)
+                    .append("&sourceId=").append(sourceId);
+        }
+
+        return url.toString();
+    }
+
+    // ================= CREATE =================
     @GetMapping("/create")
     public String showCreateForm(
             @RequestParam(value = "assetId", required = false) Integer assetId,
-            @RequestParam(value = "transferId", required = false) Integer transferId,
-            Model model) {
+            @RequestParam(value = "sourceType", required = false) String sourceType,
+            @RequestParam(value = "sourceId", required = false) Integer sourceId,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
-        QCReportRequest qcReport = new QCReportRequest();
-        if (assetId != null) qcReport.setAssetId(assetId);
+        // Kiểm tra quyền: chỉ warehouse staff mới được tạo QC
+        String role = getRole(session);
+        if (!"WAREHOUSE_STAFF".equals(role)) {
+            redirectAttributes.addFlashAttribute("error", "Chỉ kho mới được tạo QC");
+            return "redirect:/transfer-requests/warehouse";
+        }
 
-        model.addAttribute("qcReport", qcReport);
+        if (assetId == null) {
+            redirectAttributes.addFlashAttribute("error", "Thiếu assetId. QC chỉ được tạo theo tài sản.");
+            return "redirect:/qc-reports/list";
+        }
 
-        if (assetId != null) {
-            Optional<Asset> assetOpt = assetService.findById(assetId);
-            if (assetOpt.isPresent()) {
-                model.addAttribute("asset", assetOpt.get());
-            } else {
-                model.addAttribute("error", "Không tìm thấy tài sản với ID: " + assetId);
+        Asset asset = assetService.findById(assetId).orElse(null);
+        if (asset == null) {
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy tài sản với ID: " + assetId);
+            return "redirect:/qc-reports/list";
+        }
+
+        // Kiểm tra điều kiện tạo QC cho transfer
+        if ("TRANSFER".equalsIgnoreCase(sourceType) && sourceId != null) {
+            TransferRequest transfer = transferRequestService.getTransferById(sourceId);
+            if (!"SENDER_CONFIRMED".equals(transfer.getStatus())) {
+                redirectAttributes.addFlashAttribute("error", "Chỉ được tạo QC khi transfer đã được xác nhận giao (SENDER_CONFIRMED)");
+                return "redirect:" + resolveReturnUrl(sourceType, sourceId);
             }
         }
 
-        if (transferId != null) {
-            model.addAttribute("transferId", transferId);
-        }
+        QCReportRequest qcReport = new QCReportRequest();
+        qcReport.setAssetId(assetId);
+
+        model.addAttribute("asset", asset);
+        model.addAttribute("qcReport", qcReport);
+        model.addAttribute("sourceType", sourceType);
+        model.addAttribute("sourceId", sourceId);
+        model.addAttribute("backUrl", resolveReturnUrl(sourceType, sourceId));
 
         return "qc/create";
     }
+
     @PostMapping("/create")
     public String processCreateForm(
             @ModelAttribute("qcReport") QCReportRequest request,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "sourceType", required = false) String sourceType,
+            @RequestParam(value = "sourceId", required = false) Integer sourceId,
+            @RequestParam(value = "assetId", required = false) Integer assetIdParam,
+            HttpSession session,
             RedirectAttributes redirectAttributes) {
 
         try {
-            Integer currentUserId = getCurrentUserId();
+            Integer userId = getCurrentUserId(session);
+            if (userId == null) throw new RuntimeException("Bạn chưa đăng nhập");
 
-            System.out.println("===== DEBUG =====");
-            System.out.println("assetId: " + request.getAssetId());
-            System.out.println("status: " + request.getStatus());
-            System.out.println("userId: " + currentUserId);
+            // In ra log để debug
+            log.debug("request.getAssetId() = {}", request.getAssetId());
+            log.debug("assetIdParam = {}", assetIdParam);
 
-            if (currentUserId == null) {
-                throw new RuntimeException("User chưa login");
+            // Lấy assetId: ưu tiên từ model attribute, nếu null thì lấy từ param
+            Integer assetId = request.getAssetId();
+            if (assetId == null) assetId = assetIdParam;
+            if (assetId == null) {
+                throw new IllegalArgumentException("Thiếu assetId. QC chỉ được tạo theo tài sản.");
             }
+            request.setAssetId(assetId);
 
-            request.setInspectedBy(currentUserId);
+            request.setInspectedBy(userId);
+            if (file != null && !file.isEmpty()) request.setAttachment(saveFile(file));
 
             qcReportService.createQCReport(request);
-
-            return "redirect:/wh/qc-reports/list";
+            redirectAttributes.addFlashAttribute("message", "Tạo QC thành công");
+            return "redirect:" + resolveReturnUrl(sourceType, sourceId);
 
         } catch (Exception e) {
-            e.printStackTrace(); // 🔥 QUAN TRỌNG NHẤT
-
+            log.error("Error creating QC: ", e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/wh/qc-reports/create?assetId=" + request.getAssetId();
+            // Lấy lại assetId từ request hoặc param
+            Integer assetId = request.getAssetId() != null ? request.getAssetId() : assetIdParam;
+            if (assetId != null) {
+                return "redirect:" + buildQcCreateUrl(assetId, sourceType, sourceId);
+            } else {
+                return "redirect:/qc-reports/list";
+            }
         }
     }
-
-    // ==================== READ ====================
+    // ================= LIST =================
     @GetMapping("/list")
     public String listReports(
             @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "assetId", required = false) Integer assetId,
             Model model) {
 
-        List<QCReportResponse> reports = (status != null && !status.isBlank())
-                ? qcReportService.findByStatus(status)
-                : qcReportService.findAll();
+        List<QCReportResponse> reports;
+
+        if (assetId != null) {
+            reports = qcReportService.findByAssetId(assetId);
+        } else if (status != null && !status.isBlank()) {
+            reports = qcReportService.findByStatus(status);
+        } else {
+            reports = qcReportService.findAll();
+        }
 
         model.addAttribute("reports", reports);
         model.addAttribute("selectedStatus", status);
+        model.addAttribute("assetId", assetId);
+
         return "qc/list";
     }
 
-    @GetMapping("/{reportId}")
+    // ================= DETAIL =================
+    @GetMapping("/{id}")
     public String viewReport(
-            @PathVariable int reportId,
+            @PathVariable int id,
             Model model,
             RedirectAttributes redirectAttributes) {
+
         try {
-            QCReportResponse report = qcReportService.findById(reportId);
-
-            model.addAttribute("report", report);
-
+            model.addAttribute("report", qcReportService.findById(id));
             return "qc/detail";
-
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/wh/qc-reports/list";
+            return "redirect:/qc-reports/list";
         }
     }
 
-    // ==================== UPDATE ====================
-    @GetMapping("/{reportId}/edit")
+    // ================= EDIT =================
+    @GetMapping("/{id}/edit")
     public String showEditForm(
-            @PathVariable int reportId,
+            @PathVariable int id,
             Model model,
             RedirectAttributes redirectAttributes) {
+
         try {
-            QCReportResponse report = qcReportService.findById(reportId);
+            QCReportResponse report = qcReportService.findById(id);
 
-            QCReportRequest request = new QCReportRequest();
-            request.setAssetId(report.getAssetId());
-            request.setStatus(report.getStatus());
-            request.setInspectedBy(report.getInspectedBy());
-            request.setNote(report.getNote());
+            QCReportRequest req = new QCReportRequest();
+            req.setAssetId(report.getAssetId());
+            req.setStatus(report.getStatus());
+            req.setNote(report.getNote());
+            req.setAttachment(report.getAttachment());
 
-            model.addAttribute("qcReport", request);
-            model.addAttribute("reportId", reportId);
-            model.addAttribute("assets", assetService.findAll());
-            model.addAttribute("users", userService.findAll());
+            model.addAttribute("qcReport", req);
+            model.addAttribute("reportId", id);
+
             return "qc/edit";
-
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/wh/qc-reports/list";
+            return "redirect:/qc-reports/list";
         }
     }
 
-    @PostMapping("/{reportId}/edit")
+    @PostMapping("/{id}/edit")
     public String processEditForm(
-            @PathVariable int reportId,
+            @PathVariable int id,
             @ModelAttribute("qcReport") QCReportRequest request,
+            HttpSession session,
             RedirectAttributes redirectAttributes) {
+
         try {
-            qcReportService.updateQCReport(reportId, request);
-            redirectAttributes.addFlashAttribute("message", "Cập nhật báo cáo QC thành công.");
-            return "redirect:/wh/qc-reports/" + reportId;
+            Integer userId = getCurrentUserId(session);
+            if (userId == null) {
+                throw new RuntimeException("Chưa đăng nhập");
+            }
 
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            redirectAttributes.addFlashAttribute("qcReport", request);
-            return "redirect:/wh/qc-reports/" + reportId + "/edit";
+            request.setInspectedBy(userId);
 
+            qcReportService.updateQCReport(id, request);
+
+            redirectAttributes.addFlashAttribute("message", "Cập nhật thành công");
+            return "redirect:/qc-reports/" + id;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống. Vui lòng thử lại.");
-            return "redirect:/wh/qc-reports/" + reportId + "/edit";
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/qc-reports/" + id + "/edit";
         }
     }
 
-    // ==================== DELETE ====================
-    @PostMapping("/{reportId}/delete")
+    // ================= DELETE =================
+    @PostMapping("/{id}/delete")
     public String deleteReport(
-            @PathVariable int reportId,
+            @PathVariable int id,
             RedirectAttributes redirectAttributes) {
+
         try {
-            qcReportService.deleteById(reportId);
-            redirectAttributes.addFlashAttribute("message", "Xóa báo cáo QC thành công.");
-
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-
+            qcReportService.deleteById(id);
+            redirectAttributes.addFlashAttribute("message", "Xóa thành công");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống khi xóa báo cáo.");
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/wh/qc-reports/list";
+
+        return "redirect:/qc-reports/list";
+    }
+
+    // ================= FILE HELPER =================
+    private String saveFile(MultipartFile file) throws Exception {
+        String uploadDir = System.getProperty("user.dir") + "/uploads/qc/";
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+                throw new RuntimeException("Không thể tạo thư mục: " + dir.getAbsolutePath());
+            }
+        }
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        File dest = new File(dir, fileName);
+        file.transferTo(dest);
+        return dest.getAbsolutePath();
     }
 }

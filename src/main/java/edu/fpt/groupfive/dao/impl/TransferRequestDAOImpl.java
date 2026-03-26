@@ -384,4 +384,84 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
         appendFilters(sql, params, criteria);
         return executeCount(sql.toString(), params);
     }
+
+    @Override
+    public List<TransferRequest> searchForReceiver(int departmentId, TransferSearchCriteria criteria, int offset, int size, String sortField, String sortDir) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM transfer_request WHERE to_department_id = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(departmentId);
+        appendFilters(sql, params, criteria);
+
+        String orderBy = getOrderByColumn(sortField);
+        String direction = "desc".equalsIgnoreCase(sortDir) ? "DESC" : "ASC";
+        sql.append(" ORDER BY ").append(orderBy).append(" ").append(direction)
+                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(size);
+
+        return executeQuery(sql.toString(), params);
+    }
+
+    @Override
+    public int countForReceiver(int departmentId, TransferSearchCriteria criteria) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM transfer_request WHERE to_department_id = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(departmentId);
+        appendFilters(sql, params, criteria);
+        return executeCount(sql.toString(), params);
+    }
+
+    @Override
+    public List<TransferRequest> searchByAssetManagerId(int assetManagerId, TransferSearchCriteria criteria, int offset, int size, String sortField, String sortDir) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM transfer_request WHERE asset_manager_id = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(assetManagerId);
+        appendFilters(sql, params, criteria);
+
+        String orderBy = getOrderByColumn(sortField);
+        String direction = "desc".equalsIgnoreCase(sortDir) ? "DESC" : "ASC";
+        sql.append(" ORDER BY ").append(orderBy).append(" ").append(direction)
+                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(size);
+
+        return executeQuery(sql.toString(), params);
+    }
+
+    @Override
+    public int countByAssetManagerId(int assetManagerId, TransferSearchCriteria criteria) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM transfer_request WHERE asset_manager_id = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(assetManagerId);
+        appendFilters(sql, params, criteria);
+        return executeCount(sql.toString(), params);
+    }
+
+    // Outgoing (from department)
+    @Override
+    public List<TransferRequest> searchOutgoing(int departmentId, TransferSearchCriteria criteria,
+                                                int offset, int size, String sortField, String sortDir) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM transfer_request WHERE from_department_id = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(departmentId);
+        appendFilters(sql, params, criteria);
+
+        String orderBy = getOrderByColumn(sortField);
+        String direction = "desc".equalsIgnoreCase(sortDir) ? "DESC" : "ASC";
+        sql.append(" ORDER BY ").append(orderBy).append(" ").append(direction)
+                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(size);
+
+        return executeQuery(sql.toString(), params);
+    }
+
+    @Override
+    public int countOutgoing(int departmentId, TransferSearchCriteria criteria) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM transfer_request WHERE from_department_id = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(departmentId);
+        appendFilters(sql, params, criteria);
+        return executeCount(sql.toString(), params);
+    }
 }

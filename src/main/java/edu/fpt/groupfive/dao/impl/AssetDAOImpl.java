@@ -7,6 +7,7 @@ import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class AssetDAOImpl implements AssetDAO {
 
     private final DatabaseConfig databaseConfig;
@@ -69,39 +71,39 @@ public class AssetDAOImpl implements AssetDAO {
 
     @Override
     public void update(Asset asset) {
-
+        System.out.println("=== AssetDAOImpl.update called for asset " + asset.getAssetId() + " ===");
         String sql = """
-                    UPDATE asset
-                    SET asset_name = ?,
-                        purchase_order_detail_id=?,
-                        warranty_start_date = ?,
-                        warranty_end_date = ?,
-                        original_cost = ?,
-                        asset_type_id = ?,
-                        current_status=?,
-                        acquisition_date = ?
-                    WHERE asset_id = ?
-                """;
-
+            UPDATE asset
+            SET asset_name = ?,
+                purchase_order_detail_id = ?,
+                warranty_start_date = ?,
+                warranty_end_date = ?,
+                original_cost = ?,
+                asset_type_id = ?,
+                current_status = ?,
+                acquisition_date = ?
+            WHERE asset_id = ?
+        """;
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
-
             setDate(ps, 3, asset.getWarrantyStartDate());
             setDate(ps, 4, asset.getWarrantyEndDate());
             setBigDecimal(ps, 5, asset.getOriginalCost());
-
             ps.setInt(6, asset.getAssetTypeId());
             ps.setString(7, asset.getCurrentStatus().name());
             setDate(ps, 8, asset.getAcquisitionDate());
-
             ps.setInt(9, asset.getAssetId());
 
-            ps.executeUpdate();
-
+            int rows = ps.executeUpdate();
+            System.out.println("Updated asset " + asset.getAssetId() + ", rows affected = " + rows);
+            if (rows == 0) {
+                throw new RuntimeException("Asset not found: " + asset.getAssetId());
+            }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Lỗi không cập nhật được tài sản", e);
         }
     }
@@ -763,6 +765,7 @@ public class AssetDAOImpl implements AssetDAO {
 
         asset.setAssetId(rs.getInt("asset_id"));
         asset.setAssetName(rs.getString("asset_name"));
+        asset.setDepartmentId((Integer) rs.getObject("department_id"));
         asset.setPurchaseOrderDetailId(rs.getInt("purchase_order_detail_id"));
         asset.setCurrentStatus(AssetStatus.valueOf(rs.getString("current_status").toUpperCase()));
 

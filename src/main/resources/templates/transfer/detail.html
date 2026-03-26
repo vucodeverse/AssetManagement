@@ -10,68 +10,187 @@
         <link rel="stylesheet" th:href="@{/css/transfer/detail.css}">
     </th:block>
 </head>
+
 <body>
 <th:block layout:fragment="content">
+
     <div class="container">
         <h1>Chi tiết lệnh điều chuyển #[[${transfer.transferId}]]</h1>
+
+        <!-- Alert -->
         <div th:if="${message}" class="alert alert-success">[[${message}]]</div>
         <div th:if="${error}" class="alert alert-danger">[[${error}]]</div>
 
+        <!-- ================= INFO ================= -->
         <div class="card mb-3">
             <div class="card-body">
-                <p><strong>Trạng thái:</strong> <span th:text="${transfer.status}"></span></p>
-                <p><strong>Từ phòng ban:</strong> <span th:text="${transfer.fromDepartmentName}"></span></p>
-                <p><strong>Đến phòng ban:</strong> <span th:text="${transfer.toDepartmentName}"></span></p>
-                <p><strong>Người quản lý:</strong> <span th:text="${transfer.assetManagerName}"></span></p>
-                <p><strong>Ngày tạo:</strong> <span th:text="${#temporals.format(transfer.createdAt, 'dd-MM-yyyy HH:mm')}"></span></p>
-                <p><strong>Lý do:</strong> <span th:text="${transfer.reason}"></span></p>
-                <p th:if="${transfer.senderConfirmedBy}"><strong>Xác nhận gửi:</strong> [[${transfer.senderConfirmedBy}]] lúc [[${#temporals.format(transfer.senderConfirmedAt, 'dd-MM-yyyy HH:mm')}]]</p>
-                <p th:if="${transfer.receiverConfirmedBy}"><strong>Xác nhận nhận:</strong> [[${transfer.receiverConfirmedBy}]] lúc [[${#temporals.format(transfer.receiverConfirmedAt, 'dd-MM-yyyy HH:mm')}]]</p>
+                <p><strong>Trạng thái:</strong>
+                    <span class="badge bg-info" th:text="${transfer.status}"></span>
+                </p>
+
+                <p><strong>Từ phòng ban:</strong>
+                    <span th:text="${transfer.fromDepartmentName}"></span>
+                </p>
+
+                <p><strong>Đến phòng ban:</strong>
+                    <span th:text="${transfer.toDepartmentName}"></span>
+                </p>
+
+                <p><strong>Người quản lý:</strong>
+                    <span th:text="${transfer.assetManagerName}"></span>
+                </p>
+
+                <p><strong>Ngày tạo:</strong>
+                    <span th:text="${transfer.createdAt != null ? #temporals.format(transfer.createdAt, 'dd-MM-yyyy HH:mm') : '-'}"></span>
+                </p>
+
+                <p><strong>Lý do:</strong>
+                    <span th:text="${transfer.reason}"></span>
+                </p>
+
+                <!-- Sender confirm -->
+                <p th:if="${transfer.senderConfirmedBy != null}">
+                    <strong>Đã gửi bởi:</strong>
+                    [[${transfer.senderConfirmedBy}]]
+                    lúc [[${#temporals.format(transfer.senderConfirmedAt, 'dd-MM-yyyy HH:mm')}]]
+                </p>
+
+                <!-- Receiver confirm -->
+                <p th:if="${transfer.receiverConfirmedBy != null}">
+                    <strong>Đã nhận bởi:</strong>
+                    [[${transfer.receiverConfirmedBy}]]
+                    lúc [[${#temporals.format(transfer.receiverConfirmedAt, 'dd-MM-yyyy HH:mm')}]]
+                </p>
             </div>
         </div>
 
+        <!-- ================= ASSET LIST ================= -->
         <h3>Danh sách tài sản</h3>
+
         <table class="table table-bordered">
             <thead>
-            <th>Mã tài sản</th>
-            <th>Tên tài sản</th>
-            <th>Tình trạng (bên gửi)</th>
+            32
+            <th>Mã</th>
+            <th>Tên</th>
+            <th>Tình trạng gửi</th>
             <th>Ghi chú</th>
-            <th th:if="${currentUser.role.name() == 'WAREHOUSE_STAFF' and transfer.status == 'SENDER_CONFIRMED'}">QC</th>
+            <th>QC Status</th>
+            <th>QC Note</th>
+            <th>Người kiểm tra</th>
+            <th>Ngày QC</th>
+            <th>Hành động</th>
+            </tr>
             </thead>
+
             <tbody>
             <tr th:each="asset : ${transfer.transferAssets}">
-                <td th:text="${asset.assetId}">1</td>
-                <td th:text="${asset.assetName}">Laptop</td>
-                <td th:text="${asset.conditionFromSender}">-</td>
-                <td th:text="${asset.note}">-</td>
-                <td th:if="${currentUser.role.name() == 'WAREHOUSE_STAFF' and transfer.status == 'SENDER_CONFIRMED'}">
-                    <a th:href="@{/wh/qc-reports/create(assetId=${asset.assetId}, transferId=${transfer.transferId})}" class="btn btn-sm btn-warning">Tạo QC</a>
-                </td>
+                <td th:text="${asset.assetId}"></td>
+                <td th:text="${asset.assetName}"></td>
+                <td th:text="${asset.conditionFromSender} ?: '-'"></td>
+                <td th:text="${asset.note} ?: '-'"></td>
+
+                <!-- QC columns -->
+                <th:block th:with="qc=${latestQcReports != null ? latestQcReports[asset.assetId] : null}">
+                    <td>
+                        <span th:if="${qc != null}" th:text="${qc.status}"></span>
+                        <span th:unless="${qc != null}">Chưa có</span>
+                    </td>
+                    <td>
+                        <span th:if="${qc != null}" th:text="${qc.note} ?: '-'"></span>
+                        <span th:unless="${qc != null}">-</span>
+                    </td>
+                    <td>
+                        <span th:if="${qc != null}" th:text="${qc.inspectorName} ?: '-'"></span>
+                        <span th:unless="${qc != null}">-</span>
+                    </td>
+                    <td>
+                        <span th:if="${qc != null and qc.qcDate != null}" th:text="${#temporals.format(qc.qcDate, 'dd-MM-yyyy HH:mm')}"></span>
+                        <span th:unless="${qc != null and qc.qcDate != null}">-</span>
+                    </td>
+                    <td>
+                        <a th:if="${qc != null}"
+                           th:href="@{/qc-reports/{id}(id=${qc.reportId})}"
+                           class="btn btn-sm btn-info">
+                            Xem chi tiết
+                        </a>
+                        <a th:if="${qc == null and role == 'WAREHOUSE_STAFF' and transfer.status == 'SENDER_CONFIRMED'}"
+                           th:href="@{/qc-reports/create(assetId=${asset.assetId}, sourceType='TRANSFER', sourceId=${transfer.transferId})}"
+                           class="btn btn-sm btn-warning">
+                            Tạo QC
+                        </a>
+                    </td>
+                </th:block>
             </tr>
+
             <tr th:if="${#lists.isEmpty(transfer.transferAssets)}">
-                <td colspan="5" class="text-center">Không có tài sản</td>
+                <td colspan="9" class="text-center">Không có tài sản</td>
             </tr>
             </tbody>
         </table>
 
+        <!-- ================= ACTION BUTTON ================= -->
+        <div class="mt-4 d-flex gap-2 flex-wrap">
+
+            <!-- SENDER CONFIRM -->
+            <form th:if="${role == 'DEPARTMENT_MANAGER'
+                      and transfer.status == 'PENDING'
+                      and departmentId == transfer.fromDepartmentId}"
+                  th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}"
+                  method="post">
+                <input type="hidden" name="action" value="CONFIRM_SENDER"/>
+                <button class="btn btn-primary">Xác nhận đã chuyển</button>
+            </form>
+
+            <!-- WAREHOUSE CONFIRM -->
+            <form th:if="${role == 'WAREHOUSE_STAFF'
+                      and transfer.status == 'SENDER_CONFIRMED'}"
+                  th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}"
+                  method="post">
+                <input type="hidden" name="action" value="CONFIRM_WAREHOUSE"/>
+                <button class="btn btn-success">Xác nhận QC hoàn tất</button>
+            </form>
+
+            <!-- RECEIVER CONFIRM -->
+            <form th:if="${role == 'DEPARTMENT_MANAGER'
+                      and transfer.status == 'WAREHOUSE_CONFIRMED'
+                      and departmentId == transfer.toDepartmentId}"
+                  th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}"
+                  method="post">
+                <input type="hidden" name="action" value="CONFIRM_RECEIVER"/>
+                <button class="btn btn-success">Xác nhận đã nhận</button>
+            </form>
+
+            <!-- CANCEL -->
+            <form th:if="${transfer.status != 'COMPLETED' and transfer.status != 'CANCELLED'}"
+                  th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}"
+                  method="post">
+                <input type="hidden" name="action" value="CANCEL"/>
+                <button class="btn btn-danger">Hủy lệnh</button>
+            </form>
+        </div>
+
+        <!-- ================= BACK ================= -->
         <div class="mt-3">
-            <!-- Nút xác nhận gửi -->
-            <form th:if="${currentUser.role.name() == 'DEPARTMENT_MANAGER' and transfer.status == 'PENDING' and currentUser.departmentId == transfer.fromDepartmentId}"
-                  th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}" method="post">
-                <input type="hidden" name="action" value="CONFIRM_SENDER">
-                <button type="submit" class="btn btn-primary">Xác nhận đã chuyển đi</button>
-            </form>
-
-            <!-- Nút xác nhận nhận -->
-            <form th:if="${currentUser.role.name() == 'DEPARTMENT_MANAGER' and transfer.status == 'SENDER_CONFIRMED' and currentUser.departmentId == transfer.toDepartmentId}"
-                  th:action="@{/transfer-requests/{id}/action(id=${transfer.transferId})}" method="post">
-                <input type="hidden" name="action" value="CONFIRM_RECEIVER">
-                <button type="submit" class="btn btn-primary">Xác nhận đã nhận</button>
-            </form>
-
-            <a th:href="@{/transfer-requests/my}" th:if="${currentUser.role.name() == 'DEPARTMENT_MANAGER'}" class="btn btn-secondary">Quay lại danh sách</a>
-            <a th:href="@{/transfer-requests/warehouse}" th:if="${currentUser.role.name() == 'WAREHOUSE_STAFF'}" class="btn btn-secondary">Quay lại danh sách kho</a>
+            <a th:href="@{/transfer-requests/my}"
+               th:if="${role == 'DEPARTMENT_MANAGER'}"
+               class="btn btn-secondary">
+                ← Quay lại danh sách gửi
+            </a>
+            <a th:href="@{/transfer-requests/incoming}"
+               th:if="${role == 'DEPARTMENT_MANAGER'}"
+               class="btn btn-secondary">
+                ← Quay lại danh sách nhận
+            </a>
+            <a th:href="@{/transfer-requests/warehouse}"
+               th:if="${role == 'WAREHOUSE_STAFF'}"
+               class="btn btn-secondary">
+                ← Quay lại kho
+            </a>
+            <a th:href="@{/transfer-requests/am}"
+               th:if="${role == 'ASSET_MANAGER'}"
+               class="btn btn-secondary">
+                ← Quay lại danh sách của tôi
+            </a>
         </div>
     </div>
 </th:block>

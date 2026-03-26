@@ -14,10 +14,22 @@ public interface ITransferRequestService {
 
     TransferResponse createTransferRequest(TransferRequestCreate dto);
 
+    PageResponse<TransferResponse> searchOutgoing(int departmentId, TransferSearchCriteria criteria,
+                                                  int page, int size, String sortField, String sortDir);
+
     void processTransferAction(int transferId, int userId, TransferAction action, Boolean issue);
 
     PageResponse<TransferResponse> searchForDepartmentManager(int departmentId, TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir);
     PageResponse<TransferResponse> searchForWarehouse(TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir);
+
+    PageResponse<TransferResponse> searchForReceiver(
+            int departmentId, TransferSearchCriteria criteria,
+            int page, int size, String sortField, String sortDir);
+
+    PageResponse<TransferResponse> searchByAssetManagerId(
+            int assetManagerId, TransferSearchCriteria criteria,
+            int page, int size, String sortField, String sortDir);
+
     PageResponse<TransferResponse> searchForAssetManager(TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir);
 
 
@@ -27,4 +39,6 @@ public interface ITransferRequestService {
     TransferResponse getTransferDetail(int transferId);
 
     List<TransferResponse> getTransfersForDepartmentManager(int departmentId);
+
+    TransferRequest getTransferById(int transferId);
 }
