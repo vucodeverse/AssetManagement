@@ -3,19 +3,12 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Quản Lý Người Dùng</title>
-    <link rel="stylesheet"
-          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
-
-    <link rel="stylesheet"
-          href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
 
     <link rel="stylesheet" th:href="@{/css/admin/user-list.css}">
 </head>
@@ -61,8 +54,10 @@
                 <label>
                     <select name="status" class="form-control mr-2 border-primary">
                         <option value="">Trạng thái</option>
-                        <option value="ACTIVE" th:selected="${status=='ACTIVE'}">Hoạt động</option>
-                        <option value="INACTIVE" th:selected="${status=='INACTIVE'}">Không hoạt động</option>
+                        <option th:each="st : ${T(edu.fpt.groupfive.common.UserStatus).values()}"
+                                th:value="${st.name()}"
+                                th:text="${st.description}">
+                        </option>
                     </select>
                 </label>
 
@@ -128,9 +123,10 @@
                 <td th:text="${x.firstName + ' ' + x.lastName}"></td>
                 <td th:text="${x.email}"></td>
                 <td>
-                    <span th:classappend="${x.status == 'ACTIVE' ?
-                    'badge badge-success' : 'badge badge-secondary'}"
-                          th:text="${x.status}">
+                    <span
+                        th:classappend="${x.status.name() == 'ACTIVE' ?
+                        'badge badge-success' : 'badge badge-secondary'}"
+                        th:text="${x.status.getDescription()}">
                     </span>
                 </td>
                 <!--                Role-->
@@ -142,11 +138,11 @@
                            class="btn btn-sm btn-outline-primary">
                             <i class="far fa-eye"></i>
                         </a>
-                        <a th:href="@{'/admin/user/edit/' + ${x.userId}}"
+                        <a th:href="@{/admin/user/edit/{id}(id=${x.userId}, page=${currentPage})}"
                            class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a th:href="@{'/admin/user/delete/' + ${x.userId}}"
+                        <a th:href="@{/admin/user/delete/{id}(id=${x.userId}, page=${currentPage})}"
                            class="btn btn-sm btn-outline-danger"
                            onclick="return confirm('Bạn có chắc chắn muốn dừng hoạt động người này không?');">
                             <i class="far fa-trash-alt"></i>
@@ -223,7 +219,6 @@
             ordering: true,
 
             columnDefs: [
-                {orderable: false, targets: [5]}, // cột action không sort
                 {orderable: false, targets: [6]}
             ]
         });

@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Quản Lý Phòng Ban</title>
-    <link
-            rel="stylesheet"
-            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-    />
-    <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css"/>
 
     <link rel="stylesheet" th:href="@{/css/admin/department.css}">
 
@@ -71,7 +69,7 @@
 
             </div>
 
-            <table class="table table-bordered table-striped shadow-sm bg-white">
+            <table id="depTable" class="table table-bordered table-striped shadow-sm bg-white">
                 <thead class="thead-dark">
                 <tr>
                     <th>Phòng ban</th>
@@ -214,5 +212,28 @@
         </div>
     </div>
 </div>
+
+<script>
+
+    $(document).ready(function () {
+
+        $('#depTable').DataTable({
+
+            paging: false,
+            lengthChange: false,
+            searching: false,
+            info: false,
+
+            ordering: true,
+
+            columnDefs: [
+                {orderable: false, targets: [3]}
+            ]
+        });
+
+    });
+
+</script>
+
 </body>
 </html>

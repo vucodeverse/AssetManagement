@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dao.impl;
 
 import edu.fpt.groupfive.common.Role;
+import edu.fpt.groupfive.common.UserStatus;
 import edu.fpt.groupfive.util.config.database.DatabaseConfig;
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.model.Users;
@@ -29,7 +30,7 @@ public class UserDAOImpl implements UserDAO {
         user.setLastName(rs.getString("last_name"));
         user.setPhoneNumber(rs.getString("phone_number"));
         user.setEmail(rs.getString("email"));
-        user.setStatus(rs.getString("status"));
+        user.setStatus(UserStatus.valueOf(rs.getString("status")));
         user.setRole(Role.valueOf(rs.getString("role")));
         user.setDepartmentId(rs.getInt("department_id"));
 
@@ -104,7 +105,7 @@ public class UserDAOImpl implements UserDAO {
             ps.setString(4, users.getLastName());
             ps.setString(5, users.getPhoneNumber());
             ps.setString(6, users.getEmail());
-            ps.setString(7, users.getStatus());
+            ps.setString(7, users.getStatus().name());
             ps.setString(8, users.getRole().name());
             ps.setInt(9, users.getDepartmentId());
 
@@ -138,7 +139,7 @@ public class UserDAOImpl implements UserDAO {
             ps.setString(3, users.getLastName());
             ps.setString(4, users.getPhoneNumber());
             ps.setString(5, users.getEmail());
-            ps.setString(6, users.getStatus());
+            ps.setString(6, users.getStatus().name());
             ps.setString(7, users.getRole().name());
             ps.setTimestamp(8, users.getUpdatedDate() != null ? Timestamp.valueOf(users.getUpdatedDate()) : null);
             ps.setInt(9, users.getDepartmentId());
@@ -244,8 +245,8 @@ public class UserDAOImpl implements UserDAO {
     public boolean existsManagerByDepartment(Integer departmentId, Integer userId) {
 
         StringBuilder query = new StringBuilder("""
-                  SELECT 1 FROM Users
-                  WHERE department_id = ?
+                    SELECT 1 FROM Users
+                    WHERE department_id = ?
                     AND role = 'DEPARTMENT_MANAGER'
                 """);
 
