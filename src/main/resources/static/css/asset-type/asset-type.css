@@ -2,12 +2,6 @@
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background: #f6f7fb;
-    color: #111827;
-}
 
 /* PAGE */
 .page-container {
@@ -25,9 +19,9 @@ body {
 }
 
 .page-title {
-    font-size: 26px;
-    font-weight: 900;
-    letter-spacing: 1px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 /* BUTTON */
@@ -45,7 +39,8 @@ body {
 .table-wrapper {
     background: white;
     border-radius: 10px;
-    overflow-x: auto; /* Cho phép cuộn ngang nếu bảng rộng */
+    overflow-x: auto;
+    /* Cho phép cuộn ngang nếu bảng rộng */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -73,16 +68,16 @@ body {
     background: #f9fafb;
 }
 
-/* ACTION */
-.action-cell {
-    text-align: right;
-}
+
 
 .action-icon {
     font-size: 18px;
     color: #9ca3af;
-    margin-left: 12px;
+    margin-right: 12px;
     transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
 }
 
 .action-icon:hover {
@@ -95,6 +90,12 @@ body {
     cursor: pointer;
     font-size: 18px;
     color: #9ca3af;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    line-height: 1;
 }
 
 .icon-btn:hover {
@@ -287,4 +288,53 @@ body {
     background: #000;
     color: white;
     border-color: #000;
+}
+
+
+.asset-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.asset-table th {
+    text-align: left;
+}
+
+.col-id {
+    width: 5%;
+}
+
+.col-name {
+    width: 20%;
+}
+
+.col-group {
+    width: 12%;
+}
+
+.col-category {
+    width: 15%;
+}
+
+.col-method {
+    width: 28%;
+}
+
+.col-duration {
+    width: 10%;
+}
+
+.asset-table .col-action {
+    width: 10%;
+    text-align: right;
+    vertical-align: middle;
+}
+
+.action-form {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0;
+    padding: 0;
 }
