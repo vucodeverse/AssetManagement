@@ -65,17 +65,12 @@
     <header class="page-header">
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                <a th:href="@{/wh/outbound}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+                <a th:href="@{'/wh/outbound/' + ${handover.handoverId}}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại Tổng quan</a>
                 <span style="color: #cbd5e1;">/</span>
-                <span style="color: #94a3b8;">Tổng quan Cấp phát</span>
+                <span style="color: #94a3b8;">Xử lý quét mã</span>
             </div>
-            <h1 class="page-title">Lệnh Cấp phát #<span th:text="${handover.handoverId}"></span></h1>
+            <h1 class="page-title">Xử lý Xuất kho #<span th:text="${handover.handoverId}"></span></h1>
             <p class="page-subtitle">Phòng ban Đích: <strong th:text="${handover.toDepartmentName}"></strong></p>
-        </div>
-        <div th:if="${handover.status == 'PENDING'}">
-            <a th:href="@{'/wh/outbound/' + ${handover.handoverId} + '/process'}" class="btn-primary" style="background: #a855f7; border-color: #a855f7; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-barcode"></i> Xử lý xuất kho
-            </a>
         </div>
     </header>
 

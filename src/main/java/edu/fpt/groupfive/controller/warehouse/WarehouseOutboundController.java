@@ -41,10 +41,25 @@ public class WarehouseOutboundController {
         }
 
         model.addAttribute(ACTIVE_MENU, OUTBOUND);
-        model.addAttribute(PAGE_TITLE, "Chi tiết Cấp phát #" + handoverId);
+        model.addAttribute(PAGE_TITLE, "Tổng quan Cấp phát #" + handoverId);
         model.addAttribute("handover", detail);
             
         return "warehouse/outbound/allocation_detail";
+    }
+
+    @GetMapping("/{handover_id}/process")
+    public String allocationProcessPage(@PathVariable("handover_id") Integer handoverId, Model model) {
+        HandoverDetailResponseDTO detail = warehouseOutboundService.getHandoverDetail(handoverId);
+        
+        if (detail == null || "COMPLETED".equals(detail.getStatus())) {
+            return REDIRECT_OUTBOUND_LIST;
+        }
+
+        model.addAttribute(ACTIVE_MENU, OUTBOUND);
+        model.addAttribute(PAGE_TITLE, "Xử lý Xuất kho #" + handoverId);
+        model.addAttribute("handover", detail);
+            
+        return "warehouse/outbound/allocation_process";
     }
 
     @PostMapping("/{handover_id}/scan")
@@ -62,7 +77,7 @@ public class WarehouseOutboundController {
         } catch (Exception e) {
             ra.addFlashAttribute(ERROR_MSG, "Lỗi khi quét tài sản: " + e.getMessage());
         }
-        return REDIRECT_OUTBOUND_DETAIL + handoverId;
+        return "redirect:/wh/outbound/" + handoverId + "/process";
     }
 
     @GetMapping("/{handover_id}/qc-report")

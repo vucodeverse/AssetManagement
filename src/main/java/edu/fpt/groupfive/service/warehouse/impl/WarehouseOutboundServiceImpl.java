@@ -3,6 +3,7 @@ package edu.fpt.groupfive.service.warehouse.impl;
 import edu.fpt.groupfive.common.AssetStatus;
 import edu.fpt.groupfive.common.Status;
 import edu.fpt.groupfive.dao.warehouse.WhAssetCapacityDAO;
+import edu.fpt.groupfive.dao.warehouse.WhReceiptDAO;
 import edu.fpt.groupfive.dao.warehouse.WhTransactionDAO;
 import edu.fpt.groupfive.dto.response.AllocationRequestDetailResponse;
 import edu.fpt.groupfive.dto.response.AllocationRequestResponse;
@@ -34,6 +35,7 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     private final WhTransactionDAO whTransactionDAO;
     private final AssetService assetService;
     private final WhAssetCapacityDAO whAssetCapacityDAO;
+    private final WhReceiptDAO whReceiptDAO;
 
     @Override
     public List<HandoverResponseDTO> getAllocations() {
@@ -57,6 +59,7 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
 
         List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems = assetHandoverService.getHandoverDetails(handoverId);
         List<HandoverDetailResponseDTO.RequestedItemDTO> requestedItems = getRequestedItems(handoverId, allocatedItems);
+        List<edu.fpt.groupfive.model.warehouse.WhReceipt> receipts = whReceiptDAO.findByAssetHandoverId(handoverId);
 
         return HandoverDetailResponseDTO.builder()
                 .handoverId(assetHandover.getHandoverId())
@@ -66,6 +69,7 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
                 .allocationRequest(allocationRequest)
                 .requestedItems(requestedItems)
                 .items(allocatedItems)
+                .receipts(receipts)
                 .build();
     }
 
