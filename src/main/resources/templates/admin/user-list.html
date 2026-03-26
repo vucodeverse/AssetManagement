@@ -107,7 +107,6 @@
         <table id="userTable" class="table table-bordered table-hover shadow-sm bg-white">
             <thead>
             <tr>
-<!--                <th>ID</th>-->
                 <th>Tên đăng nhập</th>
                 <th>Họ và tên</th>
                 <th>Email</th>
@@ -119,7 +118,6 @@
             </thead>
             <tbody>
             <tr th:each="x : ${users}">
-<!--                <td th:text="${x.userId}"></td>-->
                 <td th:text="${x.username}" class="font-weight-bold"></td>
                 <td th:text="${x.firstName + ' ' + x.lastName}"></td>
                 <td th:text="${x.email}"></td>
