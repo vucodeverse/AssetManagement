@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS map_po_transactions;
 DROP TABLE IF EXISTS map_allocation_transactions;
 DROP TABLE IF EXISTS map_return_transactions;
 DROP TABLE IF EXISTS wh_transactions;
+DROP TABLE IF EXISTS wh_receipts;
 DROP TABLE IF EXISTS wh_asset_placement;
 DROP TABLE IF EXISTS wh_zones;
 DROP TABLE IF EXISTS wh_asset_capacity;
@@ -36,8 +37,8 @@ DROP TABLE IF EXISTS purchase_request;
 DROP TABLE IF EXISTS supplier;
 
 -- Danh mục & Người dùng
-IF OBJECT_ID('departments', 'U') IS NOT NULL 
-    ALTER TABLE departments DROP CONSTRAINT IF EXISTS FK_departments_manager;
+IF OBJECT_ID('departments', 'U') IS NOT NULL
+ALTER TABLE departments DROP CONSTRAINT IF EXISTS FK_departments_manager;
 
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS departments;
@@ -94,7 +95,7 @@ CREATE TABLE users (
                        role           NVARCHAR(40)  NOT NULL,
                        created_date   DATETIME NOT NULL DEFAULT GETDATE(),
                        updated_date   DATETIME NULL,
-                       department_id  INT NOT NULL REFERENCES departments(department_id)
+                       department_id  INT NULL REFERENCES departments(department_id)
 );
 
 -- Thêm ràng buộc vòng giữa departments và users
@@ -285,14 +286,20 @@ CREATE TABLE qc_report (
 
 CREATE TABLE asset_handover (
                                 handover_id             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+
                                 handover_type           NVARCHAR(40) NOT NULL,
+
                                 allocation_request_id   INT NULL,
                                 return_request_id       INT NULL,
+
                                 from_department_id      INT NULL, -- Null nếu xuất thẳng từ kho chưa quy định dept
                                 to_department_id        INT NULL, -- Null nếu thu về kho
+
                                 status                  NVARCHAR(40) NOT NULL, -- DRAFT, COMPLETED, CANCELLED
+
                                 created_at              DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
                                 updated_at              DATETIME2(0) NULL,
+
                                 CONSTRAINT FK_ho_alloc_req FOREIGN KEY (allocation_request_id) REFERENCES allocation_request(request_id),
                                 CONSTRAINT FK_ho_ret_req FOREIGN KEY (return_request_id) REFERENCES return_request(request_id),
                                 CONSTRAINT FK_ho_from_dept FOREIGN KEY (from_department_id) REFERENCES departments(department_id),
@@ -392,8 +399,21 @@ CREATE TABLE wh_asset_placement (
 -- =============================================
 
 -- 11.1 Sổ cái giao dịch kho (Lõi)
+
+CREATE TABLE wh_receipts (
+				receipt_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+				receipt_no NVARCHAR(50) NOT NULL UNIQUE, -- vd: PN-YYYYMMDD-XXX
+				purchase_order_id INT NULL REFERENCES purchase_orders(purchase_order_id),
+				asset_handover_id INT NULL REFERENCES asset_handover(handover_id), -- Cho trường hợp thu hồi
+				receipt_type NVARCHAR(20) NOT NULL, -- 'INBOUND_PO", 'INBOUND_RETURN"
+				created_at DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
+				created_by INT NOT NULL REFERENCES users(user_id),
+				note NVARCHAR(500) NULL
+);
+
 CREATE TABLE wh_transactions (
                                  transaction_id   INT IDENTITY(1,1) PRIMARY KEY,
+								 receipt_id		  INT NULL REFERENCES wh_receipts(receipt_id),
                                  asset_id         INT NOT NULL REFERENCES asset(asset_id),
                                  zone_id          INT NOT NULL REFERENCES wh_zones(zone_id), -- Zone đích (nhập) hoặc Zone nguồn (xuất)
                                  transaction_type NVARCHAR(20) NOT NULL, -- 'INBOUND' hoặc 'OUTBOUND'
@@ -401,6 +421,8 @@ CREATE TABLE wh_transactions (
                                  executed_at      DATETIME2(0) DEFAULT SYSDATETIME(),
                                  note             NVARCHAR(255) NULL
 );
+
+
 
 -- 11.2 Bảng trung gian: Ánh xạ Nhập kho từ PO Mua sắm (Khởi tạo tài sản mới)
 CREATE TABLE map_po_transactions (
