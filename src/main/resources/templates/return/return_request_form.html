@@ -64,7 +64,8 @@
                 <div th:class="${requestDto.requestId != null && canEdit ? 'tables-grid' : ''}">
                     <!-- Bảng tài sản đã chọn -->
                     <div class="table-column" style="margin-bottom: 5px;">
-                        <div class="section-title">DANH SÁCH TÀI SẢN</div>
+                        <div th:unless="${requestDto.requestId != null && canEdit}"  class="section-title">DANH SÁCH TÀI SẢN</div>
+                        <div th:if="${requestDto.requestId != null && canEdit}" class="section-title">DANH SÁCH TÀI SẢN TRẢ</div>
                         <div class="table-container">
                             <table class="pr-table" id="assetTable">
                                 <thead>
@@ -108,7 +109,7 @@
                     <div class="table-column" style="margin-bottom: 5px;"
                          th:if="${requestDto.requestId != null && canEdit}">
                         <!-- Bảng tài sản chọn thêm -->
-                        <div class="section-title">CHỌN THÊM TÀI SẢN</div>
+                        <div class="section-title">DANH SÁCH TÀI SẢN</div>
                         <div class="table-container">
                             <table class="pr-table" id="assetTableNew">
                                 <thead>
