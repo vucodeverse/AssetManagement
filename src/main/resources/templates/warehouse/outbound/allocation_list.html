@@ -20,7 +20,7 @@
     <div class="content-wrapper">
         <div class="wh-panel">
             <div class="wh-panel-header">
-                <span class="wh-panel-title"><i class="fa-solid fa-list-check"></i> Lệnh Cấp phát Đang chờ</span>
+                <span class="wh-panel-title"><i class="fa-solid fa-list-check"></i> Danh sách Lệnh Cấp phát</span>
             </div>
             <table class="data-table">
                 <thead>
@@ -29,21 +29,18 @@
                         <th>Phòng ban tiếp nhận</th>
                         <th>Ngày tạo</th>
                         <th>Trạng thái</th>
-                        <th class="action-cell">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="alc : ${allocations}">
+                    <tr th:each="alc : ${allocations}" 
+                        th:onclick="|location.href='@{/wh/outbound/}${alc.handoverId}'|" 
+                        style="cursor: pointer;">
                         <td th:text="${alc.handoverId}">601</td>
                         <td th:text="${alc.toDepartmentName}">Phòng Đào tạo</td>
                         <td th:text="${#temporals.format(alc.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                         <td>
-                            <span class="badge badge-in-use" th:text="${alc.status}">PENDING</span>
-                        </td>
-                        <td class="action-cell">
-                            <a th:href="@{'/wh/outbound/' + ${alc.handoverId}}" class="btn-sm primary">
-                                <i class="fa-solid fa-barcode"></i> Quét mã xuất
-                            </a>
+                            <span th:class="${alc.status == 'PENDING' ? 'badge badge-in-use' : 'badge badge-completed'}" 
+                                  th:text="${alc.status}">PENDING</span>
                         </td>
                     </tr>
                 </tbody>

@@ -28,7 +28,7 @@ public class WarehouseOutboundController {
     public String allocationListPage(Model model) {
         model.addAttribute(ACTIVE_MENU, OUTBOUND);
         model.addAttribute(PAGE_TITLE, "Xuất kho Cấp phát - Warehouse");
-        model.addAttribute("allocations", warehouseOutboundService.getPendingAllocations());
+        model.addAttribute("allocations", warehouseOutboundService.getAllocations());
         return "warehouse/outbound/allocation_list";
     }
 

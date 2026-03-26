@@ -36,11 +36,11 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     private final WhAssetCapacityDAO whAssetCapacityDAO;
 
     @Override
-    public List<HandoverResponseDTO> getPendingAllocations() {
+    public List<HandoverResponseDTO> getAllocations() {
         List<AssetHandoverResponse> allAllocations = assetHandoverService.getAllByAllocation();
 
         return allAllocations.stream()
-                .filter(a -> a.getStatus() == Status.PENDING)
+                .filter(a -> a.getStatus() == Status.PENDING || a.getStatus() == Status.COMPLETED)
                 .map(this::mapToHandoverResponseDTO)
                 .toList();
     }

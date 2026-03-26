@@ -9,11 +9,11 @@ import java.util.List;
  */
 public interface WarehouseOutboundService {
     /**
-     * Lấy danh sách các lệnh cấp phát đang chờ (Status.PENDING).
+     * Lấy danh sách các lệnh cấp phát (PENDING và COMPLETED).
      *
      * @return Danh sách HandoverResponseDTO
      */
-    List<HandoverResponseDTO> getPendingAllocations();
+    List<HandoverResponseDTO> getAllocations();
 
     /**
      * Lấy chi tiết một lệnh bàn giao/cấp phát.
