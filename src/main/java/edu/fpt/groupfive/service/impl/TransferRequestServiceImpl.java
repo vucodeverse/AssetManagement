@@ -8,6 +8,7 @@ import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.TransferAssetDetailResponse;
 import edu.fpt.groupfive.dto.response.TransferResponse;
 import edu.fpt.groupfive.model.*;
+import edu.fpt.groupfive.service.AssetLogService;
 import edu.fpt.groupfive.service.ITransferRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
     private final DepartmentDAO departmentDAO;
     private final UserDAO userDAO;
     private final AssetDAO assetDAO;
+    private  final AssetLogService assetLogService;
 
     @Override
     public TransferResponse createTransferRequest(TransferRequestCreate dto) {
@@ -168,6 +170,8 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
                     Asset asset = assetDAO.findById(detail.getAssetId()).orElseThrow();
                     asset.setDepartmentId(transfer.getToDepartmentId());
                     assetDAO.update(asset);
+
+                    assetLogService.logTransfer(detail.getAssetId(), transfer.getFromDepartmentId(), transfer.getToDepartmentId(), transferId);
                 }
                 break;
 

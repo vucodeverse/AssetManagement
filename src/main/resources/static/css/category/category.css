@@ -1,15 +1,8 @@
-
 * {
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif;
-    background: #f6f7fb;
-    color: #111827;
-}
+
 
 /* Header page */
 .page-header {
@@ -19,21 +12,23 @@ body {
 }
 
 .page-title {
-    margin: 0;
     font-size: 1.25rem;
-    font-weight: 900;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
-.pagination a{
+.pagination a {
     text-decoration: none;
 }
+
 /* Content wrapper (đẩy nội dung chính) */
 .content-wrapper {
-    padding: 2rem;
+    width: 100%;
     max-width: 1400px;
     margin: 0 auto;
+    padding: 2rem;
+    box-sizing: border-box;
 }
 
 /* Search bar */
@@ -100,8 +95,6 @@ body {
     color: #000;
 }
 
-
-
 /* Main flex layout (left + right) */
 .main-content {
     display: grid;
@@ -112,7 +105,6 @@ body {
 
 /* Left panel: Table */
 .left-panel {
-
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
@@ -156,6 +148,7 @@ body {
     justify-content: center;
     margin-left: 12px;
 }
+
 .data-table th:last-child,
 .data-table td:last-child {
     width: 130px;
@@ -187,6 +180,7 @@ body {
 .form-textarea.error {
     border-color: #e53935;
 }
+
 .right-panel {
     max-width: 420px;
 }
@@ -302,6 +296,8 @@ body {
     background: white;
     border-radius: 6px;
     cursor: pointer;
+    text-decoration: none;
+    color: #111827;
 }
 
 .pagination-btn.active {
@@ -329,5 +325,25 @@ body {
     .content-wrapper {
         padding: 1rem;
     }
+}
 
+/* ===== FLASH MESSAGE ===== */
+.my-alert {
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.my-alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.my-alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }

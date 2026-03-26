@@ -242,14 +242,15 @@ body {
 
 @media (max-width: 900px) {
     .sidebar {
-        display: none; /* simple mobile hide for now, could be improved with a toggle */
+        display: none;
+        /* simple mobile hide for now, could be improved with a toggle */
     }
 
     .dashboard-wrapper {
         padding-left: 0;
     }
 
-    .dashboard-wrapper > main.dashboard-content {
+    .dashboard-wrapper>main.dashboard-content {
         padding: 24px;
     }
 
@@ -259,10 +260,13 @@ body {
         align-items: center;
         gap: 16px;
         padding: 16px 24px;
-        background-color: #f0fdf4; /* Very light green */
-        border: 1px solid #22c55e; /* Vibrant green border */
+        background-color: #f0fdf4;
+        /* Very light green */
+        border: 1px solid #22c55e;
+        /* Vibrant green border */
         border-radius: 8px;
-        color: #166534; /* Dark green text */
+        color: #166534;
+        /* Dark green text */
         margin-bottom: 32px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         animation: slideDown 0.4s ease-out;
@@ -283,10 +287,10 @@ body {
             opacity: 0;
             transform: translateY(-10px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
         }
     }
 }
-

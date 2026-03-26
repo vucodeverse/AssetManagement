@@ -1,8 +1,6 @@
 <!DOCTYPE html>
-<html lang="vi"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/manager-layout}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/manager-layout}">
 
 <head>
 
@@ -17,180 +15,162 @@
 
 <body>
 
-<th:block layout:fragment="content">
-    <div class="page-container">
-        <header class="page-header">
+    <th:block layout:fragment="content">
+        <div class="page-container">
+            <header class="page-header">
 
-            <h1 class="page-title">
-                DANH SÁCH LOẠI TÀI SẢN
-            </h1>
-            <a th:href="@{/manager/asset-types/create}" class="btn-add">
-                TẠO LOẠI TÀI SẢN
-            </a>
-        </header>
-
-        <!-- success msg -->
-        <div class="alert success"
-             th:if="${successMessage}"
-             th:text="${successMessage}">
-        </div>
-
-        <!-- error msg -->
-        <div class="alert error"
-             th:if="${errorMessage}"
-             th:text="${errorMessage}">
-        </div>
-
-        <!-- search, filter-->
-        <form method="get"
-              th:action="@{/manager/asset-types}"
-              class="search-panel">
-
-            <div class="form-group">
-                <label>Tên loại tài sản</label>
-                <input type="text"
-                       name="keyword"
-                       placeholder="Tên loại..."
-                       th:value="${keyword}">
-            </div>
-
-            <div class="form-group">
-                <label>Danh mục</label>
-                <select name="categoryId">
-                    <option value="">Tất cả</option>
-                    <option th:each="c : ${categories}"
-                            th:value="${c.categoryId}"
-                            th:text="${c.categoryName}"
-                            th:selected="${c.categoryId == categoryId}">
-                    </option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Nhóm</label>
-                <select name="typeClass">
-                    <option value="">Tất cả</option>
-                    <option th:each="t : ${typeClasses}"
-                            th:value="${t}"
-                            th:text="${t}"
-                            th:selected="${t == typeClass}">
-                    </option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Phương pháp KH</label>
-                <select name="depreciationMethod">
-                    <option value="">Tất cả</option>
-                    <option th:each="d : ${depreciationMethods}"
-                            th:value="${d}"
-                            th:text="${d}"
-                            th:selected="${d == depreciationMethod}">
-                    </option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Sắp xếp</label>
-                <select name="direction">
-                    <option value="">Mặc định</option>
-                    <option value="asc" th:selected="${direction == 'asc'}">Tăng dần</option>
-                    <option value="desc" th:selected="${direction == 'desc'}">Giảm dần</option>
-                </select>
-            </div>
-
-            <div class="form-buttons">
-
-                <button type="submit" class="btn-search">
-                    TÌM KIẾM
-                </button>
-
-                <a th:href="@{/manager/asset-types}" class="btn-reset">
-                    Reset
+                <h1 class="page-title">
+                    DANH SÁCH LOẠI TÀI SẢN
+                </h1>
+                <a th:href="@{/manager/asset-types/create}" class="btn-add">
+                    TẠO LOẠI TÀI SẢN
                 </a>
+            </header>
 
+            <!-- success msg -->
+            <div class="alert success" th:if="${successMessage}" th:text="${successMessage}">
             </div>
 
-        </form>
+            <!-- error msg -->
+            <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}">
+            </div>
+
+            <!-- search, filter-->
+            <form method="get" th:action="@{/manager/asset-types}" class="search-panel">
+
+                <div class="form-group">
+                    <label>Tên loại tài sản</label>
+                    <input type="text" name="keyword" placeholder="Tên loại..." th:value="${keyword}">
+                </div>
+
+                <div class="form-group">
+                    <label>Danh mục</label>
+                    <select name="categoryId">
+                        <option value="">Tất cả</option>
+                        <option th:each="c : ${categories}" th:value="${c.categoryId}" th:text="${c.categoryName}"
+                            th:selected="${c.categoryId == categoryId}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Nhóm</label>
+                    <select name="typeClass">
+                        <option value="">Tất cả</option>
+                        <option th:each="t : ${typeClasses}" th:value="${t}" th:text="${t.description}"
+                            th:selected="${t == typeClass}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Phương pháp KH</label>
+                    <select name="depreciationMethod">
+                        <option value="">Tất cả</option>
+                        <option th:each="d : ${depreciationMethods}" th:value="${d}" th:text="${d.description}"
+                            th:selected="${d == depreciationMethod}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Sắp xếp</label>
+                    <select name="direction">
+                        <option value="">Mặc định</option>
+                        <option value="asc" th:selected="${direction == 'asc'}">Tăng dần</option>
+                        <option value="desc" th:selected="${direction == 'desc'}">Giảm dần</option>
+                    </select>
+                </div>
+
+                <div class="form-buttons">
+
+                    <button type="submit" class="btn-search">
+                        TÌM KIẾM
+                    </button>
+
+                    <a th:href="@{/manager/asset-types}" class="btn-reset">
+                        Reset
+                    </a>
+
+                </div>
+
+            </form>
 
 
-        <!-- TABLE -->
-        <div class="table-wrapper">
+            <!-- TABLE -->
+            <div class="table-wrapper">
 
-            <table class="asset-table">
+                <table class="asset-table">
 
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>TÊN LOẠI</th>
-                    <th>NHÓM</th>
-                    <th>DANH MỤC</th>
-                    <th>KHẤU HAO</th>
-                    <th>THỜI GIAN</th>
-                    <th class="action-cell">HÀNH ĐỘNG</th>
-                </tr>
-                </thead>
+                    <thead>
+                        <tr>
+                            <th class="col-id">ID</th>
+                            <th class="col-name">TÊN LOẠI</th>
+                            <th class="col-group">NHÓM</th>
+                            <th class="col-category">DANH MỤC</th>
+                            <th class="col-method">KHẤU HAO</th>
+                            <th class="col-duration">THỜI GIAN</th>
+                            <th class="col-action">HÀNH ĐỘNG</th>
 
-                <tbody>
-                <tr th:each="type : ${assetTypes}">
-                    <td th:text="${type.typeId}"></td>
-                    <td th:text="${type.typeName}"></td>
-                    <td th:text="${type.typeClass}"></td>
-                    <td th:text="${type.categoryName}"></td>
-                    <td th:text="${type.defaultDepreciationMethod}"></td>
-                    <td th:text="${type.defaultUsefulLifeMonths}"></td>
-                    <td class="action-cell">
-                        <a th:href="@{'/manager/asset-types/edit/' + ${type.typeId}}"
-                           class="action-icon">
-                            <i class="fas fa-edit"></i>
-                        </a>
+                        </tr>
+                    </thead>
 
-                        <form th:action="@{'/manager/asset-types/delete/' + ${type.typeId}}"
-                              method="post"
-                              style="display:inline">
-                            <button class="icon-btn"
-                                    onclick="return confirm('Bạn chắc chắn muốn xóa?')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
+                    <tbody>
+                        <tr th:each="type : ${assetTypes}">
+                            <td th:text="${type.typeId}"></td>
+                            <td th:text="${type.typeName}"></td>
+                            <td th:text="${type.typeClass.description}"></td>
+                            <td th:text="${type.categoryName}"></td>
+                            <td th:text="${type.defaultDepreciationMethod.description}"></td>
+                            <td th:text="${type.defaultUsefulLifeMonths}"></td>
+                            <td class="col-action">
+                                <a th:href="@{'/manager/asset-types/edit/' + ${type.typeId}}" class="action-icon">
+                                    <i class="fas fa-edit"></i>
+                                </a>
 
-                    </td>
+                                <form th:action="@{'/manager/asset-types/delete/' + ${type.typeId}}" method="post"
+                                    class="action-form">
+                                    <button class="icon-btn" onclick="return confirm('Bạn chắc chắn muốn xóa?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
 
-                </tr>
+                            </td>
 
-                </tbody>
+                        </tr>
 
-            </table>
+                    </tbody>
+
+                </table>
 
 
-            <div class="pagination" th:if="${totalPages > 0}">
-                <span>
-                    Trang [[${currentPage}]] /
-                    [[${totalPages}]]
-                </span>
+                <div class="pagination" th:if="${totalPages > 0}">
+                    <span>
+                        Trang [[${currentPage}]] /
+                        [[${totalPages}]]
+                    </span>
 
                     <div class="pagination-controls">
                         <a th:if="${currentPage > 1}"
-                           th:href="@{/manager/asset-types(page=${currentPage-1}, keyword=${keyword}, categoryId=${categoryId}, typeClass=${typeClass}, depreciationMethod=${depreciationMethod}, direction=${direction})}"
-                           class="pagination-btn">Trước</a>
+                            th:href="@{/manager/asset-types(page=${currentPage-1}, keyword=${keyword}, categoryId=${categoryId}, typeClass=${typeClass}, depreciationMethod=${depreciationMethod}, direction=${direction})}"
+                            class="pagination-btn">Trước</a>
 
                         <a th:each="i : ${#numbers.sequence(1, totalPages)}"
-                           th:href="@{/manager/asset-types(page=${i}, keyword=${keyword}, categoryId=${categoryId}, typeClass=${typeClass}, depreciationMethod=${depreciationMethod}, direction=${direction})}"
-                           th:text="${i}"
-                           th:classappend="${i == currentPage} ? 'active'"
-                           class="pagination-btn"></a>
+                            th:href="@{/manager/asset-types(page=${i}, keyword=${keyword}, categoryId=${categoryId}, typeClass=${typeClass}, depreciationMethod=${depreciationMethod}, direction=${direction})}"
+                            th:text="${i}" th:classappend="${i == currentPage} ? 'active'" class="pagination-btn"></a>
 
                         <a th:if="${currentPage < totalPages}"
-                           th:href="@{/manager/asset-types(page=${currentPage+1}, keyword=${keyword}, categoryId=${categoryId}, typeClass=${typeClass}, depreciationMethod=${depreciationMethod}, direction=${direction})}"
-                           class="pagination-btn">Tiếp</a>
+                            th:href="@{/manager/asset-types(page=${currentPage+1}, keyword=${keyword}, categoryId=${categoryId}, typeClass=${typeClass}, depreciationMethod=${depreciationMethod}, direction=${direction})}"
+                            class="pagination-btn">Tiếp</a>
                     </div>
 
 
+                </div>
+
             </div>
 
-        </div>
-
-</th:block>
+    </th:block>
 
 </body>
+
 </html>
