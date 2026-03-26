@@ -275,8 +275,8 @@
         }
 
         private void handleCancel(int transferId, TransferStatus status) {
-            if (status == TransferStatus.COMPLETED) {
-                throw new IllegalStateException("Không thể hủy khi đã hoàn thành");
+            if (status != TransferStatus.PENDING) {
+                throw new IllegalStateException("Chỉ được hủy khi đang ở trạng thái PENDING");
             }
 
             transferRequestDAO.updateStatus(transferId, TransferStatus.CANCELLED.name());

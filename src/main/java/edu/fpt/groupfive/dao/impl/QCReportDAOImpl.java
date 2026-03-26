@@ -34,7 +34,7 @@ public class QCReportDAOImpl implements QCReportDAO {
             ps.setInt(3, qc.getInspectedBy());
             ps.setString(4, qc.getNote());
             ps.setString(5, qc.getSourceType());
-            ps.setObject(6, qc.getSourceId()); 
+            ps.setObject(6, qc.getSourceId());
 
             ps.executeUpdate();
 

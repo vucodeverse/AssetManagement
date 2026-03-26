@@ -66,15 +66,27 @@
             </div>
 
             <div class="form-actions">
-                <a th:href="@{/qc-reports/list(assetId=${report.assetId})}" class="btn btn-secondary">
+
+                <!-- Chỉ warehouse thấy -->
+                <a th:if="${session.role == 'WAREHOUSE_STAFF'}"
+                   th:href="@{/qc-reports/list(assetId=${report.assetId})}"
+                   class="btn btn-secondary">
                     Danh sách theo tài sản
                 </a>
-                <a th:href="@{/qc-reports/{id}/edit(id=${report.reportId})}" class="btn btn-warning">
+
+                <!-- Chỉ owner mới sửa -->
+                <a th:if="${session.role == 'WAREHOUSE_STAFF' and session.userId == report.inspectedBy}"
+                   th:href="@{/qc-reports/{id}/edit(id=${report.reportId})}"
+                   class="btn btn-warning">
                     Chỉnh sửa
                 </a>
-                <a th:href="@{/qc-reports/list}" class="btn btn-secondary">
+
+                <!-- Ai cũng quay lại được -->
+                <a th:href="${backUrl != null ? backUrl : '/transfer-requests/warehouse'}"
+                   class="btn btn-secondary">
                     Quay lại
                 </a>
+
             </div>
         </div>
 
