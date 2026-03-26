@@ -142,6 +142,11 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
     }
 
     @Override
+    public PageResponse<TransferResponse> searchOutgoing(int departmentId, TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir) {
+        return null;
+    }
+
+    @Override
     public void processTransferAction(int transferId, int userId, TransferAction action, Boolean issue) {
         TransferRequest transfer = transferRequestDAO.findById(transferId)
                 .orElseThrow(() -> new IllegalArgumentException("Transfer không tồn tại"));
@@ -280,11 +285,26 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
     }
 
     @Override
+    public TransferRequest getTransferById(int transferId) {
+        return null;
+    }
+
+    @Override
     public PageResponse<TransferResponse> searchForWarehouse(TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir) {
         int offset = page * size;
         List<TransferRequest> list = transferRequestDAO.search(criteria, offset, size, sortField, sortDir);
         int total = transferRequestDAO.countSearch(criteria);
         return new PageResponse<>(convertList(list), page, size, total);
+    }
+
+    @Override
+    public PageResponse<TransferResponse> searchForReceiver(int departmentId, TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir) {
+        return null;
+    }
+
+    @Override
+    public PageResponse<TransferResponse> searchByAssetManagerId(int assetManagerId, TransferSearchCriteria criteria, int page, int size, String sortField, String sortDir) {
+        return null;
     }
 
     @Override
