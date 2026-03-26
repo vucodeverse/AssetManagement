@@ -45,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserDAO userDAO;
     private final PurchaseDAO purchaseDAO;
     private final PurchaseDetailDAO purchaseDetailDAO;
+    private final edu.fpt.groupfive.dao.warehouse.WhTransactionDAO whTransactionDAO;
 
     @Value("${order.quotation_not_found}")
     private String quotationNotFoundMsg;
@@ -288,6 +289,7 @@ public class OrderServiceImpl implements OrderService {
                     PurchaseOrderDetailResponse itemDto = orderDetailMapper.toOrderDetailResponse(detail);
                     itemDto.setAssetTypeName(assetTypeNames.getOrDefault(detail.getAssetTypeId(), notFoundFallbackMsg));
                     itemDto.setPurchaseRequestDetailId(qDetailIdToPurchaseDetailId.get(detail.getQuotationDetailId()));
+                    itemDto.setReceivedQuantity(whTransactionDAO.getReceivedQuantity(detail.getId()));
                     return itemDto;
                 })
                 .toList();

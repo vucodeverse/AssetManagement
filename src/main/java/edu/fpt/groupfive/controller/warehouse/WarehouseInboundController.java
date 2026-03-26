@@ -1,8 +1,10 @@
 package edu.fpt.groupfive.controller.warehouse;
 
+import edu.fpt.groupfive.dto.request.warehouse.InboundRequestDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
+import edu.fpt.groupfive.dto.response.warehouse.InboundReceiptResponseDTO;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.warehouse.WarehouseInboundService;
@@ -46,6 +48,17 @@ public class WarehouseInboundController {
         return "warehouse/inbound/po_list";
     }
 
+    @GetMapping("/receipts")
+    public String receiptListPage(Model model) {
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        model.addAttribute(PAGE_TITLE, "Lịch sử Phiếu Nhập kho");
+        
+        List<InboundReceiptResponseDTO> receipts = warehouseInboundService.getAllInboundReceipts();
+        model.addAttribute("receipts", receipts);
+        
+        return "warehouse/inbound/receipt_list";
+    }
+
     // =========================================================
     // PO DETAIL — GET /wh/inbound/po/{po_id}
     // =========================================================
@@ -57,6 +70,7 @@ public class WarehouseInboundController {
 
         PurchaseOrderResponse poDetail = orderService.getPurchaseOrderById(poId);
         model.addAttribute("po", poDetail);
+        model.addAttribute("receipts", warehouseInboundService.getReceiptsByOrderId(poId));
 
         return "warehouse/inbound/po_detail";
     }
@@ -66,7 +80,9 @@ public class WarehouseInboundController {
     // =========================================================
 
     @PostMapping("/po/{po_id}/confirm")
-    public String confirmPO(@PathVariable("po_id") Integer poId, RedirectAttributes ra,
+    public String confirmPO(@PathVariable("po_id") Integer poId, 
+            @ModelAttribute InboundRequestDTO inboundRequest,
+            RedirectAttributes ra,
             java.security.Principal principal) {
 
         if (principal == null) {
@@ -74,12 +90,17 @@ public class WarehouseInboundController {
         }
 
         String username = principal.getName();
+        inboundRequest.setPurchaseOrderId(poId);
 
-        InboundSummaryResponseDTO summary = warehouseInboundService.processInboundPO(poId, username);
-
-        ra.addFlashAttribute(SUMMARY_ATTR, summary);
-        ra.addFlashAttribute(SUCCESS_MSG, "Đã tạo tài sản và nhập kho thành công cho PO #" + poId);
-        return "redirect:/wh/inbound/po/" + poId + "/summary";
+        try {
+            InboundSummaryResponseDTO summary = warehouseInboundService.processInboundPO(inboundRequest, username);
+            ra.addFlashAttribute(SUMMARY_ATTR, summary);
+            ra.addFlashAttribute(SUCCESS_MSG, "Đã tạo tài sản và nhập kho thành công cho PO #" + poId);
+            return "redirect:/wh/inbound/po/" + poId + "/summary";
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/wh/inbound/po/" + poId;
+        }
     }
 
     // =========================================================
@@ -92,9 +113,23 @@ public class WarehouseInboundController {
         model.addAttribute(PAGE_TITLE, "Kết quả Nhập kho PO #" + poId);
 
         if (!model.containsAttribute(SUMMARY_ATTR)) {
-            return "redirect:/wh/inbound/po";
+            return "redirect:/wh/inbound/po/" + poId;
         }
 
+        return "warehouse/inbound/summary";
+    }
+
+    @GetMapping("/receipt/{receipt_id}")
+    public String viewReceipt(@PathVariable("receipt_id") Integer receiptId, Model model) {
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        
+        InboundSummaryResponseDTO summary = warehouseInboundService.getInboundReceiptSummary(receiptId);
+        if (summary == null) {
+            return "redirect:/wh/inbound/po";
+        }
+        
+        model.addAttribute(SUMMARY_ATTR, summary);
+        model.addAttribute(PAGE_TITLE, "Thông tin Phiếu Nhập #" + receiptId);
         return "warehouse/inbound/summary";
     }
 

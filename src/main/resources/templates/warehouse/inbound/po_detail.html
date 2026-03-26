@@ -5,6 +5,27 @@
 <head>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+        <style>
+            .input-qty {
+                width: 80px;
+                padding: 4px 8px;
+                border: 1px solid #cbd5e1;
+                border-radius: 4px;
+                text-align: center;
+            }
+            .input-qty:focus {
+                outline: 2px solid #2563eb;
+                border-color: transparent;
+            }
+            .error-message {
+                color: #dc2626;
+                background-color: #fef2f2;
+                padding: 12px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                border-left: 4px solid #dc2626;
+            }
+        </style>
     </th:block>
 </head>
 <body>
@@ -16,84 +37,97 @@
                 <span style="color: #cbd5e1;">/</span>
                 <span style="color: #94a3b8;">Nhập kho</span>
             </div>
-            <h1 class="page-title">Chi tiết PO #<span th:text="${po.orderId}"></span></h1>
+            <h1 class="page-title">Nhận hàng PO #<span th:text="${po.orderId}"></span></h1>
             <p class="page-subtitle">Nhà cung cấp: <strong th:text="${po.supplierName}"></strong></p>
-        </div>
-        <div class="header-actions">
-            <form th:action="@{'/wh/inbound/po/' + ${po.orderId} + '/confirm'}" method="post">
-                <button type="submit" class="btn-primary">
-                    <i class="fa-solid fa-check-double"></i> Xác nhận nhập kho toàn bộ PO
-                </button>
-            </form>
         </div>
     </header>
 
     <div class="content-wrapper">
-        <div class="asset-grid" style="margin-bottom: 24px;">
-            <div class="wh-panel">
-                <div class="wh-panel-header">
-                    <span class="wh-panel-title"><i class="fa-solid fa-circle-info"></i> Thông tin Đơn hàng</span>
-                </div>
-                <div style="padding: 16px;">
-                    <p style="margin-bottom: 8px;"><strong>Ngày tạo:</strong> <span th:text="${#temporals.format(po.createdAt, 'dd/MM/yyyy HH:mm')}"></span></p>
-                    <p style="margin-bottom: 8px;"><strong>Người duyệt:</strong> <span th:text="${po.approvedByName}"></span></p>
-                    <p style="margin-bottom: 0;"><strong>Ghi chú:</strong> <span th:text="${po.orderNote ?: 'Không có'}"></span></p>
-                </div>
-            </div>
+        <div th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"></div>
+        <div th:if="${successMessage}" class="wh-alert wh-alert-success" th:text="${successMessage}"></div>
 
+        <form th:action="@{'/wh/inbound/po/' + ${po.orderId} + '/confirm'}" method="post">
+            <div class="asset-grid" style="margin-bottom: 24px;">
+                <div class="wh-panel">
+                    <div class="wh-panel-header">
+                        <span class="wh-panel-title"><i class="fa-solid fa-truck-ramp-box"></i> Thông tin Phiếu Nhập kho</span>
+                    </div>
+                    <div style="padding: 16px;">
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Số phiếu giao hàng (từ NCC):</label>
+                            <input type="text" name="deliveryNote" placeholder="Ví dụ: BILL-12345" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Ghi chú nhận hàng:</label>
+                            <textarea name="note" rows="3" placeholder="Ghi chú về tình trạng giao hàng..." style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- ... existing wh-panel for PO Info ... -->
             <div class="wh-panel">
                 <div class="wh-panel-header">
-                    <span class="wh-panel-title"><i class="fa-solid fa-wallet"></i> Tổng kết Thanh toán</span>
+                    <span class="wh-panel-title"><i class="fa-solid fa-history"></i> Lịch sử các đợt giao hàng</span>
                 </div>
                 <div style="padding: 16px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span>Tạm tính:</span>
-                        <strong th:text="${#numbers.formatDecimal(po.subtotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
+                    <div th:if="${#lists.isEmpty(receipts)}" style="color: #94a3b8; text-align: center; padding: 10px;">
+                        Chưa có đợt giao hàng nào được ghi nhận.
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #dc2626;">
-                        <span>Giảm giá:</span>
-                        <strong th:text="'- ' + ${#numbers.formatDecimal(po.totalDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #2563eb;">
-                        <span>Thuế:</span>
-                        <strong th:text="'+ ' + ${#numbers.formatDecimal(po.totalTax, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
-                    </div>
-                    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 8px 0;">
-                    <div style="display: flex; justify-content: space-between; font-size: 1.1rem; color: #1e293b;">
-                        <strong>Tổng cộng:</strong>
-                        <strong style="color: #2563eb;" th:text="${#numbers.formatDecimal(po.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
-                    </div>
+                    <ul th:if="${not #lists.isEmpty(receipts)}" style="list-style: none; padding: 0; margin: 0;">
+                        <li th:each="r : ${receipts}" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                            <div>
+                                <strong th:text="'Phiếu #' + ${r.receiptId}"></strong>
+                                <span style="color: #64748b; font-size: 0.9rem;" th:text="' - ' + ${#temporals.format(r.receivedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                <div th:if="${r.deliveryNote}" style="font-size: 0.85rem; color: #94a3b8;" th:text="'Số bill: ' + ${r.deliveryNote}"></div>
+                            </div>
+                            <a th:href="@{'/wh/inbound/receipt/' + ${r.receiptId}}" class="btn-secondary" style="padding: 4px 10px; font-size: 0.85rem;">
+                                <i class="fa-solid fa-qrcode"></i> Xem QR
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <div class="wh-panel">
-            <div class="wh-panel-header">
-                <span class="wh-panel-title"><i class="fa-solid fa-cart-shopping"></i> Danh sách Mặt hàng</span>
+            <div class="wh-panel">
+                <div class="wh-panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="wh-panel-title"><i class="fa-solid fa-cart-shopping"></i> Danh sách Mặt hàng</span>
+                    <button type="submit" class="btn-primary" style="margin: 0;">
+                        <i class="fa-solid fa-check-double"></i> Xác nhận Nhập kho Đợt này
+                    </button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tên loại tài sản</th>
+                            <th class="text-center">Số lượng đặt</th>
+                            <th class="text-center">Đã nhập</th>
+                            <th class="text-center">Còn lại</th>
+                            <th class="text-center" style="width: 150px;">Số lượng giao đợt này</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item, stat : ${po.orderDetails}">
+                            <td th:text="${item.assetTypeName}"></td>
+                            <td class="text-center" th:text="${item.quantity}"></td>
+                            <td class="text-center" th:text="${item.receivedQuantity}"></td>
+                            <td class="text-center">
+                                <strong th:text="${item.quantity - item.receivedQuantity}" 
+                                        th:style="${item.quantity - item.receivedQuantity > 0 ? 'color: #2563eb' : 'color: #10b981'}"></strong>
+                            </td>
+                            <td class="text-center">
+                                <input type="hidden" th:name="'items[' + ${stat.index} + '].purchaseOrderDetailId'" th:value="${item.purchaseOrderDetailId}">
+                                <input type="hidden" th:name="'items[' + ${stat.index} + '].assetTypeId'" th:value="${item.assetTypeId}">
+                                <input type="number" th:name="'items[' + ${stat.index} + '].quantity'" 
+                                       class="input-qty" value="0" min="0" 
+                                       th:max="${item.quantity - item.receivedQuantity}"
+                                       th:disabled="${item.quantity - item.receivedQuantity <= 0}">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Tên loại tài sản</th>
-                        <th>Số lượng</th>
-                        <th>Đơn giá</th>
-                        <th>Chiết khấu</th>
-                        <th>Thuế</th>
-                        <th>Ngày giao dự kiến</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="item : ${po.orderDetails}">
-                        <td th:text="${item.assetTypeName}"></td>
-                        <td th:text="${item.quantity}"></td>
-                        <td th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                        <td th:text="${item.discountRate} + '%'"></td>
-                        <td th:text="${item.taxRate} + '%'"></td>
-                        <td th:text="${item.deliveryDate ?: 'Chưa cập nhật'}"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        </form>
     </div>
 </th:block>
 </body>

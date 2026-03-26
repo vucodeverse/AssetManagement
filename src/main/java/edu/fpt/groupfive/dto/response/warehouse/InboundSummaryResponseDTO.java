@@ -11,6 +11,7 @@ import java.util.List;
 @Setter
 @Builder
 public class InboundSummaryResponseDTO {
+    private Integer receiptId;
     private Integer purchaseOrderId;
     private String supplierName;
     private LocalDateTime inboundDate;

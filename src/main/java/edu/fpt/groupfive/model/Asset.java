@@ -19,6 +19,7 @@ public class Asset {
     private String assetName;
     private Integer assetTypeId;
     private  Integer purchaseOrderDetailId;
+    private Integer receiptDetailId;
     private AssetStatus currentStatus;
     private BigDecimal originalCost;
     private Integer departmentId;

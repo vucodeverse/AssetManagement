@@ -84,11 +84,9 @@
             }
 
             @media print {
-                /* Hide EVERYTHING by default */
                 body * {
                     visibility: hidden;
                 }
-                /* Only show the tags and its children */
                 #printable-tags, #printable-tags * {
                     visibility: visible;
                 }
@@ -99,8 +97,6 @@
                     width: 100%;
                     display: block !important;
                 }
-                
-                /* Reset body/page for printing */
                 body, html {
                     background: white !important;
                     margin: 0 !important;
@@ -108,8 +104,6 @@
                     width: 100% !important;
                     height: auto !important;
                 }
-                
-                /* Layout for A4 */
                 .tag-page {
                     display: grid;
                     grid-template-columns: repeat(2, 1fr);
@@ -118,7 +112,6 @@
                     page-break-after: always;
                     visibility: visible;
                 }
-                
                 .asset-tag {
                     border: 2px solid #000;
                     padding: 5mm;
@@ -129,7 +122,6 @@
                     page-break-inside: avoid;
                     visibility: visible;
                 }
-                
                 .tag-content {
                     flex: 1;
                     visibility: visible;
@@ -163,14 +155,13 @@
     <header class="page-header no-print">
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                <a th:href="@{/wh/inbound/po}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách PO</a>
+                <a th:href="@{'/wh/inbound/po/' + ${summary.purchaseOrderId}}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại Chi tiết PO</a>
             </div>
-            <h1 class="page-title">Tổng kết Nhập kho PO #<span th:text="${summary.purchaseOrderId}"></span></h1>
+            <h1 class="page-title">Thông tin Phiếu Nhập #<span th:text="${summary.receiptId}"></span></h1>
         </div>
     </header>
 
     <div class="content-wrapper">
-        <!-- Screen View Components -->
         <div th:if="${successMessage}" class="flash-message success no-print">
             <i class="fa-solid fa-circle-check"></i>
             <span th:text="${successMessage}"></span>
@@ -200,12 +191,12 @@
             </div>
         </div>
 
-        <div class="print-section no-print">
+        <div class="print-section no-print" style="margin-top: 24px;">
             <p style="color: #64748b; margin-bottom: 16px;">
-                <i class="fa-solid fa-circle-info"></i> Hệ thống đã tự động tạo hồ sơ tài sản với ID số nguyên. Vui lòng in thẻ và dán lên tài sản thực tế.
+                <i class="fa-solid fa-circle-info"></i> Hệ thống đã tự động tạo hồ sơ tài sản. Vui lòng in thẻ và dán lên tài sản thực tế.
             </p>
             <a th:href="@{/wh/inbound/po}" class="btn-secondary">
-                Hoàn tất & Quay lại
+                Hoàn tất & Quay lại danh sách PO
             </a>
         </div>
 

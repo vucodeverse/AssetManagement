@@ -2,11 +2,14 @@ package edu.fpt.groupfive.service.warehouse.impl;
 
 import edu.fpt.groupfive.dao.UserDAO;
 import edu.fpt.groupfive.dao.warehouse.WhTransactionDAO;
+import edu.fpt.groupfive.dto.request.warehouse.InboundRequestDTO;
 import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.dto.response.warehouse.AssetTypeVolumeDTO;
 import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.ZoneCapacityResponseDTO;
+import edu.fpt.groupfive.dto.response.warehouse.InboundReceiptResponseDTO;
+import edu.fpt.groupfive.model.warehouse.InboundReceipt;
 import edu.fpt.groupfive.service.OrderService;
 import edu.fpt.groupfive.service.warehouse.WarehouseInboundService;
 import edu.fpt.groupfive.service.warehouse.WhAssetCapacityService;
@@ -31,12 +34,15 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
     private final WhAssetCapacityService whAssetCapacityService;
 
     @Override
-    public InboundSummaryResponseDTO processInboundPO(Integer poId, String username) {
+    public InboundSummaryResponseDTO processInboundPO(InboundRequestDTO request, String username) {
         Integer executedBy = userDAO.findUserIdByUsername(username);
+        PurchaseOrderResponse poDetail = orderService.getPurchaseOrderById(request.getPurchaseOrderId());
 
-        PurchaseOrderResponse poDetail = orderService.getPurchaseOrderById(poId);
+        if (poDetail == null) {
+            throw new RuntimeException("Không tìm thấy thông tin đơn mua hàng #" + request.getPurchaseOrderId());
+        }
 
-        // Fetch configs
+        // Fetch configs for placement
         List<ZoneCapacityResponseDTO> activeZones = whZoneService.getAllZones();
         List<AssetTypeVolumeDTO> assetVolumes = whAssetCapacityService.getAllAssetTypeVolumes();
         Map<Integer, Integer> unitVolumeMap = assetVolumes.stream()
@@ -47,65 +53,101 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                 ));
 
         List<WhTransactionDAO.AssetPlacementPlan> placements = new ArrayList<>();
+        Map<Integer, PurchaseOrderDetailResponse> orderDetailMap = poDetail.getOrderDetails().stream()
+                .collect(Collectors.toMap(PurchaseOrderDetailResponse::getPurchaseOrderDetailId, d -> d));
 
-        if (poDetail != null && poDetail.getOrderDetails() != null) {
-            for (PurchaseOrderDetailResponse item : poDetail.getOrderDetails()) {
-                if (item.getQuantity() == null || item.getQuantity() <= 0) continue;
+        for (InboundRequestDTO.InboundItemRequestDTO itemReq : request.getItems()) {
+            if (itemReq.getQuantity() == null || itemReq.getQuantity() <= 0) continue;
 
-                int quantity = item.getQuantity();
-                int assetTypeId = item.getAssetTypeId();
-                int unitVolume = unitVolumeMap.getOrDefault(assetTypeId, 1);
+            PurchaseOrderDetailResponse orderDetail = orderDetailMap.get(itemReq.getPurchaseOrderDetailId());
+            if (orderDetail == null) {
+                throw new RuntimeException("Mục chi tiết PO #" + itemReq.getPurchaseOrderDetailId() + " không thuộc PO #" + request.getPurchaseOrderId());
+            }
 
-                for (int i = 0; i < quantity; i++) {
-                    ZoneCapacityResponseDTO chosenZone = findZoneForAllocation(activeZones, assetTypeId, unitVolume);
+            // Validate remaining quantity
+            int alreadyReceived = whTransactionDAO.getReceivedQuantity(itemReq.getPurchaseOrderDetailId());
+            if (alreadyReceived + itemReq.getQuantity() > orderDetail.getQuantity()) {
+                throw new RuntimeException("Số lượng nhập kho vượt quá số lượng còn lại của " + orderDetail.getAssetTypeName());
+            }
 
-                    if (chosenZone == null) {
-                        throw new RuntimeException("Kho đã đầy, không tìm thấy Zone phù hợp để xếp tài sản: " + item.getAssetTypeName());
-                    }
+            int assetTypeId = orderDetail.getAssetTypeId();
+            int unitVolume = unitVolumeMap.getOrDefault(assetTypeId, 1);
 
-                    // Update memory state
-                    chosenZone.setCurrentCapacity(chosenZone.getCurrentCapacity() + unitVolume);
-                    if (chosenZone.getAssetTypeId() == null) {
-                        chosenZone.setAssetTypeId(assetTypeId);
-                    }
+            for (int i = 0; i < itemReq.getQuantity(); i++) {
+                ZoneCapacityResponseDTO chosenZone = findZoneForAllocation(activeZones, assetTypeId, unitVolume);
 
-                    placements.add(new WhTransactionDAO.AssetPlacementPlan(
-                            assetTypeId,
-                            item.getAssetTypeName(),
-                            item.getPurchaseOrderDetailId(),
-                            item.getPrice(),
-                            chosenZone.getZoneId(),
-                            unitVolume
-                    ));
+                if (chosenZone == null) {
+                    throw new RuntimeException("Kho đã đầy, không tìm thấy Zone phù hợp để xếp tài sản: " + orderDetail.getAssetTypeName());
                 }
+
+                // Update memory state for next asset in same batch
+                chosenZone.setCurrentCapacity(chosenZone.getCurrentCapacity() + unitVolume);
+                if (chosenZone.getAssetTypeId() == null) {
+                    chosenZone.setAssetTypeId(assetTypeId);
+                }
+
+                placements.add(new WhTransactionDAO.AssetPlacementPlan(
+                        assetTypeId,
+                        orderDetail.getAssetTypeName(),
+                        orderDetail.getPurchaseOrderDetailId(),
+                        orderDetail.getPrice(),
+                        chosenZone.getZoneId(),
+                        unitVolume
+                ));
             }
         }
 
-        // Execute batch database insertions
-        Map<Integer, List<Integer>> generatedIds = whTransactionDAO.executeInboundTransaction(poId, executedBy, placements);
+        if (placements.isEmpty()) {
+            throw new RuntimeException("Không có tài sản nào được chọn để nhập kho.");
+        }
 
-        // Build Response
+        // Prepare Receipt
+        InboundReceipt receipt = InboundReceipt.builder()
+                .purchaseOrderId(request.getPurchaseOrderId())
+                .deliveryNote(request.getDeliveryNote())
+                .receivedBy(executedBy)
+                .note(request.getNote())
+                .build();
+
+        // Execute batch database insertions
+        WhTransactionDAO.ReceiptResult result = whTransactionDAO.executeInboundTransaction(receipt, placements);
+        Map<Integer, List<Integer>> generatedIdsMap = result.generatedAssetIds();
+
+        // Build Response Summary
         List<InboundSummaryResponseDTO.AssetGroupDTO> groups = new ArrayList<>();
-        if (poDetail != null && poDetail.getOrderDetails() != null) {
-            for (PurchaseOrderDetailResponse item : poDetail.getOrderDetails()) {
-                if (item.getQuantity() == null) continue;
-                int qty = item.getQuantity();
-                if (qty > 0 && generatedIds.containsKey(item.getAssetTypeId())) {
-                    groups.add(InboundSummaryResponseDTO.AssetGroupDTO.builder()
-                            .assetTypeName(item.getAssetTypeName())
-                            .quantity(qty)
-                            .assetIds(generatedIds.get(item.getAssetTypeId()))
-                            .build());
-                }
-            }
+        for (InboundRequestDTO.InboundItemRequestDTO itemReq : request.getItems()) {
+             PurchaseOrderDetailResponse od = orderDetailMap.get(itemReq.getPurchaseOrderDetailId());
+             if (itemReq.getQuantity() != null && itemReq.getQuantity() > 0 && generatedIdsMap.containsKey(od.getAssetTypeId())) {
+                 groups.add(InboundSummaryResponseDTO.AssetGroupDTO.builder()
+                         .assetTypeName(od.getAssetTypeName())
+                         .quantity(itemReq.getQuantity())
+                         .assetIds(generatedIdsMap.get(od.getAssetTypeId()))
+                         .build());
+             }
         }
 
         return InboundSummaryResponseDTO.builder()
-                .purchaseOrderId(poId)
-                .supplierName(poDetail != null ? poDetail.getSupplierName() : null)
+                .receiptId(result.receiptId())
+                .purchaseOrderId(request.getPurchaseOrderId())
+                .supplierName(poDetail.getSupplierName())
                 .inboundDate(LocalDateTime.now())
                 .assetGroups(groups)
                 .build();
+    }
+
+    @Override
+    public List<InboundReceipt> getReceiptsByOrderId(Integer orderId) {
+        return whTransactionDAO.getReceiptsByPoId(orderId);
+    }
+
+    @Override
+    public InboundSummaryResponseDTO getInboundReceiptSummary(Integer receiptId) {
+        return whTransactionDAO.getInboundReceiptSummary(receiptId);
+    }
+
+    @Override
+    public List<InboundReceiptResponseDTO> getAllInboundReceipts() {
+        return whTransactionDAO.getAllInboundReceipts();
     }
 
     private ZoneCapacityResponseDTO findZoneForAllocation(List<ZoneCapacityResponseDTO> zones, int assetTypeId, int unitVolume) {
@@ -134,10 +176,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             }
         }
 
-        // Biased towards Fill-up first
-        if (bestFillUpZone != null) {
-            return bestFillUpZone;
-        }
+        if (bestFillUpZone != null) return bestFillUpZone;
         return firstNewZone;
     }
 }

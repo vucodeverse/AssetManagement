@@ -16,6 +16,7 @@ public class PurchaseOrderDetailResponse {
     private Integer assetTypeId;
     private String assetTypeName;
     private Integer quantity;
+    private Integer receivedQuantity;
     private BigDecimal price;
     private BigDecimal taxRate;
     private BigDecimal discountRate;

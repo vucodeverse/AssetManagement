@@ -200,6 +200,23 @@ CREATE TABLE purchase_order_details (
                                         updated_at             DATETIME2(0) NULL
 );
 
+CREATE TABLE wh_inbound_receipt (
+    receipt_id        INT IDENTITY(1,1) PRIMARY KEY,
+    purchase_order_id INT NOT NULL REFERENCES purchase_orders(purchase_order_id),
+    delivery_note     NVARCHAR(255) NULL,
+    received_by       INT NOT NULL REFERENCES users(user_id),
+    received_at       DATETIME2(0) DEFAULT SYSDATETIME(),
+    note              NVARCHAR(MAX) NULL
+);
+
+CREATE TABLE wh_inbound_receipt_detail (
+    receipt_detail_id        INT IDENTITY(1,1) PRIMARY KEY,
+    receipt_id               INT NOT NULL REFERENCES wh_inbound_receipt(receipt_id),
+    purchase_order_detail_id INT NOT NULL REFERENCES purchase_order_details(purchase_order_detail_id),
+    asset_type_id            INT NOT NULL REFERENCES asset_type(asset_type_id),
+    quantity_received        INT NOT NULL
+);
+
 -- =============================================
 -- 4. TÀI SẢN (CORE ASSET)
 -- =============================================
@@ -209,6 +226,7 @@ CREATE TABLE asset (
                        asset_name               NVARCHAR(100) NOT NULL,
                        asset_type_id            INT NOT NULL REFERENCES asset_type(asset_type_id),
                        purchase_order_detail_id INT NULL REFERENCES purchase_order_details(purchase_order_detail_id),
+                       receipt_detail_id        INT NULL REFERENCES wh_inbound_receipt_detail(receipt_detail_id),
                        current_status           NVARCHAR(40) NOT NULL,
                        original_cost            NUMERIC(19, 2) NULL,
                        department_id            INT NULL REFERENCES departments(department_id),

@@ -56,6 +56,9 @@
             <a th:href="@{/wh/inbound/po}"
                th:classappend="${activeSub == 'inbound-po'} ? ' active'"
                class="sub-item">Mua mới (PO)</a>
+            <a th:href="@{/wh/inbound/receipts}"
+               th:classappend="${activeSub == 'inbound-receipts'} ? ' active'"
+               class="sub-item">Lịch sử Phiếu nhập</a>
             <a th:href="@{/wh/inbound/return}"
                th:classappend="${activeSub == 'inbound-return'} ? ' active'"
                class="sub-item">Thu hồi</a>
@@ -101,7 +104,7 @@
             <span class="user-role">Nhân viên kho</span>
         </div>
         <div class="user-actions">
-            <form th:action="@{/logout}" method="post" style="margin:0;">
+            <form th:action="@{/logout}" method="get" style="margin:0;">
                 <button type="submit" class="action-btn logout-btn" title="Đăng xuất"
                         style="background:none; border:none; cursor:pointer;">
                     <i class="fa-solid fa-right-from-bracket"></i>
