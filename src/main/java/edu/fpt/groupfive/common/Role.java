@@ -22,6 +22,7 @@ public enum Role {
 
     public static List<Role> getRoles() {
         return List.of(
+                DIRECTOR,
                 DEPARTMENT_MANAGER,
                 ASSET_MANAGER,
                 PURCHASE_STAFF,

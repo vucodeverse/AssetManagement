@@ -21,7 +21,7 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+                                        Authentication authentication) throws IOException {
 
         // Lấy username từ authentication
         String username = authentication.getName();
@@ -53,7 +53,7 @@ public class CustomerAuthenticationSuccessHandler implements AuthenticationSucce
             redirectUrl += "/admin/dashboard";
         } else if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("DEPARTMENT_MANAGER"))) {
-            redirectUrl += "/department/allocation-request/list";
+            redirectUrl += "/department/dashboard";
         } else if (authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ASSET_MANAGER"))) {
             redirectUrl += "/manager/dashboard";
