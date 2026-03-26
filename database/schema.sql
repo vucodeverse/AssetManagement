@@ -10,6 +10,7 @@ GO
 USE AssetManager;
 
 
+
 -- =============================================
 -- 1. DANH MỤC CỐT LÕI (CATEGORIES & ASSET TYPES)
 -- =============================================
@@ -419,69 +420,186 @@ CREATE TABLE asset_logs (
 CREATE INDEX idx_asset_logs_asset ON asset_logs(asset_id);
 CREATE INDEX idx_asset_logs_action_date ON asset_logs(action_date);
 
+
 -- =============================================
--- 11. DỮ LIỆU MẪU (SEED DATA)
+-- 11. DỮ LIỆU MẪU (SỬA LẠI ĐỂ CÓ PO PENDING)
 -- =============================================
 
+-- 1. Categories
 INSERT INTO category (category_name, description, status) VALUES 
 (N'IT Assets', N'Thiết bị công nghệ thông tin', N'ACTIVE'),
 (N'Office Assets', N'Thiết bị văn phòng', N'ACTIVE'),
 (N'Furniture', N'Nội thất văn phòng', N'ACTIVE');
 
-INSERT INTO asset_type (type_name, description, type_class, status, default_depreciation_method, default_useful_life_months, category_id, model) VALUES 
-(N'Laptop Dell XPS', N'Máy tính xách tay cao cấp', 'HARDWARE', 'ACTIVE', 'STRAIGHT_LINE', 36, 1, 'XPS 15 2024'),
-(N'Monitor LG 27 inch', N'Màn hình đồ họa', 'HARDWARE', 'ACTIVE', 'STRAIGHT_LINE', 24, 1, '27UL850'),
-(N'Bàn làm việc gỗ', N'Bàn nhân viên 1m2', 'FURNITURE', 'ACTIVE', 'STRAIGHT_LINE', 60, 3, 'OF-TABLE-01'),
-(N'Giấy in A4', N'Vật tư tiêu hao', 'CONSUMABLE', 'ACTIVE', NULL, NULL, 2, 'P-A4-70G');
+-- 2. Asset Types
+INSERT INTO asset_type (type_name, description, type_class, status, category_id, model) VALUES 
+(N'Laptop Dell XPS', N'Máy tính xách tay cao cấp', 'HARDWARE', 'ACTIVE', 1, 'XPS 15 2024'),
+(N'Monitor LG 27 inch', N'Màn hình đồ họa', 'HARDWARE', 'ACTIVE', 1, '27UL850'),
+(N'Bàn làm việc gỗ', N'Bàn nhân viên 1m2', 'FURNITURE', 'ACTIVE', 3, 'OF-TABLE-01');
 
+-- 3. Departments
 INSERT INTO departments (department_name, status, description) VALUES 
 (N'Board of Directors', 'ACTIVE', N'Ban Giám đốc'),
 (N'IT Department', 'ACTIVE', N'Phòng Công nghệ thông tin'),
 (N'Warehouse', 'ACTIVE', N'Phòng Kho vận'),
 (N'Purchasing', 'ACTIVE', N'Phòng Mua sắm');
 
+-- 4. Users
 INSERT INTO users (username, password_hash, first_name, last_name, email, status, role, department_id) VALUES 
 ('admin', 'hash_123', N'Admin', N'System', 'admin@fpt.edu.vn', 'ACTIVE', 'ADMIN', 2),
 ('director', 'hash_123', N'Văn A', N'Nguyễn', 'director@fpt.edu.vn', 'ACTIVE', 'DIRECTOR', 1),
 ('asmanager', 'hash_123', N'Thị B', N'Trần', 'am@fpt.edu.vn', 'ACTIVE', 'ASSET_MANAGER', 4),
 ('whstaff', 'hash_123', N'Văn C', N'Lê', 'warehouse@fpt.edu.vn', 'ACTIVE', 'WAREHOUSE_STAFF', 3),
-('purstaff', 'hash_123', N'Thị D', N'Hoàng', 'purchase@fpt.edu.vn', 'ACTIVE', 'PURCHASE_STAFF', 4),
-('dep1', 'hash_123', N'Văn C', N'Lê', 'warehouse1@fpt.edu.vn', 'ACTIVE', 'WAREHOUSE_STAFF', 3),
-('dep2', 'hash_123', N'Thị D', N'Hoàng', 'purchase1@fpt.edu.vn', 'ACTIVE', 'PURCHASE_STAFF', 4);
+('purstaff', 'hash_123', N'Thị D', N'Hoàng', 'purchase@fpt.edu.vn', 'ACTIVE', 'PURCHASE_STAFF', 4);
 
-UPDATE departments SET manager_user_id = 6 WHERE department_id = 3;
-UPDATE departments SET manager_user_id = 7 WHERE department_id = 4;
-
+-- 5. Suppliers
 INSERT INTO supplier (supplier_name, phone_number, email, address, supplier_code, tax_code, status) VALUES 
 (N'Phong Vũ IT', '0281234567', 'contact@phongvu.vn', N'TP. Hồ Chí Minh', 'SUP-PV01', 'MST001', 'ACTIVE'),
 (N'Hòa Phát Furniture', '0249876543', 'sale@hoaphat.com', N'Hà Nội', 'SUP-HP01', 'MST002', 'ACTIVE');
 
-INSERT INTO wh_warehouses (name, address, manager_user_id, status) VALUES 
-(N'Kho Tổng Miền Nam', N'Quận 9, TP. Thủ Đức', 4, 'ACTIVE');
+-- 6. Purchase Requests
+INSERT INTO purchase_request (status, request_reason, creator_id, needed_by_date, priority) VALUES 
+(N'ORDERED', N'Bổ sung thiết bị IT tháng 4', 1, '2026-04-10', N'HIGH'),
+(N'PENDING', N'Setup văn phòng mới', 5, '2026-05-01', N'MEDIUM'),
+(N'PENDING', N'Dự phòng thiết bị kho', 4, '2026-04-15', N'MEDIUM');
 
-INSERT INTO wh_asset_capacity (asset_type_id, unit_volume) VALUES 
-(1, 1), 
-(2, 2); 
+-- 7. Purchase Request Details
+INSERT INTO purchase_request_detail (estimated_price, quantity, purchase_request_id, asset_type_id, spec_requirement) VALUES 
+(45000000, 8, 1, 1, N'RAM 32GB'), 
+(25000000, 10, 2, 3, N'Gỗ sồi'),
+(45000000, 2, 3, 1, N'RAM 16GB');
 
-INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, current_capacity, asset_type_id, status) VALUES 
-(1, N'Khu vực IT - Laptop', 100, 0, 1, 'ACTIVE'),
-(1, N'Khu vực IT - Monitor', 50, 0, 2, 'ACTIVE');
+-- 8. Quotations
+INSERT INTO quotation (purchase_request_id, supplier_id, status, total_amount) VALUES 
+(1, 1, N'APPROVED', 360000000),
+(2, 2, N'PENDING', 250000000),
+(3, 1, N'PENDING', 90000000);
 
-INSERT INTO asset (asset_name, asset_type_id, current_status, original_cost, department_id, acquisition_date) VALUES 
-(N'Laptop Dell XPS 15', 1, 'AVAILABLE', 45000000, 3, '2026-03-01'),
-(N'Laptop Dell XPS 15', 1, 'AVAILABLE', 45000000, 3, '2026-03-01'),
-(N'Laptop Dell XPS 15', 1, 'AVAILABLE', 45000000, 3, '2026-03-01'),
-(N'Laptop Dell XPS 15', 1, 'AVAILABLE', 45000000, 3, '2026-03-01'),
-(N'Laptop Dell XPS 15', 1, 'AVAILABLE', 45000000, 3, '2026-03-01'),
-(N'Laptop Dell XPS 15', 1, 'AVAILABLE', 45000000, 3, '2026-03-01'),
-(N'Màn hình LG', 2, 'AVAILABLE', 8000000, 4, '2026-03-05'),
-(N'Màn hình LG', 2, 'AVAILABLE', 8000000, 4, '2026-03-05'),
-(N'Màn hình LG', 2, 'AVAILABLE', 8000000, 4, '2026-03-05'),
-(N'Màn hình LG', 2, 'AVAILABLE', 8000000, 4, '2026-03-05'),
-(N'Màn hình LG', 2, 'AVAILABLE', 8000000, 4, '2026-03-05'),
-(N'Màn hình LG', 2, 'AVAILABLE', 8000000, 4, '2026-03-05'),
-(N'Màn hình LG', 2, 'AVAILABLE', 8000000, 4, '2026-03-05');
+-- 9. Quotation Details
+INSERT INTO quotation_detail (quotation_id, purchase_request_detail_id, asset_type_id, quantity, price) VALUES 
+(1, 1, 1, 8, 45000000),
+(2, 2, 3, 10, 25000000),
+(3, 3, 1, 2, 45000000);
+
+-- 10. Purchase Orders (1 ORDERED, 2 PENDING)
+INSERT INTO purchase_orders (total_amount, note, status, purchase_request_id, supplier_id, quotation_id, approved_by) 
+VALUES (360000000, N'Đơn hàng IT đã duyệt', N'ORDERED', 1, 1, 1, 2);
+
+INSERT INTO purchase_order_details (quantity, unit_price, purchase_order_id, asset_type_id, quotation_detail_id, delivery_date)
+VALUES (8, 45000000, 1, 1, 1, '2026-04-15');
+
+INSERT INTO purchase_orders (total_amount, note, status, purchase_request_id, supplier_id, quotation_id, approved_by) 
+VALUES (250000000, N'Đơn nội thất chờ sếp duyệt', N'PENDING', 2, 2, 2, NULL);
+
+INSERT INTO purchase_order_details (quantity, unit_price, purchase_order_id, asset_type_id, quotation_detail_id, delivery_date)
+VALUES (10, 25000000, 2, 3, 2, '2026-05-15');
+
+INSERT INTO purchase_orders (total_amount, note, status, purchase_request_id, supplier_id, quotation_id, approved_by) 
+VALUES (90000000, N'Đơn dự phòng chờ sếp duyệt', N'PENDING', 3, 1, 3, NULL);
+
+INSERT INTO purchase_order_details (quantity, unit_price, purchase_order_id, asset_type_id, quotation_detail_id, delivery_date)
+VALUES (2, 45000000, 3, 1, 3, '2026-04-20');
+
+-- 11. Warehouse & Zones
+INSERT INTO wh_warehouses (name, address, manager_user_id) VALUES (N'Kho Tổng Hà Nội', N'Hòa Lạc', 4);
+INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, asset_type_id) VALUES (1, N'Khu A - Laptop', 100, 1);
+
+-- ======================================================================
+-- 13. BỔ SUNG TÀI SẢN VÀO KHO & TẠO LỆNH CẤP PHÁT (ĐÃ FIX LỖI IDENTITY)
+-- ======================================================================
+
+-- ---------------------------------------------------------
+-- BƯỚC 1: Bổ sung Màn hình (Type 2) và Bàn (Type 3) vào kho (Dept 3)
+-- ---------------------------------------------------------
+-- Tạo thêm Zone cho Màn hình (Zone 2) và Bàn (Zone 3)
+INSERT INTO wh_zones (warehouse_id, zone_name, max_capacity, asset_type_id, current_capacity) 
+VALUES 
+(1, N'Khu B - Màn hình', 50, 2, 5),
+(1, N'Khu C - Nội thất', 20, 3, 3);
+
+-- Insert 5 Màn hình LG
+INSERT INTO asset (asset_name, asset_type_id, current_status, department_id, acquisition_date)
+VALUES 
+(N'Màn hình LG 27 inch - MON001', 2, N'AVAILABLE', 3, '2026-03-20'),
+(N'Màn hình LG 27 inch - MON002', 2, N'AVAILABLE', 3, '2026-03-20'),
+(N'Màn hình LG 27 inch - MON003', 2, N'AVAILABLE', 3, '2026-03-20'),
+(N'Màn hình LG 27 inch - MON004', 2, N'AVAILABLE', 3, '2026-03-20'),
+(N'Màn hình LG 27 inch - MON005', 2, N'AVAILABLE', 3, '2026-03-20');
+
+INSERT INTO asset (asset_name, asset_type_id, current_status, department_id, acquisition_date)
+VALUES 
+(N'Laptop Dell XPS - IT006', 1, N'AVAILABLE', 3, SYSDATETIME()),
+(N'Laptop Dell XPS - IT007', 1, N'AVAILABLE', 3, SYSDATETIME()),
+(N'Laptop Dell XPS - IT008', 1, N'AVAILABLE', 3, SYSDATETIME()),
+(N'Laptop Dell XPS - IT009', 1, N'AVAILABLE', 3, SYSDATETIME()),
+(N'Laptop Dell XPS - IT010', 1, N'AVAILABLE', 3, SYSDATETIME());
+
+-- 2. Đưa 5 máy này vào Zone 1 (Khu A - Laptop) do nhân viên kho (User 4) thực hiện
+INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, note)
+SELECT asset_id, 1, 4, N'Tồn kho bổ sung test luồng xuất' 
+FROM asset 
+WHERE asset_name IN (
+    N'Laptop Dell XPS - IT006',
+    N'Laptop Dell XPS - IT007',
+    N'Laptop Dell XPS - IT008',
+    N'Laptop Dell XPS - IT009',
+    N'Laptop Dell XPS - IT010'
+);
+
+-- Dùng SELECT để lấy động ID của màn hình vừa insert đưa vào Zone 2
+INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, note)
+SELECT asset_id, 2, 4, N'Tồn kho' 
+FROM asset 
+WHERE asset_name LIKE N'Màn hình LG 27 inch - MON%';
+
+-- Insert 3 Bàn làm việc
+INSERT INTO asset (asset_name, asset_type_id, current_status, department_id, acquisition_date)
+VALUES 
+(N'Bàn làm việc gỗ - DESK001', 3, N'AVAILABLE', 3, '2026-03-20'),
+(N'Bàn làm việc gỗ - DESK002', 3, N'AVAILABLE', 3, '2026-03-20'),
+(N'Bàn làm việc gỗ - DESK003', 3, N'AVAILABLE', 3, '2026-03-20');
+
+-- Dùng SELECT để lấy động ID của bàn làm việc vừa insert đưa vào Zone 3
+INSERT INTO wh_asset_placement (asset_id, zone_id, placed_by, note)
+SELECT asset_id, 3, 4, N'Tồn kho' 
+FROM asset 
+WHERE asset_name LIKE N'Bàn làm việc gỗ - DESK%';
 
 
+-- ---------------------------------------------------------
+-- BƯỚC 2: Tạo Yêu cầu cấp phát (APPROVED) & Lệnh bàn giao (PENDING)
+-- ---------------------------------------------------------
+
+-- Yêu cầu 1: Đa tài sản (1 Laptop, 2 Màn hình, 1 Bàn)
+INSERT INTO allocation_request (requester_id, requested_department_id, needed_by_date, priority, reason, status, am_approved_by, am_approved_at)
+VALUES 
+(1, 2, '2026-04-05', N'MEDIUM', N'Setup chỗ ngồi làm việc cho Dev mới', N'APPROVED', 3, SYSDATETIME());
+
+DECLARE @AllocReqId_1 INT = SCOPE_IDENTITY();
+
+INSERT INTO allocation_request_detail (request_id, asset_type_id, quantity_requested, note)
+VALUES 
+(@AllocReqId_1, 1, 1, N'1 Laptop Dell XPS'),
+(@AllocReqId_1, 2, 2, N'2 Màn hình LG 27 inch'),
+(@AllocReqId_1, 3, 1, N'1 Bàn làm việc');
+
+INSERT INTO asset_handover (handover_type, allocation_request_id, from_department_id, to_department_id, status)
+VALUES 
+(N'ALLOCATION', @AllocReqId_1, 3, 2, N'PENDING');
 
 
+-- Yêu cầu 2: Đa tài sản (1 Laptop, 1 Màn hình)
+INSERT INTO allocation_request (requester_id, requested_department_id, needed_by_date, priority, reason, status, am_approved_by, am_approved_at)
+VALUES 
+(2, 1, '2026-04-10', N'HIGH', N'Nâng cấp thiết bị cho Giám đốc', N'APPROVED', 3, SYSDATETIME());
+
+DECLARE @AllocReqId_2 INT = SCOPE_IDENTITY();
+
+INSERT INTO allocation_request_detail (request_id, asset_type_id, quantity_requested, note)
+VALUES 
+(@AllocReqId_2, 1, 1, N'Laptop dòng mới nhất'),
+(@AllocReqId_2, 2, 1, N'Màn hình phụ');
+
+INSERT INTO asset_handover (handover_type, allocation_request_id, from_department_id, to_department_id, status)
+VALUES 
+(N'ALLOCATION', @AllocReqId_2, 3, 1, N'PENDING');
