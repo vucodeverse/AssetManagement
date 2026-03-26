@@ -378,4 +378,23 @@ public class QCReportDAOImpl implements QCReportDAO {
 
         return qc;
     }
+
+    @Override
+    public Optional<QualityControlReport> findByAssetAndSource(Integer assetId, String sourceType, Integer sourceId) {
+        String sql = "SELECT * FROM qc_report WHERE asset_id = ? AND source_type = ? AND source_id = ?";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, assetId);
+            ps.setString(2, sourceType);
+            ps.setInt(3, sourceId);
+
+            ResultSet rs = ps.executeQuery();
+            return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding QC by asset and source", e);
+        }
+    }
 }

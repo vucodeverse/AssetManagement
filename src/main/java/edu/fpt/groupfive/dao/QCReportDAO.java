@@ -45,4 +45,6 @@ public interface QCReportDAO {
     boolean existsAssetById(int assetId);
 
     boolean existsInspectorById(int userId);
+
+    Optional<QualityControlReport> findByAssetAndSource(Integer assetId, String sourceType, Integer sourceId);
 }

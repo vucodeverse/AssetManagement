@@ -32,7 +32,8 @@ public class QCReportServiceImpl implements IQCReportService {
         qc.setStatus(normalizeStatus(request.getStatus()));
         qc.setInspectedBy(request.getInspectedBy());
         qc.setNote(request.getNote());
-
+        qc.setSourceType(request.getSourceType());
+        qc.setSourceId(request.getSourceId());
         return mapToResponse(qcReportDAO.createQCReport(qc));
     }
 
@@ -186,4 +187,12 @@ public class QCReportServiceImpl implements IQCReportService {
     public boolean isAllAssetHasQC(int transferId) {
         return qcReportDAO.isAllAssetHasQC(transferId);
     }
+
+    @Override
+    public QCReportResponse findByAssetAndSource(Integer assetId, String sourceType, Integer sourceId) {
+        return qcReportDAO.findByAssetAndSource(assetId, sourceType, sourceId)
+                .map(this::mapToResponse)
+                .orElse(null);
+    }
+
 }

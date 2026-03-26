@@ -42,86 +42,76 @@ public class QCReportController {
     }
 
     private String resolveReturnUrl(String sourceType, Integer sourceId) {
-        if (sourceType == null || sourceId == null) {
-            return "/qc-reports/list";
-        }
+        if (sourceType == null || sourceId == null) return "/qc-reports/list";
 
-        if ("TRANSFER".equalsIgnoreCase(sourceType)) {
-            return "/transfer-requests/detail/" + sourceId;
+        switch (sourceType.toUpperCase()) {
+            case "TRANSFER":
+                return "/transfer-requests/detail/" + sourceId;
+            case "ALLOCATION":
+                return "/allocations/" + sourceId;
+            case "RETURN":
+                return "/returns/" + sourceId;
+            default:
+                return "/qc-reports/list";
         }
-
-        if ("ALLOCATION".equalsIgnoreCase(sourceType)) {
-            return "/allocations/" + sourceId;
-        }
-
-        if ("RETURN".equalsIgnoreCase(sourceType)) {
-            return "/returns/" + sourceId;
-        }
-
-        return "/qc-reports/list";
     }
 
-    private String buildQcCreateUrl(Integer assetId, String sourceType, Integer sourceId) {
-        StringBuilder url = new StringBuilder("/qc-reports/create?assetId=").append(assetId);
+    private String buildQcCreateUrl(QCReportRequest req) {
+        StringBuilder url = new StringBuilder("/qc-reports/create?assetId=" + req.getAssetId());
 
-        if (sourceType != null && sourceId != null) {
-            url.append("&sourceType=").append(sourceType)
-                    .append("&sourceId=").append(sourceId);
+        if (req.getSourceType() != null && req.getSourceId() != null) {
+            url.append("&sourceType=").append(req.getSourceType())
+                    .append("&sourceId=").append(req.getSourceId());
         }
 
         return url.toString();
     }
-
     // ================= CREATE =================
+
     @GetMapping("/create")
     public String showCreateForm(
-            @RequestParam(value = "assetId", required = false) Integer assetId,
+            @RequestParam(value = "assetId") Integer assetId,
             @RequestParam(value = "sourceType", required = false) String sourceType,
             @RequestParam(value = "sourceId", required = false) Integer sourceId,
             HttpSession session,
             Model model,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirect) {
 
-        // Kiểm tra quyền: chỉ warehouse staff mới được tạo QC
-        String role = getRole(session);
-        if (!"WAREHOUSE_STAFF".equals(role)) {
-            redirectAttributes.addFlashAttribute("error", "Chỉ kho mới được tạo QC");
+        if (!"WAREHOUSE_STAFF".equals(getRole(session))) {
+            redirect.addFlashAttribute("error", "Chỉ kho mới được tạo QC");
             return "redirect:/auth/login";
-        }
-
-        if (assetId == null) {
-            redirectAttributes.addFlashAttribute("error", "Thiếu assetId. QC chỉ được tạo theo tài sản.");
-            return "redirect:/qc-reports/list";
         }
 
         Asset asset = assetService.findById(assetId).orElse(null);
         if (asset == null) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy tài sản với ID: " + assetId);
+            redirect.addFlashAttribute("error", "Không tìm thấy tài sản");
             return "redirect:/qc-reports/list";
         }
 
-        // Kiểm tra điều kiện tạo QC cho transfer
         if ("TRANSFER".equalsIgnoreCase(sourceType) && sourceId != null) {
             TransferRequest transfer = transferRequestService.getTransferById(sourceId);
             if (!"SENDER_CONFIRMED".equals(transfer.getStatus())) {
-                redirectAttributes.addFlashAttribute("error", "Chỉ được tạo QC khi transfer đã được xác nhận giao (SENDER_CONFIRMED)");
+                redirect.addFlashAttribute("error", "Transfer chưa sẵn sàng QC");
                 return "redirect:" + resolveReturnUrl(sourceType, sourceId);
             }
         }
 
         QCReportRequest qcReport = new QCReportRequest();
         qcReport.setAssetId(assetId);
+        qcReport.setSourceType(sourceType);
+        qcReport.setSourceId(sourceId);
+
+        model.addAttribute("qcReport", qcReport);
+        model.addAttribute("asset", asset);
+
         Integer userId = getCurrentUserId(session);
         String inspectorName = "Chưa đăng nhập";
         if (userId != null) {
-             Users user = userService.findById(userId);
-             inspectorName = user.getFullName();
+            Users user = userService.findById(userId);
+            inspectorName = user.getFullName();
         }
+
         model.addAttribute("inspectorName", inspectorName);
-        model.addAttribute("asset", asset);
-        model.addAttribute("qcReport", qcReport);
-        model.addAttribute("sourceType", sourceType);
-        model.addAttribute("sourceId", sourceId);
         model.addAttribute("backUrl", resolveReturnUrl(sourceType, sourceId));
 
         return "qc/create";
@@ -130,39 +120,43 @@ public class QCReportController {
     @PostMapping("/create")
     public String processCreateForm(
             @ModelAttribute("qcReport") QCReportRequest request,
-            @RequestParam(value = "sourceType", required = false) String sourceType,
-            @RequestParam(value = "sourceId", required = false) Integer sourceId,
-            @RequestParam(value = "assetId", required = false) Integer assetIdParam,
             HttpSession session,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirect) {
 
         try {
             Integer userId = getCurrentUserId(session);
             if (userId == null) throw new RuntimeException("Bạn chưa đăng nhập");
 
-            Integer assetId = request.getAssetId();
-            if (assetId == null) assetId = assetIdParam;
-            if (assetId == null) {
-                throw new IllegalArgumentException("Thiếu assetId. QC chỉ được tạo theo tài sản.");
+            if (request.getAssetId() == null) {
+                throw new RuntimeException("Thiếu assetId");
             }
-            request.setAssetId(assetId);
+
             request.setInspectedBy(userId);
 
+            log.info("QC CREATE: {}", request);
+
             qcReportService.createQCReport(request);
-            redirectAttributes.addFlashAttribute("message", "Tạo QC thành công");
-            return "redirect:" + resolveReturnUrl(sourceType, sourceId);
+
+            redirect.addFlashAttribute("message", "Tạo QC thành công");
+
+            return "redirect:" + resolveReturnUrl(
+                    request.getSourceType(),
+                    request.getSourceId()
+            );
 
         } catch (Exception e) {
-            log.error("Error creating QC: ", e);
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            Integer assetId = request.getAssetId() != null ? request.getAssetId() : assetIdParam;
-            if (assetId != null) {
-                return "redirect:" + buildQcCreateUrl(assetId, sourceType, sourceId);
-            } else {
-                return "redirect:/qc-reports/list";
+            log.error("Create QC error", e);
+
+            redirect.addFlashAttribute("error", e.getMessage());
+
+            if (request.getAssetId() != null) {
+                return "redirect:" + buildQcCreateUrl(request);
             }
+
+            return "redirect:/qc-reports/list";
         }
     }
+
     // ================= LIST =================
     @GetMapping("/list")
     public String listReports(

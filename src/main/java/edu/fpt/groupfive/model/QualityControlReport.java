@@ -18,5 +18,6 @@ public class QualityControlReport {
     private int inspectedBy;
     private LocalDateTime createdDate;
     private String note;
-
+    private String sourceType;
+    private Integer sourceId;
 }
