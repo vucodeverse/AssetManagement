@@ -82,7 +82,8 @@
                 </a>
 
                 <!-- Ai cũng quay lại được -->
-                <a th:href="${backUrl != null ? backUrl : '/transfer-requests/warehouse'}"
+                <a th:if="${backUrl != null}"
+                   th:href="${backUrl}"
                    class="btn btn-secondary">
                     Quay lại
                 </a>

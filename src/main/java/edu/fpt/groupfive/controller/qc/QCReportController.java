@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+
 @Slf4j
 @Controller
 @RequestMapping("/qc-reports")
@@ -40,15 +41,19 @@ public class QCReportController {
         return (String) session.getAttribute("role");
     }
 
-    private void requireWarehouse(HttpSession session) {
-        if (!"WAREHOUSE_STAFF".equals(getRole(session))) {
-            throw new RuntimeException("Không có quyền truy cập");
-        }
+    private Integer getDepartmentId(HttpSession session) {
+        return (Integer) session.getAttribute("departmentId");
     }
 
     private void requireLogin(HttpSession session) {
         if (getUserId(session) == null) {
             throw new RuntimeException("Bạn chưa đăng nhập");
+        }
+    }
+
+    private void requireWarehouse(HttpSession session) {
+        if (!"WAREHOUSE_STAFF".equals(getRole(session))) {
+            throw new RuntimeException("Không có quyền truy cập");
         }
     }
 
@@ -61,16 +66,12 @@ public class QCReportController {
     private String resolveReturnUrl(String sourceType, Integer sourceId) {
         if (sourceType == null || sourceId == null) return "/qc-reports/list";
 
-        switch (sourceType.toUpperCase()) {
-            case "TRANSFER":
-                return "/transfer-requests/detail/" + sourceId;
-            case "ALLOCATION":
-                return "/allocations/" + sourceId;
-            case "RETURN":
-                return "/returns/" + sourceId;
-            default:
-                return "/qc-reports/list";
-        }
+        return switch (sourceType.toUpperCase()) {
+            case "TRANSFER" -> "/transfer-requests/detail/" + sourceId;
+            case "ALLOCATION" -> "/allocations/" + sourceId;
+            case "RETURN" -> "/returns/" + sourceId;
+            default -> "/qc-reports/list";
+        };
     }
 
     private String buildCreateUrl(QCReportRequest req) {
@@ -82,6 +83,48 @@ public class QCReportController {
         }
 
         return url.toString();
+    }
+
+    /**
+     * ================= PERMISSION CORE =================
+     */
+    private void canViewQC(
+            Integer assetId,
+            String sourceType,
+            Integer sourceId,
+            HttpSession session) {
+
+        String role = getRole(session);
+        Integer departmentId = getDepartmentId(session);
+
+        // 1. Warehouse + Asset Manager → full access
+        if ("WAREHOUSE_STAFF".equals(role) || "ASSET_MANAGER".equals(role)) {
+            return;
+        }
+
+        Asset asset = assetService.findById(assetId).orElse(null);
+        if (asset == null) {
+            throw new RuntimeException("Asset không tồn tại");
+        }
+
+        // 2. Department đang giữ asset
+        if (departmentId != null && departmentId.equals(asset.getDepartmentId())) {
+            return;
+        }
+
+        // 3. Nếu đi từ transfer → check from/to
+        if ("TRANSFER".equalsIgnoreCase(sourceType) && sourceId != null) {
+
+            TransferRequest t = transferRequestService.getTransferById(sourceId);
+
+            if (departmentId != null &&
+                    (departmentId.equals(t.getFromDepartmentId())
+                            || departmentId.equals(t.getToDepartmentId()))) {
+                return;
+            }
+        }
+
+        throw new RuntimeException("Không có quyền xem QC của asset này");
     }
 
     // ================= CREATE =================
@@ -98,11 +141,13 @@ public class QCReportController {
         try {
             requireWarehouse(session);
 
-            Asset asset = assetService.findById(assetId).orElse(null);
-            if (asset == null) throw new RuntimeException("Không tìm thấy tài sản");
+            Asset asset = assetService.findById(assetId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tài sản"));
 
+            // validate transfer
             if ("TRANSFER".equalsIgnoreCase(sourceType) && sourceId != null) {
                 TransferRequest transfer = transferRequestService.getTransferById(sourceId);
+
                 if (!"SENDER_CONFIRMED".equals(transfer.getStatus())) {
                     throw new RuntimeException("Transfer chưa sẵn sàng QC");
                 }
@@ -118,7 +163,9 @@ public class QCReportController {
 
             if (userId != null) {
                 Users user = userService.findById(userId);
-                if (user != null) inspectorName = user.getFullName();
+                if (user != null) {
+                    inspectorName = user.getFullName();
+                }
             }
 
             model.addAttribute("qcReport", qc);
@@ -148,8 +195,7 @@ public class QCReportController {
                 throw new RuntimeException("Thiếu assetId");
             }
 
-            Integer userId = getUserId(session);
-            request.setInspectedBy(userId);
+            request.setInspectedBy(getUserId(session));
 
             qcReportService.createQCReport(request);
 
@@ -162,6 +208,7 @@ public class QCReportController {
 
         } catch (Exception e) {
             redirect.addFlashAttribute("error", e.getMessage());
+
             return request.getAssetId() != null
                     ? "redirect:" + buildCreateUrl(request)
                     : "redirect:/qc-reports/list";
@@ -206,25 +253,31 @@ public class QCReportController {
     @GetMapping("/{id}")
     public String detail(
             @PathVariable int id,
-            Model model,
-            RedirectAttributes redirect,
+            @RequestParam(required = false) String sourceType,
+            @RequestParam(required = false) Integer sourceId,
             HttpSession session,
-            HttpServletRequest request) {
+            HttpServletRequest request,
+            Model model,
+            RedirectAttributes redirect) {
 
         try {
             requireLogin(session);
+
             QCReportResponse report = qcReportService.findById(id);
-            canViewByAsset(report.getAssetId(), session);
-            String referer = request.getHeader("referer");
-            model.addAttribute("backUrl", referer);
+
+            // 🔥 permission chuẩn
+            canViewQC(report.getAssetId(), sourceType, sourceId, session);
 
             model.addAttribute("report", report);
+            model.addAttribute("backUrl", resolveReturnUrl(sourceType, sourceId));
 
             return "qc/detail";
 
         } catch (Exception e) {
             redirect.addFlashAttribute("error", e.getMessage());
-            return "redirect:/qc-reports/list";
+
+            String referer = request.getHeader("referer");
+            return referer != null ? "redirect:" + referer : "redirect:/";
         }
     }
 
@@ -233,18 +286,17 @@ public class QCReportController {
     @GetMapping("/{id}/edit")
     public String showEdit(
             @PathVariable int id,
+            HttpSession session,
             Model model,
-            RedirectAttributes redirect,
-            HttpSession session) {
+            RedirectAttributes redirect) {
 
         try {
             requireWarehouse(session);
             requireLogin(session);
 
-            Integer userId = getUserId(session);
             QCReportResponse report = qcReportService.findById(id);
 
-            requireOwner(report, userId);
+            requireOwner(report, getUserId(session));
 
             QCReportRequest req = new QCReportRequest();
             req.setAssetId(report.getAssetId());
@@ -273,13 +325,12 @@ public class QCReportController {
             requireWarehouse(session);
             requireLogin(session);
 
-            Integer userId = getUserId(session);
             QCReportResponse existing = qcReportService.findById(id);
 
-            requireOwner(existing, userId);
+            requireOwner(existing, getUserId(session));
 
             request.setAssetId(existing.getAssetId());
-            request.setInspectedBy(userId);
+            request.setInspectedBy(getUserId(session));
 
             qcReportService.updateQCReport(id, request);
 
@@ -304,10 +355,9 @@ public class QCReportController {
             requireWarehouse(session);
             requireLogin(session);
 
-            Integer userId = getUserId(session);
             QCReportResponse report = qcReportService.findById(id);
 
-            requireOwner(report, userId);
+            requireOwner(report, getUserId(session));
 
             qcReportService.deleteById(id);
 
@@ -318,26 +368,5 @@ public class QCReportController {
         }
 
         return "redirect:/qc-reports/list";
-    }
-
-    private void canViewByAsset(Integer assetId, HttpSession session) {
-
-        String role = getRole(session);
-
-        // warehouse xem hết
-        if ("WAREHOUSE_STAFF".equals(role)) return;
-
-        Integer departmentId = (Integer) session.getAttribute("departmentId");
-
-        Asset asset = assetService.findById(assetId).orElse(null);
-
-        if (asset == null) {
-            throw new RuntimeException("Asset không tồn tại");
-        }
-
-        // chỉ cho xem nếu asset thuộc department
-        if (!departmentId.equals(asset.getDepartmentId())) {
-            throw new RuntimeException("Không có quyền xem QC của asset này");
-        }
     }
 }

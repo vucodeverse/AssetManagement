@@ -104,7 +104,11 @@
                     </td>
                     <td>
                         <a th:if="${qc != null}"
-                           th:href="@{/qc-reports/{id}(id=${qc.reportId})}"
+                           th:href="@{/qc-reports/{id}(
+        id=${qc.reportId},
+        sourceType='TRANSFER',
+        sourceId=${transfer.transferId}
+   )}"
                            class="btn btn-sm btn-info">
                             Xem chi tiết
                         </a>
