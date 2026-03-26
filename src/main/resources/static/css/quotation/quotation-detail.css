@@ -13,7 +13,7 @@
     padding: 40px;
     background-color: #ffffff;
     min-height: 100vh;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .breadcrumb-nav {

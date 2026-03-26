@@ -39,7 +39,7 @@
 }
 
 body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background: var(--bg);
     color: var(--text-primary);
     font-size: 13.5px;
@@ -282,7 +282,7 @@ body {
     border: 1px solid var(--border);
     background: #fafafa;
     font-size: 13.5px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: var(--text-primary);
     transition: all 0.15s;
     width: 100%;
@@ -312,7 +312,7 @@ textarea.form-control { height: auto; padding: 11px 12px; resize: vertical; line
 ================================ */
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border); }
 
-.btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 7px; font-weight: 600; font-size: 13.5px; font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; transition: all 0.15s; letter-spacing: 0.1px; text-decoration: none; }
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 7px; font-weight: 600; font-size: 13.5px; font-family: 'Inter', system-ui, -apple-system, sans-serif; cursor: pointer; border: none; transition: all 0.15s; letter-spacing: 0.1px; text-decoration: none; }
 .btn-secondary { background: #fff; color: var(--text-secondary); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--bg); border-color: #c4c9d4; }
 .btn-primary { background: var(--accent); color: #ffffff; }

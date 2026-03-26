@@ -1,6 +1,6 @@
 package edu.fpt.groupfive.common;
 
-public enum Priority {
+public enum     Priority {
     LOW("THẤP"), MEDIUM("TRUNG BÌNH"), HIGH("CAO"), CRITICAL("QUAN TRỌNG");
 
     private String description;

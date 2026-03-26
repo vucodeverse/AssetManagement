@@ -87,7 +87,7 @@
                                              <input type="hidden"
                                                   th:field="*{quotationDetailCreateRequests[__${stat.index}__].purchaseRequestDetailId}">
                                              <input type="text" class="input-table"
-                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].specificationRequirement}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].specificationRequirement}" required>
                                         </td>
 
                                          <td class="td-item-name">
@@ -100,7 +100,7 @@
 
                                         <td class="td-item-qty">
                                              <input type="number" class="input-table"
-                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].quantity}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].quantity}" required>
 
                                              <div class="error-msg"
                                                   th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].quantity')}"
@@ -120,7 +120,7 @@
 
                                         <td>
                                              <input type="number" class="input-table" placeholder="Tháng"
-                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].warrantyMonths}">
+                                                  th:field="*{quotationDetailCreateRequests[__${stat.index}__].warrantyMonths}" required>
                                              <div class="error-msg"
                                                   th:if="${#fields.hasErrors('quotationDetailCreateRequests[__${stat.index}__].warrantyMonths')}"
                                                   th:errors="*{quotationDetailCreateRequests[__${stat.index}__].warrantyMonths}">

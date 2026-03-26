@@ -1,5 +1,5 @@
 /* Quotation Form Redesign - Premium Theme */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+/* Fonts synchronized in layout */
 
 :root {
     --bg-main: #f8fafc;
@@ -13,7 +13,7 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background-color: var(--bg-main);
     color: var(--text-primary);
 }

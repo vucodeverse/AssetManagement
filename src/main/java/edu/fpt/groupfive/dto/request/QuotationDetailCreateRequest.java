@@ -34,6 +34,7 @@ public class QuotationDetailCreateRequest {
     private BigDecimal taxRate;
 
     @DecimalMin(value = "0.0", message = "Giảm giá của sản phẩm không được nhở hơn 0")
+    @DecimalMax(value = "100.0", message = "Giảm giá của sản phẩm không được lớn hơn 100")
     private BigDecimal discountRate;
 
     @NotNull(message = "Tên của sản phẩm không được để trống")

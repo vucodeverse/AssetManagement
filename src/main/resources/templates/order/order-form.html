@@ -13,20 +13,10 @@
 <body>
     <th:block layout:fragment="content">
         <main class="po-content-wrapper">
-
-            <!-- Thanh điều hướng (Breadcrumb) -->
-            <div class="breadcrumb">
-                <a th:href="@{/purchase-staff/dashboard}">TRANG CHỦ</a>
-                /
-                <a th:href="@{/purchase-orders}">ĐƠN ĐẶT HÀNG</a> /
-                <span class="active">TẠO ĐƠN</span>
-            </div>
-
             <!-- Tiêu đề trang -->
             <header class="page-header">
                 <div class="header-text">
                     <h1>TẠO ĐƠN ĐẶT HÀNG</h1>
-                    <p>Kiểm tra chi tiết báo giá và phát hành đơn đặt hàng chính thức đến nhà cung cấp.</p>
                 </div>
             </header>
 
@@ -92,67 +82,58 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="od, iter : *{purchaseOrderDetailCreateRequests}">
-                                    <td class="td-value" th:text="${od.assetTypeName}">Asset Type</td>
+                            <tr th:each="od, iter : *{purchaseOrderDetailCreateRequests}">
+                                <td>
+                                    <input type="text"
+                                           th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].assetTypeName'"
+                                           th:value="${od.assetTypeName}" readonly class="table-input">
+                                </td>
 
-                                    <!-- Hiển thị ID chi tiết -->
-                                    <td class="td-value" th:text="'QD-' + ${od.quotationDetailId}">QD-001</td>
+                                <td>
+                                    <input type="text"
+                                           th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].quotationDetailId'"
+                                           th:value="'QD-' + ${od.quotationDetailId}" readonly class="table-input">
+                                </td>
 
-                                    <!-- Unit price display -->
-                                    <td class="td-value"
-                                        th:text="${od.price != null ? #numbers.formatDecimal(od.price, 1, 'POINT', 0, 'COMMA') + ' VNĐ' : '-'}">
-                                        -
-                                    </td>
+                                <td>
+                                    <input type="text"
+                                           th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].price'"
+                                           th:value="${od.price}" readonly class="table-input">
+                                </td>
 
-                                    <!-- Tax % display -->
-                                    <td class="td-value" th:text="${od.taxRate != null ? od.taxRate + '%' : '-'}">-</td>
+                                <td>
+                                    <input type="text"
+                                           th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].taxRate'"
+                                           th:value="${od.taxRate}" readonly class="table-input">
+                                </td>
 
-                                    <!-- Discount % display -->
-                                    <td class="td-value"
-                                        th:text="${od.discountRate != null ? od.discountRate + '%' : '-'}">-</td>
+                                <td>
+                                    <input type="text"
+                                           th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].discountRate'"
+                                           th:value="${od.discountRate}" readonly class="table-input">
+                                </td>
 
-                                    <!-- Số lượng: có thể chỉnh sửa -->
-                                    <td>
-                                        <input type="hidden"
-                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].quotationDetailId'"
-                                            th:value="${od.quotationDetailId}">
-                                        <input type="hidden"
-                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].price'"
-                                            th:value="${od.price}">
-                                        <input type="hidden"
-                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].taxRate'"
-                                            th:value="${od.taxRate}">
-                                        <input type="hidden"
-                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].discountRate'"
-                                            th:value="${od.discountRate}">
-                                        <input type="hidden"
-                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].assetTypeId'"
-                                            th:value="${od.assetTypeId}">
-                                        <input type="hidden"
-                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].assetTypeName'"
-                                            th:value="${od.assetTypeName}">
+                                <!-- Quantity: vẫn cho sửa -->
+                                <td>
+                                    <input class="table-input qty-input" type="number" min="1"
+                                           th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].quantity'"
+                                           th:value="${od.quantity}" required>
+                                </td>
 
-                                        <input class="table-input qty-input" type="number" min="1"
-                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].quantity'"
-                                            th:value="${od.quantity}"
-                                            th:attr="data-price=${od.price}, data-tax=${od.taxRate}, data-discount=${od.discountRate}">
-                                    </td>
+                                <!-- Note -->
+                                <td>
+                                    <input class="table-input" type="text"
+                                           th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].orderDetailNote'"
+                                           th:value="${od.orderDetailNote}" placeholder="Add note...">
+                                </td>
 
-                                    <!-- Ghi chú (có thể chỉnh sửa) -->
-                                    <td>
-                                        <input class="table-input" type="text"
-                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].orderDetailNote'"
-                                            th:value="${od.orderDetailNote}" placeholder="Add note...">
-                                    </td>
-
-                                    <!-- Xóa dòng -->
-                                    <td class="td-delete">
-                                        <button type="submit" name="removeLine" th:value="${iter.index}"
+                                <td class="td-delete">
+                                    <button type="submit" name="removeLine" th:value="${iter.index}"
                                             class="btn-del-row" title="Remove this line">
-                                            <i class="far fa-trash-alt"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                        <i class="far fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>

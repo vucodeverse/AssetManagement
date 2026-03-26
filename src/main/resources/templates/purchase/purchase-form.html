@@ -33,7 +33,7 @@
                         <!-- reason -->
                         <div class="form-group">
                             <label>LÝ DO YÊU CẦU</label>
-                            <input type="text" th:field="*{reason}" placeholder="VD: Mở rộng văn phòng quý 4">
+                            <input type="text" th:field="*{reason}" placeholder="Intern mới vào..." required>
                             <div class="field-error" th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}"></div>
                         </div>
 
@@ -106,7 +106,7 @@
                                     <!-- Quantity -->
                                     <td>
                                         <input type="number" step="1" class="input-prem"
-                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].quantity}" />
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].quantity}" required/>
 
                                         <div class="field-error"
                                             th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].quantity')}"
@@ -117,7 +117,7 @@
                                     <!-- Estimate Price -->
                                     <td>
                                         <input type="number" step="0.01" class="input-prem"
-                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].estimatePrice}" />
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].estimatePrice}" required/>
 
                                         <div class="field-error"
                                             th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].estimatePrice')}"
@@ -128,7 +128,7 @@
                                     <!-- Specification Requirement -->
                                     <td>
                                         <input type="text" class="input-prem"
-                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].specificationRequirement}" />
+                                            th:field="*{purchaseRequestDetailCreateRequests[__${stat.index}__].specificationRequirement}" required />
 
                                         <div class="field-error"
                                             th:if="${#fields.hasErrors('purchaseRequestDetailCreateRequests[' + stat.index + '].specificationRequirement')}"
@@ -167,9 +167,6 @@
 
                 <!-- Các nút điều hướng cuối -->
                 <footer class="pr-footer">
-                    <div class="footer-left">
-                        <p>* Các trường có đánh dấu là bắt buộc.</p>
-                    </div>
 
                     <div class="footer-right">
                         <button type="button" class="btn-text" onclick="history.back()">HỦY</button>
