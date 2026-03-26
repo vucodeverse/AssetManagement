@@ -107,18 +107,19 @@
         <table id="userTable" class="table table-bordered table-hover shadow-sm bg-white">
             <thead>
             <tr>
-                <th>ID</th>
+<!--                <th>ID</th>-->
                 <th>Tên đăng nhập</th>
                 <th>Họ và tên</th>
                 <th>Email</th>
                 <th>Trạng thái</th>
                 <th>Vai trò</th>
+                <th>Thời điểm tạo</th>
                 <th style="width: 150px">Hành động</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="x : ${users}">
-                <td th:text="${x.userId}"></td>
+<!--                <td th:text="${x.userId}"></td>-->
                 <td th:text="${x.username}" class="font-weight-bold"></td>
                 <td th:text="${x.firstName + ' ' + x.lastName}"></td>
                 <td th:text="${x.email}"></td>
@@ -131,6 +132,7 @@
                 </td>
                 <!--                Role-->
                 <td th:text="${x.role.displayName}"></td>
+                <td th:text="${#temporals.format(x.createdDate,'dd/MM/yyyy HH:mm')}"></td>
                 <!--                Nút action-->
                 <td>
                     <div th:if="${x.role.name != 'ADMIN'}">
@@ -218,7 +220,7 @@
 
             ordering: true,
 
-            columnDefs: [6
+            columnDefs: [
                 {orderable: false, targets: [6]}
             ]
         });
