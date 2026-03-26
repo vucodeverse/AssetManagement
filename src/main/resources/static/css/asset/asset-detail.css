@@ -163,3 +163,62 @@
 .badge-transfer { background: #fff3e0; color: #b65c1e; }
 .badge-return { background: #f3e8ff; color: #6b3e8e; }
 .badge-status-change { background: #ffe8e8; color: #b91c1c; }
+
+
+/* Flash messages */
+.error-message,
+.success-message {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+.error-message {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+.success-message {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+/* Alert (dùng cho validation errors) */
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+.alert-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+.alert-danger ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+
+/* Form controls */
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+}
+.form-control:focus {
+    outline: none;
+    border-color: #111827;
+    box-shadow: 0 0 0 2px rgba(17,24,39,0.1);
+}
+
+/* Error message cho từng field */
+.error {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 4px;
+}

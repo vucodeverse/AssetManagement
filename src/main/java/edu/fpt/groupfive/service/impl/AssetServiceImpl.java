@@ -69,22 +69,17 @@ public class AssetServiceImpl implements AssetService {
     public void create(AssetCreateRequest request) {
         Integer quantity = request.getQuantity();
 
-        //ktra số lượng phản >=1
         if (quantity == null || quantity < 1) {
             throw new InvalidDataException("Số lượng phải >= 1");
         }
 
-
-        //  Validate assetType
         AssetType type = assetTypeDAO.findById(request.getAssetTypeId());
         if (type == null) {
             throw new InvalidDataException("Loại tài sản không tồn tại");
         }
 
-        //  Validate tiền không âm
         validateOriginalCost(request.getOriginalCost());
 
-        // Validate date logic
         validateDateLogic(
                 request.getWarrantyStartDate(),
                 request.getWarrantyEndDate(),
@@ -111,8 +106,6 @@ public class AssetServiceImpl implements AssetService {
                 .orElseThrow(() ->
                         new InvalidDataException("Không tìm thấy tài sản với id = " + id));
 
-
-        // Validate assetType nếu có đổi
         if (request.getAssetTypeId() != null) {
             AssetType type = assetTypeDAO.findById(request.getAssetTypeId());
             if (type == null) {
@@ -139,7 +132,7 @@ public class AssetServiceImpl implements AssetService {
         }
     }
 
-    //DELETE
+
     @Override
     @Transactional
     public void delete(Integer id) {
@@ -148,7 +141,6 @@ public class AssetServiceImpl implements AssetService {
                 .orElseThrow(() ->
                         new InvalidDataException("Không tìm thấy tài sản"));
 
-        // Business rule: chỉ cho xóa khi status NEW
         if (existing.getCurrentStatus() != (AssetStatus.NEW)) {
             throw new InvalidDataException(
                     "Chỉ có thể xóa tài sản ở trạng thái NEW");
@@ -202,7 +194,7 @@ public class AssetServiceImpl implements AssetService {
         return new PageResponse<>(responses, page, PAGE_SIZE, total);
     }
 
-    // validate
+
 
     private void validateOriginalCost(BigDecimal cost) {
         if (cost != null && cost.compareTo(BigDecimal.ZERO) < 0) {

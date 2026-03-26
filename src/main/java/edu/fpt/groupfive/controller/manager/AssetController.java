@@ -60,14 +60,32 @@ public class AssetController {
 
 
     @GetMapping("detail/{id}")
-    public String detail(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+    public String detail(@PathVariable("id") Integer id,
+                         @RequestParam(value = "edit", required = false, defaultValue = "false") boolean edit,
+                         Model model, RedirectAttributes redirectAttributes) {
         try {
 
             AssetDetailResponse asset = assetService.getDetailById(id);
             List<AssetLogResponse> logs = assetLogService.getLogsByAssetId(id);
 
+
+            AssetUpdateRequest updateRequest = new AssetUpdateRequest();
+            updateRequest.setAssetId(asset.getAssetId());
+            updateRequest.setAssetName(asset.getAssetName());
+            updateRequest.setAcquisitionDate(asset.getAcquisitionDate());
+            updateRequest.setWarrantyStartDate(asset.getWarrantyStartDate());
+            updateRequest.setWarrantyEndDate(asset.getWarrantyEndDate());
+            updateRequest.setAssetTypeId(asset.getAssetTypeId());
+            updateRequest.setOriginalCost(asset.getOriginalCost());
+            updateRequest.setCurrentStatus(asset.getCurrentStatus());
+            updateRequest.setPurchaseOrderDetailId(asset.getPurchaseOrderDetailId());
+
+
             model.addAttribute("asset", asset);
             model.addAttribute("logs", logs);
+            model.addAttribute("editMode", edit);
+            model.addAttribute("updateRequest", updateRequest);
+
             model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-detail";
         } catch (InvalidDataException e) {
@@ -77,117 +95,38 @@ public class AssetController {
     }
 
 
-    @GetMapping("/create")
-    public String showCreateForm(Model model) {
 
-        model.addAttribute("asset", new AssetCreateRequest());
-        model.addAttribute("assetTypes", assetTypeService.getAll());
-        model.addAttribute("orders", orderService.getAllOrderDetails());
-        model.addAttribute("statuses", AssetStatus.values());
-        model.addAttribute("isEdit", false);
-        model.addAttribute("activeMenu", "asset");
-        return "manager/asset/asset-form";
-    }
-
-
-    @PostMapping("/create")
-    public String create(
-            @Valid @ModelAttribute("asset") AssetCreateRequest request,
-            BindingResult result,
-            Model model
-    ) {
-
+    @PostMapping("/update/{id}")
+    public String updateBasicInfo(@PathVariable("id") Integer id,
+                                  @Valid @ModelAttribute("updateRequest") AssetUpdateRequest request,
+                                  BindingResult result,
+                                  Model model,
+                                  RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            model.addAttribute("assetTypes", assetTypeService.getAll());
-            model.addAttribute("orders", orderService.getAllOrderDetails());
-            model.addAttribute("statuses", AssetStatus.values());
-            model.addAttribute("isEdit", false);
-            model.addAttribute("activeMenu", "asset");
-            return "manager/asset/asset-form";
+            try {
+                AssetDetailResponse asset = assetService.getDetailById(id);
+                List<AssetLogResponse> logs = assetLogService.getLogsByAssetId(id);
+                model.addAttribute("asset", asset);
+                model.addAttribute("logs", logs);
+                model.addAttribute("editMode", true);
+                model.addAttribute("updateRequest", request);
+                model.addAttribute("activeMenu", "asset");
+                return "manager/asset/asset-detail";
+            } catch (InvalidDataException e) {
+                redirectAttributes.addFlashAttribute("error", e.getMessage());
+                return "redirect:/manager/assets";
+            }
         }
 
         try {
-            assetService.create(request);
-        } catch (InvalidDataException e) {
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("assetTypes", assetTypeService.getAll());
-            model.addAttribute("orders", orderService.getAllOrderDetails());
-            model.addAttribute("statuses", AssetStatus.values());
-
-            model.addAttribute("isEdit", false);
-            model.addAttribute("activeMenu", "asset");
-            return "manager/asset/asset-form";
-        }
-
-        return "redirect:/manager/assets";
-    }
-
-    //edit form
-    @GetMapping("/edit/{id}")
-    public String showEdit(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
-
-        try {
-            AssetResponse asset = assetService.getById(id);
-
-            AssetUpdateRequest request = new AssetUpdateRequest();
-
-            request.setAssetId(asset.getAssetId());
-            request.setAssetName(asset.getAssetName());
-            request.setPurchaseOrderDetailId(asset.getPurchaseOrderDetailId());
-            request.setWarrantyStartDate(asset.getWarrantyStartDate());
-            request.setCurrentStatus(asset.getCurrentStatus());
-            request.setWarrantyEndDate(asset.getWarrantyEndDate());
-            request.setOriginalCost(asset.getOriginalCost());
-            request.setAssetTypeId(asset.getAssetTypeId());
-            request.setAcquisitionDate(asset.getAcquisitionDate());
-
-            model.addAttribute("asset", request);
-            model.addAttribute("assetTypes", assetTypeService.getAll());
-            model.addAttribute("orders", orderService.getAllOrderDetails());
-            model.addAttribute("statuses", AssetStatus.values());
-            model.addAttribute("isEdit", true);
-            model.addAttribute("activeMenu", "asset");
-            return "manager/asset/asset-form";
-
+            assetService.update(id, request);
+            redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin thành công.");
         } catch (InvalidDataException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/manager/assets";
         }
+        return "redirect:/manager/assets/detail/" + id;
     }
 
-
-    @PostMapping("/edit/{id}")
-    public String update(
-            @PathVariable("id") Integer id,
-            @Valid @ModelAttribute("asset") AssetUpdateRequest request,
-            BindingResult result,
-            Model model
-    ) {
-
-        if (result.hasErrors()) {
-            model.addAttribute("assetTypes", assetTypeService.getAll());
-            model.addAttribute("orders", orderService.getAllOrderDetails());
-            model.addAttribute("statuses", AssetStatus.values());
-            model.addAttribute("isEdit", true);
-            model.addAttribute("activeMenu", "asset");
-            return "manager/asset/asset-form";
-        }
-
-        try {
-            request.setAssetId(id);
-            assetService.update(id, request);
-            return "redirect:/manager/assets";
-        } catch (InvalidDataException e) {
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("assetTypes", assetTypeService.getAll());
-            model.addAttribute("orders", orderService.getAllOrderDetails());
-            model.addAttribute("statuses", AssetStatus.values());
-            model.addAttribute("isEdit", true);
-            model.addAttribute("activeMenu", "asset");
-
-            return "manager/asset/asset-form";
-        }
-    }
 
 
     @PostMapping("/delete/{id}")

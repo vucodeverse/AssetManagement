@@ -6,156 +6,236 @@
 
 <head>
     <th:block layout:fragment="extra-css">
-        <link rel="stylesheet" th:href="@{/css/asset/asset-form.css}">
+        <link rel="stylesheet" th:href="@{/css/asset/asset-detail.css}">
     </th:block>
 </head>
 
 <body>
-
 <th:block layout:fragment="content">
 
-    <header class="page-header">
-        <h1 class="page-title"
-            th:text="${isEdit} ? 'CẬP NHẬT TÀI SẢN' : 'TẠO TÀI SẢN'"></h1>
-    </header>
-
-    <div class="content-wrapper">
-
-        <div class="error-message"
-             th:if="${error}"
-             th:text="${error}">
+    <div class="asset-page">
+        <div class="asset-header">
+            <h1>CHI TIẾT TÀI SẢN</h1>
         </div>
 
-        <div class="form-panel">
+        <div class="asset-form">
 
-            <form th:action="${isEdit} ? @{/manager/assets/edit/{id}(id=${asset.assetId})} : @{/manager/assets/create}"
-                  th:object="${asset}" method="post">
+            <!-- ========== THÔNG TIN CHUNG ========== -->
+            <div class="form-section">
+                <div class="form-section-title">Thông tin chung</div>
 
-                <input type="hidden" th:if="${isEdit}" th:field="*{assetId}"/>
+                <!-- View mode (text) -->
+                <div th:unless="${editMode}">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Mã tài sản</label>
+                            <div class="form-control-view" th:text="${asset.assetId}"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Tên tài sản</label>
+                            <div class="form-control-view" th:text="${asset.assetName}"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Loại tài sản</label>
+                            <div class="form-control-view" th:text="${asset.assetTypeName}"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Giá trị ban đầu (VNĐ)</label>
+                            <div class="form-control-view"
+                                 th:text="${#numbers.formatDecimal(asset.originalCost,0,'COMMA',0,'POINT')} + ' ₫'"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày mua</label>
+                            <div class="form-control-view" th:text="${asset.acquisitionDate}"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày bảo hành bắt đầu</label>
+                            <div class="form-control-view" th:text="${asset.warrantyStartDate}"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày bảo hành kết thúc</label>
+                            <div class="form-control-view" th:text="${asset.warrantyEndDate}"></div>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Edit mode (form) -->
+                <div th:if="${editMode}">
+                    <form th:action="@{/manager/assets/update/{id}(id=${asset.assetId})}"
+                          method="post"
+                          th:object="${updateRequest}">
+
+                        <!-- Hidden fields: giữ các giá trị không được sửa (bắt buộc vì có @NotNull) -->
+                        <input type="hidden" th:field="*{assetId}" />
+                        <input type="hidden" th:field="*{assetTypeId}" th:value="${asset.assetTypeId}" />
+                        <input type="hidden" th:field="*{originalCost}" th:value="${asset.originalCost}" />
+                        <input type="hidden" th:field="*{currentStatus}" th:value="${asset.currentStatus}" />
+                        <input type="hidden" th:field="*{purchaseOrderDetailId}" th:value="${asset.purchaseOrderDetailId}" />
+
+                        <div class="form-grid">
+                            <!-- Mã tài sản (chỉ đọc) -->
+                            <div class="form-group">
+                                <label>Mã tài sản</label>
+                                <div class="form-control-view" th:text="${asset.assetId}"></div>
+                            </div>
+                            <!-- Tên tài sản (có thể sửa) -->
+                            <div class="form-group">
+                                <label>Tên tài sản</label>
+                                <input type="text" th:field="*{assetName}" class="form-control" required />
+                                <div th:if="${#fields.hasErrors('assetName')}" class="error" th:errors="*{assetName}"></div>
+                            </div>
+                            <!-- Loại tài sản (chỉ đọc) -->
+                            <div class="form-group">
+                                <label>Loại tài sản</label>
+                                <div class="form-control-view" th:text="${asset.assetTypeName}"></div>
+                            </div>
+                            <!-- Giá trị ban đầu (chỉ đọc) -->
+                            <div class="form-group">
+                                <label>Giá trị ban đầu (VNĐ)</label>
+                                <div class="form-control-view"
+                                     th:text="${#numbers.formatDecimal(asset.originalCost,0,'COMMA',0,'POINT')} + ' ₫'"></div>
+                            </div>
+                            <!-- Ngày mua (có thể sửa) -->
+                            <div class="form-group">
+                                <label>Ngày mua</label>
+                                <input type="date" th:field="*{acquisitionDate}" class="form-control" />
+                            </div>
+                            <!-- Ngày bảo hành bắt đầu (có thể sửa) -->
+                            <div class="form-group">
+                                <label>Ngày bảo hành bắt đầu</label>
+                                <input type="date" th:field="*{warrantyStartDate}" class="form-control" />
+                            </div>
+                            <!-- Ngày bảo hành kết thúc (có thể sửa) -->
+                            <div class="form-group">
+                                <label>Ngày bảo hành kết thúc</label>
+                                <input type="date" th:field="*{warrantyEndDate}" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- Hiển thị tất cả lỗi validation (nếu có) -->
+                        <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
+                            <ul>
+                                <li th:each="err : ${#fields.allErrors()}" th:text="${err.defaultMessage}"></li>
+                            </ul>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">LƯU THAY ĐỔI</button>
+                            <a th:href="@{/manager/assets/detail/{id}(id=${asset.assetId})}" class="btn-secondary">HỦY</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ========== PHÂN BỔ ========== -->
+            <div class="form-section">
+                <div class="form-section-title">Phân bổ</div>
                 <div class="form-grid">
-
-                    <!--asset name-->
-                    <div class="form-field">
-                        <label>Tên tài sản</label>
-                        <input type="text" th:field="*{assetName}">
-
-                        <span class="error"
-                              th:if="${#fields.hasErrors('assetName')}"
-                              th:errors="*{assetName}">
-                        </span>
-
+                    <div class="form-group">
+                        <label>Phòng ban sử dụng</label>
+                        <div class="form-control-view"
+                             th:text="${asset.departmentName != null ? asset.departmentName : 'Chưa phân bổ'}"></div>
                     </div>
-
-                    <!-- quantity -->
-                    <div th:if="${!isEdit}" class="form-field">
-                        <label>Số lượng</label>
-                        <input type="number" th:field="*{quantity}"
-                               placeholder="VD: 123"/>
-
-                        <span class="error"
-                              th:if="${#fields.hasErrors('quantity')}"
-                              th:errors="*{quantity}">
-                        </span>
-                    </div>
-
-                    <!--asset type-->
-                    <div class="form-field">
-                        <label>Loại tài sản</label>
-                        <select th:field="*{assetTypeId}">
-                            <option value="">-- Chọn loại tài sản --</option>
-                            <option th:each="type : ${assetTypes}"
-                                    th:value="${type.typeId}"
-                                    th:text="${type.typeName}"></option>
-                        </select>
-                        <span class="error"
-                              th:if="${#fields.hasErrors('assetTypeId')}"
-                              th:errors="*{assetTypeId}">
-                        </span>
-                    </div>
-
-                    <!--purchase order-->
-                    <div class="form-field">
-                        <label>Đơn mua</label>
-                        <select th:field="*{purchaseOrderDetailId}">
-                            <option value="">-- Chọn đơn mua --</option>
-                            <option th:each="order : ${orders}"
-                                    th:value="${order.purchaseOrderDetailId}"
-                                    th:text="'PO-' + ${order.purchaseOrderDetailId}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <!--acquisitionDate-->
-                    <div class="form-field">
-                        <label>Ngày mua</label>
-                        <input type="date" th:field="*{acquisitionDate}">
-                    </div>
-
-
-                    <!--originalCost-->
-                    <div class="form-field">
-                        <label>Nguyên giá</label>
-                        <input type="number" th:field="*{originalCost}">
-
-                        <span class="error"
-                              th:if="${#fields.hasErrors('originalCost')}"
-                              th:errors="*{originalCost}">
-                        </span>
-                    </div>
-
-                    <!--warrantyStartDate-->
-                    <div class="form-field">
-                        <label>Bảo hành bắt đầu</label>
-                        <input type="date" th:field="*{warrantyStartDate}">
-                    </div>
-
-                    <!--warrantyEndDate-->
-                    <div class="form-field">
-                        <label>Bảo hành kết thúc</label>
-                        <input type="date" th:field="*{warrantyEndDate}">
-                    </div>
-
-                    <!--status-->
-                    <div class="form-field">
-                        <label>Trạng thái tài sản</label>
-                        <select th:field="*{currentStatus}">
-                            <option value="">-- Chọn trạng thái tài sản --</option>
-                            <option th:each="status : ${statuses}"
-                                    th:value="${status}"
-                                    th:text="${status.description}">
-                            </option>
-                        </select>
-
-                        <span class="error"
-                              th:if="${#fields.hasErrors('currentStatus')}"
-                              th:errors="*{currentStatus}">
-                        </span>
-                    </div>
-
-
                 </div>
+            </div>
 
-                <div class="form-actions">
-
-                    <button type="submit"
-                            class="btn-primary"
-                            th:text="${isEdit} ? 'CẬP NHẬT' : 'THÊM MỚI'"></button>
-
-                    <button type="button"
-                            onclick="window.location.href='/manager/assets'"
-                            class="btn-secondary">
-                        HỦY
-                    </button>
-
+            <!-- ========== THÔNG TIN ĐƠN MUA ========== -->
+            <div class="form-section">
+                <div class="form-section-title">Đơn mua</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Mã đơn hàng</label>
+                        <div class="form-control-view" th:text="${asset.purchaseOrderId}"></div>
+                        <label>Nhà cung cấp</label>
+                        <div class="form-control-view" th:text="${asset.supplierName}"></div>
+                        <label>Ngày đặt hàng</label>
+                        <div class="form-control-view" th:text="${asset.orderDate}"></div>
+                    </div>
                 </div>
+            </div>
 
-            </form>
+            <!-- ========== LỊCH SỬ TÀI SẢN ========== -->
+            <div class="form-section">
+                <div class="form-section-title">Lịch sử tài sản</div>
+                <div class="table-responsive">
+                    <table class="history-table">
+                        <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Hành động</th>
+                            <th>Từ</th>
+                            <th>Đến</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="log : ${logs}">
+                            <td th:text="${#temporals.format(log.actionDate, 'dd-MM-yyyy HH:mm')}">-</td>
+                            <td>
+                                <th:block th:switch="${log.actionType.name()}">
+                                    <th:block th:case="'STATUS_CHANGE'">
+                                        <th:block th:switch="${log.newStatus}">
+                                            <th:block th:case="'UNDER_MAINTENANCE'">
+                                                    <span class="badge-action badge-maintenance"
+                                                          th:text="${T(edu.fpt.groupfive.common.AssetStatus).UNDER_MAINTENANCE.description}"></span>
+                                            </th:block>
+                                            <th:block th:case="'DISPOSED'">
+                                                    <span class="badge-action badge-dispose"
+                                                          th:text="${T(edu.fpt.groupfive.common.AssetStatus).DISPOSED.description}"></span>
+                                            </th:block>
+                                            <th:block th:case="*">
+                                                    <span class="badge-action badge-status-change"
+                                                          th:text="${T(edu.fpt.groupfive.common.AssetStatus).valueOf(log.newStatus).description}"></span>
+                                            </th:block>
+                                        </th:block>
+                                    </th:block>
+                                    <th:block th:case="'CREATE'">
+                                        <span class="badge-action badge-create" th:text="${log.actionType.description}"></span>
+                                    </th:block>
+                                    <th:block th:case="'ALLOCATE'">
+                                        <span class="badge-action badge-allocate" th:text="${log.actionType.description}"></span>
+                                    </th:block>
+                                    <th:block th:case="'TRANSFER'">
+                                        <span class="badge-action badge-transfer" th:text="${log.actionType.description}"></span>
+                                    </th:block>
+                                    <th:block th:case="'RETURN'">
+                                        <span class="badge-action badge-return" th:text="${log.actionType.description}"></span>
+                                    </th:block>
+                                    <th:block th:case="'DISPOSE'">
+                                        <span class="badge-action badge-dispose" th:text="${log.actionType.description}"></span>
+                                    </th:block>
+                                    <th:block th:case="*">
+                                        <span class="badge-action" th:text="${log.actionType.description}"></span>
+                                    </th:block>
+                                </th:block>
+                            </td>
+                            <td th:text="${log.fromDepartmentName != null ? log.fromDepartmentName : '—'}">—</td>
+                            <td th:text="${log.toDepartmentName != null ? log.toDepartmentName : '—'}">—</td>
+                            <td class="note-cell" th:text="${log.note != null ? log.note : '—'}">—</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(logs)}">
+                            <td colspan="5" class="text-center">Không có dữ liệu</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========== NÚT HÀNH ĐỘNG ========== -->
+            <div class="form-actions">
+                <a th:if="${!editMode}"
+                   th:href="@{/manager/assets/detail/{id}(id=${asset.assetId}, edit=true)}"
+                   class="btn-primary">
+                    SỬA THÔNG TIN
+                </a>
+                <a th:href="@{/manager/assets}" class="btn-secondary">
+                    QUAY LẠI DANH SÁCH
+                </a>
+            </div>
 
         </div>
     </div>
 
 </th:block>
-
 </body>
 </html>
