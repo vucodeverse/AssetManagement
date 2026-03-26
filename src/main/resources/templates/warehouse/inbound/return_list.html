@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+        <style>
+            .data-table tbody tr.clickable-row {
+                cursor: pointer;
+                transition: background-color 0.15s ease;
+            }
+            .data-table tbody tr.clickable-row:hover {
+                background-color: #f0f7ff;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-rotate-left" style="margin-right:8px;"></i>Nhập kho Thu hồi</h1>
+            <p class="page-subtitle">Danh sách các lệnh thu hồi tài sản từ phòng ban về kho</p>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="wh-panel">
+            <div class="wh-panel-header">
+                <span class="wh-panel-title"><i class="fa-solid fa-list"></i> Danh sách Lệnh Thu hồi</span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã Lệnh</th>
+                        <th>Phòng ban hoàn trả</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ret : ${allReturns}"
+                        class="clickable-row"
+                        th:onclick="|window.location.href='@{/wh/inbound/return/}' + ${ret.handoverId}|">
+                        <td th:text="'#RTN-' + ${ret.handoverId}">501</td>
+                        <td th:text="${ret.fromDepartmentName}">Phòng IT</td>
+                        <td th:text="${#temporals.format(ret.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                            <span th:class="${ret.status == 'COMPLETED'} ? 'badge badge-completed' : 'badge badge-in-use'"
+                                  th:text="${ret.status == 'COMPLETED'} ? 'Hoàn thành' : 'Chờ xử lý'">PENDING</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(allReturns)}">
+                        <td colspan="4" style="text-align: center; color: #999; padding: 20px;">Chưa có lệnh thu hồi nào.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

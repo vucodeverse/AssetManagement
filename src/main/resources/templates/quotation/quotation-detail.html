@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
+
+<head>
+    <title th:text="'Chi Tiết Báo Giá #' + ${quotation.quotationId} + ' | PROCUREX'">Chi Tiết Báo Giá | PROCUREX</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+            rel="stylesheet">
+        <link rel="stylesheet" th:href="@{/css/quotation/quotation-detail.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <div class="po-detail-wrapper">
+
+            <header class="content-header">
+                <div class="header-left">
+                    <a class="btn-back" th:href="@{/quotations/of-purchase/{id}(id=${quotation.purchaseId})}">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1>CHI TIẾT BÁO GIÁ</h1>
+                </div>
+                <div class="header-actions">
+                    <!-- Các hành động của Director -->
+                    <th:block>
+                        <div sec:authorize="hasAuthority('DIRECTOR')">
+                            <form th:action="@{/quotations/{id}/actions(id=${quotation.quotationId})}" method="post"
+                                style="display: inline-block;">
+                                <input type="hidden" name="action" value="r">
+                                <button type="submit" class="btn-outline-prem"
+                                    th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}">
+                                    TỪ CHỐI
+                                </button>
+                            </form>
+                            <a th:href="@{/purchase-orders/create-from-quotation/{id}(id=${quotation.quotationId})}"
+                                th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING'}"
+                                class="btn-approve">
+                                DUYỆT & TẠO ĐƠN HÀNG
+                            </a>
+                        </div>
+                        <div sec:authorize="hasAuthority('PURCHASE_STAFF')" class="header-actions">
+                            <a th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT'}"
+                                class="btn-solid-prem" th:href="@{/quotations/{id}/edit(id=${quotation.quotationId})}">
+                                CẬP NHẬT BÁO GIÁ
+                            </a>
+                            <form
+                                th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'DRAFT' and quotation.quotationStatus.name() == 'PENDING'}"
+                                th:action="@{/quotations/{id}/actions(id=${quotation.quotationId})}" method="post"
+                                id="deleteQuotationForm" style="display: inline-block;">
+                                <input type="hidden" name="action" value="d">
+                                <button type="button" class="btn-danger-outline" onclick="confirmDeleteQuotation()">
+                                    XÓA BÁO GIÁ
+                                </button>
+                            </form>
+                        </div>
+                    </th:block>
+                </div>
+            </header>
+
+            <!-- Messages -->
+            <div th:if="${message}" class="alert-success-banner">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${message}"></span>
+            </div>
+
+            <div th:if="${error}" class="alert-error-banner">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="details-card">
+                <!-- Thông tin tiêu đề -->
+                <div class="header-info">
+                    <div class="info-item">
+                        <label>MÃ BÁO GIÁ</label>
+                        <p class="val-bold" th:text="'QT-' + ${quotation.quotationId}">QT-2024-001</p>
+                    </div>
+                    <div class="info-item">
+                        <label>NHÀ CUNG CẤP</label>
+                        <p class="val-bold">
+                            <span th:text="${quotation.supplierName}">Nhà cung cấp mẫu</span>
+                        </p>
+                    </div>
+                    <div class="info-item">
+                        <label>TRẠNG THÁI</label>
+                        <div>
+                            <span class="status-badge" th:classappend="${quotation.quotationStatus.name()}"
+                                th:text="${quotation.quotationStatus.description}">ĐANG CHỜ</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <label>NGÀY NHẬN</label>
+                        <p class="val-bold"
+                            th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'dd-MM-yyyy') : '—'}">
+                            10-01-2024</p>
+                    </div>
+                </div>
+
+
+                <hr class="divider">
+
+                <!-- Bảng danh sách mặt hàng -->
+                <section class="items-section">
+                    <h2 class="section-title">CHI TIẾT MẶT HÀNG BÁO GIÁ</h2>
+                    <div class="details-table-wrap">
+                        <table id="quotationItemsTable" class="details-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>MÃ YCCT</th>
+                                    <th>LOẠI TÀI SẢN</th>
+                                    <th>SỐ LƯỢNG</th>
+                                    <th>ĐƠN GIÁ</th>
+                                    <th>THUẾ (%)</th>
+                                    <th>CHIẾT KHẤU (%)</th>
+                                    <th>BẢO HÀNH (THÁNG)</th>
+                                    <th>THỰC THI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item, stat : ${quotation.quotationDetails}">
+                                    <td class="td-id" th:text="${stat.count}">1</td>
+                                    <td class="td-id" th:text="'#DET-' + ${item.purchaseDetailId}">#DET-101</td>
+                                    <td class="td-bold" th:text="${item.assetTypeName}">Loại tài sản</td>
+                                    <td th:text="${#numbers.formatInteger(item.quantity, 2)}">01</td>
+                                    <td
+                                        th:text="${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
+                                        0 VNĐ</td>
+                                    <td
+                                        th:text="${item.taxRate != null ? #numbers.formatDecimal(item.taxRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
+                                        0%</td>
+                                    <td
+                                        th:text="${item.discountRate != null ? #numbers.formatDecimal(item.discountRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
+                                        0%</td>
+                                    <td th:text="${item.warrantyMonths + ' Tháng'}">12 Tháng</td>
+                                    <td class="td-action">
+                                        <!-- Director Actions for Pending Item in a Pending Quotation -->
+                                        <div sec:authorize="hasAuthority('DIRECTOR')"
+                                            th:if="${quotation.quotationStatus != null and quotation.quotationStatus.name() == 'PENDING' and item.status != null and item.status.name() == 'PENDING'}">
+                                            <form method="post"
+                                                th:action="@{/quotations/details/{id}/actions(id=${item.quotationDetailId})}"
+                                                style="margin:0;">
+                                                <input type="hidden" name="qoId" th:value="${quotation.quotationId}">
+                                                <button type="submit" class="btn-bw btn-bw-approve" name="actions"
+                                                    value="a">DUYỆT</button>
+                                                <button type="submit" class="btn-bw btn-bw-reject" name="actions"
+                                                    value="r">TỪ CHỐI</button>
+                                            </form>
+                                        </div>
+
+                                        <!-- Status Display for Non-Directors, Non-Pending Quotations, or Already Processed Items -->
+                                        <div
+                                            th:if="${!#authorization.expression('hasAuthority(''DIRECTOR'')') or (quotation.quotationStatus != null and quotation.quotationStatus.name() != 'PENDING') or (item.status != null and item.status.name() != 'PENDING')}">
+                                            <span th:if="${item.status != null}" class="status-badge"
+                                                th:classappend="'status-' + ${item.status.name()}"
+                                                th:text="${item.status.description}">
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Khu vực tổng kết cuối trang -->
+                <div class="footer-summary">
+                    <div class="terms-box">
+                        <label>GHI CHÚ BÁO GIÁ</label>
+                        <p th:text="${quotation.quotationNote != null ? quotation.quotationNote : 'Không có ghi chú'}">
+                        </p>
+                    </div>
+                    <div class="total-summary">
+                        <div class="summary-line">
+                            <span>Tạm tính</span>
+                            <span
+                                th:text="${#numbers.formatDecimal(quotation.subtotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0
+                                VNĐ</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>Tổng chiết khấu</span>
+                            <span class="discount-val"
+                                th:text="'-' + ${#numbers.formatDecimal(quotation.totalDiscount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">-0
+                                VNĐ</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>Thuế dự kiến</span>
+                            <span
+                                th:text="${#numbers.formatDecimal(quotation.totalTax, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0
+                                VNĐ</span>
+                        </div>
+                        <div class="grand-total-row">
+                            <span>TỔNG CỘNG</span>
+                            <span class="grand-total"
+                                th:text="${#numbers.formatDecimal(quotation.grandTotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">0
+                                VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/quotation/quotation-detail.js}"></script>
+
+    </th:block>
+</body>
+
+</html>

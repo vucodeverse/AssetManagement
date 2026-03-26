@@ -1,3 +1,4 @@
+# --- Build artifacts ---
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -12,10 +13,10 @@ target/
 *.iws
 *.iml
 *.ipr
-
-### Eclipse ###
-.apt_generated
+.vscode/
+.settings/
 .classpath
+.project
 .factorypath
 .project
 .settings
@@ -37,3 +38,19 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/.idea/
+/target/
+/.smarttomcat/
+/tomcat.8080/
+/.target/
+/.cursor/
+
+
+/out/
+.cursor
+
+### Local docs ###
+docs/
+db-change-notes.md
+/.idea
+

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <aside class="sidebar" th:fragment="sidebar(activeMenu, activeSub)">
+        <div class="sidebar-logo">
+            <i class="fas fa-cube"></i> <span>PROCUREX</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- BẢNG ĐIỀU KHIỀN -->
+            <!--th:classappend = Thymeleaf attribute để thêm class vào class đã có sẵn-->
+            <a class="nav-item" th:href="@{/director/dashboard}"
+                th:classappend="${activeMenu}=='dashboard' ? ' active' : ''">
+                <i class="fas fa-th-large"></i> TRANG CHỦ
+            </a>
+
+            <!-- YÊU CẦU MUA SẮM -->
+            <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='purchase' ? ' active' : ''">
+                <i class="fas fa-shopping-cart"></i> YÊU CẦU MUA SẮM
+            </a>
+
+
+
+
+            <!-- TRUNG TÂM PHÊ DUYỆT -->
+            <div class="nav-group">
+                <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                    <i class="fas fa-check-circle"></i> TRUNG TÂM PHÊ DUYỆT
+                </a>
+
+                <div class="sub-nav" th:if="${activeMenu}=='approval'">
+                    <a class="sub-item" th:href="@{/purchases}" th:classappend="${activeSub}=='pr' ? ' active' : ''">
+                        Yêu Cầu Mua Sắm
+                    </a>
+
+                </div>
+            </div>
+
+            <!-- ĐƠN HÀNG MUA SẮM -->
+            <a class="nav-item" th:href="@{/purchase-orders}" th:classappend="${activeMenu}=='po' ? ' active' : ''">
+                <i class="fas fa-file-invoice-dollar"></i> ĐƠN ĐẶT HÀNG
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" th:text="${userInitials} ?: 'MT'">MT</div>
+            <div class="user-info">
+                <span class="user-name" th:text="${userName} ?: 'Marcus Thorne'">Marcus Thorne</span>
+                <span class="user-role" th:text="${userRole} ?: 'Giám Đốc'">Giám Đốc</span>
+            </div>
+        </div>
+    </aside>
+
+</body>
+
+</html>

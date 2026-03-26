@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'Department'">Department</title>
+
+    <!-- Font + icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- CSS layout  -->
+    <link rel="stylesheet" th:href="@{/css/layout/department.css}">
+
+    <!-- CSS riêng page -->
+    <th:block layout:fragment="extra-css"></th:block>
+</head>
+
+<body>
+
+<div class="dashboard-wrapper">
+
+    <!-- SIDEBAR -->
+    <div th:replace="${session.role == 'ASSET_MANAGER'}
+        ? ~{fragment/manager-sidebar :: sidebar(${activeMenu}, ${activeSub})}
+        : ~{fragment/department-sidebar :: sidebar(${activeMenu}, ${activeSub})}">
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-container">
+        <main layout:fragment="content"></main>
+    </div>
+
+</div>
+
+<th:block layout:fragment="extra-js"></th:block>
+
+</body>
+</html>

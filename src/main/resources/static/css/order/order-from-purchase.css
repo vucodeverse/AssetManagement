@@ -1,0 +1,340 @@
+/* ── Variables (shadow the layout root) ─────────────────── */
+/* Fonts synchronized in layout */
+
+:root {
+    --panel: #ffffff;
+    --text: #111827;
+    --muted2: #9ca3af;
+    --border: #e5e7eb;
+    --border2: #eef2f7;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --radius: 12px;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    background-color: #f8fafc;
+}
+
+/* ── Page Wrapper ─────────────────────────────────────────── */
+.po-list-wrapper {
+    max-width: 1120px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ── Breadcrumb ───────────────────────────────────────────── */
+.breadcrumb {
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 20px;
+}
+
+.breadcrumb .active {
+    color: var(--text);
+    font-weight: 800;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px 18px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+}
+
+.page-header h1 {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: .2px;
+    color: var(--text);
+    margin: 0 0 4px;
+}
+
+.page-header p {
+    color: var(--muted2);
+    margin: 0;
+    font-size: 12px;
+}
+
+/* ── Filter Card ──────────────────────────────────────────── */
+.filter-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 6px;
+    box-shadow: var(--shadow);
+}
+
+.search-wrap {
+    position: relative;
+}
+
+.search-wrap i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted2);
+    font-size: 13px;
+}
+
+.search-wrap input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    outline: none;
+    transition: border .15s;
+}
+
+.search-wrap input:focus {
+    border-color: var(--text);
+}
+
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    background: #fff;
+    cursor: pointer;
+    min-width: 150px;
+    outline: none;
+    transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.filter-select:focus {
+    border-color: var(--text);
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.05);
+}
+
+input[type="date"].filter-select {
+    min-width: 160px;
+    background-image: none;
+    padding-right: 12px;
+}
+
+.btn-clear-filter {
+    background: none;
+    border: none;
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: underline;
+    cursor: pointer;
+    color: var(--muted2);
+    margin-left: auto;
+    padding: 4px 0;
+}
+
+.btn-clear-filter:hover {
+    color: #dc2626;
+}
+
+/* ── PR Group Card ────────────────────────────────────────── */
+.pr-group {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.pr-group-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fafafa;
+}
+
+.pr-badge {
+    background: var(--text);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.pr-id-label {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.pr-note {
+    font-size: 11px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+/* ── PO Table ─────────────────────────────────────────────── */
+.po-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.po-data-table thead th {
+    text-align: left;
+    padding: 12px 18px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--muted2);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: #fafafa;
+    white-space: nowrap;
+}
+
+.po-data-table tbody tr {
+    cursor: pointer;
+    transition: background .12s;
+}
+
+.po-data-table tbody tr:hover {
+    background: #f5f5ff;
+}
+
+.po-data-table tbody td {
+    padding: 16px 18px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.po-data-table .td-id {
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.po-data-table .td-amount {
+    font-weight: 800;
+}
+
+.po-data-table .td-note {
+    color: var(--muted2);
+    font-style: italic;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Status Badges ────────────────────────────────────────── */
+.status-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 900;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.status-tag.PENDING {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.status-tag.ACTIVE, .status-tag.APPROVED {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.status-tag.SHIPPED {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+.status-tag.CANCELLED, .status-tag.REJECTED {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* ── Pagination ───────────────────────────────────────────── */
+.dataTables_wrapper .dataTables_info {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: var(--muted2) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding-top: 24px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    padding-top: 20px !important;
+    display: flex !important;
+    gap: 6px;
+    align-items: center;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    background: #f1f5f9 !important;
+    border: none !important;
+    color: var(--text) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--text) !important;
+    color: #fff !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+    background: #e2e8f0 !important;
+    color: var(--text) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    opacity: .35 !important;
+    cursor: default !important;
+}

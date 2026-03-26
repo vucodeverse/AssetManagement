@@ -1,0 +1,219 @@
+/* ===============================
+   QC EDIT FORM STYLES
+================================ */
+
+/* Kế thừa style chung từ list.css, bổ sung riêng cho form */
+.content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+.breadcrumb a {
+    color: #6b7280;
+    text-decoration: none;
+}
+.breadcrumb a:hover {
+    color: #1a1d23;
+}
+.breadcrumb .sep {
+    margin: 0 0.25rem;
+}
+.breadcrumb .current {
+    color: #1a1d23;
+    font-weight: 500;
+}
+
+/* Page header */
+.page-header {
+    margin-bottom: 2rem;
+}
+.page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #1a1d23;
+}
+.page-header p {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Alerts */
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.alert-danger {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+.alert-success {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+/* Card */
+.card {
+    background: #fff;
+    border-radius: 0.75rem;
+    border: 1px solid #e8eaed;
+    padding: 1.5rem;
+}
+
+/* Form */
+.qc-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+.full-width {
+    grid-column: span 2;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.form-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+}
+.required {
+    color: #dc2626;
+    margin-left: 0.25rem;
+}
+.form-control {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.15s;
+    background-color: #fff;
+    width: 100%;
+    box-sizing: border-box;
+}
+.form-control:focus {
+    outline: none;
+    border-color: #6b7280;
+    box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.1);
+}
+.form-control:disabled {
+    background-color: #f9fafb;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+}
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+.form-help {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+.d-flex {
+    display: flex;
+}
+.justify-content-between {
+    justify-content: space-between;
+}
+.align-items-center {
+    align-items: center;
+}
+.gap-2 {
+    gap: 0.5rem;
+}
+#charCount {
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    text-decoration: none;
+}
+.btn-primary {
+    background-color: #1a1d23;
+    color: #fff;
+}
+.btn-primary:hover {
+    background-color: #2d3139;
+    transform: translateY(-1px);
+}
+.btn-secondary {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+.btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .content {
+        padding: 1rem;
+    }
+    .card {
+        padding: 1rem;
+    }
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .full-width {
+        grid-column: span 1;
+    }
+    .form-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .form-actions .btn {
+        width: 100%;
+    }
+}

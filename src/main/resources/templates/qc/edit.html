@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+
+<head>
+    <title>Chỉnh sửa báo cáo QC</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/qc/edit.css}">
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+    <div class="content">
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+        <div class="breadcrumb">
+            <a th:href="@{/warehouse}">Trang chủ</a>
+            <span class="sep">›</span>
+            <a th:href="@{/qc-reports/list}">Báo cáo QC</a>
+            <span class="sep">›</span>
+            <span class="current">Chỉnh sửa</span>
+        </div>
+
+        <div class="page-header">
+            <h1>Chỉnh sửa báo cáo QC</h1>
+            <p>Cập nhật nội dung QC, nhưng giữ nguyên tài sản liên kết.</p>
+        </div>
+
+        <div class="card">
+            <form th:action="@{/qc-reports/{id}/edit(id=${reportId})}"
+                  method="post"
+                  th:object="${qcReport}"
+                  class="qc-form">
+
+                <div class="form-grid">
+
+                    <div class="form-group full-width">
+                        <label class="form-label">TÀI SẢN</label>
+                        <input type="text"
+                               class="form-control"
+                               th:value="|Asset ID: *{assetId}|"
+                               disabled/>
+                        <input type="hidden" th:field="*{assetId}"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            TRẠNG THÁI <span class="required">*</span>
+                        </label>
+
+                        <select th:field="*{status}" class="form-control" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option value="PASSED">PASSED - Đạt</option>
+                            <option value="FAILED">FAILED - Không đạt</option>
+                            <option value="PENDING">PENDING - Chờ xử lý</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">NGƯỜI KIỂM TRA</label>
+                        <input type="text"
+                               class="form-control"
+                               th:value="${session.userId != null ? 'User ID: ' + session.userId : 'Chưa đăng nhập'}"
+                               disabled/>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label">GHI CHÚ</label>
+
+                        <textarea th:field="*{note}"
+                                  id="note"
+                                  class="form-control"
+                                  rows="4"
+                                  maxlength="2000"
+                                  placeholder="Nhập ghi chú kiểm tra..."></textarea>
+
+                        <div class="d-flex justify-content-between">
+                            <span class="form-help">Tối đa 2000 ký tự</span>
+                            <span><span id="charCount">0</span>/2000</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-actions">
+                    <a th:href="@{/qc-reports/{id}(id=${reportId})}" class="btn btn-secondary">
+                        Hủy
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const note = document.getElementById('note');
+        const counter = document.getElementById('charCount');
+
+        if (note && counter) {
+            const update = () => counter.textContent = note.value.length;
+            note.addEventListener('input', update);
+            update();
+        }
+    </script>
+
+</th:block>
+</body>
+</html>

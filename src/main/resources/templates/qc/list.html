@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+
+<head>
+    <title>Danh sách báo cáo QC</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/qc/list.css}">
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+    <div class="content">
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+        <div class="breadcrumb">
+            <a th:href="@{/wh/dashboard}">Trang chủ</a>
+            <span class="sep">›</span>
+            <span class="current">Báo cáo QC</span>
+        </div>
+
+        <div class="page-header">
+            <h1>Báo cáo QC</h1>
+            <p>Tra cứu theo tài sản, theo trạng thái hoặc xem toàn bộ lịch sử QC.</p>
+        </div>
+
+        <div class="card">
+            <form th:action="@{/qc-reports/list}" method="get" class="qc-filter-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái</label>
+                        <select name="status" class="form-control">
+                            <option value="">-- Tất cả --</option>
+                            <option value="PASSED" th:selected="${selectedStatus == 'PASSED'}">PASSED</option>
+                            <option value="FAILED" th:selected="${selectedStatus == 'FAILED'}">FAILED</option>
+                            <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">PENDING</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Lọc</button>
+                    <a th:href="@{/qc-reports/list}" class="btn btn-secondary">Xóa bộ lọc</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="table-responsive" th:if="${reports != null and !reports.isEmpty()}">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Asset ID</th>
+                        <th>Trạng thái</th>
+                        <th>Người kiểm tra</th>
+                        <th>Ngày tạo QC</th>
+                        <th>Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${reports}">
+                        <td th:text="${report.reportId}"></td>
+                        <td th:text="${report.assetId}"></td>
+                        <td>
+                            <span th:text="${report.status}"
+                                  th:classappend="${report.status == 'PASSED' ? 'badge badge-success' : (report.status == 'FAILED' ? 'badge badge-danger' : 'badge badge-warning')}"></span>
+                        </td>
+                        <td th:text="${report.inspectorName != null ? report.inspectorName : ('User ID: ' + report.inspectedBy)}"></td>
+                        <td th:text="${report.qcDate}"></td>
+                        <td>
+                            <a th:href="@{/qc-reports/{id}(id=${report.reportId})}" class="btn btn-sm btn-info">Chi tiết</a>
+                            <a th:href="@{/qc-reports/{id}/edit(id=${report.reportId})}" class="btn btn-sm btn-warning">Sửa</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${reports == null or reports.isEmpty()}" class="empty-state">
+                <p>Chưa có báo cáo QC nào.</p>
+            </div>
+        </div>
+
+    </div>
+
+</th:block>
+</body>
+</html>

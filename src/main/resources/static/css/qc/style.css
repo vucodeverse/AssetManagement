@@ -1,0 +1,94 @@
+/* ===== QC ONLY (SAFE) ===== */
+
+.qc-container {
+    padding: 24px;
+}
+
+.qc-breadcrumb {
+    font-size: 13px;
+    margin-bottom: 16px;
+    color: #777;
+}
+
+.qc-header h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.qc-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #eee;
+}
+
+.qc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.qc-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.qc-group.full {
+    grid-column: span 2;
+}
+
+.qc-group input,
+.qc-group select,
+.qc-group textarea {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.qc-counter {
+    font-size: 12px;
+    text-align: right;
+    color: #999;
+}
+
+.qc-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* BUTTON */
+.btn-primary {
+    background: black;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+}
+
+.btn-secondary {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+/* ALERT */
+.qc-alert {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.qc-alert-danger {
+    background: #fee;
+    color: #900;
+}
+
+.qc-alert-success {
+    background: #efe;
+    color: #090;
+}

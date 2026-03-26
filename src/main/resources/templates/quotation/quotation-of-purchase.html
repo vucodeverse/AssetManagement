@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Báo Giá cho YC-' + ${purchaseId}">Báo Giá cho YC-000052</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/quotation/quotation-of-purchase.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <main class="quotation-content-wrapper">
+            <!-- Khu vực tiêu đề trang -->
+            <header class="page-header">
+                <div class="header-text">
+                    <a class="btn-back" th:href="@{/purchases}">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 th:text="'Báo Giá cho YC-' + ${purchaseId}">Báo Giá cho
+                        PR-000052</h1>
+                </div>
+                <div class="header-actions" style="display: flex; gap: 10px;">
+                    <input type="hidden" id="purchaseIdForCompare" th:value="${purchaseId}">
+                    <div sec:authorize="hasAnyAuthority('PURCHASE_STAFF', 'DIRECTOR')">
+                        <button id="btnCompare" class="btn-compare-custom" style="display: none;"
+                                th:data-url="@{/quotations/compare}">
+                            <span class="icon-wrap"><i class="fas fa-columns"></i></span>
+                            <span class="text-wrap">So sánh (<span id="compareCount">0</span>/3)</span>
+                        </button>
+                    </div>
+                    <div sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                        <a th:if="${purchaseStatus == null || purchaseStatus.name() != 'ORDERED'}"
+                            th:href="@{/quotations/create/{id}(id=${purchaseId})}" class="btn-primary">
+                            <i class="fas fa-plus"></i> Thêm Báo Giá Mới
+                        </a>
+                    </div>
+                    <div sec:authorize="hasAnyAuthority('DIRECTOR', 'PURCHASE_STAFF')">
+                        <a th:href="@{/purchase-orders/of-purchase-request/{id}(id=${purchaseId})}" class="btn-view-quotes">
+                            <i class="fas fa-list-ul"></i> Danh sách Đơn Đặt Hàng
+                        </a>
+                    </div>
+                </div>
+            </header>
+            <form method="get" th:action="@{/quotations/of-purchase/{id}/search(id=${purchaseId})}" id="filterForm">
+                <div class="table-actions">
+                    <div class="search-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="tableSearch" name="keyword"
+                            th:value="${criteria != null ? criteria.keyword : ''}"
+                            placeholder="Tìm kiếm theo mã Báo Giá hoặc Nhà Cung Cấp...">
+                    </div>
+                    <div class="filter-group-wrap">
+                        <div class="filter-select">
+                            <label>Trạng thái:</label>
+                            <select id="statusFilter" name="status">
+                                <option value="">Tất cả</option>
+                                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.description}"
+                                    th:selected="${criteria != null && criteria.status != null && criteria.status.name() == s.name()}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-select">
+                            <label>Nhà Cung Cấp:</label>
+                            <select id="supplierFilter" name="supplierName">
+                                <option value="">Tất cả</option>
+                                <option th:each="sup : ${suppliers}" th:value="${sup.supplierName}"
+                                    th:text="${sup.supplierName}"
+                                    th:selected="${criteria != null && criteria.supplierName == sup.supplierName}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-select">
+                            <label>Số tiền:</label>
+                            <select id="amountFilter" name="amountRange">
+                                <option value="">Tất cả</option>
+                                <option value="0-5000"
+                                    th:selected="${criteria != null && criteria.amountRange == '0-5000'}">0 - 5.000 VNĐ
+                                </option>
+                                <option value="5000-10000"
+                                    th:selected="${criteria != null && criteria.amountRange == '5000-10000'}">5.000 -
+                                    10.000 VNĐ</option>
+                                <option value="10000-20000"
+                                    th:selected="${criteria != null && criteria.amountRange == '10000-20000'}">10.000 -
+                                    20.000 VNĐ</option>
+                                <option value="20000+"
+                                    th:selected="${criteria != null && criteria.amountRange == '20000+'}">20.000+ VNĐ
+                                </option>
+                            </select>
+                        </div>
+                        <button class="btn-more" type="button" onclick="window.location.href=this.dataset.resetUrl"
+                            th:data-reset-url="@{/quotations/of-purchase/{id}(id=${purchaseId})}">
+                            <i class="fas fa-sliders-h"></i>
+                            ĐẶT LẠI
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div th:if="${message}" class="alert-success-banner">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${message}"></span>
+            </div>
+            
+            <div th:if="${error}" class="alert-error-banner">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+            <!-- Bảng danh sách báo giá -->
+            <div class="table-container">
+                <table class="data-table" id="quotationDetailTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="checkAllCompare"
+                                    title="Chọn tất cả"></th>
+                            <th>MÃ BÁO GIÁ</th>
+                            <th>NHÀ CUNG CẤP</th>
+                            <th>NGÀY TẠO</th>
+                            <th>TỔNG SỐ TIỀN</th>
+                            <th>TRẠNG THÁI</th>
+                            <th class="actions-head">THAO TÁC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="q : ${quotations}"
+                            th:attr="onclick=|window.location.href='@{/quotations/{id}(id=${q.quotationId})}'|">
+                            <td style="text-align: center;" onclick="event.stopPropagation()">
+                                <input type="checkbox" class="cb-compare" th:value="${q.quotationId}">
+                            </td>
+                            <td class="td-id" th:text="'QT-' + ${q.quotationId}">
+                                QT-001
+                            </td>
+                            <td>
+                                <div class="supplier-cell">
+                                    <i class="fas fa-building supplier-icon"></i>
+                                    <div class="supplier-info">
+                                        <strong th:text="${q.supplierName}">Nhà cung cấp mẫu</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${#temporals.format(q.createdAt, 'dd-MM-yyyy')}">12-10-2023</td>
+                            <td>
+                                <strong
+                                    th:text="${#numbers.formatDecimal(q.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">11.240
+                                    VNĐ</strong>
+
+                            </td>
+                            <td>
+                                <span th:class="'status-tag ' + ${#strings.toLowerCase(q.quotationStatus.name())}"
+                                    th:text="${q.quotationStatus.description}">ĐANG CHỜ DUYỆT</span>
+                            </td>
+                            <td class="cell-actions" onclick="event.stopPropagation()">
+                                <th:block sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                                    <a th:if="${q.quotationStatus.name() == 'DRAFT'}"
+                                        th:href="@{/quotations/{id}/edit(id=${q.quotationId})}" title="Chỉnh sửa">
+                                        <i class="far fa-edit action-icon"></i>
+                                    </a>
+                                </th:block>
+
+                                <th:block sec:authorize="hasAuthority('DIRECTOR')">
+                                    <a th:if="${q.quotationStatus.name() == 'PENDING'}" class="btn-approve-sm"
+                                        th:href="@{/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}">
+                                        DUYỆT & TẠO ĐƠN
+                                    </a>
+                                </th:block>
+
+                                <!-- POST actions -->
+                                <form
+                                    th:if="${q.quotationStatus.name() == 'DRAFT' || q.quotationStatus.name() == 'PENDING'}"
+                                    method="post" th:action="@{/quotations/{id}/actions(id=${q.quotationId})}"
+                                    class="inline-form">
+
+                                    <th:block sec:authorize="hasAuthority('PURCHASE_STAFF')">
+                                        <button type="submit" name="action" value="d" class="btn-reject-sm">
+                                            XÓA
+                                        </button>
+                                    </th:block>
+
+                                    <th:block sec:authorize="hasAuthority('DIRECTOR')">
+                                        <button type="button" class="btn-reject-sm"
+                                            th:if="${q.quotationStatus.name() == 'PENDING'}"
+                                            th:attr="data-action=@{/quotations/{id}/actions(id=${q.quotationId})}"
+                                            TỪ CHỐI
+                                        </button>
+                                    </th:block>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+
+            </div>
+        </main>
+    </th:block>
+
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/quotation/quotation-of-purchase.js}"></script>
+
+    </th:block>
+</body>
+
+</html>

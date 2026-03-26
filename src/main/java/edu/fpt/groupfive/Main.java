@@ -1,58 +1,48 @@
 package edu.fpt.groupfive;
 
-import edu.fpt.groupfive.config.DatabaseConfig;
-import edu.fpt.groupfive.dao.DepartmentDAO;
-import edu.fpt.groupfive.dao.UserDAO;
-import edu.fpt.groupfive.dao.impl.DepartmentDAOImpl;
-import edu.fpt.groupfive.dao.impl.UserDAOImpl;
-import edu.fpt.groupfive.dto.request.DepartmentCreateRequest;
-import edu.fpt.groupfive.dto.request.UseCreateRequest;
-import edu.fpt.groupfive.service.UserService;
-import edu.fpt.groupfive.service.impl.DepartmentServiceImpl;
-import edu.fpt.groupfive.service.impl.UserServiceImpl;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
-        DatabaseConfig databaseConfig = new DatabaseConfig();
+        // ===== Cấu hình DB (giống application.properties) =====
+        String url = "jdbc:sqlserver://localhost:1433;databaseName=AssetManager;encrypt=true;trustServerCertificate=true";
+        String dbUser = "sa";
+        String dbPassword = "123";
 
-        try (Connection conn = databaseConfig.getConnection()) {
-            if (conn != null && !conn.isClosed()) {
-                System.out.println("✅ KẾT NỐI DATABASE THÀNH CÔNG!");
-            } else {
-                System.out.println("❌ KẾT NỐI DATABASE THẤT BẠI!");
-            }
-        } catch (Exception e) {
-            System.out.println("❌ LỖI KẾT NỐI DATABASE!");
-            e.printStackTrace();
-        }
+        // ===== Mật khẩu mới muốn đặt =====
+        String newPassword = "123"; // <-- Đổi mật khẩu ở đây
 
-//        DepartmentCreateRequest request1 = new DepartmentCreateRequest("Information Technology Department", null);
-//        DepartmentCreateRequest request2 = new DepartmentCreateRequest("Asset Management Department", null);
-//
-//        DepartmentDAO departmentDAO = new DepartmentDAOImpl();
-//        DepartmentServiceImpl service = new DepartmentServiceImpl(departmentDAO);
-//
-//        service.createDepartment(request1);
-//        service.createDepartment(request2);
-//
-//        UseCreateRequest requestu1 = new UseCreateRequest("admin", "123", "System",
-//                "system@gmail.com", "012345678", "ADMIN", 1);
-//        UseCreateRequest requestu2 = new UseCreateRequest("manager1", "123", "Manager",
-//                "manage1@gmail.com", "012345688", "MANAGER", 2);
-//
-//        UserDAO userDAO = new UserDAOImpl();
-//        UserService userService = new UserServiceImpl(userDAO);
-//
-//        userService.createUser(requestu1);
-//        userService.createUser(requestu2);
+        // ===== Mã hóa bằng BCrypt (strength = 10, giống SecurityConfig) =====
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+        String hashedPassword = encoder.encode(newPassword);
 
+        // ===== Kết nối DB và update =====
+        Connection conn = DriverManager.getConnection(url, dbUser, dbPassword);
 
+        String sql = "UPDATE users SET password_hash = ? WHERE user_id = ?";
+        PreparedStatement ps = conn.prepareStatement(sql);
 
+        // Update admin (userId = 1)
+        ps.setString(1, hashedPassword);
+        ps.setInt(2, 1);
+        ps.executeUpdate();
+        System.out.println("Updated admin (id=1) password");
 
+        // Update user (userId = 2)
+        // Tạo hash mới cho user (mỗi hash BCrypt là unique)
+        ps.setString(1, encoder.encode(newPassword));
+        ps.setInt(2, 2);
+        ps.executeUpdate();
+        System.out.println("Updated user (id=2) password");
+
+        ps.close();
+        conn.close();
+
+        System.out.println("DONE! Mật khẩu mới: " + newPassword);
     }
 }

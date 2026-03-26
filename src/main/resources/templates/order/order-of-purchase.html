@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
+
+<head>
+  <title th:text="'Chi Tiết ĐH #' + ${order.orderId} + ' | PROCUREX'">Chi Tiết ĐH | PROCUREX</title>
+  <th:block layout:fragment="extra-css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/order/order-of-purchase.css}">
+
+  </th:block>
+</head>
+
+
+<body>
+  <div layout:fragment="content">
+    <div class="po-detail-wrapper">
+
+      <header class="content-header">
+        <div class="header-left">
+          <a class="btn-back" th:href="@{/purchase-orders}">
+            <i class="fas fa-arrow-left"></i>
+          </a>
+          <h1>CHI TIẾT ĐƠN ĐẶT HÀNG</h1>
+        </div>
+      </header>
+
+      <!-- Thông báo -->
+      <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+      <div class="details-card">
+        <!-- Thông tin tiêu đề -->
+        <div class="header-info">
+          <div class="info-item">
+            <label>MÃ ĐƠN ĐẶT HÀNG</label>
+            <p class="val-bold" th:text="'PO-' + ${order.orderId}">PO-2024-00892</p>
+          </div>
+          <div class="info-item">
+            <label>NHÀ CUNG CẤP</label>
+            <p class="val-bold">
+              <span th:text="${order.supplierName}">Global Tech Solutions Inc.</span>
+            </p>
+          </div>
+          <div class="info-item">
+            <label>MÃ YÊU CẦU MUA SẮM</label>
+            <p class="val-bold" th:text="'PR-' + ${order.purchaseId}">PR-001</p>
+          </div>
+          <div class="info-item">
+            <label>TRẠNG THÁI HIỆN TẠI</label>
+            <div>
+              <span class="status-badge" th:classappend="${order.getOrderStatus}"
+                th:text="${T(edu.fpt.groupfive.common.PurchaseProcessStatus).valueOf(order.getOrderStatus).description}">PENDING
+                REVIEW</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cập nhật ngày giao hàng (Chỉ dành cho Purchase Staff) -->
+        <div sec:authorize="hasAuthority('PURCHASE_STAFF')" class="delivery-update-box">
+          <form th:action="@{/purchase-orders/{id}/update-delivery-date(id=${order.orderId})}" method="post"
+            style="display:flex; align-items:center; gap:16px;">
+            <label>CẬP NHẬT NGÀY GIAO HÀNG:</label>
+            <input type="date" name="deliveryDate" class="delivery-input" required
+              th:value="${order.getOrderDetails[0].deliveryDate}">
+            <button type="submit" class="btn-update-date">CẬP NHẬT</button>
+          </form>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Bảng danh sách mặt hàng -->
+        <section class="items-section">
+          <h2 class="section-title">CHI TIẾT MẶT HÀNG</h2>
+          <div class="details-table-wrap">
+            <table id="lineItemsTable" class="details-table">
+              <thead>
+                <tr>
+                  <th>MÃ MẶT HÀNG</th>
+                  <th>MÃ YC CHI TIẾT</th>
+                  <th>LOẠI TÀI SẢN</th>
+                  <th>SỐ LƯỢNG</th>
+                  <th>ĐƠN GIÁ</th>
+                  <th>THUẾ (%)</th>
+                  <th>CHIẾT KHẤU (%)</th>
+                  <th>NGÀY GIAO HÀNG</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="item : ${order.getOrderDetails}">
+                  <td class="td-id" th:text="'#IT-' + ${item.purchaseOrderDetailId}">#IT-001</td>
+                  <td class="td-id" th:text="'#PRD-' + ${item.purchaseRequestDetailId}">#PRD-001</td>
+                  <td class="td-bold" th:text="${item.assetTypeName}">MacBook Pro 14" M3</td>
+                  <td th:text="${#numbers.formatInteger(item.quantity, 2)}">05</td>
+                  <td th:text="${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">1.999 VNĐ</td>
+                  <td
+                    th:text="${item.taxRate != null ? #numbers.formatDecimal(item.taxRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
+                    8.0%</td>
+                  <td
+                    th:text="${item.discountRate != null ? #numbers.formatDecimal(item.discountRate, 1, 'POINT', 1, 'POINT') + '%' : '0%'}">
+                    2.5%</td>
+                  <td class="italic-note"
+                    th:text="${item.deliveryDate != null ? #temporals.format(item.deliveryDate, 'dd-MM-yyyy') : '---'}">
+                    15-01-2024</td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Khu vực tổng kết cuối trang -->
+        <div class="footer-summary">
+          <div class="terms-box">
+            <label>ĐIỀU KHOẢN CHUNG</label>
+            <p>ĐIỀU KHOẢN THANH TOÁN NET 30 ÁP DỤNG TỪ NGÀY GIAO HÀNG. TẤT CẢ CÁC MẶT HÀNG PHẢI VƯỢT QUA KIỂM TRA CHẤT
+              LƯỢNG MUA SẮM TIÊU CHUẨN KHI NHẬN HÀNG.</p>
+          </div>
+          <div class="total-summary">
+            <div class="summary-line">
+              <span>Tạm tính</span>
+              <span th:text="${#numbers.formatDecimal(order.subtotal, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">19.270
+                VNĐ</span>
+            </div>
+            <div class="summary-line">
+              <span>Tổng chiết khấu</span>
+              <span class="discount-val"
+                th:text="'-' + ${#numbers.formatDecimal(order.totalDiscount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">-624
+                VNĐ</span>
+            </div>
+            <div class="summary-line">
+              <span>Thuế dự kiến</span>
+              <span th:text="${#numbers.formatDecimal(order.totalTax, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">1.491
+                VNĐ</span>
+            </div>
+            <div class="grand-total-row">
+              <span>TỔNG CỘNG</span>
+              <span class="grand-total"
+                th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">20.137
+                VNĐ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <th:block layout:fragment="extra-js">
+    <script th:src="@{/js/order/order-detail.js}"></script>
+  </th:block>
+</body>
+
+</html>

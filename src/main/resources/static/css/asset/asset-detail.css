@@ -1,0 +1,285 @@
+* {
+    box-sizing: border-box;
+}
+
+/* PAGE */
+.asset-page {
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    padding-top: 2rem
+}
+
+/* HEADER */
+.asset-header {
+    margin-bottom: 20px;
+}
+
+.asset-title {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* FORM CONTAINER */
+.asset-form {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+/* SECTION */
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #111827;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* GRID */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+/* GROUP */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+}
+
+/* VIEW FIELD */
+.form-control-view {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 10px 12px;
+    background: #f9fafb;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #111827;
+}
+
+/* PURCHASE ORDER BLOCK */
+.purchase-group label {
+    margin-top: 10px;
+}
+
+/* BUTTON */
+.form-actions {
+    margin-top: 25px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-primary {
+    background: #111827;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background: #000;
+}
+
+.btn-secondary {
+    background: #e5e7eb;
+    color: black;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: #d1d5db;
+}
+
+/* Lịch sử tài sản */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.history-table th,
+.history-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #eef2f6;
+    text-align: left;
+    font-size: 13px;
+    color: #1e2a3e;
+}
+
+.history-table th {
+    background-color: #f9fafb;
+    font-weight: 700;
+    color: #2c3e50;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+/* Badge hành động */
+.badge-action {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* Ghi chú dài */
+.note-cell {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badge cho bảo trì */
+.badge-maintenance {
+    background: #fff3e0;
+    color: #b65c1e;
+}
+
+/* Badge cho thanh lý */
+.badge-dispose {
+    background: #ffe8e8;
+    color: #b91c1c;
+}
+
+/* Giữ nguyên các class khác */
+.badge-create {
+    background: #e6f4ea;
+    color: #2e6b3e;
+}
+
+.badge-allocate {
+    background: #e6f0ff;
+    color: #1e4a76;
+}
+
+.badge-transfer {
+    background: #fff3e0;
+    color: #b65c1e;
+}
+
+.badge-return {
+    background: #f3e8ff;
+    color: #6b3e8e;
+}
+
+.badge-status-change {
+    background: #ffe8e8;
+    color: #b91c1c;
+}
+
+/* Flash messages */
+.error-message,
+.success-message {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.error-message {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.success-message {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+/* Alert (dùng cho validation errors) */
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.alert-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alert-danger ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+/* Form controls */
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #111827;
+    box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.1);
+}
+
+/* Error message cho từng field */
+.error {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.alert-danger {
+    list-style: none;
+    padding-left: 0;
+}
+.alert-danger::before {
+    content: none; /* nếu có pseudo-element */
+}
+
+
+.alert-danger ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.alert-danger ul li {
+    list-style: none;
+}

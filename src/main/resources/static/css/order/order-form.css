@@ -1,0 +1,383 @@
+:root {
+    --panel: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --muted2: #9ca3af;
+    --border: #e5e7eb;
+    --border2: #eef2f7;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --radius: 12px;
+    --page-max: 1100px;
+}
+
+/* ── Wrapper ─────────────────────────────────── */
+.po-content-wrapper {
+    max-width: var(--page-max);
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ── Breadcrumb ──────────────────────────────── */
+.breadcrumb {
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 20px;
+}
+
+.breadcrumb a {
+    color: var(--muted2);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: var(--text);
+}
+
+.breadcrumb .active {
+    color: var(--text);
+    font-weight: 800;
+}
+
+/* ── Page Header ─────────────────────────────── */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px 18px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+}
+
+.header-text h1 {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: .2px;
+    color: var(--text);
+    margin: 0 0 4px 0;
+}
+
+.header-text p {
+    color: var(--muted2);
+    margin: 0;
+    font-size: 12px;
+}
+
+/* ── Buttons ─────────────────────────────────── */
+.btn-solid {
+    background: var(--text);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-solid:hover {
+    opacity: .85;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.btn-outline {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-outline:hover {
+    background: var(--border2);
+}
+
+/* ── Form Sections ───────────────────────────── */
+.po-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px 28px;
+    margin-bottom: 18px;
+}
+
+.section-label {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* ── Form Grid ───────────────────────────────── */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-item.half-width {
+    grid-column: span 2;
+}
+
+.form-item label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted2);
+}
+
+.form-item input,
+.form-item select,
+.form-item textarea {
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--panel);
+    outline: none;
+    transition: all .2s ease;
+    font-family: inherit;
+    width: 100%;
+}
+
+.form-item select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.form-item input:focus,
+.form-item select:focus,
+.form-item textarea:focus {
+    border-color: var(--text);
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.05);
+}
+
+.form-item select:hover {
+    border-color: var(--muted2);
+}
+
+.form-item input[readonly] {
+    background: var(--border2);
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.form-item textarea {
+    resize: none;
+    height: 90px;
+}
+
+/* ── Order Details Table ─────────────────────── */
+.table-container {
+    overflow-x: auto;
+}
+
+.po-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.po-table thead th {
+    text-align: left;
+    padding: 13px 14px;
+    font-size: 10px;
+    letter-spacing: .14em;
+    font-weight: 900;
+    color: var(--muted2);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.po-table tbody td {
+    padding: 16px 14px;
+    border-bottom: 1px solid var(--border2);
+    font-size: 13px;
+    color: var(--text);
+    vertical-align: middle;
+}
+
+.po-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.po-table tbody tr:hover td {
+    background: #f8fafc;
+    transition: background .15s;
+}
+
+.table-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 12px;
+    background: transparent;
+    color: var(--text);
+    font-family: inherit;
+    outline: none;
+    transition: .15s;
+}
+
+.table-input:focus {
+    border-color: var(--border);
+    background: var(--panel);
+}
+
+.td-value {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+/* ── Financial Summary ───────────────────────── */
+.financial-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.summary-line {
+    display: flex;
+    gap: 24px;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.summary-line strong {
+    color: var(--text);
+    min-width: 100px;
+    text-align: right;
+}
+
+.total-line {
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--text);
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 2px solid var(--text);
+}
+
+.grand-total {
+    min-width: 100px;
+    text-align: right;
+}
+
+/* ── Footer Actions ──────────────────────────── */
+.po-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 18px;
+    margin-top: 4px;
+}
+
+.footer-info {
+    font-size: 11px;
+    color: var(--muted2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.footer-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* ── Delete Row Button ───────────────────────── */
+.td-delete {
+    width: 44px;
+    text-align: center;
+    padding: 0 !important;
+}
+
+.btn-del-row {
+    background: none;
+    border: none;
+    color: var(--muted2);
+    font-size: 15px;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: color .15s, background .15s;
+    line-height: 1;
+}
+
+.btn-del-row:hover {
+    color: #dc2626;
+    background: #fff1f2;
+}
+
+/* ── Error / Alert ───────────────────────────── */
+.alert-error {
+    border: 1px solid #fecaca;
+    background: #fff1f2;
+    color: #dc2626;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}

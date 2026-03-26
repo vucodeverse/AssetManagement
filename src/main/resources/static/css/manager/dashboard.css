@@ -1,0 +1,458 @@
+/* =========================================
+   DASHBOARD BASE & LAYOUT
+   ========================================= */
+.dashboard-container {
+    width: 100%;
+    padding: 24px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #f8fafc;
+    /* Nền xám nhạt cực nhẹ để nổi bật các Card trắng */
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0a2540;
+    margin-bottom: 32px;
+    letter-spacing: -0.5px;
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+}
+
+.section-title::before {
+    content: "";
+    width: 4px;
+    height: 18px;
+    background: #2d6a4f;
+    margin-right: 12px;
+    border-radius: 10px;
+}
+
+/* =========================================
+   TOP MAIN KPI GRID (Tổng số tài sản, Giá trị...)
+   ========================================= */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.main-kpi {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid #eef2f6;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hiệu ứng dải màu phía trên các card chính để tạo điểm nhấn */
+.main-kpi::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #2d6a4f, #52b788);
+}
+
+.main-kpi:nth-child(2)::after {
+    background: linear-gradient(90deg, #3a86ff, #00b4d8);
+}
+
+.main-kpi:nth-child(3)::after {
+    background: linear-gradient(90deg, #f72585, #7209b7);
+}
+
+.main-kpi:nth-child(4)::after {
+    background: linear-gradient(90deg, #fb5607, #ffbe0b);
+}
+
+.kpi-card .kpi-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.kpi-card .kpi-value {
+    font-size: 28px;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+}
+
+/* =========================================
+   STATUS KPI GRID (Thống kê trạng thái)
+   ========================================= */
+.status-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.status-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.status-card .icon {
+    font-size: 20px;
+}
+
+/* Colors for Status Cards */
+.status-card.available {
+    border-top: 4px solid #15803d;
+    background: #f0fdf4;
+}
+
+.status-card.available .kpi-title,
+.status-card.available .icon {
+    color: #166534;
+}
+
+.status-card.allocated {
+    border-top: 4px solid #a16207;
+    background: #fefce8;
+}
+
+.status-card.allocated .kpi-title,
+.status-card.allocated .icon {
+    color: #854d0e;
+}
+
+.status-card.assigned {
+    border-top: 4px solid #7e22ce;
+    background: #faf5ff;
+}
+
+.status-card.assigned .kpi-title,
+.status-card.assigned .icon {
+    color: #6b21a8;
+}
+
+.status-card.maintenance {
+    border-top: 4px solid #c2410c;
+    background: #fff7ed;
+}
+
+.status-card.maintenance .kpi-title,
+.status-card.maintenance .icon {
+    color: #9a3412;
+}
+
+.status-card.disposed {
+    border-top: 4px solid #64748b;
+    background: #f8fafc;
+}
+
+.status-card.disposed .kpi-title,
+.status-card.disposed .icon {
+    color: #475569;
+}
+
+/* =========================================
+   DATA TABLES (Yêu cầu cấp phát)
+   ========================================= */
+.data-table-section {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid #eef2f6;
+    margin-bottom: 40px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 12px 15px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.data-table td {
+    padding: 18px 15px;
+    font-size: 14px;
+    border-bottom: 1px solid #f8fafc;
+    color: #334155;
+}
+
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* =========================================
+   RECENT ACTIVITIES GRID (Tài sản mới, Bảo hành)
+   ========================================= */
+.recent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.recent-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid #eef2f6;
+}
+
+.mini-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.mini-table th {
+    text-align: left;
+    padding: 10px 8px;
+    font-size: 11px;
+    color: #94a3b8;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.mini-table td {
+    padding: 14px 8px;
+    font-size: 13px;
+    color: #334155;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.days-remaining {
+    font-weight: 800;
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* Các nút và liên kết */
+.btn-approve {
+    background: #0f172a;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-approve:hover {
+    background: #334155;
+}
+
+.view-all-link {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2d6a4f;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.view-all-link:hover {
+    color: #1b4332;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .status-kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+
+
+/* =========================================
+   THIẾT KẾ NÂNG CAO CHO 4 Ô KPI CHÍNH
+   ========================================= */
+
+/* Cấu trúc Flexbox để đẩy Icon sang bên phải */
+.main-kpi {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 120px;
+    position: relative;
+    border-left: 0 !important;
+    /* Bỏ border trái nếu có */
+}
+
+/* Thêm Icon giả lập bằng ::before (hoặc bạn có thể thêm thẻ <i> vào HTML) */
+.main-kpi::before {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    font-size: 40px;
+    opacity: 0.1;
+    /* Làm icon mờ đi tạo chiều sâu */
+    transition: all 0.3s ease;
+}
+
+/* Hiệu ứng khi hover vào card */
+.main-kpi:hover::before {
+    opacity: 0.2;
+    transform: scale(1.1);
+}
+
+/* Tùy chỉnh màu sắc và Icon cho từng ô cụ thể */
+
+/* 1. Tổng số tài sản */
+.main-kpi:nth-child(1) {
+    background: #eef2ff;
+    border: 1px solid #e0e7ff;
+}
+
+.main-kpi:nth-child(1) .kpi-title {
+    color: #4338ca;
+}
+
+.main-kpi:nth-child(1) .kpi-value {
+    color: #312e81;
+}
+
+.main-kpi:nth-child(1)::before {
+    content: "\f1b2";
+    color: #4338ca;
+}
+
+/* Icon: Box */
+
+/* 2. Tổng giá trị */
+.main-kpi:nth-child(2) {
+    background: #f0fdf4;
+    border: 1px solid #dcfce7;
+}
+
+.main-kpi:nth-child(2) .kpi-title {
+    color: #15803d;
+}
+
+.main-kpi:nth-child(2) .kpi-value {
+    color: #14532d;
+}
+
+.main-kpi:nth-child(2)::before {
+    content: "\f3d1";
+    color: #15803d;
+}
+
+/* Icon: Money bill */
+
+/* 3. Yêu cầu chờ duyệt */
+.main-kpi:nth-child(3) {
+    background: #faf5ff;
+    border: 1px solid #f3e8ff;
+}
+
+.main-kpi:nth-child(3) .kpi-title {
+    color: #7e22ce;
+}
+
+.main-kpi:nth-child(3) .kpi-value {
+    color: #581c87;
+}
+
+.main-kpi:nth-child(3)::before {
+    content: "\f0f3";
+    color: #7e22ce;
+}
+
+/* Icon: Bell */
+
+/* 4. Sắp hết bảo hành */
+.main-kpi:nth-child(4) {
+    background: #fff7ed;
+    border: 1px solid #ffedd5;
+}
+
+.main-kpi:nth-child(4) .kpi-title {
+    color: #c2410c;
+}
+
+.main-kpi:nth-child(4) .kpi-value {
+    color: #7c2d12;
+}
+
+.main-kpi:nth-child(4)::before {
+    content: "\f13d";
+    color: #c2410c;
+}
+
+/* Icon: Shield */
+
+/* Điều chỉnh lại font chữ cho chuyên nghiệp */
+.main-kpi .kpi-value {
+    font-size: 32px;
+    margin-top: 5px;
+}
+
+.main-kpi .kpi-title {
+    letter-spacing: 0.5px;
+    font-size: 11px;
+}
+
+
+@media (max-width: 768px) {
+
+    .kpi-grid,
+    .status-kpi-grid,
+    .recent-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-container {
+        padding: 16px;
+    }
+}

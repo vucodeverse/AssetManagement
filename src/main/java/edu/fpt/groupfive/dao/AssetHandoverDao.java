@@ -1,0 +1,19 @@
+package edu.fpt.groupfive.dao;
+
+import edu.fpt.groupfive.common.Status;
+import edu.fpt.groupfive.model.AssetHandover;
+
+import java.util.List;
+
+public interface AssetHandoverDao {
+    Integer insert(AssetHandover assetHandover);
+    List<AssetHandover> findAllByAllocationRequest();
+    List<AssetHandover> findAllByReturnRequest();
+    List<AssetHandover> findAllPendingReturns();
+    List<AssetHandover> findAllProcessedReturns();
+    List<AssetHandover> findAllReturns();
+    AssetHandover findById(Integer id);
+    void updateStatus(Integer id, Status status);
+    AssetHandover findByReturnRequestId(Integer returnRequestId);
+    void delete(Integer handoverId);
+}

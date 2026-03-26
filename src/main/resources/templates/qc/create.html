@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+
+<head>
+    <title>Tạo báo cáo QC</title>
+
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/qc/style.css}">
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+    <div class="qc-container">
+
+        <!-- ALERT -->
+        <div th:if="${error}" class="qc-alert qc-alert-danger" th:text="${error}"></div>
+        <div th:if="${message}" class="qc-alert qc-alert-success" th:text="${message}"></div>
+
+        <!-- BREADCRUMB -->
+        <div class="qc-breadcrumb">
+            <a th:href="@{/warehouse}">Trang chủ</a>
+            <span>›</span>
+            <a th:href="@{/qc-reports/list}">QC</a>
+            <span>›</span>
+            <span>Tạo mới</span>
+        </div>
+
+        <!-- HEADER -->
+        <div class="qc-header">
+            <h1>Tạo báo cáo QC</h1>
+            <p>Ghi nhận kết quả kiểm tra tài sản</p>
+        </div>
+
+        <!-- FORM -->
+        <div class="qc-card">
+            <form th:action="@{/qc-reports/create}"
+                  th:object="${qcReport}"
+                  method="post"
+                  class="qc-form">
+
+                <!-- hidden -->
+                <input type="hidden" th:field="*{assetId}"/>
+                <input type="hidden" th:field="*{sourceType}"/>
+                <input type="hidden" th:field="*{sourceId}"/>
+
+                <div class="qc-grid">
+
+                    <!-- ASSET -->
+                    <div class="qc-group full">
+                        <label>Tài sản</label>
+                        <input type="text"
+                               th:value="${asset.assetName + ' (#' + asset.assetId + ')'}"
+                               disabled>
+                    </div>
+
+                    <!-- STATUS -->
+                    <div class="qc-group">
+                        <label>Trạng thái *</label>
+                        <select th:field="*{status}" required>
+                            <option value="">-- Chọn --</option>
+                            <option value="PASSED">Đạt</option>
+                            <option value="FAILED">Không đạt</option>
+                            <option value="PENDING">Chờ</option>
+                        </select>
+                    </div>
+
+                    <!-- INSPECTOR -->
+                    <div class="qc-group">
+                        <label>Người kiểm tra</label>
+                        <input type="text" th:value="${inspectorName}" disabled>
+                    </div>
+
+                    <!-- NOTE -->
+                    <div class="qc-group full">
+                        <label>Ghi chú</label>
+                        <textarea th:field="*{note}" id="note" maxlength="2000"></textarea>
+                        <div class="qc-counter">
+                            <span id="charCount">0</span>/2000
+                        </div>
+                    </div>
+
+                    <!-- SOURCE -->
+                    <div class="qc-group full"
+                         th:if="${qcReport.sourceType != null}">
+                        <label>Nguồn phát sinh</label>
+                        <input type="text"
+                               th:value="${qcReport.sourceType + (qcReport.sourceId != null ? ' #' + qcReport.sourceId : '')}"
+                               disabled>
+                    </div>
+
+                </div>
+
+                <!-- ACTION -->
+                <div class="qc-actions">
+                    <a th:href="@{/qc-reports/list}" class="btn-secondary">Hủy</a>
+                    <button type="submit" class="btn-primary">Tạo</button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        const note = document.getElementById('note');
+        const counter = document.getElementById('charCount');
+
+        if (note && counter) {
+            const update = () => counter.textContent = note.value.length;
+            note.addEventListener('input', update);
+            update();
+        }
+    </script>
+
+</th:block>
+</body>
+</html>

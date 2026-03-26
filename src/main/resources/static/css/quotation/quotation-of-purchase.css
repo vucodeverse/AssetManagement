@@ -1,0 +1,723 @@
+:root {
+    --panel: #ffffff;
+    --text: #111827;
+    --muted2: #9ca3af;
+    --border: #e5e7eb;
+    --border2: #eef2f7;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --radius: 12px;
+    --page-max: 1400px;
+}
+
+.quotation-content-wrapper {
+    max-width: var(--page-max);
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Page Header & Breadcrumb */
+.breadcrumb {
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 20px;
+}
+
+.breadcrumb .active {
+    color: var(--text);
+    font-weight: 800;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px 18px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+}
+
+.header-text {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-back {
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text);
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: .15s ease;
+}
+
+.btn-back:hover {
+    background: #e2e8f0;
+}
+
+.header-text h1 {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: .2px;
+    color: var(--text);
+    margin: 0 0 4px 0;
+}
+
+.header-text p {
+    color: var(--muted2);
+    margin: 0;
+    font-size: 12px;
+}
+
+.btn-solid {
+    background: var(--text);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-solid:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Actions & Filters */
+.table-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding: 10px 4px 8px;
+}
+
+.search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-wrap i {
+    position: absolute;
+    left: 14px;
+    color: var(--muted2);
+    font-size: 14px;
+}
+
+.search-wrap input {
+    padding: 10px 15px 10px 40px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 999px;
+    font-size: 13px;
+    width: 320px;
+    outline: none;
+    transition: border-color .2s;
+}
+
+.search-wrap input:focus {
+    border-color: var(--text);
+}
+
+.filter-group-wrap {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.filter-select {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-select label {
+    font-size: 11px;
+    letter-spacing: .12em;
+    font-weight: 800;
+    color: var(--muted2);
+    text-transform: uppercase;
+}
+
+.filter-select select {
+    appearance: none;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 32px 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    min-width: 120px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted2) 50%), linear-gradient(135deg, var(--muted2) 50%, transparent 50%);
+    background-position: calc(100% - 16px) calc(50% - 2px), calc(100% - 11px) calc(50% - 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+.btn-more {
+    background: transparent;
+    border: none;
+    font-size: 11px;
+    letter-spacing: .1em;
+    font-weight: 900;
+    color: var(--muted2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.btn-more:hover {
+    background: var(--border2);
+    color: var(--text);
+}
+
+/* Table */
+.table-container {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.data-table thead th {
+    text-align: left;
+    padding: 16px 14px;
+    font-size: 11px;
+    letter-spacing: .14em;
+    font-weight: 900;
+    color: var(--muted2);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table tbody td {
+    padding: 22px 14px;
+    border-bottom: 1px solid var(--border2);
+    font-size: 13px;
+    color: var(--text);
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background: #f8fafc !important;
+}
+
+.supplier-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.supplier-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted2);
+    font-size: 14px;
+}
+
+.supplier-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.supplier-info strong {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.supplier-info span {
+    font-size: 11px;
+    color: var(--muted2);
+    letter-spacing: .02em;
+}
+
+.status-tag {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    border: 1px solid var(--text);
+}
+
+.status-tag.pending {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--text);
+}
+
+.status-tag.approved {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+}
+
+.status-tag.rejected {
+    background: #fff;
+    color: #dc2626;
+    border-color: #dc2626;
+}
+
+.rejected-reason-mini {
+    display: block;
+    font-size: 10px;
+    color: #dc2626;
+    margin-top: 4px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.cell-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.action-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    color: var(--text);
+    transition: .15s ease;
+}
+
+.action-icon:hover {
+    background: var(--border2);
+}
+
+.btn-approve-sm,
+.btn-reject-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    white-space: nowrap;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .15s ease;
+}
+
+.btn-approve-sm {
+    background: var(--text);
+    color: #fff;
+    border: 1px solid var(--text);
+}
+
+.btn-approve-sm:hover {
+    background: #000;
+}
+
+.btn-reject-sm {
+    background: #fff;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-reject-sm:hover {
+    background: var(--border2);
+}
+
+/* DataTables Overrides */
+.dataTables_info {
+    font-size: 11px !important;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted2) !important;
+    font-weight: 700;
+    padding-top: 16px !important;
+}
+
+.dataTables_paginate {
+    padding-top: 16px !important;
+}
+
+.dataTables_paginate .paginate_button {
+    padding: 0.2rem 0.5rem !important;
+    margin: 0 0.1rem !important;
+    background: #f1f5f9 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    min-width: auto !important;
+    height: auto !important;
+    line-height: normal !important;
+}
+
+.dataTables_paginate .paginate_button.current {
+    background: var(--text) !important;
+    color: #fff !important;
+    border-color: var(--text) !important;
+}
+
+.dataTables_paginate .paginate_button:hover:not(.current) {
+    background: var(--border2) !important;
+    color: var(--text) !important;
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    opacity: .35 !important;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 10% auto;
+    padding: 32px;
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 500px;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    margin-bottom: 24px;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.modal-body {
+    margin-bottom: 24px;
+}
+
+.modal-body textarea {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 120px;
+    outline: none;
+}
+
+.modal-body textarea:focus {
+    border-color: var(--text);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-cancel {
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.btn-confirm-reject {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+/* Custom Compare Button */
+.btn-compare-custom {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f39c12; /* Orange background */
+    border: 1px solid #c77e0b; /* Slightly darker orange border */
+    color: #000; /* Black text */
+    font-weight: 700;
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    height: 36px;
+}
+
+.btn-compare-custom .icon-wrap {
+    background-color: #000; /* Black icon background */
+    color: #fff; /* White icon */
+    padding: 0 10px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset -2px 0 0 rgba(0,0,0,0.2); /* Small shadow between icon and text */
+}
+
+.btn-compare-custom .text-wrap {
+    padding: 0 12px;
+}
+
+.btn-compare-custom:hover {
+    background-color: #e67e22;
+}
+
+.btn-compare-custom:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Comparison Matrix Styles */
+.compare-container {
+    width: 100%;
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.compare-table th, .compare-table td {
+    padding: 16px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.compare-table th {
+    background: #f8fafc;
+    text-align: left;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.compare-col-header {
+    text-align: center;
+}
+
+.compare-table .sticky-col {
+    position: sticky;
+    left: 0;
+    background: #f8fafc;
+    z-index: 10;
+    width: 300px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.compare-table tbody tr:hover td {
+    background: #fdfdfd;
+}
+
+.compare-table tbody tr:hover .sticky-col {
+    background: #f1f5f9;
+}
+
+.detail-card {
+    background: #fff;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.detail-card:last-child {
+    margin-bottom: 0;
+}
+
+.detail-header {
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+    padding-right: 20px;
+}
+
+.detail-spec {
+    font-size: 12px;
+    color: var(--muted2);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--border);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.detail-row.total {
+    font-weight: 700;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+    color: var(--text);
+}
+
+.btn-remove-detail {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.6;
+    padding: 2px;
+}
+
+.btn-remove-detail:hover {
+    opacity: 1;
+}
+
+.grand-total-row th, .grand-total-row td {
+    background: #f1f5f9 !important;
+    font-size: 16px;
+    font-weight: 900;
+    padding: 20px 16px;
+}
+
+.action-row td {
+    text-align: center;
+    padding: 20px 16px;
+    background: #f8fafc !important;
+}
+
+.btn-approve-compare {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-approve-compare:hover {
+    background: #059669;
+}
+
+.badge-qty-ok {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.badge-qty-warn {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Black & White Button Utility */
+.btn-bw {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    letter-spacing: 0.05em;
+}
+
+.btn-bw-approve {
+    background: #000;
+    color: #fff;
+    border: 1px solid #000;
+}
+
+.btn-bw-approve:hover {
+    background: #333;
+    border-color: #333;
+    transform: translateY(-1px);
+}
+
+.btn-bw-reject {
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+}
+
+.btn-bw-reject:hover {
+    background: #f8fafc;
+    transform: translateY(-1px);
+}
