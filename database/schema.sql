@@ -363,7 +363,7 @@ CREATE TABLE wh_receipts (
     receipt_no        NVARCHAR(50) NOT NULL UNIQUE, 
     purchase_order_id INT NULL REFERENCES purchase_orders(purchase_order_id),
     asset_handover_id INT NULL REFERENCES asset_handover(handover_id),
-    receipt_type      NVARCHAR(20) NOT NULL, -- Enum: 'INBOUND_PO', 'INBOUND_RETURN'
+    receipt_type      NVARCHAR(20) NOT NULL, -- Enum: 'INBOUND_PO', 'INBOUND_RETURN', 'OUTBOUND_ALLOCATION'
     created_at        DATETIME2(0) NOT NULL DEFAULT SYSDATETIME(),
     created_by        INT NOT NULL REFERENCES users(user_id),
     note              NVARCHAR(500) NULL
