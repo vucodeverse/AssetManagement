@@ -2,150 +2,94 @@
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/main-layout}">
+      layout:decorate="~{layout/warehouse-layout}">
+
 <head>
     <title>Danh sách báo cáo QC</title>
     <th:block layout:fragment="extra-css">
-        <link rel="stylesheet" th:href="@{/css/qc/list.css}"/>
+        <link rel="stylesheet" th:href="@{/css/qc/list.css}">
     </th:block>
 </head>
+
 <body>
 <th:block layout:fragment="content">
-    <div class="container">
-        <!-- Breadcrumb -->
+
+    <div class="content">
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
         <div class="breadcrumb">
-            <a th:href="@{/}">Trang chủ</a> &nbsp;/&nbsp; Báo cáo QC
+            <a th:href="@{/wh/dashboard}">Trang chủ</a>
+            <span class="sep">›</span>
+            <span class="current">Báo cáo QC</span>
         </div>
 
-        <!-- Page Header -->
         <div class="page-header">
-            <h2>Báo cáo kiểm tra chất lượng</h2>
-            <p>Quản lý và theo dõi toàn bộ báo cáo QC của tài sản</p>
+            <h1>Báo cáo QC</h1>
+            <p>Tra cứu theo tài sản, theo trạng thái hoặc xem toàn bộ lịch sử QC.</p>
         </div>
 
-        <!-- Flash Messages -->
-        <div class="alert alert-success" th:if="${message}">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-            <span th:text="${message}"></span>
-        </div>
-        <div class="alert alert-error" th:if="${error}">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span th:text="${error}"></span>
+        <div class="card">
+            <form th:action="@{/qc-reports/list}" method="get" class="qc-filter-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái</label>
+                        <select name="status" class="form-control">
+                            <option value="">-- Tất cả --</option>
+                            <option value="PASSED" th:selected="${selectedStatus == 'PASSED'}">PASSED</option>
+                            <option value="FAILED" th:selected="${selectedStatus == 'FAILED'}">FAILED</option>
+                            <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">PENDING</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Lọc</button>
+                    <a th:href="@{/qc-reports/list}" class="btn btn-secondary">Xóa bộ lọc</a>
+                </div>
+            </form>
         </div>
 
-        <!-- Toolbar -->
-        <div class="toolbar">
-            <div class="toolbar-left">
-                <form th:action="@{/wh/qc-reports/list}" method="get">
-                    <select class="filter-select" name="status" onchange="this.form.submit()">
-                        <option value="" th:selected="${selectedStatus == null}">Tất cả trạng thái</option>
-                        <option value="PASSED" th:selected="${selectedStatus == 'PASSED'}">PASSED</option>
-                        <option value="FAILED" th:selected="${selectedStatus == 'FAILED'}">FAILED</option>
-                        <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">PENDING</option>
-                    </select>
-                </form>
-            </div>
-            <a th:href="@{/wh/qc-reports/create}" class="btn btn-primary">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                Tạo báo cáo
-            </a>
-        </div>
-
-        <!-- Table -->
-        <div th:if="${reports != null and !reports.isEmpty()}">
-            <div class="table-wrapper">
-                <table class="data-table">
+        <div class="card">
+            <div class="table-responsive" th:if="${reports != null and !reports.isEmpty()}">
+                <table class="table">
                     <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Mã báo cáo</th>
+                        <th>ID</th>
                         <th>Asset ID</th>
                         <th>Trạng thái</th>
                         <th>Người kiểm tra</th>
-                        <th>Ngày kiểm tra</th>
-                        <th>Thao tác</th>
+                        <th>Ngày tạo QC</th>
+                        <th>Hành động</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="report, stat : ${reports}">
-                        <td th:text="${stat.count}"></td>
+                    <tr th:each="report : ${reports}">
                         <td th:text="${report.reportId}"></td>
                         <td th:text="${report.assetId}"></td>
                         <td>
-                            <span class="badge" th:classappend="${report.status == 'PASSED'} ? 'badge-passed' :
-                                                                   (${report.status == 'FAILED'} ? 'badge-failed' : 'badge-pending')"
-                                  th:text="${report.status}"></span>
+                            <span th:text="${report.status}"
+                                  th:classappend="${report.status == 'PASSED' ? 'badge badge-success' : (report.status == 'FAILED' ? 'badge badge-danger' : 'badge badge-warning')}"></span>
                         </td>
-                        <td th:text="${report.inspectorName}"></td>
-                        <td th:text="${#temporals.format(report.qcDate, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${report.inspectorName != null ? report.inspectorName : ('User ID: ' + report.inspectedBy)}"></td>
+                        <td th:text="${report.qcDate}"></td>
                         <td>
-                            <div class="table-actions">
-                                <a th:href="@{/wh/qc-reports/{id}(id=${report.reportId})}"
-                                   class="btn btn-outline btn-sm">Chi tiết</a>
-                                <a th:href="@{/wh/qc-reports/{id}/edit(id=${report.reportId})}"
-                                   class="btn btn-outline btn-sm">Sửa</a>
-                                <button type="button" class="btn btn-danger btn-sm"
-                                        th:onclick="|openDeleteModal(${report.reportId})|">Xóa</button>
-                            </div>
+                            <a th:href="@{/qc-reports/{id}(id=${report.reportId})}" class="btn btn-sm btn-info">Chi tiết</a>
+                            <a th:href="@{/qc-reports/{id}/edit(id=${report.reportId})}" class="btn btn-sm btn-warning">Sửa</a>
                         </td>
                     </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        <!-- Empty State -->
-        <div class="card" th:if="${reports == null or reports.isEmpty()}">
-            <div class="empty-state">
-                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0120 9.414V19a2 2 0 01-2 2z"/>
-                </svg>
-                <p>Chưa có báo cáo QC nào</p>
-                <a th:href="@{/wh/qc-reports/create}" class="btn btn-primary">Tạo báo cáo đầu tiên</a>
+            <div th:if="${reports == null or reports.isEmpty()}" class="empty-state">
+                <p>Chưa có báo cáo QC nào.</p>
             </div>
         </div>
+
     </div>
 
-    <!-- Delete Modal -->
-    <div class="modal-overlay" id="deleteModal">
-        <div class="modal">
-            <h3>Xác nhận xóa</h3>
-            <p>Bạn có chắc chắn muốn xóa báo cáo QC này không? Hành động này không thể hoàn tác.</p>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-outline" onclick="closeDeleteModal()">Hủy</button>
-                <form id="deleteForm" method="post">
-                    <button type="submit" class="btn btn-danger">Xóa</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</th:block>
-
-<th:block layout:fragment="extra-js">
-    <script>
-        function openDeleteModal(reportId) {
-            document.getElementById('deleteForm').action = '/wh/qc-reports/' + reportId + '/delete';
-            document.getElementById('deleteModal').classList.add('active');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.remove('active');
-        }
-
-        document.getElementById('deleteModal').addEventListener('click', function (e) {
-            if (e.target === this) closeDeleteModal();
-        });
-    </script>
 </th:block>
 </body>
 </html>
-
-

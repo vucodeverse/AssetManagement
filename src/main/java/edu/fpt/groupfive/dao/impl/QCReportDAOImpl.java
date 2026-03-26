@@ -15,47 +15,50 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class QCReportDAOImpl implements QCReportDAO {
 
-    private final DatabaseConfig databaseConfig;
+    private final DatabaseConfig db;
 
     // ==================== CREATE ====================
     @Override
     public QualityControlReport createQCReport(QualityControlReport qc) {
-        String query = """
-                INSERT INTO qc_report (asset_id, qc_status, inspected_by, note, qc_date)
-                VALUES (?, ?, ?, ?, SYSDATETIME())
-                """;
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+
+        String sql = """
+    INSERT INTO qc_report (asset_id, qc_status, inspected_by, note, qc_date, source_type, source_id)
+    VALUES (?, ?, ?, ?, SYSDATETIME(), ?, ?)
+""";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, qc.getAssetId());
             ps.setString(2, qc.getStatus());
             ps.setInt(3, qc.getInspectedBy());
             ps.setString(4, qc.getNote());
+            ps.setString(5, qc.getSourceType());
+            ps.setObject(6, qc.getSourceId());
+
             ps.executeUpdate();
 
-            ResultSet keys = ps.getGeneratedKeys();
-            if (keys.next()) {
-                return findById(keys.getInt(1))
-                        .orElseThrow(() -> new RuntimeException("Tạo báo cáo QC thất bại"));
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return findById(rs.getInt(1))
+                        .orElseThrow(() -> new RuntimeException("Create QC failed"));
             }
-            throw new RuntimeException("Không lấy được ID sau khi tạo báo cáo QC");
+
+            throw new RuntimeException("Cannot get generated ID");
 
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tạo báo cáo QC cho asset_id: " + qc.getAssetId(), e);
+            throw new RuntimeException("Error creating QC report", e);
         }
     }
 
     // ==================== READ ====================
     @Override
     public Optional<QualityControlReport> findById(int id) {
-        String query = """
-        SELECT *
-        FROM qc_report
-        WHERE id = ?
-    """;
 
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        String sql = "SELECT * FROM qc_report WHERE id = ?";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -63,190 +66,309 @@ public class QCReportDAOImpl implements QCReportDAO {
             return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tìm báo cáo QC với id: " + id, e);
+            throw new RuntimeException("Error find QC by id", e);
         }
     }
 
     @Override
     public List<QualityControlReport> findByAssetId(int assetId) {
-        String query = "SELECT * FROM qc_report WHERE asset_id = ? ORDER BY qc_date DESC";
-        List<QualityControlReport> reports = new ArrayList<>();
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+
+        String sql = """
+            SELECT *
+            FROM qc_report
+            WHERE asset_id = ?
+            ORDER BY qc_date DESC
+        """;
+
+        List<QualityControlReport> list = new ArrayList<>();
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, assetId);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) reports.add(mapRow(rs));
+
+            while (rs.next()) list.add(mapRow(rs));
 
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tìm báo cáo QC cho asset_id: " + assetId, e);
-        }
-        return reports;
-    }
-
-    @Override
-    public List<QualityControlReport> findByStatus(String status) {
-        String query = """
-        SELECT *
-        FROM qc_report
-        WHERE qc_status = ?
-        ORDER BY qc_date DESC
-    """;
-
-        List<QualityControlReport> reports = new ArrayList<>();
-
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
-            ps.setString(1, status);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                reports.add(mapRow(rs));
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Không thể tìm báo cáo QC theo status: " + status, e);
+            throw new RuntimeException("Error find QC by asset", e);
         }
 
-        return reports;
-    }
-    @Override
-    public String getInspectorName(int userId) {
-        String sql = """
-        SELECT (ISNULL(first_name, '') + ' ' + ISNULL(last_name, '')) AS full_name
-        FROM users
-        WHERE user_id = ?
-    """;
-
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) return rs.getString("full_name");
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return "Unknown";
+        return list;
     }
 
     @Override
     public List<QualityControlReport> findAll() {
-        String query = """
-        SELECT q.*
-        FROM qc_report q
-        ORDER BY q.qc_date DESC
-    """;
 
-        List<QualityControlReport> reports = new ArrayList<>();
+        String sql = "SELECT * FROM qc_report ORDER BY qc_date DESC";
 
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        List<QualityControlReport> list = new ArrayList<>();
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                reports.add(mapRow(rs));
-            }
+            while (rs.next()) list.add(mapRow(rs));
 
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể lấy danh sách báo cáo QC", e);
+            throw new RuntimeException("Error get all QC", e);
         }
 
-        return reports;
+        return list;
     }
+
     // ==================== UPDATE ====================
     @Override
     public QualityControlReport updateQCReport(QualityControlReport qc) {
-        String query = """
-                UPDATE qc_report
-                SET asset_id = ?, qc_status = ?, inspected_by = ?, note = ?, qc_date = SYSDATETIME()
-                WHERE id = ?
-                """;
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+
+        String sql = """
+            UPDATE qc_report
+            SET asset_id = ?, qc_status = ?, inspected_by = ?, note = ?, qc_date = SYSDATETIME()
+            WHERE id = ?
+        """;
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, qc.getAssetId());
             ps.setString(2, qc.getStatus());
             ps.setInt(3, qc.getInspectedBy());
             ps.setString(4, qc.getNote());
             ps.setInt(5, qc.getReportId());
+
             ps.executeUpdate();
 
-            return findById(qc.getReportId())
-                    .orElseThrow(() -> new RuntimeException("Cập nhật báo cáo QC thất bại"));
+            return findById(qc.getReportId()).orElseThrow();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể cập nhật báo cáo QC với id: " + qc.getReportId(), e);
+            throw new RuntimeException("Error update QC", e);
         }
     }
 
     // ==================== DELETE ====================
     @Override
     public void deleteById(int id) {
-        String query = "DELETE FROM qc_report WHERE id = ?";
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+
+        String sql = "DELETE FROM qc_report WHERE id = ?";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể xóa báo cáo QC với id: " + id, e);
+            throw new RuntimeException("Error delete QC", e);
         }
     }
 
+    // ==================== QC BUSINESS ====================
+
+    @Override
+    public Optional<QualityControlReport> findLatestByAssetId(int assetId) {
+
+        String sql = """
+            SELECT TOP 1 *
+            FROM qc_report
+            WHERE asset_id = ?
+            ORDER BY qc_date DESC
+        """;
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, assetId);
+            ResultSet rs = ps.executeQuery();
+
+            return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error get latest QC", e);
+        }
+    }
+
+    @Override
+    public boolean isAssetPassed(int assetId) {
+        return findLatestByAssetId(assetId)
+                .map(qc -> "PASSED".equalsIgnoreCase(qc.getStatus()))
+                .orElse(false);
+    }
+    @Override
+    public boolean hasAnyAssetPassed(int transferId) {
+        String sql = """
+        SELECT COUNT(*) > 0
+        FROM transfer_request_detail trd
+        WHERE trd.transfer_id = ?
+          AND EXISTS (
+              SELECT 1
+              FROM quality_control_report qcr
+              WHERE qcr.asset_id = trd.asset_id
+                AND qcr.status = 'PASSED'
+                AND qcr.report_id = (
+                    SELECT MAX(report_id)
+                    FROM quality_control_report
+                    WHERE asset_id = trd.asset_id
+                )
+          )
+        """;
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, transferId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi kiểm tra có asset đạt QC", e);
+        }
+    }
+    @Override
+    public boolean isAllAssetPassed(int transferId) {
+
+        String sql = """
+            SELECT COUNT(*) 
+            FROM transfer_request_detail d
+            WHERE d.transfer_id = ?
+              AND NOT EXISTS (
+                  SELECT 1 FROM qc_report q
+                  WHERE q.asset_id = d.asset_id
+                  AND q.qc_status = 'PASSED'
+              )
+        """;
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, transferId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) == 0; // 0 nghĩa là tất cả đều PASS
+            }
+
+            return false;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error check QC for transfer", e);
+        }
+    }
+    @Override
+    public boolean isAllAssetHasQC(int transferId) {
+        String sql = """
+        SELECT COUNT(*)
+        FROM transfer_request_detail trd
+        WHERE trd.transfer_id = ?
+          AND NOT EXISTS (
+              SELECT 1 FROM qc_report qcr
+              WHERE qcr.asset_id = trd.asset_id
+          )
+        """;
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, transferId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) == 0; // true if no asset missing QC
+                }
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking QC for transfer", e);
+        }
+    }
+    @Override
+    public List<QualityControlReport> findByStatus(String status) {
+        String sql = """
+        SELECT *
+        FROM qc_report
+        WHERE qc_status = ?
+        ORDER BY qc_date DESC
+    """;
+
+        List<QualityControlReport> list = new ArrayList<>();
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, status);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi tìm QC theo status: " + status, e);
+        }
+
+        return list;
+    }
+    @Override
+    public String getInspectorName(int userId) {
+        String sql = """
+        SELECT CONCAT(
+            COALESCE(first_name, ''), 
+            ' ', 
+            COALESCE(last_name, '')
+        ) AS full_name
+        FROM users
+        WHERE user_id = ?
+    """;
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String name = rs.getString("full_name");
+                return (name != null && !name.trim().isEmpty())
+                        ? name.trim()
+                        : "Unknown";
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Không thể lấy tên inspector với id: " + userId, e);
+        }
+
+        return "Unknown";
+    }
     // ==================== EXISTS ====================
     @Override
     public boolean existsById(int id) {
-        String query = "SELECT COUNT(1) FROM qc_report WHERE id = ?";
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
-            ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            return rs.next() && rs.getInt(1) > 0;
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Không thể kiểm tra báo cáo QC với id: " + id, e);
-        }
+        return exists("SELECT COUNT(1) FROM qc_report WHERE id = ?", id);
     }
 
     @Override
     public boolean existsAssetById(int assetId) {
-        String query = "SELECT COUNT(1) FROM asset WHERE asset_id = ?";
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
-            ps.setInt(1, assetId);
-            ResultSet rs = ps.executeQuery();
-            return rs.next() && rs.getInt(1) > 0;
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Không thể kiểm tra asset với id: " + assetId, e);
-        }
+        return exists("SELECT COUNT(1) FROM asset WHERE asset_id = ?", assetId);
     }
 
     @Override
-    public boolean existsInspectorById(int inspectorId) {
-        String query = "SELECT COUNT(1) FROM users WHERE user_id = ?";
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+    public boolean existsInspectorById(int userId) {
+        return exists("SELECT COUNT(1) FROM users WHERE user_id = ?", userId);
+    }
 
-            ps.setInt(1, inspectorId);
+    private boolean exists(String sql, int id) {
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
+
             return rs.next() && rs.getInt(1) > 0;
 
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể kiểm tra inspector với id: " + inspectorId, e);
+            throw new RuntimeException("Exists check failed", e);
         }
     }
 
-    // ==================== ROW MAPPER ====================
+    // ==================== MAPPER ====================
     private QualityControlReport mapRow(ResultSet rs) throws SQLException {
+
         QualityControlReport qc = new QualityControlReport();
 
         qc.setReportId(rs.getInt("id"));
@@ -254,15 +376,27 @@ public class QCReportDAOImpl implements QCReportDAO {
         qc.setStatus(rs.getString("qc_status"));
         qc.setInspectedBy(rs.getInt("inspected_by"));
         qc.setCreatedDate(rs.getTimestamp("qc_date").toLocalDateTime());
-
-            qc.setNote(rs.getString("note"));
-
-        try {
-            qc.setInspectorName(rs.getString("inspector_name"));
-        } catch (SQLException e) {
-            qc.setInspectorName(null);
-        }
+        qc.setNote(rs.getString("note"));
 
         return qc;
+    }
+
+    @Override
+    public Optional<QualityControlReport> findByAssetAndSource(Integer assetId, String sourceType, Integer sourceId) {
+        String sql = "SELECT * FROM qc_report WHERE asset_id = ? AND source_type = ? AND source_id = ?";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, assetId);
+            ps.setString(2, sourceType);
+            ps.setInt(3, sourceId);
+
+            ResultSet rs = ps.executeQuery();
+            return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding QC by asset and source", e);
+        }
     }
 }

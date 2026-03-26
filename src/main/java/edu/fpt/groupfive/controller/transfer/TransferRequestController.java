@@ -6,14 +6,14 @@ import edu.fpt.groupfive.dto.request.search.TransferSearchCriteria;
 import edu.fpt.groupfive.dto.request.transfer.TransferRequestCreate;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.PageResponse;
+import edu.fpt.groupfive.dto.response.QCReportResponse;
 import edu.fpt.groupfive.dto.response.TransferResponse;
 import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.DepartmentService;
+import edu.fpt.groupfive.service.IQCReportService;
 import edu.fpt.groupfive.service.ITransferRequestService;
 import edu.fpt.groupfive.service.UserService;
-import edu.fpt.groupfive.service.impl.TransferRequestDetailServiceImpl;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/transfer-requests")
@@ -33,15 +35,40 @@ public class TransferRequestController {
     private final DepartmentService departmentService;
     private final AssetService assetService;
     private final UserService userService;
-    private final TransferRequestDetailServiceImpl transferRequestDetailServiceImpl;
+    private final IQCReportService qcReportService;
 
+
+    // ==================== HELPER ====================
+    private Integer getUserId(HttpSession session) {
+        return (Integer) session.getAttribute("userId");
+    }
+
+    private Integer getDepartmentId(HttpSession session) {
+        return (Integer) session.getAttribute("departmentId");
+    }
+
+    private String getRole(HttpSession session) {
+        return (String) session.getAttribute("role");
+    }
+
+    private String buildQcCreateUrl(Integer assetId, int transferId) {
+        return "/qc-reports/create?assetId=" + assetId + "&sourceType=TRANSFER&sourceId=" + transferId;
+    }
+
+    // ==================== CREATE ====================
     @GetMapping("/add")
     public String showCreateForm(
             @RequestParam(value = "fromDepartmentId", required = false) Integer fromDepartmentId,
-            @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
-            @RequestParam(value = "size", defaultValue = "3") int size, // sửa default size
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size,
             @RequestParam(value = "selectedIds", required = false) List<Integer> selectedIds,
+            HttpSession session,
             Model model) {
+
+        String role = getRole(session);
+        if (!"ASSET_MANAGER".equals(role)) {
+            throw new RuntimeException("Chỉ Asset Manager mới được tạo lệnh điều chuyển");
+        }
 
         if (!model.containsAttribute("transferRequest")) {
             model.addAttribute("transferRequest", new TransferRequestCreate());
@@ -54,16 +81,13 @@ public class TransferRequestController {
             AssetSearchCriteria criteria = new AssetSearchCriteria();
             criteria.setDepartmentId(fromDepartmentId);
 
-            // Sửa chỗ này: chỉ lấy 1 trang dữ liệu
             PageResponse<AssetDetailResponse> res =
-                    assetService.searchAssets(criteria, pageNo, size);
+                    assetService.searchAssets(criteria, page, size);
 
             model.addAttribute("assets", res.getData());
-            model.addAttribute("selectedDepartmentId", fromDepartmentId);
             model.addAttribute("currentPage", res.getCurrentPage());
             model.addAttribute("totalPages", res.getTotalPages());
-            model.addAttribute("pageSize", res.getPageSize());
-            model.addAttribute("totalRecords", res.getTotalRecords());
+            model.addAttribute("selectedDepartmentId", fromDepartmentId);
             model.addAttribute("selectedIds", selectedIds);
         }
 
@@ -71,84 +95,66 @@ public class TransferRequestController {
     }
 
     @PostMapping("/create")
-    public String processCreateForm(@ModelAttribute("transferRequest") TransferRequestCreate request,
-                                    RedirectAttributes redirectAttributes,
-                                    HttpServletRequest httpRequest) {
-        Integer assetManagerId = (Integer) httpRequest.getSession().getAttribute("userId");
-        if (assetManagerId == null) {
-            redirectAttributes.addFlashAttribute("error", "Bạn chưa đăng nhập");
-            return "redirect:/login";
-        }
-        request.setAssetManagerId(assetManagerId);
+    public String create(@ModelAttribute TransferRequestCreate request,
+                         HttpSession session,
+                         RedirectAttributes redirect) {
 
+        // Kiểm tra role
+        String role = getRole(session);
+        if (!"ASSET_MANAGER".equals(role)) {
+            redirect.addFlashAttribute("error", "Chỉ Asset Manager mới được tạo lệnh điều chuyển");
+            return "redirect:/transfer-requests/am";
+        }
+
+        // Kiểm tra userId
+        Integer userId = getUserId(session);
+        if (userId == null) return "redirect:/auth/login";
+
+        request.setAssetManagerId(userId);
 
         try {
-            TransferResponse response = transferRequestService.createTransferRequest(request);
-            System.out.println("Service call successful. Transfer ID: " + response.getTransferId());
+            // Tạo transfer request
+            TransferResponse res = transferRequestService.createTransferRequest(request);
 
-            redirectAttributes.addFlashAttribute(
-                    "message",
-                    "Tạo yêu cầu điều chuyển thành công. Mã yêu cầu: " + response.getTransferId()
-            );
-
-            System.out.println("========== END processCreateForm SUCCESS ==========");
-            return "redirect:/transfer-requests/list";
-
-        } catch (IllegalArgumentException e) {
-            System.out.println("========== IllegalArgumentException ==========");
-            System.out.println("Error message: " + e.getMessage());
-            e.printStackTrace();
-
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            redirectAttributes.addFlashAttribute("transferRequest", request);
-
-            Integer fromDepartmentId = request.getFromDepartmentId();
-            System.out.println("fromDepartmentId from request: " + fromDepartmentId);
-
-            if (fromDepartmentId == null) {
-                System.out.println("fromDepartmentId is null, redirecting to add without param");
-                return "redirect:/transfer-requests/add";
-            }
-
-            String redirectUrl = "/transfer-requests/add?fromDepartmentId=" + fromDepartmentId;
-            if (request.getAssetIds() != null && !request.getAssetIds().isEmpty()) {
-                for (Integer id : request.getAssetIds()) {
-                    redirectUrl += "&selectedIds=" + id;
-                }
-            }
-            System.out.println("Redirect URL: " + redirectUrl);
-            System.out.println("========== END processCreateForm ERROR ==========");
-            return "redirect:" + redirectUrl;
+            // Redirect thẳng sang detail page để đảm bảo tất cả dữ liệu đã load
+            redirect.addFlashAttribute("message", "Tạo thành công. Mã: " + res.getTransferId());
+            return "redirect:/transfer-requests/detail/" + res.getTransferId();
 
         } catch (Exception e) {
-            System.out.println("========== General Exception ==========");
-            System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            // Nếu lỗi, redirect về add page
+            redirect.addFlashAttribute("error", e.getMessage());
 
-            redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống. Vui lòng thử lại.");
-            redirectAttributes.addFlashAttribute("transferRequest", request);
-
-            Integer fromDepartmentId = request.getFromDepartmentId();
-            if (fromDepartmentId != null) {
-                return "redirect:/transfer-requests/add?fromDepartmentId=" + fromDepartmentId;
+            // Chỉ truyền các field cần thiết để repopulate form
+            redirect.addFlashAttribute("transferRequest", request);
+            String url = "/transfer-requests/add?fromDepartmentId=" + request.getFromDepartmentId();
+            if (request.getAssetIds() != null) {
+                for (Integer id : request.getAssetIds()) {
+                    url += "&selectedIds=" + id;
+                }
             }
-            return "redirect:/transfer-requests/add";
+            return "redirect:" + url;
         }
     }
 
     @GetMapping("/my")
-    public String listMyTransfers(
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "fromDate", required = false) LocalDate fromDate,
-            @RequestParam(value = "toDate", required = false) LocalDate toDate,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "5") int size,
-            @RequestParam(value = "sortField", defaultValue = "createdAt") String sortField,
-            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
-            Model model, HttpSession session) {
-        Integer departmentId = (Integer) session.getAttribute("departmentId");
-        Integer userId = (Integer) session.getAttribute("userId");
+    public String listMy(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) LocalDate fromDate,
+            @RequestParam(required = false) LocalDate toDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "createdAt") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            HttpSession session,
+            Model model) {
+
+        Integer departmentId = getDepartmentId(session);
+        Integer userId = getUserId(session);
+        String role = getRole(session);
+
         if (departmentId == null || userId == null) return "redirect:/auth/login";
+        if (!"DEPARTMENT_MANAGER".equals(role)) throw new RuntimeException("Không có quyền");
+
         Users user = userService.findById(userId);
 
         TransferSearchCriteria criteria = new TransferSearchCriteria();
@@ -156,35 +162,85 @@ public class TransferRequestController {
         criteria.setFromDate(fromDate);
         criteria.setToDate(toDate);
 
-        PageResponse<TransferResponse> pageResponse = transferRequestService.searchForDepartmentManager(
+        PageResponse<TransferResponse> pageRes = transferRequestService.searchOutgoing(
                 departmentId, criteria, page, size, sortField, sortDir);
 
-        model.addAttribute("page", pageResponse);
-        model.addAttribute("transfers", pageResponse.getData());
-        model.addAttribute("status", status);
-        model.addAttribute("fromDate", fromDate);
-        model.addAttribute("toDate", toDate);
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("page", pageRes);
+        model.addAttribute("transfers", pageRes.getData());
         model.addAttribute("role", "DEPARTMENT_MANAGER");
         model.addAttribute("currentUser", user);
-        model.addAttribute("activeMenu", "transfer");
+        model.addAttribute("listType", "outgoing");
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("status", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("baseUrl", "/transfer-requests/my");
         return "transfer/list";
     }
 
-    // Warehouse Staff
+    @GetMapping("/incoming")
+    public String listIncoming(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) LocalDate fromDate,
+            @RequestParam(required = false) LocalDate toDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "createdAt") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            HttpSession session,
+            Model model) {
+
+        Integer departmentId = getDepartmentId(session);
+        Integer userId = getUserId(session);
+        String role = getRole(session);
+
+        if (departmentId == null || userId == null) return "redirect:/auth/login";
+        if (!"DEPARTMENT_MANAGER".equals(role)) throw new RuntimeException("Không có quyền");
+
+        Users user = userService.findById(userId);
+
+        TransferSearchCriteria criteria = new TransferSearchCriteria();
+        criteria.setStatus(status);
+        criteria.setFromDate(fromDate);
+        criteria.setToDate(toDate);
+
+        // Cố định sort mặc định là createdAt, desc
+        PageResponse<TransferResponse> pageRes = transferRequestService.searchForReceiver(
+                departmentId, criteria, page, size, sortField, sortDir);
+
+        model.addAttribute("page", pageRes);
+        model.addAttribute("transfers", pageRes.getData());
+        model.addAttribute("role", "DEPARTMENT_MANAGER");
+        model.addAttribute("currentUser", user);
+        model.addAttribute("listType", "incoming");
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("status", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("baseUrl", "/transfer-requests/incoming");
+        return "transfer/list";
+    }
+
     @GetMapping("/warehouse")
     public String listWarehouse(
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "fromDate", required = false) LocalDate fromDate,
-            @RequestParam(value = "toDate", required = false) LocalDate toDate,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "5") int size,
-            @RequestParam(value = "sortField", defaultValue = "createdAt") String sortField,
-            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
-            Model model, HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) LocalDate fromDate,
+            @RequestParam(required = false) LocalDate toDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "createdAt") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            HttpSession session,
+            Model model) {
+
+        Integer userId = getUserId(session);
+        String role = getRole(session);
+
         if (userId == null) return "redirect:/auth/login";
+        if (!"WAREHOUSE_STAFF".equals(role)) throw new RuntimeException("Không có quyền");
+
         Users user = userService.findById(userId);
 
         TransferSearchCriteria criteria = new TransferSearchCriteria();
@@ -192,35 +248,40 @@ public class TransferRequestController {
         criteria.setFromDate(fromDate);
         criteria.setToDate(toDate);
 
-        PageResponse<TransferResponse> pageResponse = transferRequestService.searchForWarehouse(
+        PageResponse<TransferResponse> pageRes = transferRequestService.searchForWarehouse(
                 criteria, page, size, sortField, sortDir);
 
-        model.addAttribute("page", pageResponse);
-        model.addAttribute("transfers", pageResponse.getData());
-        model.addAttribute("status", status);
-        model.addAttribute("fromDate", fromDate);
-        model.addAttribute("toDate", toDate);
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("page", pageRes);
+        model.addAttribute("transfers", pageRes.getData());
         model.addAttribute("role", "WAREHOUSE_STAFF");
         model.addAttribute("currentUser", user);
-        model.addAttribute("activeMenu", "transfer");
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("status", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("baseUrl", "/transfer-requests/warehouse");
         return "transfer/list";
     }
 
-    // Asset Manager
     @GetMapping("/am")
-    public String listAllTransfers(
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "fromDate", required = false) LocalDate fromDate,
-            @RequestParam(value = "toDate", required = false) LocalDate toDate,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "5") int size,
-            @RequestParam(value = "sortField", defaultValue = "createdAt") String sortField,
-            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
-            Model model, HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
+    public String listAM(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) LocalDate fromDate,
+            @RequestParam(required = false) LocalDate toDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "createdAt") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            HttpSession session,
+            Model model) {
+
+        Integer userId = getUserId(session);
+        String role = getRole(session);
+
         if (userId == null) return "redirect:/auth/login";
+        if (!"ASSET_MANAGER".equals(role)) throw new RuntimeException("Không có quyền");
+
         Users user = userService.findById(userId);
 
         TransferSearchCriteria criteria = new TransferSearchCriteria();
@@ -228,68 +289,166 @@ public class TransferRequestController {
         criteria.setFromDate(fromDate);
         criteria.setToDate(toDate);
 
-        PageResponse<TransferResponse> pageResponse = transferRequestService.searchForAssetManager(
-                criteria, page, size, sortField, sortDir);
+        PageResponse<TransferResponse> pageRes = transferRequestService.searchByAssetManagerId(
+                userId, criteria, page, size, sortField, sortDir);
 
-        model.addAttribute("page", pageResponse);
-        model.addAttribute("transfers", pageResponse.getData());
+        model.addAttribute("page", pageRes);
+        model.addAttribute("transfers", pageRes.getData());
+        model.addAttribute("role", "ASSET_MANAGER");
+        model.addAttribute("currentUser", user);
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
         model.addAttribute("status", status);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
-        model.addAttribute("role", "ASSET_MANAGER");
-        model.addAttribute("currentUser", user);
-        model.addAttribute("activeMenu", "transfer");
+        model.addAttribute("baseUrl", "/transfer-requests/am");
         return "transfer/list";
     }
+    @GetMapping("/detail/{id}")
+    public String detailById(@PathVariable int id, HttpSession session, Model model) {
 
-    // Chi tiết lệnh (dùng chung)
-    @GetMapping("/{id}")
-    public String detail(@PathVariable("id") int id, Model model, HttpSession session) {
-        Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/auth/login";
-        }
+        Integer userId = getUserId(session);
+        Integer departmentId = getDepartmentId(session);
+        String role = getRole(session);
+
+        if (userId == null || departmentId == null) return "redirect:/auth/login";
+
         Users user = userService.findById(userId);
         TransferResponse transfer = transferRequestService.getTransferDetail(id);
+
+        if (transfer == null) {
+            model.addAttribute("error", "Không tìm thấy lệnh điều chuyển");
+            return "transfer/detail";
+        }
+
+        // Xác định quyền
+        boolean canSender = false;
+        boolean canWarehouse = false;
+        boolean canReceiver = false;
+        boolean canCancel = false;
+
+        String status = transfer.getStatus();
+
+        if ("DEPARTMENT_MANAGER".equals(role)) {
+            if (transfer.getFromDepartmentId() != null && transfer.getFromDepartmentId().equals(departmentId)) {
+                canSender = "PENDING".equals(status);
+                canCancel = !"COMPLETED".equals(status);
+            }
+            if (transfer.getToDepartmentId() != null && transfer.getToDepartmentId().equals(departmentId)) {
+                canReceiver = "WAREHOUSE_CONFIRMED".equals(status);
+            }
+        } else if ("WAREHOUSE_STAFF".equals(role)) {
+            canWarehouse = "SENDER_CONFIRMED".equals(status);
+        }
+
+        Map<Integer, String> qcCreateUrls = new HashMap<>();
+        boolean allQcPassed = true;
+        boolean hasAnyPassed = false;
+
+        if (transfer.getTransferAssets() != null) {
+            for (var asset : transfer.getTransferAssets()) {
+                boolean passed = qcReportService.isAssetPassed(asset.getAssetId());
+                if (passed) {
+                    hasAnyPassed = true;
+                } else {
+                    allQcPassed = false;
+                    if ("WAREHOUSE_STAFF".equals(role) && "SENDER_CONFIRMED".equals(status)) {
+                        qcCreateUrls.put(asset.getAssetId(), buildQcCreateUrl(asset.getAssetId(), id));
+                    }
+                }
+            }
+        }
+
+        // ================= LẤY QC CỦA TRANSFER =================
+        Map<Integer, QCReportResponse> transferQcReports = new HashMap<>();
+        if (transfer.getTransferAssets() != null) {
+            for (var asset : transfer.getTransferAssets()) {
+                QCReportResponse qc = qcReportService.findByAssetAndSource(
+                        asset.getAssetId(),
+                        "TRANSFER",
+                        transfer.getTransferId()
+                );
+                if (qc != null) {
+                    transferQcReports.put(asset.getAssetId(), qc);
+                }
+            }
+        }
+        // ===========================================
+
         model.addAttribute("transfer", transfer);
         model.addAttribute("currentUser", user);
-        model.addAttribute("activeMenu", "transfer");
+        model.addAttribute("role", role);
+        model.addAttribute("departmentId", departmentId);
+
+        model.addAttribute("canConfirmSender", canSender);
+        model.addAttribute("canConfirmWarehouse", canWarehouse);
+        model.addAttribute("canConfirmReceiver", canReceiver);
+        model.addAttribute("canCancel", canCancel);
+
+        model.addAttribute("allQcPassed", allQcPassed);
+        model.addAttribute("hasAnyPassed", hasAnyPassed);
+        model.addAttribute("qcCreateUrls", qcCreateUrls);
+        model.addAttribute("latestQcReports", transferQcReports);
+
         return "transfer/detail";
     }
-
-    // Xử lý action (xác nhận gửi, nhận, hủy)
+    // ==================== ACTION ====================
     @PostMapping("/{id}/action")
-    public String processAction(@PathVariable("id") int id,
-                                @RequestParam("action") TransferAction action,
-                                @RequestParam(value = "issue", required = false) Boolean issue,
-                                HttpSession session,
-                                RedirectAttributes redirectAttributes) {
-        Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/auth/login";
-        }
-        try {
-            transferRequestService.processTransferAction(id, userId, action, issue != null ? issue : false);
-            redirectAttributes.addFlashAttribute("message", "Cập nhật thành công!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/transfer-requests/" + id;
-    }
+    public String action(
+            @PathVariable int id,
+            @RequestParam TransferAction action,
+            HttpSession session,
+            RedirectAttributes redirect) {
 
+        Integer userId = getUserId(session);
+        Integer departmentId = getDepartmentId(session);
+        String role = getRole(session);
 
-    @GetMapping("/{id}/cancel")
-    public String cancelTransfer(@PathVariable("id") int id, HttpSession session, RedirectAttributes redirectAttributes) {
-        Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) return "redirect:/auth/login";
+        if (userId == null || departmentId == null) return "redirect:/auth/login";
+
+        // Lấy transfer để kiểm tra department
+        TransferResponse transfer = transferRequestService.getTransferDetail(id);
+
         try {
-            transferRequestService.processTransferAction(id, userId, TransferAction.CANCEL, false);
-            redirectAttributes.addFlashAttribute("message", "Đã hủy lệnh #" + id);
+            switch (action) {
+                case CONFIRM_SENDER:
+                    if (!"DEPARTMENT_MANAGER".equals(role) ||
+                            transfer.getFromDepartmentId() == null ||
+                            !transfer.getFromDepartmentId().equals(departmentId)) {
+                        throw new RuntimeException("Không có quyền xác nhận giao");
+                    }
+                    break;
+
+                case CONFIRM_WAREHOUSE:
+                    if (!"WAREHOUSE_STAFF".equals(role)) {
+                        throw new RuntimeException("Không có quyền xác nhận QC");
+                    }
+                    break;
+
+                case CONFIRM_RECEIVER:
+                    if ((!"DEPARTMENT_MANAGER".equals(role)) ||
+                            transfer.getToDepartmentId() == null ||
+                            !transfer.getToDepartmentId().equals(departmentId)) {
+                        throw new RuntimeException("Không có quyền xác nhận nhận");
+                    }
+                    break;
+
+                case CANCEL:
+                    if (!"DEPARTMENT_MANAGER".equals(role) ||
+                            transfer.getFromDepartmentId() == null ||
+                            !transfer.getFromDepartmentId().equals(departmentId)) {
+                        throw new RuntimeException("Không có quyền hủy");
+                    }
+                    break;
+            }
+
+            transferRequestService.processTransferAction(id, userId, action, false);
+
+            redirect.addFlashAttribute("message", "Thành công");
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirect.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/transfer-requests/am";
-    }
+
+        return "redirect:/transfer-requests/detail/" + id;    }
 }

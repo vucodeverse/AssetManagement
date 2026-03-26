@@ -2,12 +2,12 @@
 <html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/main-layout}">
+      layout:decorate="~{layout/warehouse-layout}">
 
 <head>
     <title>Chi tiết báo cáo QC</title>
     <th:block layout:fragment="extra-css">
-        <link rel="stylesheet" th:href="@{/css/qc/detail.css}"/>
+        <link rel="stylesheet" th:href="@{/css/qc/detail.css}">
     </th:block>
 </head>
 
@@ -16,106 +16,87 @@
 
     <div class="content">
 
-        <!-- BREADCRUMB -->
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
         <div class="breadcrumb">
-            <a th:href="@{/}">Trang chủ</a>
+            <a th:href="@{/warehouse}">Trang chủ</a>
             <span class="sep">›</span>
-            <a th:href="@{/wh/qc-reports/list}">Báo cáo QC</a>
+            <a th:href="@{/qc-reports/list}">Báo cáo QC</a>
             <span class="sep">›</span>
-            <span class="current" th:text="'#' + ${report.reportId}"></span>
+            <span class="current">Chi tiết</span>
         </div>
 
-        <!-- HEADER -->
         <div class="page-header">
-            <h1 th:text="'Báo cáo QC #' + ${report.reportId}"></h1>
-            <p>Thông tin chi tiết kiểm tra chất lượng tài sản</p>
+            <h1>Chi tiết báo cáo QC</h1>
+            <p>Xem thông tin kiểm tra chất lượng theo tài sản.</p>
         </div>
 
-        <!-- CARD -->
-        <div class="card qc-detail-card">
-
+        <div class="card" th:if="${report != null}">
             <div class="detail-grid">
-
                 <div class="detail-item">
-                    <span class="label">Mã báo cáo</span>
-                    <span class="value" th:text="'#' + ${report.reportId}"></span>
-                </div>
-
-                <div class="detail-item">
-                    <span class="label">Asset ID</span>
-                    <span class="value" th:text="${report.assetId}"></span>
+                    <label>ID báo cáo</label>
+                    <div th:text="${report.reportId}"></div>
                 </div>
 
                 <div class="detail-item">
-                    <span class="label">Trạng thái</span>
-                    <span class="badge"
-                          th:classappend="${report.status == 'PASSED'} ? 'badge-passed' :
-                                          (${report.status == 'FAILED'} ? 'badge-failed' : 'badge-pending')"
-                          th:text="${report.status}">
-                    </span>
+                    <label>Asset ID</label>
+                    <div th:text="${report.assetId}"></div>
                 </div>
 
                 <div class="detail-item">
-                    <span class="label">Người kiểm tra</span>
-                    <span class="value" th:text="${report.inspectorName}"></span>
+                    <label>Trạng thái</label>
+                    <div th:text="${report.status}"></div>
                 </div>
 
                 <div class="detail-item">
-                    <span class="label">Ngày kiểm tra</span>
-                    <span class="value"
-                          th:text="${#temporals.format(report.qcDate, 'dd/MM/yyyy HH:mm')}"></span>
+                    <label>Người kiểm tra</label>
+                    <div th:text="${report.inspectorName != null ? report.inspectorName : ('User ID: ' + report.inspectedBy)}"></div>
                 </div>
 
-                <div class="detail-item full">
-                    <span class="label">Ghi chú</span>
-                    <div class="note"
-                         th:text="${report.note != null and !#strings.isEmpty(report.note)} ? ${report.note} : '—'">
-                    </div>
+                <div class="detail-item">
+                    <label>Ngày QC</label>
+                    <div th:text="${report.qcDate}"></div>
                 </div>
 
+                <div class="detail-item full-width">
+                    <label>Ghi chú</label>
+                    <div th:text="${report.note != null ? report.note : 'Không có ghi chú'}"></div>
+                </div>
             </div>
 
-            <!-- ACTIONS -->
-            <div class="actions">
-                <a th:href="@{/wh/qc-reports/list}" class="btn btn-secondary">Quay lại</a>
-                <a th:href="@{/wh/qc-reports/{id}/edit(id=${report.reportId})}" class="btn btn-secondary">Sửa</a>
-                <button class="btn btn-primary danger" onclick="openDeleteModal()">Xóa</button>
-            </div>
+            <div class="form-actions">
 
+                <!-- Chỉ warehouse thấy -->
+                <a th:if="${session.role == 'WAREHOUSE_STAFF'}"
+                   th:href="@{/qc-reports/list(assetId=${report.assetId})}"
+                   class="btn btn-secondary">
+                    Danh sách theo tài sản
+                </a>
+
+                <!-- Chỉ owner mới sửa -->
+                <a th:if="${session.role == 'WAREHOUSE_STAFF' and session.userId == report.inspectedBy}"
+                   th:href="@{/qc-reports/{id}/edit(id=${report.reportId})}"
+                   class="btn btn-warning">
+                    Chỉnh sửa
+                </a>
+
+                <!-- Ai cũng quay lại được -->
+                <a th:if="${backUrl != null}"
+                   th:href="${backUrl}"
+                   class="btn btn-secondary">
+                    Quay lại
+                </a>
+
+            </div>
+        </div>
+
+        <div th:if="${report == null}" class="empty-state">
+            <p>Không tìm thấy báo cáo QC.</p>
         </div>
 
     </div>
 
-    <!-- DELETE MODAL -->
-    <div class="modal-overlay" id="deleteModal">
-        <div class="modal">
-            <h3>Xác nhận xóa</h3>
-            <p>
-                Bạn có chắc chắn muốn xóa báo cáo
-                <strong th:text="'#' + ${report.reportId}"></strong>?
-            </p>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
-                <form th:action="@{/wh/qc-reports/{id}/delete(id=${report.reportId})}" method="post">
-                    <button type="submit" class="btn btn-primary danger">Xóa</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
 </th:block>
-
-<th:block layout:fragment="extra-js">
-    <script>
-        function openDeleteModal() {
-            document.getElementById('deleteModal').classList.add('active');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.remove('active');
-        }
-    </script>
-</th:block>
-
 </body>
 </html>

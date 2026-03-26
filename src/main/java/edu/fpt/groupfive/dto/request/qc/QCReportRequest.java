@@ -12,4 +12,7 @@ public class QCReportRequest {
     private String status;
     private Integer inspectedBy;
     private String note;
+    private String sourceType;
+    private Integer sourceId;
 }
+

@@ -3,7 +3,7 @@ package edu.fpt.groupfive.common;
 public enum TransferStatus {
     PENDING,
     SENDER_CONFIRMED,
-    QUALITY_OK,
+    WAREHOUSE_CONFIRMED,
     COMPLETED,
     CANCELLED
 }

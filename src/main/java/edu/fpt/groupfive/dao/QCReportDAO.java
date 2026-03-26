@@ -16,10 +16,6 @@ public interface QCReportDAO {
 
     List<QualityControlReport> findByAssetId(int assetId);
 
-    List<QualityControlReport> findByStatus(String status);
-
-    String getInspectorName(int userId);
-
     List<QualityControlReport> findAll();
 
     // ==================== UPDATE ====================
@@ -28,10 +24,27 @@ public interface QCReportDAO {
     // ==================== DELETE ====================
     void deleteById(int id);
 
+    // 🔥 1. Lấy QC mới nhất của asset
+    Optional<QualityControlReport> findLatestByAssetId(int assetId);
+
+    boolean isAssetPassed(int assetId);
+
+    boolean hasAnyAssetPassed(int transferId);
+
+    boolean isAllAssetPassed(int transferId);
+
+    boolean isAllAssetHasQC(int transferId);
+
+    List<QualityControlReport> findByStatus(String status);
+
+    String getInspectorName(int userId);
+
     // ==================== EXISTS ====================
     boolean existsById(int id);
 
     boolean existsAssetById(int assetId);
 
-    boolean existsInspectorById(int inspectorId);
+    boolean existsInspectorById(int userId);
+
+    Optional<QualityControlReport> findByAssetAndSource(Integer assetId, String sourceType, Integer sourceId);
 }
