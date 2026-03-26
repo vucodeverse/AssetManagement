@@ -22,9 +22,9 @@ public class QCReportDAOImpl implements QCReportDAO {
     public QualityControlReport createQCReport(QualityControlReport qc) {
 
         String sql = """
-            INSERT INTO qc_report (asset_id, qc_status, inspected_by, note, qc_date)
-            VALUES (?, ?, ?, ?, SYSDATETIME())
-        """;
+    INSERT INTO qc_report (asset_id, qc_status, inspected_by, note, qc_date, source_type, source_id)
+    VALUES (?, ?, ?, ?, SYSDATETIME(), ?, ?)
+""";
 
         try (Connection conn = db.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -33,6 +33,8 @@ public class QCReportDAOImpl implements QCReportDAO {
             ps.setString(2, qc.getStatus());
             ps.setInt(3, qc.getInspectedBy());
             ps.setString(4, qc.getNote());
+            ps.setString(5, qc.getSourceType());
+            ps.setObject(6, qc.getSourceId()); 
 
             ps.executeUpdate();
 
