@@ -1,4 +1,3 @@
-
 * {
     box-sizing: border-box;
 }
@@ -26,14 +25,17 @@ body {
     letter-spacing: 0.05em;
 }
 
-.pagination a{
+.pagination a {
     text-decoration: none;
 }
+
 /* Content wrapper (đẩy nội dung chính) */
 .content-wrapper {
-    padding: 2rem;
+    width: 100%;
     max-width: 1400px;
     margin: 0 auto;
+    padding: 2rem;
+    box-sizing: border-box;
 }
 
 /* Search bar */
@@ -100,8 +102,6 @@ body {
     color: #000;
 }
 
-
-
 /* Main flex layout (left + right) */
 .main-content {
     display: grid;
@@ -112,7 +112,6 @@ body {
 
 /* Left panel: Table */
 .left-panel {
-
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
@@ -156,6 +155,7 @@ body {
     justify-content: center;
     margin-left: 12px;
 }
+
 .data-table th:last-child,
 .data-table td:last-child {
     width: 130px;
@@ -187,6 +187,7 @@ body {
 .form-textarea.error {
     border-color: #e53935;
 }
+
 .right-panel {
     max-width: 420px;
 }
@@ -302,6 +303,8 @@ body {
     background: white;
     border-radius: 6px;
     cursor: pointer;
+    text-decoration: none;
+    color: #111827;
 }
 
 .pagination-btn.active {
@@ -329,7 +332,6 @@ body {
     .content-wrapper {
         padding: 1rem;
     }
-
 }
 
 /* ===== FLASH MESSAGE ===== */
@@ -341,15 +343,12 @@ body {
     font-weight: 500;
 }
 
-/* SUCCESS */
-/* SUCCESS */
 .my-alert-success {
     background-color: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
 }
 
-/* ERROR */
 .my-alert-danger {
     background-color: #f8d7da;
     color: #721c24;
