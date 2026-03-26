@@ -21,4 +21,6 @@ public interface WhTransactionDAO {
     void executeOutboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note);
 
     List<LedgerRecordResponseDTO> getAllTransactions(TransactionFilterRequestDTO filter);
+
+    List<edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO.AssetGroupDTO> findAssetGroupsByReceiptId(Integer receiptId);
 }

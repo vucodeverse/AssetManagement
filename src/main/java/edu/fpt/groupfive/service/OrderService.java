@@ -21,6 +21,7 @@ public interface OrderService {
     List<PurchaseOrderDetailResponse> getAllOrderDetails();
     List<PurchaseOrderDetailResponse> getAllOrderDetails(Integer orderId);
     List<PurchaseOrderResponse> getOrderWithPending();
+    List<PurchaseOrderResponse> getInboundOrders();
     void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus);
 
 }

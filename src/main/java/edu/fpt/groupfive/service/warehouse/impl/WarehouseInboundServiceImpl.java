@@ -35,7 +35,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
 
     private final OrderService orderService;
     private final WhTransactionDAO whTransactionDAO;
-    private final WhReceiptDAO whReceiptDAO; // Added
+    private final WhReceiptDAO whReceiptDAO;
     private final UserDAO userDAO;
     private final AssetDAO assetDAO;
     private final WhZoneService whZoneService;
@@ -80,8 +80,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
 
         return HandoverDetailResponseDTO.builder()
                 .handoverId(handoverId)
-                .fromDepartmentName(handover.getFromDepartmentName()) // Note: findById doesn't join by default in
-                                                                      // current impl, I might need to update it
+                .fromDepartmentName(handover.getFromDepartmentName())
                 .toDepartmentName(handover.getToDepartmentName())
                 .status(handover.getStatus().name())
                 .items(items)
@@ -103,7 +102,8 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                 .createdBy(executedBy)
                 .note(request.getNote())
                 .build();
-        // 2. Prepare Placements (Do this first to validate capacity)
+
+        // 2. Prepare Placements
         List<ZoneCapacityResponseDTO> activeZones = whZoneService.getAllZones();
         List<AssetTypeVolumeDTO> assetVolumes = whAssetCapacityService.getAllAssetTypeVolumes();
         Map<Integer, Integer> unitVolumeMap = assetVolumes.stream()
@@ -123,7 +123,6 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             int qtyToReceive = reqItem.getQuantityToReceive();
             if (qtyToReceive <= 0) continue;
 
-            // Simple validation: already received + new <= ordered
             int alreadyReceived = detail.getReceivedQuantity() != null ? detail.getReceivedQuantity() : 0;
             if (alreadyReceived + qtyToReceive > detail.getQuantity()) {
                 throw new RuntimeException("Số lượng nhập cho " + detail.getAssetTypeName() + " vượt quá số lượng đặt còn lại.");
@@ -154,14 +153,13 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             throw new RuntimeException("Vui lòng nhập số lượng nhận hợp lệ (lớn hơn 0) cho các mặt hàng.");
         }
 
-        // 3. Create Receipt (Only if capacity was confirmed)
+        // 3. Create Receipt
         int receiptId = whReceiptDAO.createReceipt(receipt);
 
         // 4. Execute Transactions
-        Map<Integer, List<Integer>> generatedIds = whTransactionDAO.executeInboundTransaction(poId, executedBy, placements, receiptId);
+        whTransactionDAO.executeInboundTransaction(poId, executedBy, placements, receiptId);
 
-        // 4. Update PO Status
-        // Refresh PO to check if all completed
+        // 5. Update PO Status
         PurchaseOrderResponse updatedPo = orderService.getPurchaseOrderById(poId);
         boolean allFinished = updatedPo.getOrderDetails().stream()
                 .allMatch(d -> (d.getReceivedQuantity() != null ? d.getReceivedQuantity() : 0) >= d.getQuantity());
@@ -173,23 +171,12 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
         }
 
         // Build Response
-        List<InboundSummaryResponseDTO.AssetGroupDTO> groups = new ArrayList<>();
-        for (InboundRequestDTO.InboundItemRequestDTO reqItem : request.getItems()) {
-            PurchaseOrderDetailResponse detail = detailMap.get(reqItem.getPoDetailId());
-            if (detail != null && generatedIds.containsKey(detail.getAssetTypeId())) {
-                groups.add(InboundSummaryResponseDTO.AssetGroupDTO.builder()
-                        .assetTypeName(detail.getAssetTypeName())
-                        .quantity(reqItem.getQuantityToReceive())
-                        .assetIds(generatedIds.get(detail.getAssetTypeId()))
-                        .build());
-            }
-        }
+        List<InboundSummaryResponseDTO.AssetGroupDTO> groups = whTransactionDAO.findAssetGroupsByReceiptId(receiptId);
 
         return InboundSummaryResponseDTO.builder()
                 .purchaseOrderId(poId)
                 .receiptId(receiptId)
                 .receiptNo(receipt.getReceiptNo())
-                .supplierName(poDetail.getSupplierName())
                 .inboundDate(LocalDateTime.now())
                 .assetGroups(groups)
                 .build();
@@ -253,11 +240,6 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             throw new RuntimeException("Không còn đủ không gian cho loại tài sản này.");
         }
 
-        // Create Receipt for Return (One receipt per scan session probably? For now one per asset is fine or we group later)
-        // Actually, scan is usually one by one. Let's create one receipt if not exists for this handover session?
-        // To simplify, let's create a receipt per return session or just link to a generic receipt.
-        // Better: create/get a receipt for this handover.
-        
         String receiptNo = "PN-RET-" + handoverId + "-" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HHmmss"));
         WhReceipt receipt = WhReceipt.builder()
                 .receiptNo(receiptNo)
@@ -291,7 +273,6 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                 boolean isSameAsset = zone.getAssetTypeId() != null && zone.getAssetTypeId() == assetTypeId;
                 boolean isEmpty = zone.getAssetTypeId() == null || zone.getAssetTypeId() == 0;
 
-                // Fill-up Strategy
                 if (isSameAsset) {
                     if ((zone.getMaxCapacity() - zone.getCurrentCapacity()) >= unitVolume) {
                         if (bestFillUpZone == null || zone.getCurrentCapacity() > bestFillUpZone.getCurrentCapacity()) {
@@ -299,7 +280,6 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                         }
                     }
                 }
-                // New Zone Strategy
                 if (isEmpty && zone.getMaxCapacity() >= unitVolume) {
                     if (firstNewZone == null) {
                         firstNewZone = zone;
@@ -308,7 +288,6 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             }
         }
 
-        // Biased towards Fill-up first
         if (bestFillUpZone != null) {
             return bestFillUpZone;
         }
@@ -330,8 +309,25 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                 .status(handover.getStatus().name())
                 .build();
     }
+
     @Override
     public List<WhReceipt> getReceiptsByPOId(Integer poId) {
         return whReceiptDAO.findByPurchaseOrderId(poId);
+    }
+
+    @Override
+    public InboundSummaryResponseDTO getReceiptSummary(Integer receiptId) {
+        WhReceipt receipt = whReceiptDAO.findById(receiptId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập kho #" + receiptId));
+
+        List<InboundSummaryResponseDTO.AssetGroupDTO> assetGroups = whTransactionDAO.findAssetGroupsByReceiptId(receiptId);
+
+        return InboundSummaryResponseDTO.builder()
+                .receiptId(receipt.getReceiptId())
+                .receiptNo(receipt.getReceiptNo())
+                .purchaseOrderId(receipt.getPurchaseOrderId())
+                .inboundDate(receipt.getCreatedAt())
+                .assetGroups(assetGroups)
+                .build();
     }
 }

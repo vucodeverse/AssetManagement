@@ -12,7 +12,7 @@
     <header class="page-header">
         <div>
             <h1 class="page-title"><i class="fa-solid fa-truck-ramp-box" style="margin-right:8px;"></i>Nhập kho PO</h1>
-            <p class="page-subtitle">Danh sách các Đơn mua hàng (Purchase Order) đang chờ thực hiện nhập kho</p>
+            <p class="page-subtitle">Danh sách các Đơn mua hàng (Purchase Order) đang thực hiện nhập kho hoặc đã hoàn tất</p>
         </div>
     </header>
 
@@ -24,7 +24,7 @@
 
         <div class="wh-panel">
             <div class="wh-panel-header">
-                <span class="wh-panel-title"><i class="fa-solid fa-list"></i> Đơn hàng Chờ Nhập</span>
+                <span class="wh-panel-title"><i class="fa-solid fa-list"></i> Danh sách đơn hàng nhập kho</span>
             </div>
             <table class="data-table">
                 <thead>
@@ -47,7 +47,14 @@
                         <td th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}"></td>
                         <td th:text="${p.approvedByName}"></td>
                         <td th:text="${#numbers.formatDecimal(p.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                        <td><span class="badge badge-active" th:text="${p.orderStatus}">APPROVED</span></td>
+                        <td>
+                            <div th:switch="${p.orderStatus}">
+                                <span th:case="'PENDING'" class="wh-badge info">Chờ nhập</span>
+                                <span th:case="'PARTIALLY_RECEIVED'" class="wh-badge warning">Nhập một phần</span>
+                                <span th:case="'COMPLETED'" class="wh-badge success">Hoàn thành</span>
+                                <span th:case="*" class="wh-badge" th:text="${p.orderStatus}"></span>
+                            </div>
+                        </td>
                         <td class="action-cell">
                             <a th:href="@{'/wh/inbound/po/' + ${p.orderId}}" class="btn-sm primary">
                                 <i class="fa-solid fa-eye"></i> Xem & Nhập

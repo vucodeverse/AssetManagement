@@ -358,4 +358,47 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
 
         return result;
     }
+
+    @Override
+    public List<edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO.AssetGroupDTO> findAssetGroupsByReceiptId(Integer receiptId) {
+        String sql = """
+            SELECT at.type_name, a.asset_id, a.asset_name, a.current_status, a.original_cost
+            FROM wh_transactions t
+            JOIN asset a ON t.asset_id = a.asset_id
+            JOIN asset_type at ON a.asset_type_id = at.asset_type_id
+            WHERE t.receipt_id = ?
+            ORDER BY at.type_name, a.asset_id
+        """;
+        
+        Map<String, List<edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO.AssetDetailDTO>> grouped = new HashMap<>();
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, receiptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String typeName = rs.getString("type_name");
+                    edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO.AssetDetailDTO asset = 
+                        edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO.AssetDetailDTO.builder()
+                            .assetId(rs.getInt("asset_id"))
+                            .assetName(rs.getString("asset_name"))
+                            .status(rs.getString("current_status"))
+                            .cost(rs.getDouble("original_cost"))
+                            .build();
+                    grouped.computeIfAbsent(typeName, k -> new ArrayList<>()).add(asset);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding assets by receiptId", e);
+        }
+
+        List<edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO.AssetGroupDTO> result = new ArrayList<>();
+        for (Map.Entry<String, List<edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO.AssetDetailDTO>> entry : grouped.entrySet()) {
+            result.add(edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO.AssetGroupDTO.builder()
+                    .assetTypeName(entry.getKey())
+                    .assets(entry.getValue())
+                    .quantity(entry.getValue().size())
+                    .build());
+        }
+        return result;
+    }
 }
