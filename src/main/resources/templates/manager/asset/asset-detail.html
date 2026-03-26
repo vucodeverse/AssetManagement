@@ -22,17 +22,19 @@
                 <div class="error-message" th:if="${error}" th:text="${error}"></div>
                 <div class="success-message" th:if="${success}" th:text="${success}"></div>
 
-                <!-- Một form duy nhất cho tất cả -->
+
                 <form th:action="${editMode} ? @{/manager/assets/update/{id}(id=${asset.assetId})} : '#'" method="post"
                     th:object="${updateRequest}" th:if="${editMode || true}">
 
-                    <!-- Hidden fields (chỉ có khi editMode, nhưng vẫn đưa vào để tránh lỗi binding) -->
+                    <!-- Hiển thị lỗi validation nếu có -->
+                    <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
+                        <ul>
+                            <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+
                     <input type="hidden" th:field="*{assetId}" />
-                    <input type="hidden" th:field="*{assetTypeId}" th:value="${asset.assetTypeId}" />
-                    <input type="hidden" th:field="*{originalCost}" th:value="${asset.originalCost}" />
-                    <input type="hidden" th:field="*{currentStatus}" th:value="${asset.currentStatus}" />
-                    <input type="hidden" th:field="*{purchaseOrderDetailId}"
-                        th:value="${asset.purchaseOrderDetailId}" />
 
                     <!-- THÔNG TIN CHUNG -->
                     <div class="form-section">
@@ -62,7 +64,9 @@
                             <div class="form-group">
                                 <label>Ngày mua</label>
                                 <input type="date" th:field="*{acquisitionDate}" class="form-control"
-                                    th:disabled="${!editMode}" />
+                                    th:disabled="${!editMode}" required />
+                                <div th:if="${#fields.hasErrors('acquisitionDate')}" class="error"
+                                    th:errors="*{acquisitionDate}"></div>
                             </div>
                             <div class="form-group">
                                 <label>Ngày bảo hành bắt đầu</label>
@@ -73,6 +77,27 @@
                                 <label>Ngày bảo hành kết thúc</label>
                                 <input type="date" th:field="*{warrantyEndDate}" class="form-control"
                                     th:disabled="${!editMode}" />
+                            </div>
+                            <div class="form-group">
+                                <label>Trạng thái</label>
+                                <th:block th:if="${editMode}">
+                                    <select th:field="*{currentStatus}" class="form-control">
+                                        <option th:each="s : ${allowedStatuses}" th:value="${s}"
+                                            th:text="${s.description}" th:selected="${s == asset.currentStatus}">
+                                        </option>
+                                    </select>
+                                </th:block>
+                                <th:block th:unless="${editMode}">
+                                    <div class="form-control-view" th:text="${asset.currentStatus.description}"></div>
+                                </th:block>
+                                <div th:if="${#fields.hasErrors('currentStatus')}" class="error"
+                                    th:errors="*{currentStatus}"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Ghi chú</label>
+                                <textarea th:field="*{note}" class="form-control" rows="2" th:disabled="${!editMode}"
+                                    placeholder="Nhập lý do thay đổi (bắt buộc khi đổi trạng thái)"></textarea>
+                                <div th:if="${#fields.hasErrors('note')}" class="error" th:errors="*{note}"></div>
                             </div>
                         </div>
                     </div>
@@ -178,12 +203,7 @@
                         </div>
                     </div>
 
-                    <!-- Hiển thị lỗi validation nếu có -->
-                    <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
-                        <ul>
-                            <li th:each="err : ${#fields.allErrors()}" th:text="${err.defaultMessage}"></li>
-                        </ul>
-                    </div>
+
 
                     <!-- Nút hành động -->
                     <div class="form-actions">

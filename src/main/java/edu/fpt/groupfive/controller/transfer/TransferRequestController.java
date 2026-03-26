@@ -359,15 +359,17 @@ public class TransferRequestController {
             }
         }
 
-        // ================= BỔ SUNG =================
-        Map<Integer, QCReportResponse> latestQcReports = new HashMap<>();
-        String transferStatus = transfer.getStatus();
-        if (transfer.getTransferAssets() != null &&
-                ("WAREHOUSE_CONFIRMED".equals(transferStatus) || "COMPLETED".equals(transferStatus) || "CANCELLED".equals(transferStatus))) {
+        // ================= LẤY QC CỦA TRANSFER =================
+        Map<Integer, QCReportResponse> transferQcReports = new HashMap<>();
+        if (transfer.getTransferAssets() != null) {
             for (var asset : transfer.getTransferAssets()) {
-                QCReportResponse latestQc = qcReportService.getLatestByAssetId(asset.getAssetId());
-                if (latestQc != null) {
-                    latestQcReports.put(asset.getAssetId(), latestQc);
+                QCReportResponse qc = qcReportService.findByAssetAndSource(
+                        asset.getAssetId(),
+                        "TRANSFER",
+                        transfer.getTransferId()
+                );
+                if (qc != null) {
+                    transferQcReports.put(asset.getAssetId(), qc);
                 }
             }
         }
@@ -386,7 +388,7 @@ public class TransferRequestController {
         model.addAttribute("allQcPassed", allQcPassed);
         model.addAttribute("hasAnyPassed", hasAnyPassed);
         model.addAttribute("qcCreateUrls", qcCreateUrls);
-        model.addAttribute("latestQcReports", latestQcReports); // Bổ sung
+        model.addAttribute("latestQcReports", transferQcReports);
 
         return "transfer/detail";
     }

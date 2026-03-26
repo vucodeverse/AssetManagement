@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -98,56 +99,98 @@ public class AssetServiceImpl implements AssetService {
         }
     }
 
-    // update
     @Override
     @Transactional
     public void update(Integer id, AssetUpdateRequest request) {
+            Asset existing = assetDAO.findById(id)
+                    .orElseThrow(() -> new InvalidDataException("Không tìm thấy tài sản với id = " + id));
 
-        Asset existing = assetDAO.findById(id)
-                .orElseThrow(() ->
-                        new InvalidDataException("Không tìm thấy tài sản với id = " + id));
-
-        if (request.getAssetTypeId() != null) {
-            AssetType type = assetTypeDAO.findById(request.getAssetTypeId());
-            if (type == null) {
-                throw new InvalidDataException("Loại tài sản không tồn tại");
+            if (existing.getCurrentStatus() == AssetStatus.DELETED) {
+                throw new InvalidDataException("Không thể cập nhật tài sản đã xóa.");
             }
+
+            String trimmedName = request.getAssetName().trim();
+            if (trimmedName.isEmpty()) {
+                throw new InvalidDataException("Tên tài sản không được để trống hoặc chỉ chứa khoảng trắng");
+            }
+            request.setAssetName(trimmedName);
+
+            validateDateLogic(request.getAcquisitionDate(),
+                    request.getWarrantyStartDate(),
+                    request.getWarrantyEndDate());
+
+            AssetStatus oldStatus = existing.getCurrentStatus();
+            AssetStatus newStatus = request.getCurrentStatus();
+
+            Set<AssetStatus> allowedManualStatuses = Set.of(
+                    AssetStatus.AVAILABLE,
+                    AssetStatus.UNDER_MAINTENANCE,
+                    AssetStatus.DISPOSED
+            );
+            if (!allowedManualStatuses.contains(newStatus)) {
+                throw new InvalidDataException("Không thể thay đổi sang trạng thái " + newStatus.getDescription() + " bằng tay. Hãy sử dụng quy trình cấp phát/điều chuyển.");
+            }
+
+            if (oldStatus == AssetStatus.DISPOSED) {
+                throw new InvalidDataException("Tài sản đã thanh lý, không thể thay đổi trạng thái.");
+            }
+
+            if (!oldStatus.equals(newStatus)) {
+                if (request.getNote() == null || request.getNote().trim().isEmpty()) {
+                    throw new InvalidDataException("Vui lòng nhập lý do khi thay đổi trạng thái.");
+                }
+            }
+
+            existing.setAssetName(request.getAssetName());
+            existing.setAcquisitionDate(request.getAcquisitionDate());
+            existing.setWarrantyStartDate(request.getWarrantyStartDate());
+            existing.setWarrantyEndDate(request.getWarrantyEndDate());
+            existing.setCurrentStatus(newStatus);
+
+            if (newStatus == AssetStatus.AVAILABLE ||
+                    newStatus == AssetStatus.UNDER_MAINTENANCE ||
+                    newStatus == AssetStatus.DISPOSED) {
+                existing.setDepartmentId(null);
+            }
+
+            assetDAO.update(existing);
+
+            // 6. Log thay đổi trạng thái
+            if (!oldStatus.equals(newStatus)) {
+                assetLogService.logStatusChange(id, oldStatus.name(), newStatus.name(), request.getNote());
+            }
+    }
+
+    // Thêm method validateDateLogic nếu chưa có (nếu có rồi thì giữ nguyên)
+    private void validateDateLogic(LocalDate acquisitionDate, LocalDate warrantyStart, LocalDate warrantyEnd) {
+        if (acquisitionDate == null) {
+            throw new InvalidDataException("Ngày nhập kho không được để trống.");
         }
-
-        validateOriginalCost(request.getOriginalCost());
-
-        validateDateLogic(
-                request.getWarrantyStartDate(),
-                request.getWarrantyEndDate(),
-                request.getAcquisitionDate()
-        );
-
-
-        AssetStatus oldStatus = existing.getCurrentStatus();
-
-        assetMapper.updateFromRequest(request, existing);
-        assetDAO.update(existing);
-
-        if (!oldStatus.equals(request.getCurrentStatus())) {
-            assetLogService.logStatusChange(id, oldStatus.name(), request.getCurrentStatus().name(), "Cập nhật trạng thái tài sản");
+        if (warrantyStart != null && warrantyEnd != null && warrantyEnd.isBefore(warrantyStart)) {
+            throw new InvalidDataException("Ngày kết thúc bảo hành phải sau ngày bắt đầu bảo hành.");
+        }
+        if (warrantyStart != null && warrantyStart.isBefore(acquisitionDate)) {
+            throw new InvalidDataException("Ngày bắt đầu bảo hành không thể trước ngày nhập kho.");
         }
     }
+
 
 
     @Override
     @Transactional
     public void delete(Integer id) {
-
         Asset existing = assetDAO.findById(id)
-                .orElseThrow(() ->
-                        new InvalidDataException("Không tìm thấy tài sản"));
+                .orElseThrow(() -> new InvalidDataException("Không tìm thấy tài sản"));
 
-        if (existing.getCurrentStatus() != (AssetStatus.NEW)) {
-            throw new InvalidDataException(
-                    "Chỉ có thể xóa tài sản ở trạng thái NEW");
+        if (existing.getCurrentStatus() != AssetStatus.AVAILABLE) {
+            throw new InvalidDataException("Chỉ có thể xóa tài sản ở trạng thái 'Sẵn sàng'.");
         }
 
-        assetDAO.delete(id);
+        AssetStatus oldStatus = existing.getCurrentStatus();
+        existing.setCurrentStatus(AssetStatus.DELETED);
+        assetDAO.update(existing);
+
+        assetLogService.logStatusChange(id, oldStatus.name(), AssetStatus.DELETED.name(), "Xóa tài sản");
     }
 
     @Override
@@ -203,26 +246,6 @@ public class AssetServiceImpl implements AssetService {
         }
     }
 
-    private void validateDateLogic(
-            java.time.LocalDate warrantyStart,
-            java.time.LocalDate warrantyEnd,
-            java.time.LocalDate acquisitionDate
-    ) {
-
-        if (warrantyStart != null && warrantyEnd != null) {
-            if (warrantyEnd.isBefore(warrantyStart)) {
-                throw new InvalidDataException(
-                        "Ngày hết bảo hành phải sau ngày bắt đầu bảo hành");
-            }
-        }
-
-        if (acquisitionDate != null && warrantyStart != null) {
-            if (warrantyStart.isBefore(acquisitionDate)) {
-                throw new InvalidDataException(
-                        "Ngày bảo hành không thể trước ngày nhập kho");
-            }
-        }
-    }
 
     @Override
     public PageResponse<AssetDetailResponse> searchAssets(

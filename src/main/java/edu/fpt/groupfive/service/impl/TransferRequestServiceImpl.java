@@ -1,17 +1,20 @@
 package edu.fpt.groupfive.service.impl;
 
-import edu.fpt.groupfive.common.TransferAction;
-import edu.fpt.groupfive.dao.*;
-import edu.fpt.groupfive.dto.request.search.TransferSearchCriteria;
-import edu.fpt.groupfive.dto.request.transfer.TransferRequestCreate;
-import edu.fpt.groupfive.dto.response.PageResponse;
-import edu.fpt.groupfive.dto.response.TransferAssetDetailResponse;
-import edu.fpt.groupfive.dto.response.TransferResponse;
-import edu.fpt.groupfive.model.*;
+    import edu.fpt.groupfive.common.TransferAction;
+    import edu.fpt.groupfive.common.TransferStatus;
+    import edu.fpt.groupfive.dao.*;
+    import edu.fpt.groupfive.dto.request.search.TransferSearchCriteria;
+    import edu.fpt.groupfive.dto.request.transfer.TransferRequestCreate;
+    import edu.fpt.groupfive.dto.response.PageResponse;
+    import edu.fpt.groupfive.dto.response.TransferAssetDetailResponse;
+    import edu.fpt.groupfive.dto.response.TransferResponse;
+    import edu.fpt.groupfive.model.*;
 import edu.fpt.groupfive.service.AssetLogService;
-import edu.fpt.groupfive.service.ITransferRequestService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+    import edu.fpt.groupfive.service.IQCReportService;
+    import edu.fpt.groupfive.service.ITransferRequestService;
+    import lombok.RequiredArgsConstructor;
+    import lombok.extern.slf4j.Slf4j;
+    import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,12 +24,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TransferRequestServiceImpl implements ITransferRequestService {
 
-    private final TransferRequestDAO transferRequestDAO;
-    private final TransferRequestDetailDAO transferRequestDetailDAO;
-    private final DepartmentDAO departmentDAO;
-    private final UserDAO userDAO;
-    private final AssetDAO assetDAO;
+        private final TransferRequestDAO transferRequestDAO;
+        private final TransferRequestDetailDAO transferRequestDetailDAO;
+        private final DepartmentDAO departmentDAO;
+        private final UserDAO userDAO;
+        private final AssetDAO assetDAO;
     private  final AssetLogService assetLogService;
+        private final IQCReportService qcReportService;
 
     @Override
     public TransferResponse createTransferRequest(TransferRequestCreate dto) {
@@ -146,130 +150,155 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
         return null;
     }
 
-    @Override
-    public void processTransferAction(int transferId, int userId, TransferAction action, Boolean issue) {
-        TransferRequest transfer = transferRequestDAO.findById(transferId)
-                .orElseThrow(() -> new IllegalArgumentException("Transfer không tồn tại"));
+        @Override
+        public PageResponse<TransferResponse> searchByAssetManagerId(
+                int assetManagerId, TransferSearchCriteria criteria,
+                int page, int size, String sortField, String sortDir) {
 
-        String currentStatus = transfer.getStatus();
+            int offset = page * size;
+            List<TransferRequest> list = transferRequestDAO.searchByAssetManagerId(
+                    assetManagerId, criteria, offset, size, sortField, sortDir);
+            int total = transferRequestDAO.countByAssetManagerId(assetManagerId, criteria);
 
-        switch (action) {
-            case CONFIRM_SENDER:
-                if (!"PENDING".equals(currentStatus)) {
-                    throw new IllegalStateException("Lệnh không ở trạng thái PENDING");
+            return new PageResponse<>(
+                    list.stream().map(this::mapToResponse).toList(),
+                    page, size, total);
+        }
+
+        @Override
+        public PageResponse<TransferResponse> searchForAssetManager(
+                TransferSearchCriteria criteria,
+                int page,
+                int size,
+                String sortField,
+                String sortDir) {
+
+            return searchForWarehouse(criteria, page, size, sortField, sortDir);
+        }
+
+        @Override
+        public List<TransferResponse> getTransfersForSender(int departmentId) {
+            return transferRequestDAO.findByFromDepartmentId(departmentId)
+                    .stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .map(this::mapToResponse)
+                    .toList();
+        }
+
+        @Override
+        public List<TransferResponse> getTransfersForReceiver(int departmentId) {
+            return transferRequestDAO.findByToDepartmentId(departmentId)
+                    .stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .map(this::mapToResponse)
+                    .toList();
+        }
+
+        private void handleSenderConfirm(int transferId, int userId, TransferStatus status) {
+            if (status != TransferStatus.PENDING) {
+                throw new IllegalStateException("Chỉ được xác nhận khi PENDING");
+            }
+
+            transferRequestDAO.updateSenderConfirm(transferId, userId, LocalDateTime.now());
+            transferRequestDAO.updateStatus(transferId, TransferStatus.SENDER_CONFIRMED.name());
+        }
+
+        private void handleWarehouseConfirm(int transferId, TransferStatus status) {
+            if (status != TransferStatus.SENDER_CONFIRMED) {
+                throw new IllegalStateException("Phải sender confirm trước");
+            }
+
+            // Kiểm tra có ít nhất một asset đã pass QC
+            if (!qcReportService.isAllAssetHasQC(transferId)) {
+                throw new IllegalStateException("Chưa có QC cho tất cả tài sản, không thể xác nhận");
+            }
+            // Cập nhật trạng thái transfer
+            transferRequestDAO.updateStatus(transferId, TransferStatus.WAREHOUSE_CONFIRMED.name());
+        }
+
+        private void handleReceiverConfirm(int transferId, int userId,
+                                           TransferRequest transfer, TransferStatus status) {
+
+            if (status != TransferStatus.WAREHOUSE_CONFIRMED) {
+                throw new IllegalStateException("Phải qua QC trước");
+            }
+
+            List<TransferRequestDetail> details = transferRequestDetailDAO.findByTransferId(transferId);
+
+            // Kiểm tra lại có ít nhất một asset pass (phòng trường hợp)
+            boolean hasAnyPassed = details.stream()
+                    .anyMatch(d -> qcReportService.isAssetPassed(d.getAssetId()));
+            if (!hasAnyPassed) {
+                // Thêm log để xem cụ thể asset nào pass
+                for (TransferRequestDetail d : details) {
+                    log.info("Asset {} passed: {}", d.getAssetId(), qcReportService.isAssetPassed(d.getAssetId()));
                 }
-                transferRequestDAO.updateSenderConfirm(transferId, userId, LocalDateTime.now());
-                transferRequestDAO.updateStatus(transferId, "SENDER_CONFIRMED");
-                break;
+                throw new IllegalStateException("Không có tài sản đạt QC, không thể xác nhận nhận");
+            }
 
-            case CONFIRM_RECEIVER:
-                if (!"SENDER_CONFIRMED".equals(currentStatus)) {
-                    throw new IllegalStateException("Lệnh chưa được bên gửi xác nhận");
+            // Cập nhật thời gian xác nhận của receiver
+            transferRequestDAO.updateReceiverConfirm(transferId, userId, LocalDateTime.now());
+
+            // Trong handleReceiverConfirm, thay vì cập nhật từng asset một:
+            List<Integer> passedAssetIds = new ArrayList<>();
+            for (TransferRequestDetail detail : details) {
+                if (qcReportService.isAssetPassed(detail.getAssetId())) {
+                    passedAssetIds.add(detail.getAssetId());
+                    log.info("Asset {} will be moved to department {}", detail.getAssetId(), transfer.getToDepartmentId());
+                } else {
+                    log.info("Asset {} NOT passed, skip update", detail.getAssetId());
                 }
-                transferRequestDAO.updateReceiverConfirm(transferId, userId, LocalDateTime.now());
-                transferRequestDAO.updateStatus(transferId, "RECEIVER_CONFIRMED");
+            }
+            if (!passedAssetIds.isEmpty()) {
+                assetDAO.updateAssetDepartment(passedAssetIds, transfer.getToDepartmentId());
+            }
 
-                // Cập nhật phòng ban cho các tài sản
-                List<TransferRequestDetail> details = transferRequestDetailDAO.findByTransferId(transferId);
-                for (TransferRequestDetail detail : details) {
-                    Asset asset = assetDAO.findById(detail.getAssetId()).orElseThrow();
-                    asset.setDepartmentId(transfer.getToDepartmentId());
-                    assetDAO.update(asset);
-
-                    assetLogService.logTransfer(detail.getAssetId(), transfer.getFromDepartmentId(), transfer.getToDepartmentId(), transferId);
-                }
-                break;
-
-            case CANCEL:
-                if ("RECEIVER_CONFIRMED".equals(currentStatus)) {
-                    throw new IllegalStateException("Không thể hủy lệnh đã hoàn thành");
-                }
-                transferRequestDAO.updateStatus(transferId, "CANCELLED");
-                break;
-
-            default:
-                throw new IllegalArgumentException("Action không hợp lệ");
-        }
-    }
-
-
-    // ========== CÁC PHƯƠNG THỨC MỚI ==========
-    @Override
-    public List<TransferResponse> getTransfersForSender(int departmentId) {
-        List<TransferRequest> list = transferRequestDAO.findByFromDepartmentId(departmentId);
-        return convertList(list);
-    }
-
-    @Override
-    public List<TransferResponse> getTransfersForReceiver(int departmentId) {
-        List<TransferRequest> list = transferRequestDAO.findByToDepartmentId(departmentId);
-        return convertList(list);
-    }
-
-    @Override
-    public List<TransferResponse> getAllTransfers() {
-        List<TransferRequest> list = transferRequestDAO.findAll();
-        list.sort((a,b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
-
-        return convertList(list);
-    }
-
-    @Override
-    public TransferResponse getTransferDetail(int transferId) {
-        TransferRequest t = transferRequestDAO.findById(transferId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy lệnh #" + transferId));
-
-        TransferResponse response = convertToResponse(t);
-
-        List<TransferRequestDetail> details = transferRequestDetailDAO.findByTransferId(transferId);
-        List<TransferAssetDetailResponse> assetDetails = new ArrayList<>();
-        for (TransferRequestDetail d : details) {
-            Asset asset = assetDAO.findById(d.getAssetId()).orElse(null);
-            String assetName = (asset != null) ? asset.getAssetName() : "Không xác định";
-            assetDetails.add(new TransferAssetDetailResponse(
-                    d.getAssetId(), assetName, d.getConditionFromSender(), d.getNote()));
-        }
-        response.setTransferAssets(assetDetails);
-        return response;
-    }
-
-    private List<TransferResponse> convertList(List<TransferRequest> list) {
-        List<TransferResponse> result = new ArrayList<>();
-        for (TransferRequest t : list) {
-            result.add(convertToResponse(t));
-        }
-        return result;
-    }
-
-    private TransferResponse convertToResponse(TransferRequest t) {
-        TransferResponse resp = new TransferResponse();
-        resp.setTransferId(t.getTransferId());
-        resp.setStatus(t.getStatus());
-        resp.setCreatedAt(t.getTransferDate());
-        resp.setReason(t.getReason());
-
-        resp.setFromDepartmentId(t.getFromDepartmentId());
-        resp.setToDepartmentId(t.getToDepartmentId());
-
-        departmentDAO.findById(t.getFromDepartmentId()).ifPresent(d -> resp.setFromDepartmentName(d.getDepartmentName()));
-        departmentDAO.findById(t.getToDepartmentId()).ifPresent(d -> resp.setToDepartmentName(d.getDepartmentName()));
-
-        if (t.getAssetManagerId() != null) {
-            userDAO.findById(t.getAssetManagerId()).ifPresent(u -> resp.setAssetManagerName(u.getFirstName() + " " + u.getLastName()));
+            transferRequestDAO.updateStatus(transferId, TransferStatus.COMPLETED.name());
         }
 
-        if (t.getSenderConfirmedBy() != null) {
-            userDAO.findById(t.getSenderConfirmedBy()).ifPresent(u -> resp.setSenderConfirmedBy(u.getFirstName() + " " + u.getLastName()));
-            resp.setSenderConfirmedAt(t.getSenderConfirmedAt());
-        }
-        if (t.getReceiverConfirmedBy() != null) {
-            userDAO.findById(t.getReceiverConfirmedBy()).ifPresent(u -> resp.setReceiverConfirmedBy(u.getFirstName() + " " + u.getLastName()));
-            resp.setReceiverConfirmedAt(t.getReceiverConfirmedAt());
+        private void handleCancel(int transferId, TransferStatus status) {
+            if (status != TransferStatus.PENDING) {
+                throw new IllegalStateException("Chỉ được hủy khi đang ở trạng thái PENDING");
+            }
+
+            transferRequestDAO.updateStatus(transferId, TransferStatus.CANCELLED.name());
         }
 
-        return resp;
-    }
+        // ================= READ =================
+        @Override
+        public List<TransferResponse> getAllTransfers() {
+            return transferRequestDAO.findAll()
+                    .stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .map(this::mapToResponse)
+                    .toList();
+        }
 
+        @Override
+        public TransferResponse getTransferDetail(int transferId) {
+
+            TransferRequest t = transferRequestDAO.findById(transferId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy lệnh"));
+
+            TransferResponse res = mapToResponse(t);
+
+            List<TransferAssetDetailResponse> assets =
+                    transferRequestDetailDAO.findByTransferId(transferId)
+                            .stream()
+                            .map(d -> {
+                                Asset asset = assetDAO.findById(d.getAssetId()).orElse(null);
+                                return new TransferAssetDetailResponse(
+                                        d.getAssetId(),
+                                        asset != null ? asset.getAssetName() : "N/A",
+                                        d.getConditionFromSender(),
+                                        d.getNote()
+                                );
+                            })
+                            .toList();
+
+            res.setTransferAssets(assets);
+            return res;
+        }
 
     @Override
     public List<TransferResponse> getTransfersForDepartmentManager(int departmentId) {

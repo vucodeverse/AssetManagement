@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/department-layout}">
@@ -6,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Department Dashboard - AMS</title>
-<link rel="stylesheet" th:href="@{/css/department/dept-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/department/dept-dashboard.css}">
 </head>
 <body>
 
@@ -145,12 +146,12 @@
                         </div>
                         <span class="quick-action-text">Tạo yêu cầu cấp phát</span>
                     </a>
-<!--                    <a th:href="@{/department/assets}" class="quick-action-btn">-->
-<!--                        <div class="quick-action-icon success">-->
-<!--                            <i class="fas fa-search"></i>-->
-<!--                        </div>-->
-<!--                        <span class="quick-action-text">Xem tài sản bộ phận</span>-->
-<!--                    </a>-->
+                    <!--                    <a th:href="@{/department/assets}" class="quick-action-btn">-->
+                    <!--                        <div class="quick-action-icon success">-->
+                    <!--                            <i class="fas fa-search"></i>-->
+                    <!--                        </div>-->
+                    <!--                        <span class="quick-action-text">Xem tài sản bộ phận</span>-->
+                    <!--                    </a>-->
                     <a th:href="@{/department/return-request/create}" class="quick-action-btn">
                         <div class="quick-action-icon warning">
                             <i class="fas fa-undo-alt"></i>
@@ -163,11 +164,17 @@
                         </div>
                         <span class="quick-action-text">Xem yêu cầu điều chuyển</span>
                     </a>
+                    <!--                    <a th:href="@{/department/reports}" class="quick-action-btn">-->
+                    <!--                        <div class="quick-action-icon info">-->
+                    <!--                            <i class="fas fa-chart-bar"></i>-->
+                    <!--                        </div>-->
+                    <!--                        <span class="quick-action-text">Báo cáo tổng hợp</span>-->
+                    <!--                    </a>-->
                 </div>
-            </div>
-        </div>
     </div>
+</div>
 
+<th:block layout:fragment="extra-js">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
@@ -246,7 +253,7 @@
         }
         /*]]>*/
     </script>
-</div>
+</th:block>
 
 </body>
 </html>

@@ -124,19 +124,19 @@
                 <div th:if="${totalPages > 1}" class="pagination-wrapper">
                     <nav class="pagination">
                         <a th:if="${currentPage > 0}"
-                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage - 1})}">
+                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, page=${currentPage - 1})}">
                             Trước
                         </a>
 
                         <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
             <a th:if="${i != currentPage}"
-               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${i})}"
+               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, page=${i})}"
                th:text="${i+1}"></a>
             <span th:if="${i == currentPage}" th:text="${i+1}" class="active"></span>
         </span>
 
                         <a th:if="${currentPage < totalPages - 1}"
-                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage+1})}">
+                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, page=${currentPage+1})}">
                             Sau
                         </a>
                     </nav>

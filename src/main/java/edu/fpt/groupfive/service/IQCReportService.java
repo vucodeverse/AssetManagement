@@ -36,6 +36,8 @@ public interface IQCReportService {
 
     boolean isAllAssetHasQC(int transferId);
 
+    QCReportResponse findByAssetAndSource(Integer assetId, String sourceType, Integer sourceId);
+
     // ==================== CREATE ====================
 
 }

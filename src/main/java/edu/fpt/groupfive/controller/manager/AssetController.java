@@ -1,12 +1,9 @@
 package edu.fpt.groupfive.controller.manager;
 
 import edu.fpt.groupfive.common.AssetStatus;
-import edu.fpt.groupfive.dto.request.AssetCreateRequest;
 import edu.fpt.groupfive.dto.request.AssetUpdateRequest;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.AssetLogResponse;
-import edu.fpt.groupfive.dto.response.AssetResponse;
-import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.service.*;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import jakarta.validation.Valid;
@@ -17,9 +14,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -43,6 +41,11 @@ public class AssetController {
 
         var result = assetService.searchAssets(keyword, status, fromDate, toDate, direction, page);
 
+        List<AssetStatus> filterStatuses = Arrays.stream(AssetStatus.values())
+                .filter(s -> s != AssetStatus.DELETED)
+                .collect(Collectors.toList());
+
+        model.addAttribute("filterStatuses", filterStatuses);
         model.addAttribute("assets", result.getData());
         model.addAttribute("page", result);
 
@@ -54,20 +57,16 @@ public class AssetController {
 
         model.addAttribute("activeMenu", "asset");
 
-
         return "manager/asset/asset-list";
     }
 
-
     @GetMapping("detail/{id}")
     public String detail(@PathVariable("id") Integer id,
-                         @RequestParam(value = "edit", required = false, defaultValue = "false") boolean edit,
-                         Model model, RedirectAttributes redirectAttributes) {
+            @RequestParam(value = "edit", required = false, defaultValue = "false") boolean edit,
+            Model model, RedirectAttributes redirectAttributes) {
         try {
-
             AssetDetailResponse asset = assetService.getDetailById(id);
             List<AssetLogResponse> logs = assetLogService.getLogsByAssetId(id);
-
 
             AssetUpdateRequest updateRequest = new AssetUpdateRequest();
             updateRequest.setAssetId(asset.getAssetId());
@@ -75,17 +74,17 @@ public class AssetController {
             updateRequest.setAcquisitionDate(asset.getAcquisitionDate());
             updateRequest.setWarrantyStartDate(asset.getWarrantyStartDate());
             updateRequest.setWarrantyEndDate(asset.getWarrantyEndDate());
-            updateRequest.setAssetTypeId(asset.getAssetTypeId());
-            updateRequest.setOriginalCost(asset.getOriginalCost());
             updateRequest.setCurrentStatus(asset.getCurrentStatus());
-            updateRequest.setPurchaseOrderDetailId(asset.getPurchaseOrderDetailId());
 
-
+            List<AssetStatus> allowedStatuses = List.of(
+                    AssetStatus.AVAILABLE,
+                    AssetStatus.UNDER_MAINTENANCE,
+                    AssetStatus.DISPOSED);
+            model.addAttribute("allowedStatuses", allowedStatuses);
             model.addAttribute("asset", asset);
             model.addAttribute("logs", logs);
             model.addAttribute("editMode", edit);
             model.addAttribute("updateRequest", updateRequest);
-
             model.addAttribute("activeMenu", "asset");
             return "manager/asset/asset-detail";
         } catch (InvalidDataException e) {
@@ -94,45 +93,49 @@ public class AssetController {
         }
     }
 
-
-
     @PostMapping("/update/{id}")
     public String updateBasicInfo(@PathVariable("id") Integer id,
-                                  @Valid @ModelAttribute("updateRequest") AssetUpdateRequest request,
-                                  BindingResult result,
-                                  Model model,
-                                  RedirectAttributes redirectAttributes) {
+            @Valid @ModelAttribute("updateRequest") AssetUpdateRequest request,
+            BindingResult result,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            try {
-                AssetDetailResponse asset = assetService.getDetailById(id);
-                List<AssetLogResponse> logs = assetLogService.getLogsByAssetId(id);
-                model.addAttribute("asset", asset);
-                model.addAttribute("logs", logs);
-                model.addAttribute("editMode", true);
-                model.addAttribute("updateRequest", request);
-                model.addAttribute("activeMenu", "asset");
-                return "manager/asset/asset-detail";
-            } catch (InvalidDataException e) {
-                redirectAttributes.addFlashAttribute("error", e.getMessage());
-                return "redirect:/manager/assets";
-            }
+            return renderUpdateFormWithErrors(id, request, model, result);
         }
 
         try {
             assetService.update(id, request);
             redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin thành công.");
+            return "redirect:/manager/assets/detail/" + id;
         } catch (InvalidDataException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            result.reject("error.global", e.getMessage());
+            return renderUpdateFormWithErrors(id, request, model, result);
         }
-        return "redirect:/manager/assets/detail/" + id;
     }
 
-
+    private String renderUpdateFormWithErrors(Integer id, AssetUpdateRequest request, Model model,
+            BindingResult result) {
+        try {
+            AssetDetailResponse asset = assetService.getDetailById(id);
+            List<AssetLogResponse> logs = assetLogService.getLogsByAssetId(id);
+            model.addAttribute("asset", asset);
+            model.addAttribute("logs", logs);
+            model.addAttribute("editMode", true);
+            model.addAttribute("updateRequest", request);
+            model.addAttribute("allowedStatuses", List.of(
+                    AssetStatus.AVAILABLE,
+                    AssetStatus.UNDER_MAINTENANCE,
+                    AssetStatus.DISPOSED));
+            model.addAttribute("activeMenu", "asset");
+            return "manager/asset/asset-detail";
+        } catch (InvalidDataException e) {
+            return "redirect:/manager/assets";
+        }
+    }
 
     @PostMapping("/delete/{id}")
     public String delete(@PathVariable("id") Integer id,
-                         RedirectAttributes redirectAttributes) {
-
+            RedirectAttributes redirectAttributes) {
         try {
             assetService.delete(id);
         } catch (InvalidDataException e) {
@@ -141,6 +144,4 @@ public class AssetController {
         }
         return "redirect:/manager/assets";
     }
-
-
 }

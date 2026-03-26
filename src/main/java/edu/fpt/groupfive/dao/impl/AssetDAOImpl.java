@@ -108,21 +108,7 @@ public class AssetDAOImpl implements AssetDAO {
         }
     }
 
-    @Override
-    public void delete(Integer id) {
 
-        String sql = "DELETE FROM asset WHERE asset_id = ?";
-
-        try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-            ps.executeUpdate();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Xóa tài sản thất bại", e);
-        }
-    }
 
     @Override
     public List<Integer> findValidAssetIds(List<Integer> assetIds, int departmentId) {
@@ -141,6 +127,7 @@ public class AssetDAOImpl implements AssetDAO {
         FROM asset
         WHERE department_id = ?
         AND asset_id IN (%s)
+         AND current_status != 'DELETED'
         """.formatted(placeholders);
 
         List<Integer> validIds = new ArrayList<>();
@@ -213,7 +200,7 @@ public class AssetDAOImpl implements AssetDAO {
                     FROM asset a
                     LEFT JOIN asset_type t
                         ON a.asset_type_id = t.asset_type_id
-                    WHERE a.asset_id = ?
+                    WHERE a.asset_id = ? and a.current_status != 'DELETED'
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
@@ -243,6 +230,7 @@ public class AssetDAOImpl implements AssetDAO {
                     FROM asset a
                     LEFT JOIN asset_type t
                         ON a.asset_type_id = t.asset_type_id
+                    WHERE a.current_status != 'DELETED'
                 """;
 
         List<Asset> list = new ArrayList<>();
@@ -276,6 +264,7 @@ public class AssetDAOImpl implements AssetDAO {
                         AND r.status = 'PENDING_AM'
                 WHERE a.department_id = ?
                         AND r.request_id IS NULL
+                        AND a.current_status != 'DELETED'
                 """;
         List<Asset> list = new ArrayList<>();
 
@@ -325,6 +314,7 @@ public class AssetDAOImpl implements AssetDAO {
                 LEFT JOIN asset_type t
                     ON t.asset_type_id = a.asset_type_id
                 WHERE d.request_id = ?
+                AND a.current_status != 'DELETED'
                 """;
 
         List<Asset> list = new ArrayList<>();
@@ -374,6 +364,7 @@ public class AssetDAOImpl implements AssetDAO {
                     ON po.supplier_id = s.supplier_id
 
                 WHERE a.asset_id = ?
+                AND a.current_status != 'DELETED'
                 """;
         try (Connection conn = databaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -428,7 +419,7 @@ public class AssetDAOImpl implements AssetDAO {
                 FROM asset a
                 LEFT JOIN asset_type t
                     ON a.asset_type_id = t.asset_type_id
-                WHERE 1=1
+                WHERE a.current_status != 'DELETED'
                 """);
 
         if (keyword != null && !keyword.isBlank()) {
@@ -510,8 +501,8 @@ public class AssetDAOImpl implements AssetDAO {
         SELECT a.*, t.type_name
         FROM asset a
         LEFT JOIN asset_type t
-            ON a.asset_type_id = t.asset_type_id
-        WHERE 1=1
+            ON a.asset_type_id = t.asset_type_id 
+        WHERE a.current_status != 'DELETED'
         """);
 
         if (criteria.getDepartmentId() != null) {
@@ -588,7 +579,7 @@ public class AssetDAOImpl implements AssetDAO {
         StringBuilder sql = new StringBuilder("""
         SELECT COUNT(*)
         FROM asset a
-        WHERE 1=1
+        WHERE a.current_status != 'DELETED'
     """);
 
         if (departmentId != null) {
@@ -638,7 +629,7 @@ public class AssetDAOImpl implements AssetDAO {
         StringBuilder sql = new StringBuilder("""
                 SELECT COUNT(*)
                 FROM asset a
-                WHERE 1=1
+                WHERE a.current_status != 'DELETED'
                 """);
 
         if (keyword != null && !keyword.isBlank()) {
@@ -695,7 +686,7 @@ public class AssetDAOImpl implements AssetDAO {
     public List<Asset> findExpiringWarranties(int days) {
         String sql ="select a.*, t.type_name from asset a\n" +
                 "left join asset_type t on a.asset_type_id=t.asset_type_id\n" +
-                "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date))\n" +
+                "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date)) AND a.current_status != 'DELETED' \n" +
                 "order by a.warranty_end_date asc";
 
 
@@ -734,7 +725,8 @@ public class AssetDAOImpl implements AssetDAO {
                 FROM asset a
                 LEFT JOIN asset_type t
                     ON a.asset_type_id = t.asset_type_id
-                WHERE a.department_id = ?
+                WHERE a.department_id = ? 
+                AND a.current_status != 'DELETED'
                 """;
 
         List<Asset> list = new ArrayList<>();
@@ -821,7 +813,8 @@ public class AssetDAOImpl implements AssetDAO {
                 FROM asset a
                 JOIN asset_type t ON a.asset_type_id = t.asset_type_id
                 JOIN purchase_order_details pod ON a.purchase_order_detail_id = pod.purchase_order_detail_id
-                WHERE pod.purchase_order_id = ?
+                WHERE pod.purchase_order_id = ? 
+                AND a.current_status != 'DELETED'
                 """;
         List<Asset> list = new ArrayList<>();
         try (Connection con = databaseConfig.getConnection();

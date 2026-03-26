@@ -4,35 +4,36 @@ import edu.fpt.groupfive.dto.request.qc.QCReportRequest;
 import edu.fpt.groupfive.dto.response.QCReportResponse;
 import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.TransferRequest;
+import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.IQCReportService;
 import edu.fpt.groupfive.service.ITransferRequestService;
+import edu.fpt.groupfive.service.UserService;
 import groovy.util.logging.Slf4j;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.File;
 import java.util.List;
+
 @Slf4j
 @Controller
 @RequestMapping("/qc-reports")
 @RequiredArgsConstructor
 public class QCReportController {
 
-    private static final Logger log = LoggerFactory.getLogger(QCReportController.class);
     private final IQCReportService qcReportService;
     private final AssetService assetService;
     private final ITransferRequestService transferRequestService;
+    private final UserService userService;
 
     // ================= HELPER =================
-    private Integer getCurrentUserId(HttpSession session) {
+
+    private Integer getUserId(HttpSession session) {
         return (Integer) session.getAttribute("userId");
     }
 
@@ -40,250 +41,332 @@ public class QCReportController {
         return (String) session.getAttribute("role");
     }
 
-    private String resolveReturnUrl(String sourceType, Integer sourceId) {
-        if (sourceType == null || sourceId == null) {
-            return "/qc-reports/list";
-        }
-
-        if ("TRANSFER".equalsIgnoreCase(sourceType)) {
-            return "/transfer-requests/" + sourceId;
-        }
-
-        if ("ALLOCATION".equalsIgnoreCase(sourceType)) {
-            return "/allocations/" + sourceId;
-        }
-
-        if ("RETURN".equalsIgnoreCase(sourceType)) {
-            return "/returns/" + sourceId;
-        }
-
-        return "/qc-reports/list";
+    private Integer getDepartmentId(HttpSession session) {
+        return (Integer) session.getAttribute("departmentId");
     }
 
-    private String buildQcCreateUrl(Integer assetId, String sourceType, Integer sourceId) {
-        StringBuilder url = new StringBuilder("/qc-reports/create?assetId=").append(assetId);
+    private void requireLogin(HttpSession session) {
+        if (getUserId(session) == null) {
+            throw new RuntimeException("Bạn chưa đăng nhập");
+        }
+    }
 
-        if (sourceType != null && sourceId != null) {
-            url.append("&sourceType=").append(sourceType)
-                    .append("&sourceId=").append(sourceId);
+    private void requireWarehouse(HttpSession session) {
+        if (!"WAREHOUSE_STAFF".equals(getRole(session))) {
+            throw new RuntimeException("Không có quyền truy cập");
+        }
+    }
+
+    private void requireOwner(QCReportResponse report, Integer userId) {
+        if (report.getInspectedBy() == null || !report.getInspectedBy().equals(userId)) {
+            throw new RuntimeException("Bạn không có quyền thao tác QC này");
+        }
+    }
+
+    private String resolveReturnUrl(String sourceType, Integer sourceId) {
+        if (sourceType == null || sourceId == null) return "/qc-reports/list";
+
+        return switch (sourceType.toUpperCase()) {
+            case "TRANSFER" -> "/transfer-requests/detail/" + sourceId;
+            case "ALLOCATION" -> "/allocations/" + sourceId;
+            case "RETURN" -> "/returns/" + sourceId;
+            default -> "/qc-reports/list";
+        };
+    }
+
+    private String buildCreateUrl(QCReportRequest req) {
+        StringBuilder url = new StringBuilder("/qc-reports/create?assetId=" + req.getAssetId());
+
+        if (req.getSourceType() != null && req.getSourceId() != null) {
+            url.append("&sourceType=").append(req.getSourceType())
+                    .append("&sourceId=").append(req.getSourceId());
         }
 
         return url.toString();
     }
 
-    // ================= CREATE =================
-    @GetMapping("/create")
-    public String showCreateForm(
-            @RequestParam(value = "assetId", required = false) Integer assetId,
-            @RequestParam(value = "sourceType", required = false) String sourceType,
-            @RequestParam(value = "sourceId", required = false) Integer sourceId,
-            HttpSession session,
-            Model model,
-            RedirectAttributes redirectAttributes) {
+    /**
+     * ================= PERMISSION CORE =================
+     */
+    private void canViewQC(
+            Integer assetId,
+            String sourceType,
+            Integer sourceId,
+            HttpSession session) {
 
-        // Kiểm tra quyền: chỉ warehouse staff mới được tạo QC
         String role = getRole(session);
-        if (!"WAREHOUSE_STAFF".equals(role)) {
-            redirectAttributes.addFlashAttribute("error", "Chỉ kho mới được tạo QC");
-            return "redirect:/transfer-requests/warehouse";
-        }
+        Integer departmentId = getDepartmentId(session);
 
-        if (assetId == null) {
-            redirectAttributes.addFlashAttribute("error", "Thiếu assetId. QC chỉ được tạo theo tài sản.");
-            return "redirect:/qc-reports/list";
+        // 1. Warehouse + Asset Manager → full access
+        if ("WAREHOUSE_STAFF".equals(role) || "ASSET_MANAGER".equals(role)) {
+            return;
         }
 
         Asset asset = assetService.findById(assetId).orElse(null);
         if (asset == null) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy tài sản với ID: " + assetId);
-            return "redirect:/qc-reports/list";
+            throw new RuntimeException("Asset không tồn tại");
         }
 
-        // Kiểm tra điều kiện tạo QC cho transfer
+        // 2. Department đang giữ asset
+        if (departmentId != null && departmentId.equals(asset.getDepartmentId())) {
+            return;
+        }
+
+        // 3. Nếu đi từ transfer → check from/to
         if ("TRANSFER".equalsIgnoreCase(sourceType) && sourceId != null) {
-            TransferRequest transfer = transferRequestService.getTransferById(sourceId);
-            if (!"SENDER_CONFIRMED".equals(transfer.getStatus())) {
-                redirectAttributes.addFlashAttribute("error", "Chỉ được tạo QC khi transfer đã được xác nhận giao (SENDER_CONFIRMED)");
-                return "redirect:" + resolveReturnUrl(sourceType, sourceId);
+
+            TransferRequest t = transferRequestService.getTransferById(sourceId);
+
+            if (departmentId != null &&
+                    (departmentId.equals(t.getFromDepartmentId())
+                            || departmentId.equals(t.getToDepartmentId()))) {
+                return;
             }
         }
 
-        QCReportRequest qcReport = new QCReportRequest();
-        qcReport.setAssetId(assetId);
+        throw new RuntimeException("Không có quyền xem QC của asset này");
+    }
 
-        model.addAttribute("asset", asset);
-        model.addAttribute("qcReport", qcReport);
-        model.addAttribute("sourceType", sourceType);
-        model.addAttribute("sourceId", sourceId);
-        model.addAttribute("backUrl", resolveReturnUrl(sourceType, sourceId));
+    // ================= CREATE =================
 
-        return "qc/create";
+    @GetMapping("/create")
+    public String showCreateForm(
+            @RequestParam Integer assetId,
+            @RequestParam(required = false) String sourceType,
+            @RequestParam(required = false) Integer sourceId,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirect) {
+
+        try {
+            requireWarehouse(session);
+
+            Asset asset = assetService.findById(assetId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tài sản"));
+
+            // validate transfer
+            if ("TRANSFER".equalsIgnoreCase(sourceType) && sourceId != null) {
+                TransferRequest transfer = transferRequestService.getTransferById(sourceId);
+
+                if (!"SENDER_CONFIRMED".equals(transfer.getStatus())) {
+                    throw new RuntimeException("Transfer chưa sẵn sàng QC");
+                }
+            }
+
+            QCReportRequest qc = new QCReportRequest();
+            qc.setAssetId(assetId);
+            qc.setSourceType(sourceType);
+            qc.setSourceId(sourceId);
+
+            Integer userId = getUserId(session);
+            String inspectorName = "Chưa đăng nhập";
+
+            if (userId != null) {
+                Users user = userService.findById(userId);
+                if (user != null) {
+                    inspectorName = user.getFullName();
+                }
+            }
+
+            model.addAttribute("qcReport", qc);
+            model.addAttribute("asset", asset);
+            model.addAttribute("inspectorName", inspectorName);
+            model.addAttribute("backUrl", resolveReturnUrl(sourceType, sourceId));
+
+            return "qc/create";
+
+        } catch (Exception e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+            return "redirect:/error/access-denied";
+        }
     }
 
     @PostMapping("/create")
-    public String processCreateForm(
+    public String create(
             @ModelAttribute("qcReport") QCReportRequest request,
-            @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "sourceType", required = false) String sourceType,
-            @RequestParam(value = "sourceId", required = false) Integer sourceId,
-            @RequestParam(value = "assetId", required = false) Integer assetIdParam,
             HttpSession session,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirect) {
 
         try {
-            Integer userId = getCurrentUserId(session);
-            if (userId == null) throw new RuntimeException("Bạn chưa đăng nhập");
+            requireWarehouse(session);
+            requireLogin(session);
 
-            // In ra log để debug
-            log.debug("request.getAssetId() = {}", request.getAssetId());
-            log.debug("assetIdParam = {}", assetIdParam);
-
-            // Lấy assetId: ưu tiên từ model attribute, nếu null thì lấy từ param
-            Integer assetId = request.getAssetId();
-            if (assetId == null) assetId = assetIdParam;
-            if (assetId == null) {
-                throw new IllegalArgumentException("Thiếu assetId. QC chỉ được tạo theo tài sản.");
+            if (request.getAssetId() == null) {
+                throw new RuntimeException("Thiếu assetId");
             }
-            request.setAssetId(assetId);
 
-            request.setInspectedBy(userId);
-            if (file != null && !file.isEmpty()) request.setAttachment(saveFile(file));
+            request.setInspectedBy(getUserId(session));
 
             qcReportService.createQCReport(request);
-            redirectAttributes.addFlashAttribute("message", "Tạo QC thành công");
-            return "redirect:" + resolveReturnUrl(sourceType, sourceId);
+
+            redirect.addFlashAttribute("message", "Tạo QC thành công");
+
+            return "redirect:" + resolveReturnUrl(
+                    request.getSourceType(),
+                    request.getSourceId()
+            );
 
         } catch (Exception e) {
-            log.error("Error creating QC: ", e);
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            // Lấy lại assetId từ request hoặc param
-            Integer assetId = request.getAssetId() != null ? request.getAssetId() : assetIdParam;
-            if (assetId != null) {
-                return "redirect:" + buildQcCreateUrl(assetId, sourceType, sourceId);
-            } else {
-                return "redirect:/qc-reports/list";
-            }
+            redirect.addFlashAttribute("error", e.getMessage());
+
+            return request.getAssetId() != null
+                    ? "redirect:" + buildCreateUrl(request)
+                    : "redirect:/qc-reports/list";
         }
     }
+
     // ================= LIST =================
+
     @GetMapping("/list")
-    public String listReports(
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "assetId", required = false) Integer assetId,
-            Model model) {
+    public String list(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer assetId,
+            Model model,
+            HttpSession session) {
 
-        List<QCReportResponse> reports;
+        try {
+            requireWarehouse(session);
 
-        if (assetId != null) {
-            reports = qcReportService.findByAssetId(assetId);
-        } else if (status != null && !status.isBlank()) {
-            reports = qcReportService.findByStatus(status);
-        } else {
-            reports = qcReportService.findAll();
+            List<QCReportResponse> reports;
+
+            if (assetId != null) {
+                reports = qcReportService.findByAssetId(assetId);
+            } else if (status != null && !status.isBlank()) {
+                reports = qcReportService.findByStatus(status);
+            } else {
+                reports = qcReportService.findAll();
+            }
+
+            model.addAttribute("reports", reports);
+            model.addAttribute("selectedStatus", status);
+            model.addAttribute("assetId", assetId);
+
+            return "qc/list";
+
+        } catch (Exception e) {
+            return "redirect:/error/access-denied";
         }
-
-        model.addAttribute("reports", reports);
-        model.addAttribute("selectedStatus", status);
-        model.addAttribute("assetId", assetId);
-
-        return "qc/list";
     }
 
     // ================= DETAIL =================
+
     @GetMapping("/{id}")
-    public String viewReport(
+    public String detail(
             @PathVariable int id,
+            @RequestParam(required = false) String sourceType,
+            @RequestParam(required = false) Integer sourceId,
+            HttpSession session,
+            HttpServletRequest request,
             Model model,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirect) {
 
         try {
-            model.addAttribute("report", qcReportService.findById(id));
+            requireLogin(session);
+
+            QCReportResponse report = qcReportService.findById(id);
+
+            // 🔥 permission chuẩn
+            canViewQC(report.getAssetId(), sourceType, sourceId, session);
+
+            model.addAttribute("report", report);
+            model.addAttribute("backUrl", resolveReturnUrl(sourceType, sourceId));
+
             return "qc/detail";
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/qc-reports/list";
+            redirect.addFlashAttribute("error", e.getMessage());
+
+            String referer = request.getHeader("referer");
+            return referer != null ? "redirect:" + referer : "redirect:/";
         }
     }
 
     // ================= EDIT =================
+
     @GetMapping("/{id}/edit")
-    public String showEditForm(
+    public String showEdit(
             @PathVariable int id,
+            HttpSession session,
             Model model,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirect) {
 
         try {
+            requireWarehouse(session);
+            requireLogin(session);
+
             QCReportResponse report = qcReportService.findById(id);
+
+            requireOwner(report, getUserId(session));
 
             QCReportRequest req = new QCReportRequest();
             req.setAssetId(report.getAssetId());
             req.setStatus(report.getStatus());
             req.setNote(report.getNote());
-            req.setAttachment(report.getAttachment());
 
             model.addAttribute("qcReport", req);
             model.addAttribute("reportId", id);
 
             return "qc/edit";
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirect.addFlashAttribute("error", e.getMessage());
             return "redirect:/qc-reports/list";
         }
     }
 
     @PostMapping("/{id}/edit")
-    public String processEditForm(
+    public String edit(
             @PathVariable int id,
             @ModelAttribute("qcReport") QCReportRequest request,
             HttpSession session,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirect) {
 
         try {
-            Integer userId = getCurrentUserId(session);
-            if (userId == null) {
-                throw new RuntimeException("Chưa đăng nhập");
-            }
+            requireWarehouse(session);
+            requireLogin(session);
 
-            request.setInspectedBy(userId);
+            QCReportResponse existing = qcReportService.findById(id);
+
+            requireOwner(existing, getUserId(session));
+
+            request.setAssetId(existing.getAssetId());
+            request.setInspectedBy(getUserId(session));
 
             qcReportService.updateQCReport(id, request);
 
-            redirectAttributes.addFlashAttribute("message", "Cập nhật thành công");
+            redirect.addFlashAttribute("message", "Cập nhật thành công");
             return "redirect:/qc-reports/" + id;
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirect.addFlashAttribute("error", e.getMessage());
             return "redirect:/qc-reports/" + id + "/edit";
         }
     }
 
     // ================= DELETE =================
+
     @PostMapping("/{id}/delete")
-    public String deleteReport(
+    public String delete(
             @PathVariable int id,
-            RedirectAttributes redirectAttributes) {
+            HttpSession session,
+            RedirectAttributes redirect) {
 
         try {
+            requireWarehouse(session);
+            requireLogin(session);
+
+            QCReportResponse report = qcReportService.findById(id);
+
+            requireOwner(report, getUserId(session));
+
             qcReportService.deleteById(id);
-            redirectAttributes.addFlashAttribute("message", "Xóa thành công");
+
+            redirect.addFlashAttribute("message", "Xóa thành công");
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirect.addFlashAttribute("error", e.getMessage());
         }
 
         return "redirect:/qc-reports/list";
-    }
-
-    // ================= FILE HELPER =================
-    private String saveFile(MultipartFile file) throws Exception {
-        String uploadDir = System.getProperty("user.dir") + "/uploads/qc/";
-        File dir = new File(uploadDir);
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw new RuntimeException("Không thể tạo thư mục: " + dir.getAbsolutePath());
-            }
-        }
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        File dest = new File(dir, fileName);
-        file.transferTo(dest);
-        return dest.getAbsolutePath();
     }
 }
