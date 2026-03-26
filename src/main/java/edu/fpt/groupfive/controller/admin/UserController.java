@@ -163,7 +163,7 @@ public class UserController {
             bindingResult.rejectValue(
                     "username",
                     "duplicate.username",
-                    "Username đã tồn tại!"
+                    "Tên đăng nhập đã tồn tại!"
             );
         }
 

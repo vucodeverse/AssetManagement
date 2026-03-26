@@ -13,7 +13,7 @@
 
 <th:block layout:fragment="content">
     <div class="detail-container">
-        
+
         <!-- HEADER -->
         <header class="detail-header">
             <div class="header-left">
@@ -21,6 +21,14 @@
                 <span class="request-id" th:text="'Yêu cầu số: AR-' + ${requestDto.requestId}"></span>
             </div>
             <div class="header-right">
+                <span th:if="${requestDto.status == 'PENDING_AM'}"
+                      class="status-badge status-pending">
+                    ĐANG CHỜ
+                </span>
+                <span th:if="${requestDto.status == 'COMPLETED'}"
+                      class="status-badge status-completed">
+                    HOÀN THÀNH
+                </span>
 
             <span th:if="${requestDto.status == 'PENDING_AM'}"
                   class="status-badge status-pending">
@@ -38,7 +46,7 @@
 
         <!-- INFO GRID -->
         <div class="info-grid">
-            
+
             <!-- Request Information -->
             <div class="info-card">
                 <div class="card-title">
@@ -47,7 +55,8 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Ngày tạo</span>
-                    <span class="info-value" th:text="${#temporals.format(requestDto.createdAt, 'dd-MM-yyyy HH:mm')}"></span>
+                    <span class="info-value"
+                          th:text="${#temporals.format(requestDto.createdAt, 'dd-MM-yyyy HH:mm')}"></span>
                 </div>
                 <!-- Reason (Full Width within card) -->
                 <div class="info-item" style="margin-top: 1.5rem;">
@@ -87,23 +96,23 @@
             <div class="table-responsive">
                 <table class="asset-table">
                     <thead>
-                        <tr>
-                            <th>Mã tài sản</th>
-                            <th>Tên tài sản</th>
-                            <th>Ghi chú từ phòng ban</th>
-                        </tr>
+                    <tr>
+                        <th>Mã tài sản</th>
+                        <th>Tên tài sản</th>
+                        <th>Ghi chú từ phòng ban</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="asset : ${assets}">
-                            <td class="asset-id-cell" th:text="'AST-' + ${asset.assetId}"></td>
-                            <td th:text="${asset.assetTypeName}"></td>
-                            <td class="note-cell" th:text="${asset.note ?: '-'}"></td>
-                        </tr>
-                        <tr th:if="${#lists.isEmpty(assets)}">
-                            <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                                Không có tài sản nào trong danh sách.
-                            </td>
-                        </tr>
+                    <tr th:each="asset : ${assets}">
+                        <td class="asset-id-cell" th:text="'AST-' + ${asset.assetId}"></td>
+                        <td th:text="${asset.assetTypeName}"></td>
+                        <td class="note-cell" th:text="${asset.note ?: '-'}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(assets)}">
+                        <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                            Không có tài sản nào trong danh sách.
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
