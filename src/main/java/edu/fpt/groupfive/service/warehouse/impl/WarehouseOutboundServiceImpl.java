@@ -152,8 +152,10 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
                 "Xuất kho cấp phát");
 
         // Log Allocation
-        assetLogService.logAllocate(assetId, handover.getFromDepartmentId(), handover.getToDepartmentId(),
-                handover.getAllocationRequestId());
+        int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
+        int toDeptId = handover.getToDepartmentId() != null ? handover.getToDepartmentId() : 0;
+        int allocReqId = handover.getAllocationRequestId() != null ? handover.getAllocationRequestId() : 0;
+        assetLogService.logAllocate(assetId, fromDeptId, toDeptId, allocReqId);
 
         // 5. Decrease zone capacity
         int unitVolume = whAssetCapacityDAO.findByAssetTypeId(assetDetail.getAssetTypeId())
@@ -282,8 +284,10 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
                     "Xuất kho cấp phát");
 
             // Log Allocation
-            assetLogService.logAllocate(assetId, handover.getFromDepartmentId(), handover.getToDepartmentId(),
-                    handover.getAllocationRequestId());
+            int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
+            int toDeptId = handover.getToDepartmentId() != null ? handover.getToDepartmentId() : 0;
+            int allocReqId = handover.getAllocationRequestId() != null ? handover.getAllocationRequestId() : 0;
+            assetLogService.logAllocate(assetId, fromDeptId, toDeptId, allocReqId);
 
             // Capacity
             int unitVolume = whAssetCapacityDAO.findByAssetTypeId(assetDetail.getAssetTypeId())

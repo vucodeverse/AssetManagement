@@ -59,12 +59,11 @@ public class AssetLogServiceImpl implements AssetLogService {
     }
 
     @Override
-    public void logReturn(int assetId, int fromDeptId, int toDeptId, int returnId) {
+    public void logReturn(int assetId, int fromDeptId, int returnId) {
         AssetLog log = new AssetLog();
         log.setAssetId(assetId);
         log.setActionType(AssetActionType.RETURN);
         log.setFromDepartmentId(fromDeptId);
-        log.setToDepartmentId(toDeptId);
         log.setActionDate(LocalDateTime.now());
         log.setRelatedReturnId(returnId);
         assetLogDAO.insert(log);
@@ -114,7 +113,6 @@ public class AssetLogServiceImpl implements AssetLogService {
                 }
             }
 
-
             // Xử lý tên phòng ban đích
             if (log.getToDepartmentId() != null) {
                 departmentDAO.findById(log.getToDepartmentId())
@@ -128,8 +126,6 @@ public class AssetLogServiceImpl implements AssetLogService {
                     resp.setToDepartmentName(null);
                 }
             }
-
-
 
             result.add(resp);
         }

@@ -282,7 +282,9 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
         // Log Return
         AssetHandover handover = assetHandoverDao.findById(handoverId);
         if (handover != null) {
-            assetLogService.logReturn(assetId, handover.getFromDepartmentId(), 0, handover.getReturnRequestId());
+            int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
+            int returnReqId = handover.getReturnRequestId() != null ? handover.getReturnRequestId() : 0;
+            assetLogService.logReturn(assetId, fromDeptId,  returnReqId);
         }
 
         List<HandoverDetailResponseDTO.HandoverItemDTO> updatedItems = assetHandoverDetailDao.findItemsByHandoverId(handoverId);
@@ -420,7 +422,9 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             whTransactionDAO.executeReturnInboundTransaction(handoverId, assetId, targetZone.getZoneId(), executedBy, null, receiptId);
 
             // Log Return
-            assetLogService.logReturn(assetId, handover.getFromDepartmentId(), 0, handover.getReturnRequestId());
+            int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
+            int returnReqId = handover.getReturnRequestId() != null ? handover.getReturnRequestId() : 0;
+            assetLogService.logReturn(assetId, fromDeptId,  returnReqId);
         }
 
         // 4. Check if all items in this handover are now scanned
