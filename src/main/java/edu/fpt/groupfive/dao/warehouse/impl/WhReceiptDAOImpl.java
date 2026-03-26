@@ -116,4 +116,37 @@ public class WhReceiptDAOImpl implements WhReceiptDAO {
         }
         return list;
     }
+
+    @Override
+    public List<WhReceipt> findByAssetHandoverId(Integer handoverId) {
+        List<WhReceipt> list = new ArrayList<>();
+        String sql = "SELECT r.*, u.first_name + ' ' + u.last_name as creator_name, " +
+                "(SELECT COUNT(*) FROM wh_transactions t WHERE t.receipt_id = r.receipt_id) as total_quantity " +
+                "FROM wh_receipts r " +
+                "LEFT JOIN users u ON r.created_by = u.user_id " +
+                "WHERE r.asset_handover_id = ? " +
+                "ORDER BY r.created_at DESC";
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, handoverId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(WhReceipt.builder()
+                            .receiptId(rs.getInt("receipt_id"))
+                            .receiptNo(rs.getString("receipt_no"))
+                            .assetHandoverId((Integer) rs.getObject("asset_handover_id"))
+                            .receiptType(rs.getString("receipt_type"))
+                            .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
+                            .createdBy((Integer) rs.getObject("created_by"))
+                            .creatorName(rs.getString("creator_name"))
+                            .totalQuantity(rs.getInt("total_quantity"))
+                            .note(rs.getString("note"))
+                            .build());
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding WhReceipt by Handover ID", e);
+        }
+        return list;
+    }
 }

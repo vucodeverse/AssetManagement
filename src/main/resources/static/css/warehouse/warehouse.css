@@ -206,6 +206,20 @@
 .badge-active  { background: #d1fae5; color: #065f46; }
 .badge-completed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 
+/* ---- WH Status Badge ---- */
+.wh-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.wh-badge.info { background: #e0f2fe; color: #0369a1; }
+.wh-badge.warning { background: #ffedd5; color: #9a3412; }
+.wh-badge.success { background: #dcfce7; color: #15803d; }
+
 /* ---- Asset type chip inside zone row ---- */
 .asset-type-chip {
     display: inline-flex;

@@ -26,7 +26,6 @@ public class WarehouseInboundController {
     private static final String ACTIVE_MENU = "activeMenu";
     private static final String MENU_INBOUND = "inbound";
     private static final String PAGE_TITLE = "pageTitle";
-    private static final String SUMMARY_ATTR = "summary";
 
     private final OrderService orderService;
     private final WarehouseInboundService warehouseInboundService;
@@ -40,10 +39,10 @@ public class WarehouseInboundController {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Nhập kho PO - Warehouse");
 
-        // Fetch real pending POs
-        List<PurchaseOrderResponse> pendingOrders = orderService.getOrderWithPending();
+        // Fetch real inbound POs (PENDING, PARTIALLY_RECEIVED, COMPLETED)
+        List<PurchaseOrderResponse> orders = orderService.getInboundOrders();
 
-        model.addAttribute("pos", pendingOrders);
+        model.addAttribute("pos", orders);
         return "warehouse/inbound/po_list";
     }
 
@@ -66,6 +65,24 @@ public class WarehouseInboundController {
     }
 
     // =========================================================
+    // INBOUND FORM — GET /wh/inbound/po/{po_id}/create
+    // =========================================================
+
+    @GetMapping("/po/{po_id}/create")
+    public String poInboundFormPage(@PathVariable("po_id") Integer poId, Model model) {
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        model.addAttribute(PAGE_TITLE, "Lập phiếu Nhập kho PO #" + poId);
+
+        PurchaseOrderResponse poDetail = orderService.getPurchaseOrderById(poId);
+        if ("COMPLETED".equals(poDetail.getOrderStatus())) {
+            return "redirect:/wh/inbound/po/" + poId;
+        }
+
+        model.addAttribute("po", poDetail);
+        return "warehouse/inbound/inbound_form";
+    }
+
+    // =========================================================
     // CONFIRM PO — POST /wh/inbound/po/{po_id}/confirm
     // =========================================================
 
@@ -84,29 +101,12 @@ public class WarehouseInboundController {
 
         try {
             InboundSummaryResponseDTO summary = warehouseInboundService.processInboundPO(request, username);
-            ra.addFlashAttribute(SUMMARY_ATTR, summary);
-            ra.addFlashAttribute(SUCCESS_MSG, "Đã nhập kho thành công cho PO #" + poId + ". Mã phiếu nhập: " + summary.getPurchaseOrderId());
-            return "redirect:/wh/inbound/po/" + poId + "/summary";
+            ra.addFlashAttribute(SUCCESS_MSG, "Đã nhập kho thành công cho PO #" + poId + ". Mã phiếu nhập: " + summary.getReceiptNo());
+            return "redirect:/wh/inbound/receipt/" + summary.getReceiptId();
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/wh/inbound/po/" + poId;
         }
-    }
-
-    // =========================================================
-    // INBOUND SUMMARY — GET /wh/inbound/po/{po_id}/summary
-    // =========================================================
-
-    @GetMapping("/po/{po_id}/summary")
-    public String poSummaryPage(@PathVariable("po_id") Integer poId, Model model) {
-        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
-        model.addAttribute(PAGE_TITLE, "Kết quả Nhập kho PO #" + poId);
-
-        if (!model.containsAttribute(SUMMARY_ATTR)) {
-            return "redirect:/wh/inbound/po";
-        }
-
-        return "warehouse/inbound/summary";
     }
 
     // =========================================================
@@ -118,11 +118,8 @@ public class WarehouseInboundController {
         model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
         model.addAttribute(PAGE_TITLE, "Nhập kho Thu hồi - Warehouse");
 
-        List<HandoverResponseDTO> pendingReturns = warehouseInboundService.getPendingReturns();
-        List<HandoverResponseDTO> processedReturns = warehouseInboundService.getProcessedReturns();
-
-        model.addAttribute("returns", pendingReturns);
-        model.addAttribute("processedReturns", processedReturns);
+        List<HandoverResponseDTO> allReturns = warehouseInboundService.getAllReturns();
+        model.addAttribute("allReturns", allReturns);
         return "warehouse/inbound/return_list";
     }
 
@@ -142,21 +139,105 @@ public class WarehouseInboundController {
     }
 
     // =========================================================
-    // PROCESS RETURN SCAN — POST /wh/inbound/return/{handover_id}/scan
+    // RETURN PROCESS (SCANNER) — GET /wh/inbound/return/{handover_id}/process
     // =========================================================
 
-    @PostMapping("/return/{handover_id}/scan")
-    public String processReturnScan(@PathVariable("handover_id") Integer handoverId,
-                                    @RequestParam("assetCode") String assetCode,
-                                    Principal principal,
-                                    RedirectAttributes redirectAttributes) {
-        try {
-            warehouseInboundService.processReturnScan(handoverId, assetCode, principal.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Đã quét và nhận kho tài sản thành công.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
+    @GetMapping("/return/{handover_id}/process")
+    public String returnProcessPage(
+            @PathVariable("handover_id") Integer handoverId,
+            @RequestParam(value = "codes", required = false) List<String> codes,
+            Model model) {
+        HandoverDetailResponseDTO detail = warehouseInboundService.getReturnDetail(handoverId);
+        if (detail == null || "COMPLETED".equals(detail.getStatus())) {
+            return "redirect:/wh/inbound/return/" + handoverId;
         }
-        return "redirect:/wh/inbound/return/" + handoverId;
+
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        model.addAttribute(PAGE_TITLE, "Xử lý Thu hồi #" + handoverId);
+        model.addAttribute("handover", detail);
+
+        if (codes != null && !codes.isEmpty()) {
+            model.addAttribute("stagedAssets", warehouseInboundService.getAssetsByCodes(codes));
+            model.addAttribute("stagedCodes", codes);
+        } else {
+            model.addAttribute("stagedAssets", java.util.Collections.emptyList());
+            model.addAttribute("stagedCodes", java.util.Collections.emptyList());
+        }
+        return "warehouse/inbound/return_process";
     }
 
+    // =========================================================
+    // STAGE SCAN — POST /wh/inbound/return/{handover_id}/stage-scan
+    // =========================================================
+
+    @PostMapping("/return/{handover_id}/stage-scan")
+    public String stageReturnScan(
+            @PathVariable("handover_id") Integer handoverId,
+            @RequestParam("assetCode") String assetCode,
+            @RequestParam(value = "stagedCodes", required = false) List<String> currentCodes,
+            RedirectAttributes ra) {
+
+        List<String> codes = currentCodes != null ? new java.util.ArrayList<>(currentCodes) : new java.util.ArrayList<>();
+
+        try {
+            var asset = warehouseInboundService.validateAssetForReturnInbound(assetCode.trim(), handoverId, codes);
+            codes.add(assetCode.trim());
+            ra.addFlashAttribute(SUCCESS_MSG, "Đã thêm tài sản '" + asset.getAssetName() + "' (#" + asset.getAssetId() + ") vào danh sách.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        ra.addAttribute("codes", codes);
+        return "redirect:/wh/inbound/return/" + handoverId + "/process";
+    }
+
+    // =========================================================
+    // REMOVE STAGED ITEM — POST /wh/inbound/return/{handover_id}/remove-staged
+    // =========================================================
+
+    @PostMapping("/return/{handover_id}/remove-staged")
+    public String removeStagedReturnItem(
+            @PathVariable("handover_id") Integer handoverId,
+            @RequestParam("assetCode") String assetCode,
+            @RequestParam(value = "stagedCodes", required = false) List<String> currentCodes,
+            RedirectAttributes ra) {
+
+        List<String> codes = currentCodes != null ? new java.util.ArrayList<>(currentCodes) : new java.util.ArrayList<>();
+        codes.remove(assetCode);
+        ra.addAttribute("codes", codes);
+        return "redirect:/wh/inbound/return/" + handoverId + "/process";
+    }
+
+    // =========================================================
+    // CONFIRM INBOUND — POST /wh/inbound/return/{handover_id}/confirm-inbound
+    // =========================================================
+
+    @PostMapping("/return/{handover_id}/confirm-inbound")
+    public String confirmReturnInbound(
+            @PathVariable("handover_id") Integer handoverId,
+            @RequestParam("stagedCodes") List<String> codes,
+            Principal principal,
+            RedirectAttributes ra) {
+        try {
+            warehouseInboundService.confirmReturnInbound(handoverId, codes, principal.getName());
+            ra.addFlashAttribute(SUCCESS_MSG, "Đã tạo phiếu nhập kho thu hồi thành công cho " + codes.size() + " tài sản.");
+            return "redirect:/wh/inbound/return/" + handoverId;
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Lỗi xác nhận nhập kho: " + e.getMessage());
+            ra.addAttribute("codes", codes);
+            return "redirect:/wh/inbound/return/" + handoverId + "/process";
+        }
+    }
+
+    @GetMapping("/receipt/{receiptId}")
+    public String receiptSummaryPage(@PathVariable("receiptId") Integer receiptId, Model model) {
+        model.addAttribute(ACTIVE_MENU, MENU_INBOUND);
+        model.addAttribute(PAGE_TITLE, "Chi tiết Phiếu nhập kho #" + receiptId);
+
+        InboundSummaryResponseDTO summary = warehouseInboundService.getReceiptSummary(receiptId);
+        model.addAttribute("summary", summary);
+        model.addAttribute("isHistory", true);
+
+        return "warehouse/inbound/summary";
+    }
 }

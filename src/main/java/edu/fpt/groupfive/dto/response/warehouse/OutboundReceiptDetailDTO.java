@@ -1,25 +1,36 @@
 package edu.fpt.groupfive.dto.response.warehouse;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * DTO chi tiết phiếu xuất kho - dùng cho màn hình xem chi tiết phiếu xuất kho.
+ */
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InboundSummaryResponseDTO {
-    private Integer purchaseOrderId;
+public class OutboundReceiptDetailDTO {
+
+    // --- Thông tin phiếu ---
     private Integer receiptId;
     private String receiptNo;
-    private LocalDateTime inboundDate;
+    private String receiptType;
+    private LocalDateTime createdAt;
+    private String creatorName;
+    private String note;
+
+    // --- Liên kết ---
+    private Integer assetHandoverId;
+    private String handoverStatus;     // PENDING / COMPLETED
+    private String toDepartmentName;   // Phòng ban nhận
+
+    // --- Nội dung ---
     private List<AssetGroupDTO> assetGroups;
+    private Integer totalQuantity;
 
     @Getter
     @Setter
@@ -29,7 +40,7 @@ public class InboundSummaryResponseDTO {
     public static class AssetGroupDTO {
         private String assetTypeName;
         private Integer quantity;
-        private List<AssetDetailDTO> assets;
+        private List<AssetItemDTO> assets;
     }
 
     @Getter
@@ -37,10 +48,9 @@ public class InboundSummaryResponseDTO {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class AssetDetailDTO {
+    public static class AssetItemDTO {
         private Integer assetId;
         private String assetName;
         private String status;
-        private Double cost;
     }
 }
