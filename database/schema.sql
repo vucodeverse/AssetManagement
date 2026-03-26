@@ -37,7 +37,7 @@ DROP TABLE IF EXISTS purchase_request;
 DROP TABLE IF EXISTS supplier;
 
 -- Danh mục & Người dùng
-IF OBJECT_ID('departments', 'U') IS NOT NULL 
+IF OBJECT_ID('departments', 'U') IS NOT NULL
     ALTER TABLE departments DROP CONSTRAINT IF EXISTS FK_departments_manager;
 
 DROP TABLE IF EXISTS users;
