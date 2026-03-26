@@ -18,6 +18,4 @@ public class QCReportResponse {
     private String inspectorName;
     private LocalDateTime qcDate;
     private String note;
-    private String attachment;
-
 }

@@ -16,9 +16,7 @@ public class QualityControlReport {
     private int assetId;
     private String status;
     private int inspectedBy;
-    private String inspectorName;
     private LocalDateTime createdDate;
     private String note;
-    private String attachment;
 
 }

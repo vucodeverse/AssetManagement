@@ -12,6 +12,17 @@
 <body>
 <th:block layout:fragment="content">
   <div class="container">
+    <!-- Tabs cho DEPARTMENT_MANAGER -->
+    <div th:if="${role == 'DEPARTMENT_MANAGER'}" class="tabs">
+      <a th:href="@{/transfer-requests/my}"
+         th:classappend="${listType == 'outgoing'} ? 'active'"
+         class="tab">Lệnh đã gửi</a>
+      <a th:href="@{/transfer-requests/incoming}"
+         th:classappend="${listType == 'incoming'} ? 'active'"
+         class="tab">Lệnh cần nhận</a>
+    </div>
+
+    <!-- Header tiêu đề -->
     <div class="page-header">
       <h1 th:if="${role == 'DEPARTMENT_MANAGER' and listType == 'outgoing'}">Danh sách lệnh đã gửi</h1>
       <h1 th:if="${role == 'DEPARTMENT_MANAGER' and listType == 'incoming'}">Danh sách lệnh cần nhận</h1>
@@ -58,7 +69,6 @@
     <div class="table-container">
       <table class="table table-bordered">
         <thead>
-        32
         <th>
           <a th:href="@{${baseUrl}(sortField='transferId', sortDir=${sortField == 'transferId' and sortDir == 'asc' ? 'desc' : 'asc'}, status=${status}, fromDate=${fromDate}, toDate=${toDate}, page=0, size=${page.pageSize})}">
             ID
@@ -84,7 +94,6 @@
           </a>
         </th>
         <th>Hành động</th>
-        </tr>
         </thead>
         <tbody>
         <tr th:each="t : ${transfers}">

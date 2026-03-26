@@ -32,7 +32,6 @@ public class QCReportServiceImpl implements IQCReportService {
         qc.setStatus(normalizeStatus(request.getStatus()));
         qc.setInspectedBy(request.getInspectedBy());
         qc.setNote(request.getNote());
-        qc.setAttachment(request.getAttachment());
 
         return mapToResponse(qcReportDAO.createQCReport(qc));
     }
@@ -93,7 +92,6 @@ public class QCReportServiceImpl implements IQCReportService {
         qc.setStatus(normalizeStatus(request.getStatus()));
         qc.setInspectedBy(request.getInspectedBy());
         qc.setNote(request.getNote());
-        qc.setAttachment(request.getAttachment());
 
         return mapToResponse(qcReportDAO.updateQCReport(qc));
     }
@@ -130,8 +128,6 @@ public class QCReportServiceImpl implements IQCReportService {
         res.setInspectorName(qcReportDAO.getInspectorName(qc.getInspectedBy()));
         res.setQcDate(qc.getCreatedDate());
         res.setNote(qc.getNote());
-        res.setAttachment(qc.getAttachment());
-
         return res;
     }
 

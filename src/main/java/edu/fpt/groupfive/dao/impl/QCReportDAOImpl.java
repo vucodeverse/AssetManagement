@@ -22,8 +22,8 @@ public class QCReportDAOImpl implements QCReportDAO {
     public QualityControlReport createQCReport(QualityControlReport qc) {
 
         String sql = """
-            INSERT INTO qc_report (asset_id, qc_status, inspected_by, note, attachment, qc_date)
-            VALUES (?, ?, ?, ?, ?, SYSDATETIME())
+            INSERT INTO qc_report (asset_id, qc_status, inspected_by, note, qc_date)
+            VALUES (?, ?, ?, ?, SYSDATETIME())
         """;
 
         try (Connection conn = db.getConnection();
@@ -33,7 +33,6 @@ public class QCReportDAOImpl implements QCReportDAO {
             ps.setString(2, qc.getStatus());
             ps.setInt(3, qc.getInspectedBy());
             ps.setString(4, qc.getNote());
-            ps.setString(5, qc.getAttachment());
 
             ps.executeUpdate();
 
@@ -122,7 +121,7 @@ public class QCReportDAOImpl implements QCReportDAO {
 
         String sql = """
             UPDATE qc_report
-            SET asset_id = ?, qc_status = ?, inspected_by = ?, note = ?, attachment = ?, qc_date = SYSDATETIME()
+            SET asset_id = ?, qc_status = ?, inspected_by = ?, note = ?, qc_date = SYSDATETIME()
             WHERE id = ?
         """;
 
@@ -133,8 +132,7 @@ public class QCReportDAOImpl implements QCReportDAO {
             ps.setString(2, qc.getStatus());
             ps.setInt(3, qc.getInspectedBy());
             ps.setString(4, qc.getNote());
-            ps.setString(5, qc.getAttachment());
-            ps.setInt(6, qc.getReportId());
+            ps.setInt(5, qc.getReportId());
 
             ps.executeUpdate();
 
@@ -377,7 +375,6 @@ public class QCReportDAOImpl implements QCReportDAO {
         qc.setInspectedBy(rs.getInt("inspected_by"));
         qc.setCreatedDate(rs.getTimestamp("qc_date").toLocalDateTime());
         qc.setNote(rs.getString("note"));
-        qc.setAttachment(rs.getString("attachment"));
 
         return qc;
     }

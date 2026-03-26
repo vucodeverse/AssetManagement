@@ -4,9 +4,11 @@ import edu.fpt.groupfive.dto.request.qc.QCReportRequest;
 import edu.fpt.groupfive.dto.response.QCReportResponse;
 import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.TransferRequest;
+import edu.fpt.groupfive.model.Users;
 import edu.fpt.groupfive.service.AssetService;
 import edu.fpt.groupfive.service.IQCReportService;
 import edu.fpt.groupfive.service.ITransferRequestService;
+import edu.fpt.groupfive.service.UserService;
 import groovy.util.logging.Slf4j;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.File;
 import java.util.List;
 @Slf4j
 @Controller
@@ -30,6 +30,7 @@ public class QCReportController {
     private final IQCReportService qcReportService;
     private final AssetService assetService;
     private final ITransferRequestService transferRequestService;
+    private final UserService userService;
 
     // ================= HELPER =================
     private Integer getCurrentUserId(HttpSession session) {
@@ -110,7 +111,13 @@ public class QCReportController {
 
         QCReportRequest qcReport = new QCReportRequest();
         qcReport.setAssetId(assetId);
-
+        Integer userId = getCurrentUserId(session);
+        String inspectorName = "Chưa đăng nhập";
+        if (userId != null) {
+             Users user = userService.findById(userId);
+             inspectorName = user.getFullName();
+        }
+        model.addAttribute("inspectorName", inspectorName);
         model.addAttribute("asset", asset);
         model.addAttribute("qcReport", qcReport);
         model.addAttribute("sourceType", sourceType);
@@ -123,7 +130,6 @@ public class QCReportController {
     @PostMapping("/create")
     public String processCreateForm(
             @ModelAttribute("qcReport") QCReportRequest request,
-            @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "sourceType", required = false) String sourceType,
             @RequestParam(value = "sourceId", required = false) Integer sourceId,
             @RequestParam(value = "assetId", required = false) Integer assetIdParam,
@@ -134,20 +140,13 @@ public class QCReportController {
             Integer userId = getCurrentUserId(session);
             if (userId == null) throw new RuntimeException("Bạn chưa đăng nhập");
 
-            // In ra log để debug
-            log.debug("request.getAssetId() = {}", request.getAssetId());
-            log.debug("assetIdParam = {}", assetIdParam);
-
-            // Lấy assetId: ưu tiên từ model attribute, nếu null thì lấy từ param
             Integer assetId = request.getAssetId();
             if (assetId == null) assetId = assetIdParam;
             if (assetId == null) {
                 throw new IllegalArgumentException("Thiếu assetId. QC chỉ được tạo theo tài sản.");
             }
             request.setAssetId(assetId);
-
             request.setInspectedBy(userId);
-            if (file != null && !file.isEmpty()) request.setAttachment(saveFile(file));
 
             qcReportService.createQCReport(request);
             redirectAttributes.addFlashAttribute("message", "Tạo QC thành công");
@@ -156,7 +155,6 @@ public class QCReportController {
         } catch (Exception e) {
             log.error("Error creating QC: ", e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            // Lấy lại assetId từ request hoặc param
             Integer assetId = request.getAssetId() != null ? request.getAssetId() : assetIdParam;
             if (assetId != null) {
                 return "redirect:" + buildQcCreateUrl(assetId, sourceType, sourceId);
@@ -219,7 +217,6 @@ public class QCReportController {
             req.setAssetId(report.getAssetId());
             req.setStatus(report.getStatus());
             req.setNote(report.getNote());
-            req.setAttachment(report.getAttachment());
 
             model.addAttribute("qcReport", req);
             model.addAttribute("reportId", id);
@@ -244,12 +241,16 @@ public class QCReportController {
                 throw new RuntimeException("Chưa đăng nhập");
             }
 
+            QCReportResponse existing = qcReportService.findById(id);
+
+            request.setAssetId(existing.getAssetId()); // overwrite
             request.setInspectedBy(userId);
 
             qcReportService.updateQCReport(id, request);
 
             redirectAttributes.addFlashAttribute("message", "Cập nhật thành công");
             return "redirect:/qc-reports/" + id;
+
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/qc-reports/" + id + "/edit";
@@ -272,18 +273,5 @@ public class QCReportController {
         return "redirect:/qc-reports/list";
     }
 
-    // ================= FILE HELPER =================
-    private String saveFile(MultipartFile file) throws Exception {
-        String uploadDir = System.getProperty("user.dir") + "/uploads/qc/";
-        File dir = new File(uploadDir);
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw new RuntimeException("Không thể tạo thư mục: " + dir.getAbsolutePath());
-            }
-        }
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        File dest = new File(dir, fileName);
-        file.transferTo(dest);
-        return dest.getAbsolutePath();
-    }
+
 }

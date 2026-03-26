@@ -63,15 +63,6 @@
                     <label>Ghi chú</label>
                     <div th:text="${report.note != null ? report.note : 'Không có ghi chú'}"></div>
                 </div>
-
-                <div class="detail-item full-width" th:if="${report.attachment != null}">
-                    <label>File minh chứng</label>
-                    <div>
-                        <a th:href="@{/${report.attachment}}" target="_blank" rel="noopener">
-                            Xem file
-                        </a>
-                    </div>
-                </div>
             </div>
 
             <div class="form-actions">
