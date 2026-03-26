@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
         // Mã hóa & Lưu mật khẩu
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         // Mặc định trạnh thái khi tạo
-        user.setStatus(UserStatus.ACTIVE.name());
+        user.setStatus(UserStatus.ACTIVE);
         // Lấy thời gian hiện tại
         user.setCreatedDate(LocalDateTime.now());
 

@@ -1,6 +1,6 @@
-/* CONTAINER */
+/* CONTAINER (Tương tự Allocation nhưng rộng hơn để chứa được 2 bảng) */
 .pr-container {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 15px auto;
     background: #ffffff;
     padding: 24px 30px;
@@ -9,6 +9,7 @@
     font-family: 'Inter', "Segoe UI", Roboto, sans-serif;
     color: #2d3436;
     line-height: 1.6;
+    animation: fadeIn 0.4s ease-out;
 }
 
 /* HEADER */
@@ -39,7 +40,7 @@
     display: inline-block;
     margin-bottom: 20px;
     border-radius: 4px;
-    border-left: 4px solid #0d6efd; /* Điểm nhấn màu xanh chủ đạo */
+    border-left: 4px solid #0d6efd;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -47,12 +48,12 @@
 /* GRID & GROUPS */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
 
 .form-group.full-width {
-    grid-column: span 3;
+    grid-column: span 2;
 }
 
 .form-group label {
@@ -63,9 +64,7 @@
     color: #4a5568;
 }
 
-/* INPUTS & SELECTS */
-.form-group input,
-.form-group select {
+.form-group input {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #e2e8f0;
@@ -73,10 +72,10 @@
     font-size: 13px;
     transition: all 0.2s ease;
     background-color: #fff;
+    box-sizing: border-box;
 }
 
-.form-group input:focus,
-.form-group select:focus {
+.form-group input:focus {
     border-color: #0d6efd;
     outline: none;
     box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
@@ -87,12 +86,26 @@
     cursor: not-allowed;
 }
 
+/* TÍNH NĂNG HAI BẢNG SONG SONG (RETURN SPECIFIC) */
+.tables-grid {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+}
+
+.table-column {
+    flex: 1;
+    min-width: 0;
+}
+
 /* TABLE STYLING */
 .table-container {
     background: #fff;
     border: 1px solid #edf2f7;
     border-radius: 8px;
     overflow: hidden;
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 .pr-table {
@@ -108,6 +121,9 @@
     font-weight: 700;
     color: #718096;
     border-bottom: 1px solid #edf2f7;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .pr-table td {
@@ -116,59 +132,25 @@
     font-size: 12px;
 }
 
-.table-input {
+.noteInput {
     width: 100%;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid #e2e8f0;
-    border-radius: 6px;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: 0.2s;
     font-size: 13px;
-    transition: border-color 0.2s;
 }
 
-.table-input:focus {
+.noteInput:focus {
     border-color: #0d6efd;
     outline: none;
-    background: #fff;
 }
 
-/* BUTTONS */
-.btn-remove {
-    background: #fff5f5;
-    border: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    font-size: 18px;
-    cursor: pointer;
-    color: #f56565;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.btn-remove:hover {
-    background: #feb2b2;
-    color: #c53030;
-}
-
-.btn-add-row {
-    margin-top: 15px;
-    background: #fff;
-    border: 1px dashed #cbd5e0;
-    padding: 10px 20px;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #4a5568;
-    transition: all 0.2s;
-}
-
-.btn-add-row:hover {
-    border-color: #0d6efd;
-    color: #0d6efd;
-    background: #f0f7ff;
+.noteInput:read-only {
+    background: #fdfdfd;
+    border-color: transparent;
+    color: #999;
 }
 
 /* FOOTER & ACTION BUTTONS */
@@ -193,9 +175,11 @@
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    text-transform: none; /* Bỏ uppercase để trông hiện đại hơn */
+    text-transform: none;
     display: inline-flex;
     align-items: center;
+    text-decoration: none;
+    border: none;
 }
 
 .btn-back-custom {
@@ -224,7 +208,6 @@
 .btn-submit-custom {
     background: #0d6efd;
     color: #fff;
-    border: none;
     box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
 }
 
@@ -234,10 +217,14 @@
     box-shadow: 0 6px 12px rgba(13, 110, 253, 0.3);
 }
 
-/* ERROR MESSAGES */
-.text-danger {
-    color: #e53e3e;
-    font-size: 11px;
-    margin-top: 4px;
-    font-weight: 500;
+/* Responsive */
+@media (max-width: 1024px) {
+    .tables-grid {
+        flex-direction: column;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }

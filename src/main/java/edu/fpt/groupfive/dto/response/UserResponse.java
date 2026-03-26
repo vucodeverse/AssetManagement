@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.dto.response;
 
 import edu.fpt.groupfive.common.Role;
+import edu.fpt.groupfive.common.UserStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,7 +24,7 @@ public class UserResponse {
 
     private String phoneNumber;
 
-    private String status;
+    private UserStatus status;
 
     private Role role;
 

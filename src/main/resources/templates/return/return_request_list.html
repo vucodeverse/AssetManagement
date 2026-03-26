@@ -23,168 +23,170 @@
 
 <body>
 <th:block layout:fragment="content">
-<div class="purchase-content-wrapper">
+    <div class="purchase-content-wrapper">
 
-    <form method="get" th:action="@{/department/return-request/search}">
-        <header class="top-bar">
-
-            <h1>Danh sách yêu cầu trả</h1>
-
-            <div class="top-actions">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text"
-                           name="keyword"
-                           th:value="${keyword}"
-                           placeholder="Tìm kiếm...">
+        <form method="get" th:action="@{/department/return-request/search}">
+            <header class="top-bar">
+                <h1>Danh sách yêu cầu trả</h1>
+                <div class="top-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text"
+                               name="keyword"
+                               th:value="${keyword}"
+                               placeholder="Tìm kiếm...">
+                    </div>
                 </div>
-            </div>
-
-            <a th:href="@{/department/return-request/create}" class="btn-add">
-                <i class="fas fa-plus"></i>
-                Tạo yêu cầu
-            </a>
-
-        </header>
-
-        <!-- FILTER BAR -->
-        <section class="filters-bar">
-
-            <div class="filter-group">
-                <select name="status">
-                    <option value="">Trạng thái: Tất cả</option>
-                    <option value="PENDING_AM"
-                            th:selected="${status == 'PENDING_AM'}">ĐANG CHỜ
-                    </option>
-                    <option value="COMPLETED"
-                            th:selected="${status == 'COMPLETED'}">HOÀN THÀNH
-                    </option>
-                </select>
-
-                <input type="date"
-                       name="fromDate"
-                       th:value="${fromDate}">
-
-                <input type="date"
-                       name="toDate"
-                       th:value="${toDate}">
-
-                <button type="submit">
-                    ÁP DỤNG
-                </button>
-
-                <a class="btn-reset" th:href="@{/department/return-request/list}">
-                    KHÔI PHỤC
+                <a th:href="@{/department/return-request/create}" class="btn-add">
+                    <i class="fas fa-plus"></i>
+                    Tạo yêu cầu
                 </a>
-            </div>
-        </section>
 
-    </form>
+            </header>
 
-    <!-- Success Message -->
-    <div th:if="${message}" class="success-alert"
-         style="background-color: #f0fdf4; border: 1px solid #16a34a; color: #166534; padding: 16px; border-radius: 4px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
-        <i class="fas fa-check-circle"></i>
-        <span th:text="${message}" style="font-weight: 600; font-size: 14px;">Success message here</span>
-    </div>
+            <!-- FILTER BAR -->
+            <section class="filters-bar">
+                <div class="filter-group">
+                    <select name="status">
+                        <option value="">Trạng thái: Tất cả</option>
+                        <option value="PENDING_AM"
+                                th:selected="${status == 'PENDING_AM'}">ĐANG CHỜ
+                        </option>
+                        <option value="COMPLETED"
+                                th:selected="${status == 'COMPLETED'}">HOÀN THÀNH
+                        </option>
+                    </select>
+                    <input type="date"
+                           name="fromDate"
+                           th:value="${fromDate}">
+                    <input type="date"
+                           name="toDate"
+                           th:value="${toDate}">
+                    <button type="submit">
+                        ÁP DỤNG
+                    </button>
+                    <div>
+                        <a class="btn-reset" th:href="@{/department/return-request/list}">
+                            KHÔI PHỤC
+                        </a>
+                    </div>
+                </div>
+            </section>
 
-    <!-- TABLE -->
-    <div class="table-container" id="allocationTable">
-        <table class="data-table">
-            <thead>
-            <tr>
-                <th>ID yêu cầu</th>
-                <th>Trạng thái</th>
-                <th>Người tạo</th>
-                <th>Ngày khởi tạo</th>
-                <th>Hành động</th>
-            </tr>
-            </thead>
+        </form>
 
-            <tbody>
-            <tr th:each="x : ${requests}" class="clickable-row"
-                th:attr="onclick=|window.location.href='/department/return-request/detail/${x.requestId}'|">
+        <!-- Success Message -->
+        <div th:if="${message}" class="success-alert"
+             style="background-color: #f0fdf4; border: 1px solid #16a34a; color: #166534; padding: 16px; border-radius: 4px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${message}" style="font-weight: 600; font-size: 14px;">Success message here</span>
+        </div>
 
-                <!-- ID -->
-                <td class="cell-id" th:text="'AR-' + ${x.requestId}">
-                </td>
+        <!-- TABLE -->
+        <div class="table-container" id="allocationTable">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>ID yêu cầu</th>
+                    <th>Trạng thái</th>
+                    <th>Người tạo</th>
+                    <th>Ngày khởi tạo</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
 
-                <!-- STATUS -->
-                <td>
-                    <span class="status-badge" th:classappend="' status-' + ${x.status}" th:text="${x.status}">
-                    </span>
-                </td>
+                <tbody>
+                <tr th:each="x : ${requests}" class="clickable-row"
+                    th:attr="onclick=|window.location.href='/department/return-request/detail/${x.requestId}'|">
 
-                <!-- REQUESTER -->
-                <td th:text="${x.fullName}">
-                </td>
+                    <!-- ID -->
+                    <td class="cell-id" th:text="'AR-' + ${x.requestId}">
+                    </td>
 
-                <!-- CREATED AT -->
-                <td>
+                    <!-- STATUS -->
+                    <td>
+                        <span th:if="${x.status == 'PENDING_AM'}"
+                              class="status-badge status-pending">
+                            ĐANG CHỜ
+                        </span>
+                        <span th:if="${x.status == 'COMPLETED'}"
+                                  class="status-badge status-completed">
+                            HOÀN THÀNH
+                        </span>
+                    </td>
+
+                    <!-- REQUESTER -->
+                    <td th:text="${x.fullName}">
+                    </td>
+
+                    <!-- CREATED AT -->
+                    <td>
                     <span th:text="${#temporals.format(x.createdAt,'dd-MM-yyyy')}">
                     </span>
-                </td>
+                    </td>
 
-                <!-- ACTIONS -->
-                <td onclick="event.stopPropagation();">
-                    
-                    <!-- View Detail (Always visible) -->
-                    <a th:href="@{/department/return-request/detail/{id}(id=${x.requestId})}"
-                       class="btn btn-sm btn-outline-info" title="Xem chi tiết">
-                        <i class="fas fa-eye"></i>
-                    </a>
+                    <!-- ACTIONS -->
+                    <td onclick="event.stopPropagation();">
+                        <!-- Edit -->
+                        <a th:if="${x.status == 'PENDING_AM'}"
+                           th:href="@{/department/return-request/edit/{id}(id=${x.requestId})}"
+                           class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <!-- Delete -->
+                        <form th:if="${x.status == 'PENDING_AM'}"
+                              th:action="@{/department/return-request/delete/{id}(id=${x.requestId})}"
+                              method="post" style="display:inline;"
+                              onsubmit="return confirm('Bạn có chắc muốn xóa yêu cầu này không?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa yêu cầu">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </td>
 
-                    <!-- Edit (Only if Pending) -->
-                    <a th:if="${x.status == 'PENDING_AM'}"
-                       th:href="@{/department/return-request/edit/{id}(id=${x.requestId})}"
-                       class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
-                        <i class="fas fa-edit"></i>
-                    </a>
+                </tr>
+                </tbody>
+            </table>
 
-                    <!-- Delete (Only if Pending) -->
-                    <form th:if="${x.status == 'PENDING_AM'}"
-                          th:action="@{/department/return-request/delete/{id}(id=${x.requestId})}"
-                          method="post" style="display:inline;"
-                          onsubmit="return confirm('Bạn có chắc muốn xóa yêu cầu này không?');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa yêu cầu">
-                            <i class="far fa-trash-alt"></i>
-                        </button>
-                    </form>
-                </td>
-
-            </tr>
-            </tbody>
-        </table>
+        </div>
 
     </div>
 
-</div>
+    <script th:inline="none">
+        $(document).ready(function () {
 
-<script th:inline="none">
-    $(document).ready(function () {
+            $('.data-table').DataTable({
 
-        $('.data-table').DataTable({
+                pageLength: 5,
+                lengthChange: false,
+                searching: false,
+                info: true,
+                ordering: true,
+                columnDefs: [
+                    {orderable: true, targets: [0]}, // ID yêu cầu
+                    {orderable: true, targets: [3]}, // Ngày khởi tạo
 
-            pageLength: 5,
-            lengthChange: false,
-            searching: false,
-            info: true,
-
-            ordering: true,
-
-            columnDefs: [
-                {orderable: true, targets: [0]}, // ID yêu cầu
-                {orderable: true, targets: [3]}, // Ngày khởi tạo
-
-                // Các cột còn lại không sort
-                {orderable: false, targets: [1, 2, 4]}
-            ],
-
-            // Mặc định sort theo id
-            order: [[0, 'asc']]
+                    // Các cột còn lại không sort
+                    {orderable: false, targets: [1, 2, 4]}
+                ],
+                // Mặc định sort theo id
+                order: [[0, 'asc']],
+                //Ngôn ngữ
+                language: {
+                    info: "Hiển thị _START_ đến _END_ của tổng số _TOTAL_ danh sách",
+                    infoEmpty: "Không có dữ liệu",
+                    paginate: {
+                        first: "Đầu",
+                        last: "Cuối",
+                        next: ">",
+                        previous: "<"
+                    },
+                    emptyTable: "Không có dữ liệu trong bảng",
+                    zeroRecords: "Không tìm thấy dữ liệu"
+                }
+            });
         });
-    });
-</script>
+    </script>
 </th:block>
 </body>
 

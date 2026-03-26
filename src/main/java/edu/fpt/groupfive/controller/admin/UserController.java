@@ -81,18 +81,23 @@ public class UserController {
     @GetMapping("/user/add")
     public String addForm(Model model) {
         setupAttributes(model, new UserCreateRequest(), true, false);
+        model.addAttribute("currentPage", 0);
         return "admin/user-detail";
     }
+
 
     /**
      * Điều hướng đến trang edit
      *
-     * @param id mã định danh của user cần cập nhật
+     * @param id    mã định danh của user cần cập nhật
      * @param model dùng để truyền dữ liệu từ controller sang view
      * @return tên trang hiển thị form chỉnh sửa user
      */
     @GetMapping("/user/edit/{id}")
-    public String editForm(@PathVariable("id") Integer id, Model model) {
+    public String editForm(
+            @PathVariable("id") Integer id,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            Model model) {
 
         UserResponse response = userService.getUserById(id);
 
@@ -109,6 +114,7 @@ public class UserController {
 
         // Truyền giá trị lên form
         setupAttributes(model, request, true, true);
+        model.addAttribute("currentPage", page);
 
         return "admin/user-detail";
     }
@@ -117,16 +123,21 @@ public class UserController {
     /**
      * Hàm xem chi tiết người dùng
      *
-     * @param id mã của người cần xem chi tiết
+     * @param id    mã của người cần xem chi tiết
      * @param model dùng để truyền dữ liệu từ controller sang view
      * @return tên trang hiển thị form chỉnh sửa user
      */
     @GetMapping("/user/detail/{id}")
-    public String showDetail(@PathVariable("id") Integer id, Model model) {
+    public String showDetail(
+            @PathVariable("id") Integer id,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            Model model) {
 
         UserResponse response = userService.getUserById(id);
 
         setupAttributes(model, response, false, false);
+
+        model.addAttribute("currentPage", page);
 
         return "admin/user-detail";
     }
@@ -134,9 +145,9 @@ public class UserController {
     /**
      * Hàm điều hướng khi ấn nút add
      *
-     * @param request nhận giá trị từ form
+     * @param request       nhận giá trị từ form
      * @param bindingResult kiểm tra lỗi
-     * @param model truyền lại data
+     * @param model         truyền lại data
      * @return tên trang hiển thị form thêm user
      */
     @PostMapping("/user/create")
@@ -200,10 +211,7 @@ public class UserController {
             return "admin/user-detail";
         }
 
-        redirectAttributes.addFlashAttribute(
-                "message",
-                "Tạo user thành công!"
-        );
+        redirectAttributes.addFlashAttribute("message", "Tạo user thành công!");
 
         userService.createUser(request);
         return "redirect:/admin/users";
@@ -212,15 +220,16 @@ public class UserController {
     /**
      * Hàm điều hướng khi ấn nút add
      *
-     * @param request nhận giá trị từ form
+     * @param request       nhận giá trị từ form
      * @param bindingResult kiểm tra lỗi
-     * @param model truyền lại data
+     * @param model         truyền lại data
      * @return trang chủ
      */
     @PostMapping("/user/update")
     public String updateUser(
             @Valid @ModelAttribute("user") UserUpdateRequest request,
             BindingResult bindingResult,
+            @RequestParam(name = "page", defaultValue = "0") int page,
             Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -267,15 +276,14 @@ public class UserController {
 
         if (bindingResult.hasErrors()) {
             setupAttributes(model, request, true, true);
+            model.addAttribute("currentPage", page);
             return "admin/user-detail";
         }
 
         userService.updateUser(request);
 
-        redirectAttributes.addFlashAttribute(
-                "message",
-                "Cập nhật thành công!"
-        );
+        redirectAttributes.addFlashAttribute("message", "Cập nhật thành công!");
+        redirectAttributes.addAttribute("page", page);
 
         return "redirect:/admin/users";
     }
@@ -288,8 +296,13 @@ public class UserController {
      * @return quay về trang danh sách user sau khi xóa
      */
     @GetMapping("/user/delete/{id}")
-    public String deleteUser(@PathVariable("id") Integer userId) {
+    public String deleteUser(
+            @PathVariable("id") Integer userId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            RedirectAttributes redirectAttributes) {
+
         userService.removeUser(userId);
+        redirectAttributes.addAttribute("page", page);
         return "redirect:/admin/users";
     }
 
