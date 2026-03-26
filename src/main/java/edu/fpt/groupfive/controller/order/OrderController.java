@@ -10,6 +10,7 @@ import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -94,7 +95,7 @@ public class OrderController {
     @IsDirector
     @PostMapping("/create-from-quotation/{quotationId}")
     public String createOrder(@PathVariable("quotationId") Integer quotationId,
-            @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest request,
+            @Valid @ModelAttribute("orderCreateRequest") PurchaseOrderCreateRequest request,
             BindingResult result,
             @RequestParam(value = "removeLine", required = false) Integer removeLine,
             Model model) {
