@@ -136,6 +136,21 @@ public class WarehouseOutboundController {
         }
     }
 
+    @GetMapping("/receipt/{receipt_id}")
+    public String viewReceiptDetail(
+            @PathVariable("receipt_id") Integer receiptId,
+            Model model) {
+        try {
+            var detail = warehouseOutboundService.getReceiptDetail(receiptId);
+            model.addAttribute(ACTIVE_MENU, OUTBOUND);
+            model.addAttribute(PAGE_TITLE, "Chi tiết Phiếu xuất " + detail.getReceiptNo());
+            model.addAttribute("receipt", detail);
+            return "warehouse/outbound/receipt_detail";
+        } catch (Exception e) {
+            return REDIRECT_OUTBOUND_LIST;
+        }
+    }
+
     @GetMapping("/{handover_id}/qc-report")
     public String qcReportPage(
             @PathVariable("handover_id") Integer handoverId,

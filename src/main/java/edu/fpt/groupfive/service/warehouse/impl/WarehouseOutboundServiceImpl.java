@@ -13,6 +13,8 @@ import edu.fpt.groupfive.dto.response.DepartmentResponse;
 import edu.fpt.groupfive.dto.response.warehouse.AssetLocationResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
+import edu.fpt.groupfive.dto.response.warehouse.InboundSummaryResponseDTO;
+import edu.fpt.groupfive.dto.response.warehouse.OutboundReceiptDetailDTO;
 import edu.fpt.groupfive.model.warehouse.AssetCapacity;
 import edu.fpt.groupfive.service.*;
 import edu.fpt.groupfive.service.warehouse.WarehouseOutboundService;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 
 import edu.fpt.groupfive.model.warehouse.WhReceipt;
+
 
 @Service
 @RequiredArgsConstructor
@@ -270,6 +273,59 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
 
         // 3. Update Status
         updateProgressAndStatus(handoverId, handover.getAllocationRequestId());
+    }
+
+    @Override
+    public OutboundReceiptDetailDTO getReceiptDetail(Integer receiptId) {
+        WhReceipt receipt = whReceiptDAO.findById(receiptId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu xuất kho #" + receiptId));
+
+        // Lấy danh sách tài sản nhóm theo loại từ transaction
+        List<InboundSummaryResponseDTO.AssetGroupDTO> rawGroups = whTransactionDAO.findAssetGroupsByReceiptId(receiptId);
+
+        List<OutboundReceiptDetailDTO.AssetGroupDTO> assetGroups = rawGroups.stream()
+                .map(group -> {
+                    List<OutboundReceiptDetailDTO.AssetItemDTO> items = group.getAssets().stream()
+                            .map(a -> OutboundReceiptDetailDTO.AssetItemDTO.builder()
+                                    .assetId(a.getAssetId())
+                                    .assetName(a.getAssetName())
+                                    .status(a.getStatus())
+                                    .build())
+                            .toList();
+                    return OutboundReceiptDetailDTO.AssetGroupDTO.builder()
+                            .assetTypeName(group.getAssetTypeName())
+                            .quantity(items.size())
+                            .assets(items)
+                            .build();
+                })
+                .toList();
+
+        int total = assetGroups.stream().mapToInt(OutboundReceiptDetailDTO.AssetGroupDTO::getQuantity).sum();
+
+        // Lấy thông tin handover để hiển thị phòng ban
+        String toDeptName = null;
+        String handoverStatus = null;
+        if (receipt.getAssetHandoverId() != null) {
+            HandoverDetailResponseDTO detail = getHandoverDetail(receipt.getAssetHandoverId());
+            if (detail != null) {
+                toDeptName = detail.getToDepartmentName();
+                handoverStatus = detail.getStatus();
+            }
+        }
+
+        return OutboundReceiptDetailDTO.builder()
+                .receiptId(receipt.getReceiptId())
+                .receiptNo(receipt.getReceiptNo())
+                .receiptType(receipt.getReceiptType())
+                .createdAt(receipt.getCreatedAt())
+                .creatorName(receipt.getCreatorName())
+                .note(receipt.getNote())
+                .assetHandoverId(receipt.getAssetHandoverId())
+                .handoverStatus(handoverStatus)
+                .toDepartmentName(toDeptName)
+                .assetGroups(assetGroups)
+                .totalQuantity(total)
+                .build();
     }
 
     private boolean updateProgressAndStatus(Integer handoverId, Integer allocationId) {

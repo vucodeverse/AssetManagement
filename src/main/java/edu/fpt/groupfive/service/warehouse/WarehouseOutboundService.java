@@ -52,6 +52,14 @@ public interface WarehouseOutboundService {
     void confirmOutbound(Integer handoverId, List<String> assetCodes, Integer executedBy);
 
     /**
+     * Lấy chi tiết phiếu xuất kho (danh sách tài sản từ bảng giao dịch).
+     *
+     * @param receiptId ID phiếu xuất kho
+     * @return Thông tin phiếu và danh sách tài sản nhóm theo loại
+     */
+    edu.fpt.groupfive.dto.response.warehouse.OutboundReceiptDetailDTO getReceiptDetail(Integer receiptId);
+
+    /**
      * @deprecated Sử dụng validateAssetForOutbound và confirmOutbound thay thế.
      */
     @Deprecated

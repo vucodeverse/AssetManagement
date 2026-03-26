@@ -149,7 +149,9 @@
                     <tbody>
                         <tr th:each="rcp : ${handover.receipts}">
                             <td>
-                                <div style="font-weight: 700; color: #a855f7;" th:text="${rcp.receiptNo}"></div>
+                                <a th:href="@{'/wh/outbound/receipt/' + ${rcp.receiptId}}"
+                                   style="font-weight:700; color:#a855f7; text-decoration:none;"
+                                   th:text="${rcp.receiptNo}"></a>
                             </td>
                             <td th:text="${#temporals.format(rcp.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                             <td th:text="${rcp.creatorName}"></td>
