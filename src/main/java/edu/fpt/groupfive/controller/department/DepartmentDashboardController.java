@@ -1,8 +1,10 @@
 package edu.fpt.groupfive.controller.department;
 
 import edu.fpt.groupfive.dto.response.DepartmentDashboardDTO;
+import edu.fpt.groupfive.service.UserService;
 import edu.fpt.groupfive.service.impl.DepartmentDashboardService;
 import edu.fpt.groupfive.model.Users;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,9 +18,15 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 public class DepartmentDashboardController {
 
     private final DepartmentDashboardService dashboardService;
+    private final UserService userService;
 
     @GetMapping("/dashboard")
-    public String dashboard(@SessionAttribute("loggedInUser") Users currentUser, Model model) {
+    public String dashboard(HttpSession session, Model model) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+        Users currentUser = userService.findById(userId);
 
         DepartmentDashboardDTO dashboardData = dashboardService
                 .getDashboardData(currentUser.getUserId());
