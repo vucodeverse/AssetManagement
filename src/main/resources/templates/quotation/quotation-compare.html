@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layout/main-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'So Sánh Báo Giá YC-' + ${purchaseId}">So Sánh Báo Giá</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/quotation/quotation-of-purchase.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <main class="quotation-content-wrapper" style="max-width: 1400px;">
+            <header class="page-header">
+                <div class="header-text">
+                    <a class="btn-back" th:href="@{/quotations/of-purchase/{id}(id=${purchaseId})}"
+                        style="margin-right: 15px; color: var(--text); font-size: 20px;">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 th:text="'So Sánh Báo Giá cho ' + ${purchaseModel}">So Sánh Báo Giá</h1>
+                </div>
+            </header>
+
+            <div th:if="${error}" style="text-align: center; color: red; padding: 50px;">
+                <p th:text="${error}">Đã xảy ra lỗi</p>
+            </div>
+
+            <div th:if="${quotations != null}" class="compare-container" style="margin-top: 20px;">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th class="sticky-col">Đặc tả / Yêu cầu gốc</th>
+                            <th th:each="q : ${quotations}" class="compare-col-header">
+                                <div style="font-size: 14px; color: var(--text);">Báo giá <span
+                                        th:text="'QT-' + ${q.quotationId}"></span></div>
+                                <div style="font-size: 12px; color: var(--muted2); font-weight: 500;"
+                                    th:text="${q.supplierName}"></div>
+                                <div style="margin-top: 8px;" th:if="${q.quotationStatus != null}">
+                                    <span th:class="'status-tag ' + ${q.quotationStatus.description}"
+                                        th:text="${q.quotationStatus?.description}"></span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Loop through the purchase request details (rows) -->
+                        <tr th:each="pd, stat : ${purchaseDetails}">
+                            <td class="sticky-col">
+                                <div style="font-weight: 800; color: var(--text); margin-bottom: 6px;">
+                                    <span th:text="${stat.count} + '. ' + ${pd.assetTypeName}"></span>
+                                </div>
+                                <div style="font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 12px;"
+                                    th:text="${pd.specificationRequirement}"></div>
+                                <div
+                                    style="font-size: 13px; font-weight: 600; padding: 6px 10px; background: #e2e8f0; border-radius: 6px; display: inline-block;">
+                                    SL Yêu cầu: <span th:text="${pd.quantity}"></span>
+                                </div>
+                            </td>
+
+                            <td th:each="q : ${quotations}">
+                                <div class="quotation-column-content">
+                                    <th:block th:each="qDetail : ${q.quotationDetails}">
+                                        <div th:if="${qDetail.purchaseDetailId == pd.id}" class="detail-card">
+
+                                            <div class="detail-header" th:text="${qDetail.assetTypeName}"></div>
+                                            <div class="detail-spec" th:text="${qDetail.specificationRequirement}"></div>
+
+                                            <div class="detail-row">
+                                                <span>Số lượng BG:</span>
+                                                <span style="font-weight: 700;" th:text="${qDetail.quantity}"></span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <span>Thuế / Chiết khấu:</span>
+                                                <span><span th:text="${qDetail.taxRate}"></span>% / <span
+                                                        th:text="${qDetail.discountRate}"></span>%</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <span>Đơn Giá:</span>
+                                                <span
+                                                    th:text="${#numbers.formatDecimal(qDetail.price, 1, 'POINT', 0, 'COMMA')} + ' đ'"></span>
+                                            </div>
+                                            <div class="detail-row total-row" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0;">
+                                                <span style="font-weight: 600;">Thành tiền:</span>
+                                                <span style="color: #000; font-weight: 700;"
+                                                    th:text="${(qDetail.price != null && qDetail.quantity != null) ? #numbers.formatDecimal(qDetail.price * qDetail.quantity, 1, 'POINT', 0, 'COMMA') + ' VNĐ' : '—'}"></span>
+                                            </div>
+
+                                            <div style="margin-top: 12px; text-align: center;">
+                                                <span th:if="${#strings.toString(qDetail.status) == 'APPROVED'}"
+                                                    class="status-tag approved"
+                                                    style="width: 100%; box-sizing: border-box; text-align: center; background:#000; color:#fff; border-color:#000;"
+                                                    th:utext="'<i class=&quot;fas fa-check&quot;></i> ' + ${qDetail.status?.description}">
+                                                </span>
+                                                <span th:if="${#strings.toString(qDetail.status) == 'REJECTED'}"
+                                                    class="status-tag rejected"
+                                                    style="width: 100%; box-sizing: border-box; text-align: center; background:#fff; color:#000; border-color:#000;"
+                                                    th:utext="'<i class=&quot;fas fa-times&quot;></i> ' + ${qDetail.status?.description}">
+                                                </span>
+                                                <div th:if="${#strings.toString(qDetail.status) == 'PENDING' || #strings.toString(qDetail.status) == 'DRAFT'}"
+                                                    sec:authorize="hasAuthority('DIRECTOR')"
+                                                    style="display: flex; gap: 5px;">
+                                                    <form method="post"
+                                                        th:action="@{/quotations/details/{id}/actions(id=${qDetail.quotationDetailId})}"
+                                                        style="flex: 1;">
+                                                        <input type="hidden" name="qoId" th:value="${qDetail.quotationId}">
+                                                        <input type="hidden" name="actions" value="a">
+                                                        <button type="submit" class="btn-bw btn-bw-approve"
+                                                            style="width: 100%; font-size: 11px;">
+                                                            Duyệt
+                                                        </button>
+                                                    </form>
+                                                    <form method="post"
+                                                        th:action="@{/quotations/details/{id}/actions(id=${qDetail.quotationDetailId})}"
+                                                        style="flex: 1;">
+                                                        <input type="hidden" name="qoId" th:value="${qDetail.quotationId}">
+                                                        <input type="hidden" name="actions" value="r">
+                                                        <button type="submit" class="btn-bw btn-bw-reject"
+                                                            style="width: 100%; font-size: 11px; padding: 6px; background: #fff; color: #000; border: 1px solid #000;">
+                                                            <i class="fas fa-times"></i> TỪ CHỐI
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th:block>
+
+                                    <!-- If no details match -->
+                                    <div th:if="${q.quotationDetails == null || q.quotationDetails.?[purchaseDetailId == #root.pd.id].isEmpty()}"
+                                         style="text-align: center; color: #94a3b8; font-style: italic; padding: 20px;">
+                                        Không có báo giá
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="grand-total-row">
+                            <th class="sticky-col">TỔNG THANH TOÁN (HÓA ĐƠN)</th>
+                            <td th:each="q : ${quotations}" style="text-align: center; color: #000;">
+                                <span th:if="${q.totalAmount != null}"
+                                    th:text="${#numbers.formatDecimal(q.totalAmount, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'"></span>
+                                <span th:if="${q.totalAmount == null}">0 VNĐ</span>
+                            </td>
+                        </tr>
+                        <tr class="action-row">
+                            <td class="sticky-col">THAO TÁC BÁO GIÁ TỔNG</td>
+                            <td th:each="q : ${quotations}">
+                                <div style="display: flex; gap: 10px; justify-content: center;"
+                                    th:if="${#strings.toString(q.quotationStatus) == 'PENDING'}"
+                                     sec:authorize="hasAuthority('DIRECTOR')">
+                                    <form method="post" th:action="@{/quotations/{id}/actions(id=${q.quotationId})}">
+                                        <input type="hidden" name="qoId" th:value="${q.quotationId}">
+                                        <button type="submit" name="action" value="r" class="btn-bw btn-bw-reject">
+                                            × TỪ CHỐI
+                                        </button>
+                                    </form>
+                                    <a th:href="@{/purchase-orders/create-from-quotation/{id}(id=${q.quotationId})}"
+                                        class="btn-bw btn-bw-approve" style="text-decoration: none;">
+                                        ✓ DUYỆT TẤT CẢ
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </main>
+    </th:block>
+
+    <th:block layout:fragment="extra-js">
+        <script th:src="@{/js/quotation/quotation-compare.js}"></script>
+    </th:block>
+</body>
+
+</html>

@@ -1,0 +1,230 @@
+/* CONTAINER (Tương tự Allocation nhưng rộng hơn để chứa được 2 bảng) */
+.pr-container {
+    max-width: 1200px;
+    margin: 15px auto;
+    background: #ffffff;
+    padding: 24px 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    font-family: 'Inter', "Segoe UI", Roboto, sans-serif;
+    color: #2d3436;
+    line-height: 1.6;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* HEADER */
+.pr-header {
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+}
+
+.pr-header h1 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1a202c;
+    letter-spacing: -0.5px;
+}
+
+/* SECTION */
+.form-section {
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a5568;
+    background: #f8fafc;
+    padding: 6px 14px;
+    display: inline-block;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    border-left: 4px solid #0d6efd;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* GRID & GROUPS */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #4a5568;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: #0d6efd;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.form-group input[readonly] {
+    background-color: #f8fafc;
+    cursor: not-allowed;
+}
+
+/* TÍNH NĂNG HAI BẢNG SONG SONG (RETURN SPECIFIC) */
+.tables-grid {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+}
+
+.table-column {
+    flex: 1;
+    min-width: 0;
+}
+
+/* TABLE STYLING */
+.table-container {
+    background: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.pr-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pr-table th {
+    background: #f8fafc;
+    text-align: left;
+    font-size: 11px;
+    padding: 10px;
+    font-weight: 700;
+    color: #718096;
+    border-bottom: 1px solid #edf2f7;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.pr-table td {
+    padding: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 12px;
+}
+
+.noteInput {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: 0.2s;
+    font-size: 13px;
+}
+
+.noteInput:focus {
+    border-color: #0d6efd;
+    outline: none;
+}
+
+.noteInput:read-only {
+    background: #fdfdfd;
+    border-color: transparent;
+    color: #999;
+}
+
+/* FOOTER & ACTION BUTTONS */
+.pr-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #edf2f7;
+    padding-top: 20px;
+    margin-top: 16px;
+}
+
+.footer-right {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    padding: 10px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: none;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    border: none;
+}
+
+.btn-back-custom {
+    background: #fff;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-back-custom:hover {
+    background: #f8fafc;
+    border-color: #cbd5e0;
+}
+
+.btn-reset-custom {
+    background: #fff;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-reset-custom:hover {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.btn-submit-custom {
+    background: #0d6efd;
+    color: #fff;
+    box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+}
+
+.btn-submit-custom:hover {
+    background: #0b5ed7;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(13, 110, 253, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .tables-grid {
+        flex-direction: column;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

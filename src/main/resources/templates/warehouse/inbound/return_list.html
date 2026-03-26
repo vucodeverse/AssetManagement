@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-rotate-left" style="margin-right:8px;"></i>Nhập kho Thu hồi</h1>
+            <p class="page-subtitle">Danh sách các yêu cầu trả tài sản từ phòng ban về kho</p>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="wh-panel">
+            <div class="wh-panel-header">
+                <span class="wh-panel-title"><i class="fa-solid fa-list"></i> Yêu cầu Chờ xử lý</span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã Lệnh</th>
+                        <th>Phòng ban hoàn trả</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th class="action-cell">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ret : ${returns}">
+                        <td th:text="'#RTN-' + ${ret.handoverId}">501</td>
+                        <td th:text="${ret.fromDepartmentName}">Phòng IT</td>
+                        <td th:text="${#temporals.format(ret.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                            <span class="badge badge-in-use" th:text="${ret.status}">PENDING</span>
+                        </td>
+                        <td class="action-cell">
+                            <a th:href="@{'/wh/inbound/return/' + ${ret.handoverId}}" class="btn-sm primary">
+                                <i class="fa-solid fa-barcode"></i> Quét mã
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        <div class="wh-panel" style="margin-top: 2rem;">
+            <div class="wh-panel-header" style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+                <span class="wh-panel-title" style="color: #495057;"><i class="fa-solid fa-history"></i> Lệnh đã xử lý (Gần đây)</span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã Lệnh</th>
+                        <th>Phòng ban hoàn trả</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th class="action-cell">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ret : ${processedReturns}">
+                        <td th:text="'#RTN-' + ${ret.handoverId}">501</td>
+                        <td th:text="${ret.fromDepartmentName}">Phòng IT</td>
+                        <td th:text="${#temporals.format(ret.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                            <span class="badge badge-completed" th:text="${ret.status}">COMPLETED</span>
+                        </td>
+                        <td class="action-cell">
+                            <a th:href="@{'/wh/inbound/return/' + ${ret.handoverId}}" class="btn-sm secondary">
+                                <i class="fa-solid fa-eye"></i> Xem lại
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(processedReturns)}">
+                        <td colspan="5" style="text-align: center; color: #999; padding: 20px;">Chưa có lệnh nào được xử lý hoàn tất.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

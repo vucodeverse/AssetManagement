@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Quản Lý Phòng Ban</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css"/>
+
+    <link rel="stylesheet" th:href="@{/css/admin/department.css}">
+
+</head>
+<body>
+<div class="sidebar">
+    <h4 class="text-center mb-4">Admin Panel</h4>
+    <div class="sidebar-nav">
+        <a href="/admin/dashboard"><i class="fas fa-chart-line mr-2"></i> Trang tổng quan</a>
+        <a href="/admin/users"><i class="fas fa-users mr-2"></i> Quản lí người dùng</a>
+        <a href="/admin/departments" class="active"><i class="fas fa-building mr-2"></i> Quản lí phòng ban</a>
+    </div>
+    <div class="sidebar-user">
+        <div class="user-avatar">A</div>
+
+        <div class="user-info">
+            <span class="user-name">Administrator</span>
+            <span class="user-role">Admin</span>
+        </div>
+
+        <a th:href="@{/logout}" class="logout-link" title="Đăng xuất">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </div>
+</div>
+
+<div class="content">
+    <a th:href="@{/admin/departments}" style="text-decoration: none;">
+        <h2 class="header-title">Quản lí phòng ban</h2>
+    </a>
+
+    <hr/>
+
+    <div th:if="${successMsg}" class="alert alert-success" th:text="${successMsg}"></div>
+
+    <div class="row">
+        <div class="col-lg-7">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a th:href="@{/admin/departments}" class="btn btn-primary">
+                    + Thêm phòng ban
+                </a>
+
+
+                <form th:action="@{/admin/departments}" method="get" class="input-group w-50">
+                    <input type="text"
+                           name="keyword"
+                           class="form-control"
+                           th:value="${keyword}"
+                           placeholder="Tìm kiếm phòng ban..."/>
+
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+
+            <table id="depTable" class="table table-bordered table-striped shadow-sm bg-white">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Phòng ban</th>
+                    <th>Quản lý</th>
+                    <th>Nhân sự</th>
+                    <th style="width: 120px">Hành động</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="x : ${departments}">
+                    <td th:text="${x.departmentName}"></td>
+                    <td th:text="${x.managerName}"></td>
+                    <td th:text="${staffCount[x.departmentId] != null ? staffCount[x.departmentId] : 0}"></td>
+                    <td>
+                        <a th:href="@{/admin/department/edit(id=${x.departmentId}, page=${page})}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="far fa-eye"></i>
+                        </a>
+                        <form th:action="@{/admin/department/delete}" method="post" style="display:inline">
+                            <input type="hidden"
+                                   name="id"
+                                   th:value="${x.departmentId}"/>
+                            <button class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Bạn có chắc chắn muốn xóa phòng ban này không?');">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center">
+
+                    <!-- Nút Previous -->
+                    <li class="page-item" th:classappend="${page <= 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/admin/departments(page=${page - 1}, keyword=${keyword})}">
+                            <
+                        </a>
+                    </li>
+
+                    <!-- Trang hiện tại -->
+                    <li th:each="i : ${#numbers.sequence(1, totalPages)}"
+                        class="page-item"
+                        th:classappend="${i == page} ? 'active'">
+
+                        <a class="page-link"
+                           th:href="@{/admin/departments(page=${i}, keyword=${keyword})}"
+                           th:text="${i}">
+                        </a>
+                    </li>
+
+                    <!-- Trang kế tiếp -->
+                    <li class="page-item">
+                        <a class="page-link"
+                           th:href="@{/admin/departments(page=${page + 1}, keyword=${keyword})}">
+                            >
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+
+        </div>
+
+        <div class="col-lg-5">
+            <div class="detail-card">
+
+                <h5 class="mb-4 text-primary">
+                    <i class="fas fa-info-circle"></i> Chi tiết phòng ban
+                </h5>
+
+                <form th:action="@{${mode == 'Add'
+                        ? '/admin/department/create'
+                        : '/admin/department/update'}}"
+                      method="post" th:object="${selected}">
+
+                    <input type="hidden" name="departmentId" th:value="${selected.departmentId}"/>
+                    <input type="hidden" name="page" th:value="${page}"/>
+
+                    <!-- MÃ PHÒNG BAN -->
+                    <div class="form-group">
+                        <label class="form-label">Mã phòng ban</label>
+                        <input type="text"
+                               class="form-control bg-light"
+                               th:value="${selected.departmentId}"
+                               placeholder="Phục vụ hiển thị"
+                               readonly/>
+                    </div>
+
+                    <!-- TÊN PHÒNG BAN -->
+                    <div class="form-group">
+                        <label class="form-label">Tên phòng ban</label>
+                        <input type="text"
+                               name="departmentName"
+                               class="form-control border-primary"
+                               th:value="${selected.departmentName}"/>
+                        <div class="text-danger"
+                             th:if="${#fields.hasErrors('departmentName')}"
+                             th:errors="*{departmentName}">
+                        </div>
+                    </div>
+
+                    <!-- TÊN QUẢN LÝ-->
+                    <div class="form-group">
+                        <label class="form-label">Quản lý</label>
+                        <input type="text"
+                               name="managerName"
+                               class="form-control border-primary"
+                               th:value="${selected.managerName}"
+                               placeholder="Hệ thống sẽ tự động cập nhật"
+                               readonly/>
+                    </div>
+
+                    <!-- MÔ TẢ VỀ PHÒNG BAN -->
+                    <div class="form-group">
+                        <label class="form-label">Mô tả</label>
+                        <textarea class="form-control" rows="3"
+                                  name="description"
+                                  th:text="${selected.description}">
+                        </textarea>
+                        <div class="text-danger"
+                             th:if="${#fields.hasErrors('description')}"
+                             th:errors="*{description}">
+                        </div>
+                    </div>
+
+                    <!-- BUTTON -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Lưu
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(function () {
+
+        $('#depTable').DataTable({
+
+            paging: false,
+            lengthChange: false,
+            searching: false,
+            info: false,
+
+            ordering: true,
+
+            columnDefs: [
+                {orderable: false, targets: [3]}
+            ]
+        });
+
+    });
+
+</script>
+
+</body>
+</html>

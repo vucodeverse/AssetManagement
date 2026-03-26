@@ -24,7 +24,7 @@ public class CustomerUserDetailsServiceImpl implements CustomerUserDetailsServic
         return User
                 .withUsername(users.getUsername())
                 .password(users.getPasswordHash())
-                .roles(users.getRole())
+                .authorities(users.getRole().name())
                 .build();
     }
 }

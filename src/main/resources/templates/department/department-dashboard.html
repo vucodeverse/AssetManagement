@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/department-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Dashboard - AMS</title>
+<link rel="stylesheet" th:href="@{/css/department/dept-dashboard.css}">
+</head>
+<body>
+
+<!-- Nội dung chính sẽ được chèn vào layout -->
+<div layout:fragment="content">
+    <div class="main-content">
+        <div class="breadcrumb">
+            <a href="#">Trang chủ</a> / <span>Dashboard</span>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h2>Dashboard</h2>
+            <p th:text="'Xin chào, ' + ${userName} + ' - ' + ${departmentName}">
+                Xin chào, Nguyễn Văn A - Phòng Công nghệ thông tin
+            </p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Tổng tài sản</span>
+                    <div class="stat-icon blue">
+                        <i class="fas fa-laptop"></i>
+                    </div>
+                </div>
+                <div class="stat-value" th:text="${totalAssets != null ? totalAssets : 0}">0</div>
+                <div class="stat-sub">tài sản đang quản lý</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Đang sử dụng</span>
+                    <div class="stat-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-value" th:text="${assetsInUse != null ? assetsInUse : 0}">0</div>
+                <div class="stat-sub">đang được sử dụng</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Chờ cấp phát</span>
+                    <div class="stat-icon yellow">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+                <div class="stat-value" th:text="${pendingAllocations != null ? pendingAllocations : 0}">0</div>
+                <div class="stat-sub">yêu cầu đang chờ</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Giá trị tài sản</span>
+                    <div class="stat-icon purple">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="stat-value" th:text="${totalAssetValue != null ? #numbers.formatInteger(totalAssetValue, 0, 'COMMA') : '0'}">0</div>
+                <div class="stat-sub">VNĐ (ước tính)</div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="two-col-grid">
+            <!-- Asset Distribution Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Phân bố tài sản theo loại</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="assetChart" width="400" height="400"></canvas>
+                    </div>
+                    <div id="chartLegend" style="margin-top: 16px;"></div>
+                </div>
+            </div>
+
+            <!-- Recent Allocation Requests -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-list-alt"></i>
+                        <span>Yêu cầu cấp phát gần đây</span>
+                    </div>
+                    <a th:href="@{/department/allocation-request/list}" class="card-link">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card-body">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>Mã yêu cầu</th>
+                            <th>Ngày tạo</th>
+                            <th>Lý do</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="req : ${recentRequests}">
+                            <td>
+                                <a th:href="@{/department/requests/view/{id}(id=${req.id})}" class="request-code" th:text="${req.code}">REQ-001</a>
+                            </td>
+                            <td th:text="${#temporals.format(req.date, 'dd/MM/yyyy')}">15/03/2025</td>
+                            <td th:text="${#strings.abbreviate(req.reason, 30)}">Nâng cấp thiết bị cho nhân viên mới</td>
+                            <td>
+                                <span th:class="'badge badge-' + ${req.statusClass}" th:text="${req.statusText}">Đang xử lý</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${recentRequests == null or recentRequests.isEmpty()}">
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>Không có yêu cầu nào</p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-bolt"></i>
+                    <span>Thao tác nhanh</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <a th:href="@{/department/allocation-request/create}" class="quick-action-btn">
+                        <div class="quick-action-icon primary">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <span class="quick-action-text">Tạo yêu cầu cấp phát</span>
+                    </a>
+<!--                    <a th:href="@{/department/assets}" class="quick-action-btn">-->
+<!--                        <div class="quick-action-icon success">-->
+<!--                            <i class="fas fa-search"></i>-->
+<!--                        </div>-->
+<!--                        <span class="quick-action-text">Xem tài sản bộ phận</span>-->
+<!--                    </a>-->
+                    <a th:href="@{/department/return-request/create}" class="quick-action-btn">
+                        <div class="quick-action-icon warning">
+                            <i class="fas fa-undo-alt"></i>
+                        </div>
+                        <span class="quick-action-text">Trả lại tài sản</span>
+                    </a>
+                    <a th:href="@{/transfer-requests/incoming}" class="quick-action-btn">
+                        <div class="quick-action-icon warning">
+                            <i class="fas fa-undo-alt"></i>
+                        </div>
+                        <span class="quick-action-text">Xem yêu cầu điều chuyển</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var assetDistribution = /*[[${assetDistribution}]]*/ null;
+        if (assetDistribution && Array.isArray(assetDistribution) && assetDistribution.length > 0) {
+            var labels = [];
+            var counts = [];
+            var total = 0;
+
+            assetDistribution.forEach(function(item) {
+                labels.push(item.typeName);
+                counts.push(item.count);
+                total += item.count;
+            });
+
+            var colorPalette = ['#3b82f6', '#22c55e', '#eab308', '#a855f7', '#ef4444', '#06b6d4', '#f97316', '#ec489a'];
+            var backgroundColors = colorPalette.slice(0, labels.length);
+
+            var ctx = document.getElementById('assetChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                generateLabels: function(chart) {
+                                    var data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        return data.labels.map(function(label, i) {
+                                            var value = data.datasets[0].data[i];
+                                            var percentage = ((value / total) * 100).toFixed(1);
+                                            return {
+                                                text: label + ': ' + value + ' (' + percentage + '%)',
+                                                fillStyle: data.datasets[0].backgroundColor[i],
+                                                index: i,
+                                                strokeStyle: '#fff',
+                                                lineWidth: 2
+                                            };
+                                        });
+                                    }
+                                    return [];
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.label || '';
+                                    var value = context.raw || 0;
+                                    var percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + value + ' tài sản (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        } else {
+            var chartContainer = document.querySelector('.chart-container');
+            if (chartContainer) {
+                chartContainer.innerHTML = '<div class="empty-state"><i class="fas fa-chart-pie"></i><p>Chưa có dữ liệu thống kê</p></div>';
+            }
+        }
+        /*]]>*/
+    </script>
+</div>
+
+</body>
+</html>

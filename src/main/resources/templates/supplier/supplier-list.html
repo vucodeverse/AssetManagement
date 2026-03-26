@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý nhà cung cấp</title>
+    <link rel="stylesheet" th:href="@{/css/supplier/style.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left">
+        <i data-lucide="menu" class="menu-icon"></i>
+        <span class="title">QUẢN LÝ NHÀ CUNG CẤP</span>
+    </div>
+    <div class="topbar-right">
+        <div class="avatar">
+            <i data-lucide="user" style="width:18px;height:18px;"></i>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+
+    <div class="action-bar">
+        <a th:href="@{/suppliers/create}" class="btn-primary">
+            <i data-lucide="plus" style="width:16px;height:16px;margin-right:8px;"></i>
+            Tạo nhà cung cấp
+        </a>
+    </div>
+
+    <!-- SEARCH -->
+    <section class="card">
+        <form th:action="@{/suppliers}" method="get"
+              th:object="${searchCriteria}" class="search-form">
+
+            <div class="form-group">
+                <label>Mã nhà cung cấp</label>
+                <input type="text" th:field="*{supplierCode}" placeholder="Nhập mã...">
+            </div>
+
+            <div class="form-group">
+                <label>Tên nhà cung cấp</label>
+                <input type="text" th:field="*{supplierName}" placeholder="Nhập tên...">
+            </div>
+
+            <div class="form-group">
+                <label>Trạng thái</label>
+                <select th:field="*{status}">
+                    <option value="">Tất cả</option>
+                    <option value="ACTIVE">Hoạt động</option>
+                    <option value="INACTIVE">Ngừng hoạt động</option>
+                </select>
+            </div>
+
+            <div style="display:flex;gap:12px;">
+                <button type="submit" class="btn-primary">Tìm kiếm</button>
+                <a th:href="@{/suppliers}" class="btn-secondary">Đặt lại</a>
+            </div>
+        </form>
+    </section>
+
+    <!-- TABLE -->
+    <section class="card">
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>
+                        <a th:href="@{/suppliers(
+                pageNo=0,
+                sortField='supplierCode',
+                sortDir=${sortField == 'supplierCode' and sortDir == 'asc' ? 'desc' : 'asc'}
+            )}">
+                            MÃ
+                            <span class="sort-icon"
+                                  th:classappend="${sortField == 'supplierCode'} ? 'active'"
+                                  th:text="${sortField == 'supplierCode'}
+                           ? (${sortDir == 'asc'} ? '↑' : '↓')
+                           : '↕'">
+            </span>
+                        </a>
+                    </th>
+                    <th>
+                        <a th:href="@{/suppliers(
+                pageNo=0,
+                sortField='supplierName',
+                sortDir=${sortField == 'supplierName' and sortDir == 'asc' ? 'desc' : 'asc'}
+            )}">
+                            TÊN
+                            <span class="sort-icon"
+                                  th:classappend="${sortField == 'supplierName'} ? 'active'"
+                                  th:text="${sortField == 'supplierName'}
+                           ? (${sortDir == 'asc'} ? '↑' : '↓')
+                           : '↕'">
+            </span>
+                        </a>
+                    </th>
+                    <th>MÃ SỐ THUẾ</th>
+                    <th>TRẠNG THÁI</th>
+                    <th>THAO TÁC</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                <!-- Có dữ liệu -->
+                <tr th:each="supplier : ${page.data}"
+                    th:if="${page.data != null and !#lists.isEmpty(page.data)}">
+
+                    <td th:text="${supplier.supplierCode}" class="bold"></td>
+                    <td th:text="${supplier.supplierName}"></td>
+                    <td th:text="${supplier.taxCode}"></td>
+
+                    <td>
+        <span th:if="${supplier.status == 'ACTIVE'}"
+              class="status-active">Hoạt động</span>
+
+                        <span th:if="${supplier.status == 'INACTIVE'}"
+                              class="status-inactive">Ngừng hoạt động</span>
+                    </td>
+
+                    <td class="actions">
+                        <a th:href="@{/suppliers/{supplierCode}(supplierCode=${supplier.supplierCode})}">
+                            <i data-lucide="eye" style="width:18px;"></i>
+                        </a>
+
+                        <a th:href="@{/suppliers/{supplierCode}(supplierCode=${supplier.supplierCode},mode='edit')}">
+                            <i data-lucide="pencil" style="width:18px;"></i>
+                        </a>
+                    </td>
+
+                </tr>
+
+                <!-- EMPTY STATE -->
+                <tr th:if="${page.data == null or #lists.isEmpty(page.data)}">
+                    <td colspan="5" class="empty-table">
+                        Không tìm thấy nhà cung cấp nào
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="table-footer">
+            <div class="table-summary">
+                Hiển thị
+                <span th:text="${page.totalRecords == 0 ? 0 : page.currentPage * size + 1}"></span>
+                -
+                <span th:text="${page.totalRecords == 0 ? 0 : page.currentPage * size + page.data.size()}"></span>
+                của <span th:text="${page.totalRecords}"></span>
+                nhà cung cấp
+            </div>
+
+            <nav class="pagination" th:if="${page.totalPages > 1}">
+                <a th:if="${page.currentPage > 0}"
+                   th:href="@{/suppliers(pageNo=${page.currentPage - 1})}"
+                   class="page-nav">
+                    <i data-lucide="chevron-left" style="width:16px;"></i>
+                    Trước
+                </a>
+
+                <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                    <a th:if="${i != page.currentPage}"
+                       th:href="@{/suppliers(pageNo=${i})}"
+                       class="page-number"
+                       th:text="${i + 1}"></a>
+
+                    <span th:if="${i == page.currentPage}"
+                          class="page-number active"
+                          th:text="${i + 1}"></span>
+                </span>
+
+                <a th:if="${page.currentPage < page.totalPages - 1}"
+                   th:href="@{/suppliers(pageNo=${page.currentPage + 1})}"
+                   class="page-nav">
+                    Sau
+                    <i data-lucide="chevron-right" style="width:16px;"></i>
+                </a>
+            </nav>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    lucide.createIcons();
+</script>
+
+</body>
+</html>

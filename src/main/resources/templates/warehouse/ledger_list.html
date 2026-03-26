@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+    </head>
+<body>
+<th:block layout:fragment="content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-receipt" style="margin-right:8px;"></i>Sổ cái Giao dịch</h1>
+            <p class="page-subtitle">Nhật ký chi tiết các biến động nhập/xuất kho</p>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="wh-panel">
+            <div class="wh-panel-header">
+                <span class="wh-panel-title"><i class="fa-solid fa-filter"></i> Bộ lọc</span>
+            </div>
+            <div style="padding: 1.5rem;">
+                <form th:action="@{/wh/ledger}" method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="form-field">
+                        <label class="form-label">Từ ngày</label>
+                        <input type="date" name="fromDate" class="form-input" th:value="${filter.fromDate}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Đến ngày</label>
+                        <input type="date" name="toDate" class="form-input" th:value="${filter.toDate}">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Loại giao dịch</label>
+                        <select name="transactionType" class="form-input">
+                            <option value="" th:selected="${filter.transactionType == null or filter.transactionType == ''}">Tất cả</option>
+                            <option value="INBOUND" th:selected="${filter.transactionType == 'INBOUND'}">Nhập kho (Inbound)</option>
+                            <option value="OUTBOUND" th:selected="${filter.transactionType == 'OUTBOUND'}">Xuất kho (Outbound)</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button type="submit" class="btn-primary" style="width: 100%;">Lọc dữ liệu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="wh-panel" style="margin-top: 1.5rem;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Thời gian</th>
+                        <th>Loại</th>
+                        <th>Tài sản</th>
+                        <th>Vị trí (Zone)</th>
+                        <th>Chứng từ gốc</th>
+                        <th>Người thực hiện</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="tx : ${transactions}">
+                        <td th:text="${tx.transactionId}">1001</td>
+                        <td th:text="${#temporals.format(tx.executedAt, 'HH:mm dd/MM/yyyy')}"></td>
+                        <td>
+                            <span th:class="${tx.transactionType == 'INBOUND' ? 'badge badge-active' : 'badge badge-in-use'}" 
+                                  th:text="${tx.transactionType}"></span>
+                        </td>
+                        <td th:text="${tx.assetName}">Laptop Dell</td>
+                        <td th:text="${tx.zoneName}">A-01</td>
+                        <td>
+                            <a href="#" style="color: #3b82f6; text-decoration: underline;" 
+                               th:text="${tx.referenceType + ' #' + tx.referenceId}"></a>
+                        </td>
+                        <td th:text="${tx.executedBy}">Admin</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

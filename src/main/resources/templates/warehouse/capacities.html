@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/warehouse-layout}">
+
+<head>
+    <th:block layout:fragment="extra-css">
+        <title th:text="${pageTitle}"></title>
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-ruler-combined" style="margin-right:8px;"></i>Định mức Sức chứa Chiếm dụng</h1>
+            <p class="page-subtitle">Cấu hình số "đơn vị" mà mỗi loại tài sản chiếm dụng trong một Zone khi nhập kho</p>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+
+        <!-- Flash messages -->
+        <div th:if="${successMessage}" class="flash-message success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="flash-message error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- Alert box giải thích -->
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem; font-size:0.825rem; color:#166534; display:flex; gap:0.75rem; align-items:flex-start;">
+            <i class="fa-solid fa-lightbulb" style="margin-top:2px; flex-shrink:0;"></i>
+            <div>
+                <strong>Định mức sức chứa hoạt động thế nào?</strong><br>
+                Mỗi Zone có một "Sức chứa tối đa" (đơn vị). Khi nhập kho, hệ thống sẽ tự động tìm Zone phù hợp dựa trên số đơn vị mà tài sản chiếm dụng.
+                Ví dụ: Zone có sức chứa <strong>20 đơn vị</strong> — Laptop (1 đv) chứa được 20 cái, Máy in (3 đv) chứa được 6 cái.
+            </div>
+        </div>
+
+
+
+        <div class="wh-panel">
+                    <div class="wh-panel-header">
+                        <span class="wh-panel-title"><i class="fa-solid fa-list"></i> Danh sách Định mức hiện tại</span>
+                        <span class="wh-panel-count" th:text="${assetTypes.size()} + ' loại'"></span>
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 35%;">Loại Tài sản</th>
+                            <th style="width: 20%;">Danh mục</th>
+                            <th style="width: 40%;">Định mức (Đơn vị chiếm dụng)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Asset Types Rows -->
+                        <tr th:each="at : ${assetTypes}">
+                            <!-- ID -->
+                            <td style="color:#9ca3af; font-size:0.8rem;" th:text="${at.assetTypeId}">1</td>
+
+                            <!-- Tên Loại -->
+                            <td style="font-weight:600;" th:text="${at.typeName}">Laptop Dell XPS</td>
+
+                            <!-- Danh mục -->
+                            <td>
+                                <span style="font-size:0.8rem; color:#6b7280;" th:text="${at.categoryName}">Máy tính</span>
+                            </td>
+
+                            <!-- Định mức Input Form -->
+                            <td>
+                                <form th:action="@{/wh/config/capacities/update}" method="post" class="inline-form" style="display:flex; gap:12px; align-items:center; margin:0;">
+                                    <input type="hidden" name="assetTypeId" th:value="${at.assetTypeId}"/>
+                                    
+                                    <div style="display:flex; align-items:center; background:#fff; border:1px solid #d1d5db; border-radius:6px; padding:4px 8px; width:160px; transition:border 0.2s;">
+                                        <i class="fa-solid fa-cube" style="color:#9ca3af; margin-right:8px; font-size:0.85rem;"></i>
+                                        <input type="number" name="unitVolume"
+                                               th:value="${at.unitVolume}"
+                                               min="1" max="999"
+                                               class="form-input"
+                                               placeholder="Trống"
+                                               style="border:none; box-shadow:none; padding:0; height:32px; font-weight:600; text-align:right; width:100%;"
+                                               required/>
+                                        <span style="color:#6b7280; font-size:0.85rem; margin-left:8px; white-space:nowrap;">đv/tài sản</span>
+                                    </div>
+
+                                    <button type="submit" class="btn-sm primary" style="height:42px; padding:0 16px;">
+                                        <i class="fa-solid fa-check"></i> Lưu định mức
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <!-- Empty state -->
+                        <tr th:if="${assetTypes == null or assetTypes.isEmpty()}">
+                            <td colspan="4">
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-box-open"></i>
+                                    <p>Không có loại tài sản nào trong hệ thống.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+        <!-- Chú thích đơn vị -->
+        <div style="background:#fefce8; border:1px solid #fde68a; border-radius:8px; padding:1rem 1.25rem; margin-top:1.5rem; font-size:0.85rem; color:#854d0e;">
+            <p style="margin:0 0 8px; font-weight:700;"><i class="fa-solid fa-triangle-exclamation"></i> Lưu ý quan trọng</p>
+            <ul style="margin:0; padding-left:1.5rem; line-height:1.7;">
+                <li>Thay đổi định mức <strong>chỉ ảnh hưởng đến các lần nhập kho mới</strong>, không làm thay đổi các tài sản đã xếp lịch sẵn.</li>
+                <li>Hệ thống từ chối tự động nhập kho cho những <strong>loại tài sản đang có định mức rỗng (Chưa cấu hình)</strong>.</li>
+            </ul>
+        </div>
+    </div><!-- /.content-wrapper -->
+
+</th:block>
+</body>
+</html>

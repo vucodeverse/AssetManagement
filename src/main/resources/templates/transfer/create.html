@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo yêu cầu điều chuyển</title>
+    <link rel="stylesheet" th:href="@{/css/transfer/form.css}">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-left">
+        <i data-lucide="menu" class="menu-icon"></i>
+        <span class="title">QUẢN LÝ ĐIỀU CHUYỂN TÀI SẢN</span>
+    </div>
+    <div class="topbar-right">
+        <div class="avatar">
+            <i data-lucide="user" style="width:18px;height:18px;"></i>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+
+    <nav class="breadcrumb">
+        <a th:href="@{/transfer-requests/list}">Trang chủ</a>
+        <span>/</span>
+        <span>Tạo yêu cầu điều chuyển</span>
+    </nav>
+
+    <div class="page-header">
+        <h2>Tạo yêu cầu điều chuyển tài sản</h2>
+        <p>Vui lòng chọn phòng ban nguồn, tài sản cần điều chuyển và thông tin nhận để tạo yêu cầu.</p>
+    </div>
+
+    <div th:if="${error}" class="alert-error">
+        <i data-lucide="alert-circle"></i>
+        <span th:text="${error}"></span>
+    </div>
+    <div th:if="${message}" class="alert-success">
+        <i data-lucide="check-circle"></i>
+        <span th:text="${message}"></span>
+    </div>
+
+    <section class="card">
+
+        <!-- Step 1: Department Selection -->
+        <h3 class="section-title">Bước 1: Chọn phòng ban nguồn</h3>
+        <form method="get" th:action="@{/transfer-requests/add}" class="department-form">
+            <div class="form-group">
+                <label>Phòng ban gửi <span class="required">*</span></label>
+                <select name="fromDepartmentId" onchange="this.form.submit()" class="form-select" required>
+                    <option value="">-- Chọn phòng ban --</option>
+                    <option th:each="d : ${departments}"
+                            th:value="${d.departmentId}"
+                            th:text="${d.departmentName}"
+                            th:selected="${d.departmentId == selectedDepartmentId}">
+                    </option>
+                </select>
+                <p class="field-hint">Chọn phòng ban đang quản lý tài sản cần điều chuyển</p>
+            </div>
+        </form>
+
+        <!-- Step 2 & 3: Asset Selection and Transfer Info -->
+        <div th:if="${assets != null}">
+
+            <hr class="section-divider">
+            <h3 class="section-title">Bước 2: Chọn tài sản cần điều chuyển</h3>
+
+            <div class="selected-count-badge">
+                <i data-lucide="check-circle"></i>
+                <span>Đã chọn: <b id="selectedCount">0</b> tài sản</span>
+            </div>
+
+            <form method="post"
+                  th:action="@{/transfer-requests/create}"
+                  th:object="${transferRequest}"
+                  id="mainForm">
+
+                <input type="hidden" name="fromDepartmentId" th:value="${selectedDepartmentId}">
+                <div id="hiddenAssetContainer"></div>
+
+                <!-- Assets Table -->
+                <div class="asset-table-container">
+                    <table class="asset-table">
+                        <thead>
+                        <tr>
+                            <th style="width: 50px;">
+                                <input type="checkbox" id="selectAll" class="checkbox">
+                            </th>
+                            <th>ID</th>
+                            <th>Tên tài sản</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="a : ${assets}">
+                            <td class="text-center">
+                                <input type="checkbox"
+                                       class="asset-checkbox checkbox"
+                                       th:value="${a.assetId}"
+                                       th:checked="${selectedIds != null and selectedIds.contains(a.assetId)}">
+                            </td>
+                            <td th:text="${a.assetId}"></td>
+                            <td th:text="${a.assetName}"></td>
+                            <td>
+                                <span class="badge badge-active">
+                                    <span class="badge-dot"></span>
+                                    Khả dụng
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${assets.isEmpty()}">
+                            <td colspan="4" class="empty-state">
+                                <i data-lucide="package"></i>
+                                <strong>Không còn tài sản nào</strong>
+                                <span>Phòng ban này hiện không còn tài sản nào để điều chuyển</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${totalPages > 1}" class="pagination-wrapper">
+                    <nav class="pagination">
+                        <a th:if="${currentPage > 0}"
+                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage - 1})}">
+                            Trước
+                        </a>
+
+                        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+            <a th:if="${i != currentPage}"
+               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${i})}"
+               th:text="${i+1}"></a>
+            <span th:if="${i == currentPage}" th:text="${i+1}" class="active"></span>
+        </span>
+
+                        <a th:if="${currentPage < totalPages - 1}"
+                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, pageNo=${currentPage+1})}">
+                            Sau
+                        </a>
+                    </nav>
+                </div>
+                <hr class="section-divider">
+
+                <h3 class="section-title">Bước 3: Thông tin điều chuyển</h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Phòng ban nhận <span class="required">*</span></label>
+                        <select th:field="*{toDepartmentId}" class="form-select" required>
+                            <option value="">-- Chọn phòng ban nhận --</option>
+                            <option th:each="d : ${departments}"
+                                    th:value="${d.departmentId}"
+                                    th:text="${d.departmentName}"
+                                    th:disabled="${d.departmentId == selectedDepartmentId}">
+                            </option>
+                        </select>
+                        <p class="field-hint">Không thể chọn cùng phòng ban nguồn</p>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Lý do điều chuyển <span class="required">*</span></label>
+                        <textarea th:field="*{reason}"
+                                  placeholder="Nhập lý do điều chuyển tài sản (ví dụ: thay đổi cơ cấu tổ chức, nâng cấp thiết bị, luân chuyển nhân sự...)"
+                                  rows="3"
+                                  required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a th:href="@{/transfer-requests/am}" class="btn btn-outline">
+                        <i data-lucide="x"></i>
+                        Hủy bỏ
+                    </a>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">
+                        <i data-lucide="send"></i>
+                        Tạo yêu cầu
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <div th:if="${assets == null and departments != null}" class="empty-state">
+            <i data-lucide="arrow-left-circle"></i>
+            <strong>Chưa chọn phòng ban</strong>
+            <span>Vui lòng chọn phòng ban nguồn để xem danh sách tài sản có thể điều chuyển</span>
+        </div>
+
+    </section>
+
+</main>
+
+<script src="https://unpkg.com/lucide@latest" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // DOM elements
+        const checkboxes = document.querySelectorAll(".asset-checkbox");
+        const selectAll = document.getElementById("selectAll");
+        const countEl = document.getElementById("selectedCount");
+        const submitBtn = document.getElementById("submitBtn");
+        const form = document.getElementById("mainForm");
+        const hiddenDiv = document.getElementById("hiddenAssetContainer");
+        const toDepartmentSelect = document.querySelector("[name='toDepartmentId']");
+        const reasonTextarea = document.querySelector("[name='reason']");
+        const fromDepartmentSelect = document.querySelector("select[name='fromDepartmentId']");
+
+        // Selected assets set from URL and checkboxes
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedSet = new Set(urlParams.getAll("selectedIds"));
+
+        // Initialize checkboxes state
+        function initializeCheckboxes() {
+            checkboxes.forEach(cb => {
+                if (selectedSet.has(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+            // Also add already-checked checkboxes (from th:checked) into selectedSet
+            checkboxes.forEach(cb => {
+                if (cb.checked) selectedSet.add(cb.value);
+            });
+        }
+
+        function updateUI() {
+            countEl.textContent = selectedSet.size;
+        }
+
+        function syncSelectAll() {
+            if (!selectAll) return;
+            const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+            selectAll.checked = allChecked;
+        }
+
+        // Individual checkbox change
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", () => {
+                if (cb.checked) {
+                    selectedSet.add(cb.value);
+                } else {
+                    selectedSet.delete(cb.value);
+                }
+                updateUI();
+                syncSelectAll();
+            });
+        });
+
+        // Select All logic
+        if (selectAll) {
+            selectAll.addEventListener("change", () => {
+                const isChecked = selectAll.checked;
+                checkboxes.forEach(cb => {
+                    cb.checked = isChecked;
+                    if (isChecked) {
+                        selectedSet.add(cb.value);
+                    } else {
+                        selectedSet.delete(cb.value);
+                    }
+                });
+                updateUI();
+            });
+        }
+
+        // Step 3 validation triggers
+        if (toDepartmentSelect) {
+            toDepartmentSelect.addEventListener("change", saveStep3Data);
+        }
+        if (reasonTextarea) {
+            reasonTextarea.addEventListener("input", saveStep3Data);
+        }
+
+        // Save step 3 data
+        function saveStep3Data() {
+            if (toDepartmentSelect && toDepartmentSelect.value) {
+                sessionStorage.setItem('temp_toDept', toDepartmentSelect.value);
+            }
+            if (reasonTextarea && reasonTextarea.value) {
+                sessionStorage.setItem('temp_reason', reasonTextarea.value);
+            }
+        }
+
+        function restoreStep3Data() {
+            const toDeptVal = sessionStorage.getItem('temp_toDept');
+            const reasonVal = sessionStorage.getItem('temp_reason');
+
+            if (toDepartmentSelect && toDeptVal) toDepartmentSelect.value = toDeptVal;
+            if (reasonTextarea && reasonVal) reasonTextarea.value = reasonVal;
+        }
+
+        function clearStep3Temp() {
+            sessionStorage.removeItem('temp_toDept');
+            sessionStorage.removeItem('temp_reason');
+        }
+
+        // Clear temp data when department changes
+        if (fromDepartmentSelect) {
+            fromDepartmentSelect.addEventListener("change", () => {
+                clearStep3Temp();
+            });
+        }
+
+        // Pagination handling
+        document.querySelectorAll(".pagination a").forEach(link => {
+            link.addEventListener("click", (e) => {
+                e.preventDefault();
+                saveStep3Data();
+
+                const url = new URL(link.href, window.location.origin);
+                url.searchParams.delete("selectedIds");
+                selectedSet.forEach(id => url.searchParams.append("selectedIds", id));
+
+                if (!url.searchParams.has("fromDepartmentId") && fromDepartmentSelect) {
+                    url.searchParams.set("fromDepartmentId", fromDepartmentSelect.value);
+                }
+
+                window.location.href = url.toString();
+            });
+        });
+
+        // Form submit
+        form.addEventListener("submit", (e) => {
+            if (selectedSet.size === 0) {
+                e.preventDefault();
+                alert("Vui lòng chọn ít nhất một tài sản để điều chuyển");
+                return;
+            }
+
+            while (hiddenDiv.firstChild) {
+                hiddenDiv.removeChild(hiddenDiv.firstChild);
+            }
+
+            selectedSet.forEach(id => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "assetIds";
+                input.value = id;
+                hiddenDiv.appendChild(input);
+            });
+
+            clearStep3Temp();
+        });
+
+        // Initial setup
+        initializeCheckboxes();
+        updateUI();
+        syncSelectAll();
+        restoreStep3Data();
+
+        if (urlParams.has("success")) {
+            clearStep3Temp();
+        }
+    });
+</script>
+
+</body>
+</html>

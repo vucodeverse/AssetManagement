@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<aside th:fragment="sidebar(activeMenu, activeSub)" class="sidebar">
+
+    <div class="sidebar-logo">
+        <i class="fas fa-building"></i> <span>PHÒNG BAN</span>
+    </div>
+
+    <nav class="sidebar-nav">
+
+        <!-- DASHBOARD -->
+        <a th:href="@{/department/dashboard}"
+           th:classappend="${activeMenu == 'dashboard'} ? 'active'"
+           class="nav-item">
+            <i class="fas fa-th-large"></i> TỔNG QUAN
+        </a>
+
+        <!-- ALLOCATION -->
+        <a th:href="@{/department/allocation-request/list}"
+           th:classappend="${activeMenu == 'allocation'} ? 'active'"
+           class="nav-item">
+            <i class="fas fa-box"></i> YÊU CẦU PHÂN BỔ
+        </a>
+
+        <!-- RETURN -->
+        <a th:href="@{/department/return-request/list}"
+           th:classappend="${activeMenu == 'return'} ? 'active'"
+           class="nav-item">
+            <i class="fas fa-undo"></i> YÊU CẦU TRẢ
+        </a>
+
+        <!-- TRANSFER  -->
+        <a th:href="@{/transfer-requests/my}"
+           th:classappend="${activeMenu == 'transfer'} ? 'active'"
+           class="nav-item">
+            <i class="fas fa-exchange-alt"></i>YÊU CẦU ĐIỀU CHUYỂN
+        </a>
+
+
+    </nav>
+
+    <!--    khối thông tin-->
+    <div class="sidebar-user">
+        <div class="user-avatar">B</div>
+        <div class="user-info">
+            <span class="user-name">Trưởng phòng ban</span>
+            <a th:href="@{/logout}" class="logout-link">ĐĂNG XUẤT</a>
+        </div>
+    </div>
+
+</aside>
+
+</body>
+
+</html>

@@ -1,11 +1,12 @@
 package edu.fpt.groupfive.model;
 
+import edu.fpt.groupfive.common.Role;
+import edu.fpt.groupfive.common.UserStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 @Getter
 @Setter
 public class Users {
@@ -15,15 +16,17 @@ public class Users {
 
     private String passwordHash;
 
-    private String fullName;
+    private String firstName;
+
+    private String lastName;
 
     private String phoneNumber;
 
     private String email;
 
-    private String status;
+    private UserStatus status;
 
-    private String role;
+    private Role role;
 
     private LocalDateTime createdDate;
 
@@ -31,4 +34,8 @@ public class Users {
 
     //Foreign key of table Department
     private Integer departmentId;
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }

@@ -1,0 +1,244 @@
+body {
+    background: #eef1f5;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+
+/* ===== SIDEBAR ===== */
+
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    background: linear-gradient(180deg, #1f2d3d, #151c26);
+    color: white;
+
+    padding-top: 15px;
+    z-index: 1000;
+
+    display: flex;
+    flex-direction: column;
+
+    box-shadow: 3px 0 10px rgba(0,0,0,0.2);
+}
+
+.sidebar h4 {
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.sidebar a {
+    display: block;
+    color: rgba(255,255,255,0.85);
+    padding: 12px 20px;
+    text-decoration: none;
+    transition: 0.25s;
+    border-left: 3px solid transparent;
+}
+
+.sidebar a:hover {
+    background: rgba(255,255,255,0.08);
+    border-left: 3px solid #0d6efd;
+    color: white;
+}
+
+.sidebar a.active {
+    background: rgba(13,110,253,0.2);
+    border-left: 3px solid #0d6efd;
+    font-weight: 600;
+}
+
+.sidebar-nav {
+    flex: 1;
+}
+
+
+/* ===== USER BOX ===== */
+
+.sidebar-user {
+    margin-top: auto;
+    padding: 12px 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.2);
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #0d6efd;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: bold;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.user-name {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.user-role {
+    font-size: 11px;
+    color: #ccc;
+}
+
+.logout-link {
+    color: #ffc107;
+    font-size: 18px;
+    transition: 0.2s;
+}
+
+.logout-link:hover {
+    transform: scale(1.15);
+    color: #ffdd57;
+}
+
+
+
+/* ===== CONTENT ===== */
+
+.content {
+    margin-left: 250px;
+    padding: 30px;
+}
+
+.header-title {
+    color: #0d6efd;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+
+
+/* ===== CARD ===== */
+
+.card-container,
+.detail-card {
+
+    background: white;
+    padding: 20px;
+
+    border-radius: 10px;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+/* ===== FORM ===== */
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-control {
+    border-radius: 6px;
+}
+
+
+/* ===== BUTTON ===== */
+
+.btn-primary,
+.btn-success,
+.btn-danger,
+.btn-secondary {
+
+    border-radius: 6px;
+}
+
+
+/* ===== TABLE ===== */
+
+table th,
+table td {
+    text-align: center;
+    vertical-align: middle !important;
+}
+
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead {
+    background: #1f2d3d;
+    color: white;
+}
+
+.table tbody tr:hover {
+    background: #f2f6ff;
+}
+
+table.dataTable thead th,
+table.dataTable thead td {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+table.dataTable tbody td {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+
+/* ===== PAGINATION ===== */
+
+.pagination .page-link {
+
+    color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+
+    background: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.pagination .page-link:hover {
+
+    background: #e9f1ff;
+}
+
+
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 900px) {
+
+    .sidebar {
+        width: 200px;
+    }
+
+    .content {
+        margin-left: 200px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .sidebar {
+        display: none;
+    }
+
+    .content {
+        margin-left: 0;
+    }
+
+}

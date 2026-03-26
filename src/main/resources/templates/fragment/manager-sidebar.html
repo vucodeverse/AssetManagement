@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <aside th:fragment="sidebar(activeMenu, activeSub)" class="sidebar">
+        <div class="sidebar-logo">
+            <i class="fas fa-cube"></i> <span>QUẢN TRỊ</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a th:href="@{/manager/dashboard}" th:classappend="${activeMenu == 'dashboard'} ? 'active' : ''"
+                class="nav-item">
+                <i class="fas fa-th-large"></i> TỔNG QUAN
+            </a>
+            <a th:href="@{/manager/assets}" th:classappend="${activeMenu == 'asset'} ? 'active' : ''" class="nav-item">
+                <i class="fas fa-box"></i> TÀI SẢN
+            </a>
+            <a th:href="@{/manager/asset-types}" th:classappend="${activeMenu == 'asset-type'} ? 'active' : ''"
+                class="nav-item">
+                <i class="fas fa-tags"></i> LOẠI TÀI SẢN
+            </a>
+            <a th:href="@{/manager/categories}" th:classappend="${activeMenu == 'category'} ? 'active' : ''"
+                class="nav-item">
+                <i class="fas fa-list"></i> DANH MỤC TÀI SẢN
+            </a>
+
+
+            <!-- Thêm menu khác -->
+            <a th:href="@{/asset-manager/allocation-request/list}" class="nav-item">
+                <i class="fas fa-file-invoice"></i> YÊU CẦU CẤP PHÁT
+            </a>
+
+            <!-- Thêm menu khác -->
+            <a th:href="@{/purchases}" class="nav-item">
+                <i class="fas fa-file-invoice"></i> YÊU CẦU MUA SẮM
+            </a>
+
+            <a th:href="@{/transfer-requests/am}" class="nav-item">
+                <i class="fas fa-chart-bar"></i> YÊU CẦU ĐIỀU CHUYỂN
+            </a>
+        </nav>
+
+
+
+
+
+        <div class="sidebar-user">
+            <div class="user-avatar" th:text="${userInitials} ?: 'SM'">SM</div>
+            <div class="user-info">
+                <span class="user-name" th:text="${userName} ?: 'Quản lý tài sản'">Quản lý tài sản</span>
+                <span class="user-role" th:text="${userRole} ?: 'Quản lí tài sản'">Quản lí tài sản</span>
+            </div>
+            <div class="user-actions">
+                <a th:href="@{/logout}" class="action-btn logout-btn" title="Đăng xuất">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+</body>
+
+</html>

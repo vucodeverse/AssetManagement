@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/manager-layout}">
+
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/manager/dashboard.css}">
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+    <div class="dashboard-container">
+        <h1 class="page-title">TỔNG QUAN TÀI SẢN</h1>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">TỔNG SỐ TÀI SẢN</div>
+                <div class="kpi-value" th:text="${dashboard.totalAssets}">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">TỔNG GIÁ TRỊ</div>
+                <div class="kpi-value" th:text="${#numbers.formatDecimal(dashboard.totalAssetValue,0,'COMMA',0,'POINT') + ' ₫'}">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">YÊU CẦU CẤP PHÁT CHỜ DUYỆT</div>
+                <div class="kpi-value" th:text="${dashboard.pendingAllocationRequests}">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">TÀI SẢN SẮP HẾT BẢO HÀNH</div>
+                <div class="kpi-value" th:text="${dashboard.expiringWarrantyCount}">0</div>
+            </div>
+        </div>
+
+        <!-- Yêu cầu cấp phát chờ duyệt -->
+        <div class="data-table-section">
+            <div class="section-title">YÊU CẦU CẤP PHÁT CHỜ DUYỆT</div>
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NGƯỜI YÊU CẦU</th>
+                    <th>NGÀY CẦN</th>
+                    <th>ƯU TIÊN</th>
+                    <th>TRẠNG THÁI</th>
+                    <th></th>
+                </thead>
+                <tbody>
+                <tr th:each="req : ${dashboard.pendingAllocations}">
+                    <td th:text="'AR-' + ${req.requestId}">AR-001</td>
+                    <td th:text="${req.requesterName}">Nguyễn Văn A</td>
+                    <td th:text="${#temporals.format(req.neededByDate, 'dd-MM-yyyy')}">-</td>
+                    <td><span th:class="'priority-' + ${#strings.toLowerCase(req.priority)}" th:text="${req.priority}">HIGH</span></td>
+                    <td><span class="status-badge" th:text="${req.status}">PENDING</span></td>
+                    <td><a th:href="@{'/asset-manager/allocation-requests/' + ${req.requestId}}" class="btn-approve">DUYỆT</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(dashboard.pendingAllocations)}">
+                    <td colspan="6" class="text-muted">Không có yêu cầu nào</td>
+                </tr>
+                </tbody>
+            </table>
+            <div style="text-align: right; margin-top: 16px;">
+                <a href="/asset-manager/allocation-requests" style="font-size:13px; font-weight:600; color:#2d6a4f;">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <!-- Tài sản sắp hết bảo hành -->
+        <div class="data-table-section">
+            <div class="section-title">TÀI SẢN SẮP HẾT BẢO HÀNH</div>
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>MÃ TÀI SẢN</th>
+                    <th>TÊN TÀI SẢN</th>
+                    <th>NGÀY HẾT BẢO HÀNH</th>
+                    <th>SỐ NGÀY CÒN LẠI</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="asset : ${dashboard.expiringWarranties}">
+                    <td th:text="${asset.assetId}">1</td>
+                    <td th:text="${asset.assetName}">Laptop Dell</td>
+                    <td th:text="${#temporals.format(asset.warrantyEndDate, 'dd-MM-yyyy')}">-</td>
+                    <td class="days-remaining" th:text="${asset.daysRemaining} + ' ngày'">5 ngày</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(dashboard.expiringWarranties)}">
+                    <td colspan="4" class="text-muted">Không có tài sản nào sắp hết bảo hành</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Hoạt động gần đây -->
+        <div class="recent-grid">
+            <div class="recent-card">
+                <div class="section-title">TÀI SẢN MỚI NHẤT</div>
+                <table class="mini-table">
+                    <thead><tr><th>Tên tài sản</th><th>Loại</th><th>Ngày mua</th></tr></thead>
+                    <tbody>
+                    <tr th:each="asset : ${dashboard.recentAssets}">
+                        <td th:text="${asset.assetName}">Laptop</td>
+                        <td th:text="${asset.assetTypeName}">Hardware</td>
+                        <td th:text="${#temporals.format(asset.acquisitionDate, 'dd-MM-yyyy')}">-</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(dashboard.recentAssets)}">
+                        <td colspan="3" class="text-muted">Chưa có tài sản</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</th:block>
+</body>
+</html>
