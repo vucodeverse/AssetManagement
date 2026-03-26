@@ -6,6 +6,7 @@ import edu.fpt.groupfive.dao.*;
 import edu.fpt.groupfive.dao.warehouse.WhReceiptDAO;
 import edu.fpt.groupfive.dao.warehouse.WhTransactionDAO;
 import edu.fpt.groupfive.dto.request.warehouse.InboundRequestDTO;
+import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseOrderDetailResponse;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.dto.response.warehouse.AssetTypeVolumeDTO;
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -90,12 +92,16 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
         List<HandoverDetailResponseDTO.HandoverItemDTO> items = assetHandoverDetailDao
                 .findItemsByHandoverId(handoverId);
 
+        List<WhReceipt> receipts =
+                whReceiptDAO.findByAssetHandoverId(handoverId);
+
         return HandoverDetailResponseDTO.builder()
                 .handoverId(handoverId)
                 .fromDepartmentName(handover.getFromDepartmentName())
                 .toDepartmentName(handover.getToDepartmentName())
                 .status(handover.getStatus().name())
                 .items(items)
+                .receipts(receipts)
                 .build();
     }
 
@@ -273,6 +279,144 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                 returnReqDAO.updateStatus(handover.getReturnRequestId(), Status.COMPLETED.name(), executedBy);
             }
         }
+    }
+
+    // =========================================================
+    // STAGED RETURN INBOUND — validate / list / confirm
+    // =========================================================
+
+    @Override
+    public AssetDetailResponse validateAssetForReturnInbound(String assetCode, Integer handoverId, List<String> stagedCodes) {
+        // 1. Duplicate check
+        if (stagedCodes != null && stagedCodes.contains(assetCode)) {
+            throw new RuntimeException("Tài sản này đã có trong danh sách chọn tạm thời.");
+        }
+
+        // 2. Parse asset ID
+        Integer assetId;
+        try {
+            assetId = Integer.parseInt(assetCode);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Mã tài sản không hợp lệ: " + assetCode);
+        }
+
+        // 3. Asset must belong to this handover's item list
+        List<HandoverDetailResponseDTO.HandoverItemDTO> items = assetHandoverDetailDao.findItemsByHandoverId(handoverId);
+        HandoverDetailResponseDTO.HandoverItemDTO match = items.stream()
+                .filter(i -> i.getAssetId().equals(assetId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Tài sản #" + assetId + " không thuộc lệnh thu hồi này."));
+
+        // 4. Not already scanned/received
+        if (match.isScanned()) {
+            throw new RuntimeException("Tài sản #" + assetId + " đã được nhận kho trước đó.");
+        }
+
+        // 5. Fetch and return full asset detail
+        Asset asset = assetDAO.findById(assetId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin tài sản #" + assetId));
+
+        return AssetDetailResponse.builder()
+                .assetId(asset.getAssetId())
+                .assetName(asset.getAssetName())
+                .assetTypeName(match.getAssetTypeName())
+                .build();
+    }
+
+    @Override
+    public List<AssetDetailResponse> getAssetsByCodes(List<String> assetCodes) {
+        if (assetCodes == null || assetCodes.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return assetCodes.stream()
+                .map(code -> {
+                    try {
+                        int assetId = Integer.parseInt(code);
+                        Asset asset = assetDAO.findById(assetId).orElse(null);
+                        if (asset == null) return null;
+                        return AssetDetailResponse.builder()
+                                .assetId(asset.getAssetId())
+                                .assetName(asset.getAssetName())
+                                .build();
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public int confirmReturnInbound(Integer handoverId, List<String> assetCodes, String username) {
+        if (assetCodes == null || assetCodes.isEmpty()) {
+            throw new RuntimeException("Danh sách tài sản nhập kho trống.");
+        }
+
+        AssetHandover handover = assetHandoverDao.findById(handoverId);
+        if (handover == null || handover.getStatus() == Status.COMPLETED) {
+            throw new RuntimeException("Lệnh thu hồi không hợp lệ hoặc đã hoàn tất.");
+        }
+
+        Integer executedBy = userDAO.findUserIdByUsername(username);
+
+        // 1. Create one shared receipt for this batch
+        String receiptNo = whReceiptDAO.generateNextReceiptNo("INBOUND_RETURN");
+        WhReceipt receipt = WhReceipt.builder()
+                .receiptNo(receiptNo)
+                .assetHandoverId(handoverId)
+                .receiptType("INBOUND_RETURN")
+                .createdBy(executedBy)
+                .note("Nhập kho thu hồi lô #" + handoverId + " (" + assetCodes.size() + " tài sản)")
+                .build();
+        int receiptId = whReceiptDAO.createReceipt(receipt);
+
+        // 2. Load all volume metadata once
+        List<AssetTypeVolumeDTO> assetVolumes = whAssetCapacityService.getAllAssetTypeVolumes();
+        List<ZoneCapacityResponseDTO> zones = whZoneService.getAllZones();
+
+        // 3. Process each staged asset
+        for (String code : assetCodes) {
+            int assetId;
+            try {
+                assetId = Integer.parseInt(code);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Mã tài sản không hợp lệ: " + code);
+            }
+
+            Asset asset = assetDAO.findById(assetId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tài sản #" + assetId));
+
+            Integer unitVolume = assetVolumes.stream()
+                    .filter(v -> v.getAssetTypeId().equals(asset.getAssetTypeId()))
+                    .map(AssetTypeVolumeDTO::getUnitVolume)
+                    .findFirst()
+                    .orElse(1);
+
+            ZoneCapacityResponseDTO targetZone = findZoneForAllocation(zones, asset.getAssetTypeId(), unitVolume);
+            if (targetZone == null) {
+                throw new RuntimeException("Kho đầy, không tìm được zone cho tài sản #" + assetId);
+            }
+
+            // Update zone capacity in memory for next iteration
+            targetZone.setCurrentCapacity(targetZone.getCurrentCapacity() + unitVolume);
+            if (targetZone.getAssetTypeId() == null || targetZone.getAssetTypeId() == 0) {
+                targetZone.setAssetTypeId(asset.getAssetTypeId());
+            }
+
+            whTransactionDAO.executeReturnInboundTransaction(handoverId, assetId, targetZone.getZoneId(), executedBy, null, receiptId);
+        }
+
+        // 4. Check if all items in this handover are now scanned
+        List<HandoverDetailResponseDTO.HandoverItemDTO> updatedItems = assetHandoverDetailDao.findItemsByHandoverId(handoverId);
+        boolean allScanned = updatedItems.stream().allMatch(HandoverDetailResponseDTO.HandoverItemDTO::isScanned);
+        if (allScanned) {
+            assetHandoverDao.updateStatus(handoverId, Status.COMPLETED);
+            if (handover.getReturnRequestId() != null) {
+                returnReqDAO.updateStatus(handover.getReturnRequestId(), Status.COMPLETED.name(), executedBy);
+            }
+        }
+
+        return receiptId;
     }
 
     private ZoneCapacityResponseDTO findZoneForAllocation(List<ZoneCapacityResponseDTO> zones, int assetTypeId,
