@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Objects;
 
 import edu.fpt.groupfive.model.warehouse.WhReceipt;
-
+import edu.fpt.groupfive.service.AssetLogService;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +43,7 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     private final AssetService assetService;
     private final WhAssetCapacityDAO whAssetCapacityDAO;
     private final WhReceiptDAO whReceiptDAO;
+    private final AssetLogService assetLogService;
 
     @Override
     public List<HandoverResponseDTO> getAllocations() {
@@ -57,14 +58,16 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     @Override
     public HandoverDetailResponseDTO getHandoverDetail(Integer handoverId) {
         AssetHandoverResponse assetHandover = assetHandoverService.getHandoverById(handoverId);
-        if (assetHandover == null) return null;
+        if (assetHandover == null)
+            return null;
 
         AllocationRequestResponse allocationRequest = null;
         if (assetHandover.getAllocationRequestId() != null) {
             allocationRequest = allocationRequestService.getRequestById(assetHandover.getAllocationRequestId());
         }
 
-        List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems = assetHandoverService.getHandoverDetails(handoverId);
+        List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems = assetHandoverService
+                .getHandoverDetails(handoverId);
         List<HandoverDetailResponseDTO.RequestedItemDTO> requestedItems = getRequestedItems(handoverId, allocatedItems);
         List<edu.fpt.groupfive.model.warehouse.WhReceipt> receipts = whReceiptDAO.findByAssetHandoverId(handoverId);
 
@@ -103,50 +106,60 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
 
         // Validation 1: Tài sản có trong kho (AVAILABLE)
         if (assetDetail.getCurrentStatus() != AssetStatus.AVAILABLE) {
-            throw new RuntimeException("Tài sản không ở trạng thái 'Sẵn sàng sử dụng' (AVAILABLE). Trạng thái hiện tại: " + assetDetail.getCurrentStatus());
+            throw new RuntimeException(
+                    "Tài sản không ở trạng thái 'Sẵn sàng sử dụng' (AVAILABLE). Trạng thái hiện tại: "
+                            + assetDetail.getCurrentStatus());
         }
 
         // 2. Get requirements for this handover
-        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService.getAllAllocationReqByHandoverId(handoverId);
-        
+        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService
+                .getAllAllocationReqByHandoverId(handoverId);
+
         // Validation 2: Tài sản đúng loại tài sản theo yêu cầu
         boolean isRequiredType = reqDetails.stream()
                 .anyMatch(req -> req.getAssetTypeId().equals(assetDetail.getAssetTypeId()));
-        
+
         if (!isRequiredType) {
             throw new RuntimeException("Tài sản này không thuộc loại yêu cầu trong lệnh cấp phát.");
         }
 
         // Validation 3: Kiểm tra số lượng đã gán để tránh vượt định mức
-        List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems = assetHandoverService.getHandoverDetails(handoverId);
+        List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems = assetHandoverService
+                .getHandoverDetails(handoverId);
         String assetTypeName = assetTypeService.findNameById(assetDetail.getAssetTypeId());
-        
+
         long currentAllocatedCount = allocatedItems.stream()
                 .filter(item -> item.getAssetTypeName().equals(assetTypeName))
                 .count();
-        
+
         int requestedQuantityForThisType = reqDetails.stream()
                 .filter(req -> req.getAssetTypeId().equals(assetDetail.getAssetTypeId()))
                 .mapToInt(AllocationRequestDetailResponse::getRequestedQuantity)
                 .sum();
-        
+
         if (currentAllocatedCount >= requestedQuantityForThisType) {
-            throw new RuntimeException("Đã quét đủ số lượng cho loại tài sản '" + assetTypeName + "' (" + requestedQuantityForThisType + ").");
+            throw new RuntimeException("Đã quét đủ số lượng cho loại tài sản '" + assetTypeName + "' ("
+                    + requestedQuantityForThisType + ").");
         }
 
         // --- All checks passed ---
 
         // 3. Update asset status to ALLOCATED
-        assetService.updateStatus(assetId, AssetStatus.ALLOCATED);
+        assetService.updateStatus(assetId, AssetStatus.ASSIGNED);
 
         // 4. Execute outbound transaction
-        whTransactionDAO.executeOutboundTransaction(handoverId, assetId, location.getZoneId(), executedBy, "Xuất kho cấp phát");
+        whTransactionDAO.executeOutboundTransaction(handoverId, assetId, location.getZoneId(), executedBy,
+                "Xuất kho cấp phát");
+
+        // Log Allocation
+        assetLogService.logAllocate(assetId, handover.getFromDepartmentId(), handover.getToDepartmentId(),
+                handover.getAllocationRequestId());
 
         // 5. Decrease zone capacity
         int unitVolume = whAssetCapacityDAO.findByAssetTypeId(assetDetail.getAssetTypeId())
                 .map(AssetCapacity::getUnitVolume)
-                .orElse(0); 
-        
+                .orElse(0);
+
         if (unitVolume > 0) {
             whZoneService.decreaseCapacity(location.getZoneId(), unitVolume);
         }
@@ -159,7 +172,8 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     }
 
     @Override
-    public AssetDetailResponse validateAssetForOutbound(String assetCode, Integer handoverId, List<String> stagedCodes) {
+    public AssetDetailResponse validateAssetForOutbound(String assetCode, Integer handoverId,
+            List<String> stagedCodes) {
         // 0. Check duplicate in current stage
         if (stagedCodes != null && stagedCodes.contains(assetCode)) {
             throw new RuntimeException("Tài sản này đã có trong danh sách chọn tạm thời.");
@@ -180,16 +194,20 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
         }
 
         // 2. Get requirements for this handover
-        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService.getAllAllocationReqByHandoverId(handoverId);
-        
+        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService
+                .getAllAllocationReqByHandoverId(handoverId);
+
         // Validation 2: Tài sản đúng loại tài sản theo yêu cầu
         AllocationRequestDetailResponse matchedReq = reqDetails.stream()
                 .filter(req -> req.getAssetTypeId().equals(assetDetail.getAssetTypeId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Loại tài sản '" + assetDetail.getAssetTypeName() + "' không được yêu cầu trong lệnh này."));
+                .orElseThrow(() -> new RuntimeException(
+                        "Loại tài sản '" + assetDetail.getAssetTypeName() + "' không được yêu cầu trong lệnh này."));
 
-        // Validation 3: Kiểm tra số lượng đã xuất (DB) + số lượng đang chọn (Staged) có vượt quá yêu cầu không
-        List<HandoverDetailResponseDTO.HandoverItemDTO> dbAllocatedItems = assetHandoverService.getHandoverDetails(handoverId);
+        // Validation 3: Kiểm tra số lượng đã xuất (DB) + số lượng đang chọn (Staged) có
+        // vượt quá yêu cầu không
+        List<HandoverDetailResponseDTO.HandoverItemDTO> dbAllocatedItems = assetHandoverService
+                .getHandoverDetails(handoverId);
         long dbCount = dbAllocatedItems.stream()
                 .filter(item -> item.getAssetTypeName().equals(assetDetail.getAssetTypeName()))
                 .count();
@@ -203,7 +221,8 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
         }
 
         if (dbCount + stagedCount >= matchedReq.getRequestedQuantity()) {
-            throw new RuntimeException("Đã chọn đủ số lượng cho loại '" + assetDetail.getAssetTypeName() + "' (" + matchedReq.getRequestedQuantity() + "). Không thể thêm nữa.");
+            throw new RuntimeException("Đã chọn đủ số lượng cho loại '" + assetDetail.getAssetTypeName() + "' ("
+                    + matchedReq.getRequestedQuantity() + "). Không thể thêm nữa.");
         }
 
         return assetDetail;
@@ -246,7 +265,7 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
                 .createdBy(executedBy)
                 .note("Xuất kho cấp phát cho lệnh #" + handoverId)
                 .build();
-        
+
         int receiptId = whReceiptDAO.createReceipt(receipt);
 
         // 2. Process each asset
@@ -259,7 +278,12 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
             assetService.updateStatus(assetId, AssetStatus.ALLOCATED);
 
             // Transaction
-            whTransactionDAO.executeOutboundTransactionWithReceipt(receiptId, assetId, location.getZoneId(), executedBy, "Xuất kho cấp phát");
+            whTransactionDAO.executeOutboundTransactionWithReceipt(receiptId, assetId, location.getZoneId(), executedBy,
+                    "Xuất kho cấp phát");
+
+            // Log Allocation
+            assetLogService.logAllocate(assetId, handover.getFromDepartmentId(), handover.getToDepartmentId(),
+                    handover.getAllocationRequestId());
 
             // Capacity
             int unitVolume = whAssetCapacityDAO.findByAssetTypeId(assetDetail.getAssetTypeId())
@@ -281,7 +305,8 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu xuất kho #" + receiptId));
 
         // Lấy danh sách tài sản nhóm theo loại từ transaction
-        List<InboundSummaryResponseDTO.AssetGroupDTO> rawGroups = whTransactionDAO.findAssetGroupsByReceiptId(receiptId);
+        List<InboundSummaryResponseDTO.AssetGroupDTO> rawGroups = whTransactionDAO
+                .findAssetGroupsByReceiptId(receiptId);
 
         List<OutboundReceiptDetailDTO.AssetGroupDTO> assetGroups = rawGroups.stream()
                 .map(group -> {
@@ -329,10 +354,13 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     }
 
     private boolean updateProgressAndStatus(Integer handoverId, Integer allocationId) {
-        if (allocationId == null) return false;
+        if (allocationId == null)
+            return false;
 
-        List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems = assetHandoverService.getHandoverDetails(handoverId);
-        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService.getAllAllocationReqByHandoverId(handoverId);
+        List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems = assetHandoverService
+                .getHandoverDetails(handoverId);
+        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService
+                .getAllAllocationReqByHandoverId(handoverId);
 
         int totalRequested = reqDetails.stream().mapToInt(AllocationRequestDetailResponse::getRequestedQuantity).sum();
         int totalAllocated = allocatedItems.size();
@@ -352,17 +380,18 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     }
 
     private List<HandoverDetailResponseDTO.RequestedItemDTO> getRequestedItems(
-            Integer handoverId, 
+            Integer handoverId,
             List<HandoverDetailResponseDTO.HandoverItemDTO> allocatedItems) {
-        
-        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService.getAllAllocationReqByHandoverId(handoverId);
-        
+
+        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService
+                .getAllAllocationReqByHandoverId(handoverId);
+
         return reqDetails.stream().map(d -> {
             String typeName = assetTypeService.findNameById(d.getAssetTypeId());
             int allocatedCount = (int) allocatedItems.stream()
                     .filter(item -> item.getAssetTypeName().equals(typeName))
                     .count();
-                    
+
             return HandoverDetailResponseDTO.RequestedItemDTO.builder()
                     .assetTypeName(typeName)
                     .requestedQuantity(d.getRequestedQuantity())
@@ -372,7 +401,8 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
     }
 
     private String getDeptName(Integer deptId) {
-        if (deptId == null) return null;
+        if (deptId == null)
+            return null;
         DepartmentResponse dept = departmentService.getDepartById(deptId);
         return dept != null ? dept.getDepartmentName() : null;
     }

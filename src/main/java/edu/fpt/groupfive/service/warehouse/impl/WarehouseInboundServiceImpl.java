@@ -18,6 +18,7 @@ import edu.fpt.groupfive.model.Asset;
 import edu.fpt.groupfive.model.AssetHandover;
 import edu.fpt.groupfive.model.warehouse.WhReceipt;
 import edu.fpt.groupfive.service.OrderService;
+import edu.fpt.groupfive.service.AssetLogService;
 import edu.fpt.groupfive.service.warehouse.WarehouseInboundService;
 import edu.fpt.groupfive.service.warehouse.WhAssetCapacityService;
 import edu.fpt.groupfive.service.warehouse.WhZoneService;
@@ -45,6 +46,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
     private final AssetHandoverDao assetHandoverDao;
     private final AssetHandoverDetailDao assetHandoverDetailDao;
     private final ReturnReqDAO returnReqDAO;
+    private final AssetLogService assetLogService;
 
     @Override
     public List<HandoverResponseDTO> getProcessedReturns() {
@@ -175,9 +177,16 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
         int receiptId = whReceiptDAO.createReceipt(receipt);
 
         // 4. Execute Transactions
-        whTransactionDAO.executeInboundTransaction(poId, executedBy, placements, receiptId);
+        Map<Integer, List<Integer>> assetIdsMap = whTransactionDAO.executeInboundTransaction(poId, executedBy, placements, receiptId);
 
-        // 5. Update PO Status
+        // 5. Log Asset Creation
+        assetIdsMap.values().forEach(list -> {
+            for (Integer assetId : list) {
+                assetLogService.logCreate(assetId, "Nhập kho từ PO #" + poId);
+            }
+        });
+
+        // 6. Update PO Status
         PurchaseOrderResponse updatedPo = orderService.getPurchaseOrderById(poId);
         boolean allFinished = updatedPo.getOrderDetails().stream()
                 .allMatch(d -> (d.getReceivedQuantity() != null ? d.getReceivedQuantity() : 0) >= d.getQuantity());
@@ -270,11 +279,16 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
 
         whTransactionDAO.executeReturnInboundTransaction(handoverId, assetId, targetZone.getZoneId(), executedBy, null, receiptId);
 
+        // Log Return
+        AssetHandover handover = assetHandoverDao.findById(handoverId);
+        if (handover != null) {
+            assetLogService.logReturn(assetId, handover.getFromDepartmentId(), 0, handover.getReturnRequestId());
+        }
+
         List<HandoverDetailResponseDTO.HandoverItemDTO> updatedItems = assetHandoverDetailDao.findItemsByHandoverId(handoverId);
         boolean allScanned = updatedItems.stream().allMatch(HandoverDetailResponseDTO.HandoverItemDTO::isScanned);
         if (allScanned) {
             assetHandoverDao.updateStatus(handoverId, Status.COMPLETED);
-            AssetHandover handover = assetHandoverDao.findById(handoverId);
             if (handover != null && handover.getReturnRequestId() != null) {
                 returnReqDAO.updateStatus(handover.getReturnRequestId(), Status.COMPLETED.name(), executedBy);
             }
@@ -404,6 +418,9 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             }
 
             whTransactionDAO.executeReturnInboundTransaction(handoverId, assetId, targetZone.getZoneId(), executedBy, null, receiptId);
+
+            // Log Return
+            assetLogService.logReturn(assetId, handover.getFromDepartmentId(), 0, handover.getReturnRequestId());
         }
 
         // 4. Check if all items in this handover are now scanned
