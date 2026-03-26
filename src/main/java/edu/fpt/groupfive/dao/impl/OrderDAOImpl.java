@@ -251,6 +251,11 @@ public class OrderDAOImpl implements OrderDAO {
             params.add(criteria.getStatus());
         }
 
+        if (criteria.getPurchaseId() != null) {
+            sql.append("and q.purchase_request_id = ? ");
+            params.add(criteria.getPurchaseId());
+        }
+
         if (criteria.getSupplierName() != null && !criteria.getSupplierName().isBlank()) {
             sql.append("and s.supplier_name = ? ");
             params.add(criteria.getSupplierName());
@@ -279,7 +284,7 @@ public class OrderDAOImpl implements OrderDAO {
         if (criteria.getKeyword() != null && !criteria.getKeyword().isBlank()) {
             sql.append("and ( ");
             if (criteria.getKeyword().matches("\\d+")) {
-                sql.append("po.purchase_order_id = ? or po.purchase_request_id = ? or ");
+                sql.append("po.purchase_order_id = ? or q.purchase_request_id = ? or ");
                 params.add(Integer.parseInt(criteria.getKeyword()));
                 params.add(Integer.parseInt(criteria.getKeyword()));
             }

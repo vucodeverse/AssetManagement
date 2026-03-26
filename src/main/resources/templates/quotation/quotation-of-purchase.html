@@ -37,6 +37,11 @@
                             <i class="fas fa-plus"></i> Thêm Báo Giá Mới
                         </a>
                     </div>
+                    <div sec:authorize="hasAnyAuthority('DIRECTOR', 'PURCHASE_STAFF')">
+                        <a th:href="@{/purchase-orders/of-purchase-request/{id}(id=${purchaseId})}" class="btn-view-quotes">
+                            <i class="fas fa-list-ul"></i> Danh sách Đơn Đặt Hàng
+                        </a>
+                    </div>
                 </div>
             </header>
             <form method="get" th:action="@{/quotations/of-purchase/{id}/search(id=${purchaseId})}" id="filterForm">

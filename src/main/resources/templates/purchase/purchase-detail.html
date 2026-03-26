@@ -63,6 +63,13 @@
                             TỪ CHỐI
                         </button>
                     </div>
+
+                    <div sec:authorize="hasAnyAuthority('DIRECTOR', 'PURCHASE_STAFF')">
+                        <a th:href="@{/purchase-orders/of-purchase-request/{id}(id=${purchase.purchaseId})}" class="btn-primary"
+                           style="background-color: #6c757d;">
+                            <i class="fas fa-list-ul"></i> Danh sách Đơn Đặt Hàng
+                        </a>
+                    </div>
                 </div>
 
             </header>

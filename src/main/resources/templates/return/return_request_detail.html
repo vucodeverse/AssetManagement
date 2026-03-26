@@ -21,11 +21,19 @@
                 <span class="request-id" th:text="'Yêu cầu số: AR-' + ${requestDto.requestId}"></span>
             </div>
             <div class="header-right">
-                <span class="status-badge" 
-                      th:classappend="'status-' + ${requestDto.status}"
-                      th:text="${requestDto.status}">
-                </span>
+
+            <span th:if="${requestDto.status == 'PENDING_AM'}"
+                  class="status-badge status-pending">
+                ĐANG CHỜ
+            </span>
+
+            <span th:if="${requestDto.status == 'COMPLETED'}"
+                  class="status-badge status-completed">
+                HOÀN THÀNH
+            </span>
+
             </div>
+
         </header>
 
         <!-- INFO GRID -->

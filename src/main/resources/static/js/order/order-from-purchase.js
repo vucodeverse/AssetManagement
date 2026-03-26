@@ -1,7 +1,11 @@
 $(document).ready(function () {
 
-    $('#statusFilter, #supplierFilter, #amountRange, #dateFrom, #dateTo').on('change', function () {
+    $('#statusFilter, #supplierFilter, #amountRange, #dateFrom, #dateTo, #purchaseIdFilter').on('change', function () {
         $('#filterForm').submit();
+    });
+
+    $('#btnClearFilter').on('click', function () {
+        window.location.href = '/purchase-orders';
     });
 
 

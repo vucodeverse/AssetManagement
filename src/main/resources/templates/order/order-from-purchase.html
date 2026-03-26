@@ -15,7 +15,7 @@
 
       <div class="page-header">
         <div>
-          <h1>Đơn Đặt Hàng</h1>
+          <h1 th:text="${purchaseId != null} ? 'Đơn Đặt Hàng cho YC-' + ${purchaseId} : 'Đơn Đặt Hàng'">Đơn Đặt Hàng</h1>
         </div>
       </div>
 
@@ -37,6 +37,14 @@
               <option value="PENDING" th:selected="${criteria.status == 'PENDING'}">Đang chờ</option>
               <option value="COMPLETED" th:selected="${criteria.status == 'COMPLETED'}">Đã hoàn thành</option>
               <option value="CANCELLED" th:selected="${criteria.status == 'CANCELLED'}">Đã bị hủy</option>
+            </select>
+
+            <!-- Purchase Request -->
+            <select id="purchaseIdFilter" name="purchaseId" class="filter-select">
+              <option value="">Tất cả mã yêu cầu</option>
+              <option th:each="pr : ${purchaseRequests}" th:value="${pr.purchaseId}" th:text="'PR-' + ${pr.purchaseId}"
+                th:selected="${criteria.purchaseId == pr.purchaseId}">
+              </option>
             </select>
 
             <!-- Date From -->

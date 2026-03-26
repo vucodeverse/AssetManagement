@@ -6,11 +6,13 @@ import edu.fpt.groupfive.dto.request.PurchaseOrderSearchCriteria;
 import edu.fpt.groupfive.dto.response.PurchaseOrderResponse;
 import edu.fpt.groupfive.service.ISupplierService;
 import edu.fpt.groupfive.service.OrderService;
+import edu.fpt.groupfive.service.PurchaseService;
 import edu.fpt.groupfive.util.annotation.IsDirector;
 import edu.fpt.groupfive.util.annotation.IsPurchaseStaff;
 import edu.fpt.groupfive.util.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -32,6 +34,7 @@ public class OrderController {
 
     private final OrderService orderService;
     private final ISupplierService supplierService;
+    private final PurchaseService purchaseService;
 
     @Value("${order.success.delivery_date_update}")
     private String successDeliveryDateUpdateMsg;
@@ -46,6 +49,25 @@ public class OrderController {
     public String listPurchaseOrders(@ModelAttribute("criteria") PurchaseOrderSearchCriteria criteria, Model model) {
         List<PurchaseOrderResponse> purchaseOrders = orderService.searchPurchaseOrders(criteria);
         model.addAttribute("orders", purchaseOrders);
+        model.addAttribute("suppliers", supplierService.getAllSupplier());
+        model.addAttribute("purchaseRequests", purchaseService.getPurchaseRequests());
+        return VIEW_ORDER_LIST;
+    }
+
+    @PreAuthorize("hasAnyAuthority('DIRECTOR', 'PURCHASE_STAFF')")
+    @GetMapping("/of-purchase-request/{purchaseId}")
+    public String listOrdersByPurchaseRequest(@PathVariable("purchaseId") Integer purchaseId,
+                                              @ModelAttribute("criteria") PurchaseOrderSearchCriteria criteria,
+                                              Model model) {
+        criteria.setPurchaseId(purchaseId);
+        List<PurchaseOrderResponse> purchaseOrders = orderService.searchPurchaseOrders(criteria);
+
+        model.addAttribute("orders", purchaseOrders);
+        model.addAttribute("purchaseId", purchaseId);
+        model.addAttribute("suppliers", supplierService.getAllSupplier());
+        model.addAttribute("purchaseRequests", purchaseService.getPurchaseRequests());
+        model.addAttribute("criteria", criteria);
+
         return VIEW_ORDER_LIST;
     }
 

@@ -21,4 +21,5 @@ public class PurchaseOrderSearchCriteria {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dateTo;
 
+    private Integer purchaseId;
 }
