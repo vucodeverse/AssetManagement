@@ -21,7 +21,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import edu.fpt.groupfive.model.warehouse.WhReceipt;
 
 @Service
 @RequiredArgsConstructor
@@ -149,6 +153,123 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
 
         // 7. Update Progress & Status for Handover & AllocationRequest
         return updateProgressAndStatus(handoverId, handover.getAllocationRequestId());
+    }
+
+    @Override
+    public AssetDetailResponse validateAssetForOutbound(String assetCode, Integer handoverId, List<String> stagedCodes) {
+        // 0. Check duplicate in current stage
+        if (stagedCodes != null && stagedCodes.contains(assetCode)) {
+            throw new RuntimeException("Tài sản này đã có trong danh sách chọn tạm thời.");
+        }
+
+        // 1. Find asset location (and verify it's in warehouse)
+        AssetLocationResponseDTO location = whZoneService.findAssetLocation(assetCode);
+        if (location == null || location.getZoneId() == null) {
+            throw new RuntimeException("Tài sản không có trong kho hoặc mã không hợp lệ.");
+        }
+
+        Integer assetId = location.getAssetId();
+        AssetDetailResponse assetDetail = assetService.getDetailById(assetId);
+
+        // Validation 1: Tài sản có trong kho (AVAILABLE)
+        if (assetDetail.getCurrentStatus() != AssetStatus.AVAILABLE) {
+            throw new RuntimeException("Tài sản không ở trạng thái 'Sẵn sàng sử dụng' (AVAILABLE).");
+        }
+
+        // 2. Get requirements for this handover
+        List<AllocationRequestDetailResponse> reqDetails = assetHandoverService.getAllAllocationReqByHandoverId(handoverId);
+        
+        // Validation 2: Tài sản đúng loại tài sản theo yêu cầu
+        AllocationRequestDetailResponse matchedReq = reqDetails.stream()
+                .filter(req -> req.getAssetTypeId().equals(assetDetail.getAssetTypeId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Loại tài sản '" + assetDetail.getAssetTypeName() + "' không được yêu cầu trong lệnh này."));
+
+        // Validation 3: Kiểm tra số lượng đã xuất (DB) + số lượng đang chọn (Staged) có vượt quá yêu cầu không
+        List<HandoverDetailResponseDTO.HandoverItemDTO> dbAllocatedItems = assetHandoverService.getHandoverDetails(handoverId);
+        long dbCount = dbAllocatedItems.stream()
+                .filter(item -> item.getAssetTypeName().equals(assetDetail.getAssetTypeName()))
+                .count();
+
+        long stagedCount = 0;
+        if (stagedCodes != null && !stagedCodes.isEmpty()) {
+            List<AssetDetailResponse> stagedAssets = getAssetsByCodes(stagedCodes);
+            stagedCount = stagedAssets.stream()
+                    .filter(a -> a.getAssetTypeId().equals(assetDetail.getAssetTypeId()))
+                    .count();
+        }
+
+        if (dbCount + stagedCount >= matchedReq.getRequestedQuantity()) {
+            throw new RuntimeException("Đã chọn đủ số lượng cho loại '" + assetDetail.getAssetTypeName() + "' (" + matchedReq.getRequestedQuantity() + "). Không thể thêm nữa.");
+        }
+
+        return assetDetail;
+    }
+
+    @Override
+    public List<AssetDetailResponse> getAssetsByCodes(List<String> assetCodes) {
+        if (assetCodes == null || assetCodes.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return assetCodes.stream()
+                .map(code -> {
+                    AssetLocationResponseDTO loc = whZoneService.findAssetLocation(code);
+                    if (loc != null) {
+                        return assetService.getDetailById(loc.getAssetId());
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void confirmOutbound(Integer handoverId, List<String> assetCodes, Integer executedBy) {
+        if (assetCodes == null || assetCodes.isEmpty()) {
+            throw new RuntimeException("Danh sách tài sản xuất kho trống.");
+        }
+
+        AssetHandoverResponse handover = assetHandoverService.getHandoverById(handoverId);
+        if (handover == null || handover.getStatus() != Status.PENDING) {
+            throw new RuntimeException("Lệnh bàn giao không hợp lệ hoặc đã hoàn tất.");
+        }
+
+        // 1. Create Receipt
+        WhReceipt receipt = WhReceipt.builder()
+                .receiptNo(whReceiptDAO.generateNextReceiptNo("OUTBOUND"))
+                .receiptType("OUTBOUND_ALLOCATION")
+                .assetHandoverId(handoverId)
+                .createdBy(executedBy)
+                .note("Xuất kho cấp phát cho lệnh #" + handoverId)
+                .build();
+        
+        int receiptId = whReceiptDAO.createReceipt(receipt);
+
+        // 2. Process each asset
+        for (String code : assetCodes) {
+            AssetLocationResponseDTO location = whZoneService.findAssetLocation(code);
+            int assetId = location.getAssetId();
+            AssetDetailResponse assetDetail = assetService.getDetailById(assetId);
+
+            // Update status
+            assetService.updateStatus(assetId, AssetStatus.ALLOCATED);
+
+            // Transaction
+            whTransactionDAO.executeOutboundTransactionWithReceipt(receiptId, assetId, location.getZoneId(), executedBy, "Xuất kho cấp phát");
+
+            // Capacity
+            int unitVolume = whAssetCapacityDAO.findByAssetTypeId(assetDetail.getAssetTypeId())
+                    .map(AssetCapacity::getUnitVolume)
+                    .orElse(1);
+            whZoneService.decreaseCapacity(location.getZoneId(), unitVolume);
+
+            // Relate to handover
+            assetHandoverService.addHandoverDetail(handoverId, assetId);
+        }
+
+        // 3. Update Status
+        updateProgressAndStatus(handoverId, handover.getAllocationRequestId());
     }
 
     private boolean updateProgressAndStatus(Integer handoverId, Integer allocationId) {

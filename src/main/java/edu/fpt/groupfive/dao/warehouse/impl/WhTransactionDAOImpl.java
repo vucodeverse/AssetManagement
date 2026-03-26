@@ -220,8 +220,30 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
 
     @Override
     public void executeOutboundTransaction(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note) {
+        executeOutboundTransactionInternal(handoverId, assetId, zoneId, executedBy, note, null);
+    }
+
+    @Override
+    public void executeOutboundTransactionWithReceipt(Integer receiptId, Integer assetId, Integer zoneId, Integer executedBy, String note) {
+        // Find handoverId from receipt if possible, or just pass null to map if not needed
+        Integer handoverId = null;
+        try (Connection conn = databaseConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT asset_handover_id FROM wh_receipts WHERE receipt_id = ?")) {
+            ps.setInt(1, receiptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    handoverId = (Integer) rs.getObject("asset_handover_id");
+                }
+            }
+        } catch (SQLException e) {
+            // Ignore or log
+        }
+        executeOutboundTransactionInternal(handoverId, assetId, zoneId, executedBy, note, receiptId);
+    }
+
+    private void executeOutboundTransactionInternal(Integer handoverId, Integer assetId, Integer zoneId, Integer executedBy, String note, Integer receiptId) {
         String deletePlacementSql = "DELETE FROM wh_asset_placement WHERE asset_id = ?";
-        String insertTransactionSql = "INSERT INTO wh_transactions (asset_id, zone_id, transaction_type, executed_by, executed_at, note) VALUES (?, ?, 'OUTBOUND', ?, SYSDATETIME(), ?)";
+        String insertTransactionSql = "INSERT INTO wh_transactions (asset_id, zone_id, transaction_type, executed_by, executed_at, note, receipt_id) VALUES (?, ?, 'OUTBOUND', ?, SYSDATETIME(), ?, ?)";
         String insertMapSql = "INSERT INTO map_handover_transactions (asset_handover_id, transaction_id) VALUES (?, ?)";
 
         Connection connection = null;
@@ -243,6 +265,7 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
                 psTrans.setInt(2, zoneId);
                 psTrans.setInt(3, executedBy);
                 psTrans.setString(4, note);
+                psTrans.setObject(5, receiptId); 
                 psTrans.executeUpdate();
 
                 int transId = -1;
@@ -253,7 +276,7 @@ public class WhTransactionDAOImpl implements WhTransactionDAO {
                 }
 
                 // 3. Map handover transaction
-                if (transId != -1) {
+                if (transId != -1 && handoverId != null) {
                     psMap.setInt(1, handoverId);
                     psMap.setInt(2, transId);
                     psMap.executeUpdate();

@@ -34,5 +34,7 @@ public class HandoverDetailResponseDTO {
         private String assetTypeName;
         private Integer requestedQuantity;
         private Integer allocatedQuantity;
+        private Integer stagedQuantity; // NEW
+        private Integer remainingQuantity; // NEW
     }
 }
