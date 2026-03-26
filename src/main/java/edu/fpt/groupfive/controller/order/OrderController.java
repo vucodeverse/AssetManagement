@@ -86,10 +86,12 @@ public class OrderController {
                 lines.remove(removeLine.intValue());
 
             }
+            addSupplierName(request, model);
             return VIEW_ORDER_FORM;
         }
 
         if (result.hasErrors()) {
+            addSupplierName(request, model);
             return VIEW_ORDER_FORM;
         }
 
@@ -103,8 +105,15 @@ public class OrderController {
             return "redirect:/purchase-orders/" + orderId;
         } catch (InvalidDataException e) {
             model.addAttribute("error", e.getMessage());
+            addSupplierName(request, model);
             return VIEW_ORDER_FORM;
         }
+    }
+
+    private void addSupplierName(PurchaseOrderCreateRequest request, Model model) {
+        String supplierName = supplierService.getSupplierIdToNameMap()
+                .getOrDefault(request.getSupplierId(), "Không rõ");
+        model.addAttribute("supplierName", supplierName);
     }
 
     // hiển thị po detail

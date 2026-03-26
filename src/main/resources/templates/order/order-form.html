@@ -90,9 +90,14 @@
                                 </td>
 
                                 <td>
-                                    <input type="text"
+                                    <!-- Hidden field for actual binding to Integer property -->
+                                    <input type="hidden"
                                            th:name="'purchaseOrderDetailCreateRequests[' + ${iter.index} + '].quotationDetailId'"
-                                           th:value="'QD-' + ${od.quotationDetailId}" readonly class="table-input">
+                                           th:value="${od.quotationDetailId}">
+                                    <!-- Only for display, not for binding -->
+                                    <input type="text"
+                                           th:value="${od.quotationDetailId != null ? 'QD-' + od.quotationDetailId : 'N/A'}"
+                                           readonly class="table-input">
                                 </td>
 
                                 <td>
@@ -159,9 +164,6 @@
         </main>
     </th:block>
 
-    <th:block layout:fragment="extra-js">
-        <script th:src="@{/js/order/order-form.js}"></script>
-    </th:block>
 </body>
 
 </html>

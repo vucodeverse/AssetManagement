@@ -42,6 +42,7 @@ public class OrderCalculationUtil {
 
         BigDecimal total = BigDecimal.ZERO;
         for (PurchaseOrderDetailCreateRequest line : request.getPurchaseOrderDetailCreateRequests()) {
+            if (line.getQuantity() == null) continue;
             total = total.add(calculateLineTotal(
                     new BigDecimal(line.getQuantity()),
                     line.getPrice(),
