@@ -71,7 +71,7 @@ public class AssetDAOImpl implements AssetDAO {
 
     @Override
     public void update(Asset asset) {
-        System.out.println("=== AssetDAOImpl.update called for asset " + asset.getAssetId() + " ===");
+
         String sql = """
             UPDATE asset
             SET asset_name = ?,
@@ -98,9 +98,8 @@ public class AssetDAOImpl implements AssetDAO {
             ps.setInt(9, asset.getAssetId());
 
             int rows = ps.executeUpdate();
-            System.out.println("Updated asset " + asset.getAssetId() + ", rows affected = " + rows);
             if (rows == 0) {
-                throw new RuntimeException("Asset not found: " + asset.getAssetId());
+                throw new RuntimeException("Không tìm thấy tài sản id = : " + asset.getAssetId());
             }
         } catch (Exception e) {
             e.printStackTrace();
