@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -103,79 +104,54 @@ public class QuotationServiceImpl implements QuotationService {
     @Override
     public Integer createQuotation(QuotationCreateRequest quotationCreateRequest, Integer purchaseId, String action) {
 
-        // ktra purchase có tồn tại và dc approve chưa
-        purchaseDAO.findByIdAndStatus(purchaseId, "APPROVED")
-                .orElseThrow(() -> new InvalidDataException(purchaseNotApprovedMsg));
+        // valid dữ liệu đầu vào
+        Purchase purrchase =
+                purchaseDAO.findByIdAndStatus(purchaseId, PurchaseProcessStatus.APPROVED.name()).orElseThrow(() -> new InvalidDataException(purchaseNotApprovedMsg));
 
-        // lấy ra list purchase detail của purchase request nhận vào
-        List<PurchaseDetail> details = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
+        //  lấy dữ liệu id và pr detail của nó
+        Map<Integer, PurchaseDetail> purchaseDetailMap =
+                purchaseDetailDAO.findByPurchaseRequestId(purchaseId).stream().collect(Collectors.toMap(PurchaseDetail::getId,  purchaseDetail -> purchaseDetail));
 
-        // Sử dụng Map để kiểm tra sự tồn tại của chi tiết yêu cầu mua sắm
-        Map<Integer, PurchaseDetail> purchaseDetailMap = new HashMap<>();
+        Map<String, Integer> assetTypeNameToIdMap = assetTypeService.getNameToIdMap();
 
-        // key là ID,value là detail
-        for (PurchaseDetail d : details) {
-            purchaseDetailMap.put(d.getId(), d);
-        }
+        Quotation quotation = quotationMapper.toQuotation(quotationCreateRequest);
+        quotation.setPurchaseId(purchaseId);
 
-        // map quotation create về quotation
-        Quotation q = quotationMapper.toQuotation(quotationCreateRequest);
-        q.setPurchaseId(purchaseId);
+        PurchaseProcessStatus status = "draft".equals(action) ? PurchaseProcessStatus.DRAFT :
+                PurchaseProcessStatus.PENDING;
 
-        // kiểm tra xem save hay draft
-        PurchaseProcessStatus quotationStatus = "draft".equalsIgnoreCase(action) ? PurchaseProcessStatus.DRAFT
-                : PurchaseProcessStatus.PENDING;
+        quotation.setQuotationStatus(status);
+        quotation.setTotalAmount(orderCalculationUtil.calculateTotal(quotationCreateRequest));
 
-        // set các giá trị
-        q.setTotalAmount(orderCalculationUtil.calculateTotal(quotationCreateRequest));
+        List<QuotationDetail> details = quotationCreateRequest.getQuotationDetailCreateRequests().stream().map(
+                qd -> {
+                    if(!purchaseDetailMap.containsKey(qd.getPurchaseRequestDetailId())) throw new InvalidDataException(invalidDetailIdMsg);
 
-        // nếu là draft thì update thời gian sửa
-        if (PurchaseProcessStatus.DRAFT.equals(quotationStatus)) {
-            q.setUpdatedAt(LocalDateTime.now());
-        }
+                    QuotationDetail detail = quotationDetailMapper.toQuotationDetail(qd);
+                    if(PurchaseProcessStatus.DRAFT.equals(status)) detail.setQuotationDetailStatus(PurchaseProcessStatus.DRAFT);
+                    else detail.setQuotationDetailStatus(PurchaseProcessStatus.PENDING);
+                    detail.setAssetTypeId(assetTypeNameToIdMap.get(qd.getAssetTypeName()));
 
-        // map ngược lại
-        Map<String, Integer> map = new HashMap<>();
-        Map<Integer, String> assetTypeMap = assetTypeService.getAssetTypeIdToNameMap();
-        for (Map.Entry<Integer, String> e : assetTypeMap.entrySet()) {
-            map.put(e.getValue(), e.getKey());
-        }
+                    return detail;
+                }).toList();
 
-        // Khởi tạo danh sách chi tiết báo giá trước
-        List<QuotationDetail> quotationDetails = new ArrayList<>();
 
-        // mapừng quotation detail
-        for (QuotationDetailCreateRequest qd : quotationCreateRequest.getQuotationDetailCreateRequests()) {
+        quotation.setQuotationDetails(details);
 
-            // ktra purchase detail có tồn tại hay ko
-            PurchaseDetail pd = purchaseDetailMap.get(qd.getPurchaseRequestDetailId());
-            if (pd == null)
-                throw new InvalidDataException(invalidDetailIdMsg);
+        // check xem ây có phải lần đầu tạo hay ko
+        if(quotationCreateRequest.getQuotationId() != null){
 
-            // map sang quotation detail
-            QuotationDetail quotationDetail = quotationDetailMapper.toQuotationDetail(qd);
-            quotationDetail.setAssetTypeId(map.get(qd.getAssetTypeName()));
-            quotationDetail.setQuotationDetailStatus(PurchaseProcessStatus.PENDING);
-            quotationDetails.add(quotationDetail);
-        }
+            quotationDAO.findById(quotationCreateRequest.getQuotationId())
+                    .orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
+            // nếu tồn tại chứng tỏ lần này là update
+            quotation.setUpdatedAt(LocalDateTime.now());
+            quotation.setId(quotationCreateRequest.getQuotationId());
+            quotationDAO.update(quotation);
+            return quotation.getId();
+        }else{
+            quotation.setCreatedAt(LocalDateTime.now());
+            return quotationDAO.insert(quotation);
 
-        q.setQuotationDetails(quotationDetails);
-
-        // check xem quotation này đã được tạo hay chưa
-        if (quotationCreateRequest.getQuotationId() != null) {
-
-            quotationDAO.findById(quotationCreateRequest.getQuotationId()).orElseThrow(() -> new InvalidDataException(quotationNotFoundMsg));
-
-            q.setId(quotationCreateRequest.getQuotationId());
-            q.setQuotationStatus(quotationStatus);
-            quotationDAO.update(q);
-
-            return quotationCreateRequest.getQuotationId();
-        } else {
-            q.setQuotationStatus(quotationStatus);
-            q.setCreatedAt(LocalDateTime.now());
-
-            return quotationDAO.insert(q);
         }
     }
 

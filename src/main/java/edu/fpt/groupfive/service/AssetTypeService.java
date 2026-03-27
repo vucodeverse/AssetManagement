@@ -43,4 +43,6 @@ public interface AssetTypeService {
               Integer categoryId,
               AssetTypeClass typeClass,
               DepreciationMethod depreciationMethod);
+
+    Map<String, Integer> getNameToIdMap();
 }

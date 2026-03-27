@@ -1,6 +1,7 @@
 package edu.fpt.groupfive.mapper;
 
 import edu.fpt.groupfive.dto.request.QuotationCreateRequest;
+import edu.fpt.groupfive.dto.response.QuotationResponse;
 import edu.fpt.groupfive.model.Quotation;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,5 +16,5 @@ public interface QuotationMapper {
 
     @Mapping(source = "id", target = "quotationId")
     @Mapping(target = "totalAmount", source = "totalAmount")
-    edu.fpt.groupfive.dto.response.QuotationResponse toQuotationResponse(Quotation quotation);
+    QuotationResponse toQuotationResponse(Quotation quotation);
 }

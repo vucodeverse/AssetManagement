@@ -115,7 +115,7 @@ public class QuotationDAOImpl implements QuotationDAO {
             connection = databaseConfig.getConnection();
             connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setObject(1, quotation.getSupplierId());
+            preparedStatement.setInt(1, quotation.getSupplierId());
             preparedStatement.setString(2, quotation.getQuotationStatus().name());
             preparedStatement.setBigDecimal(3, quotation.getTotalAmount());
             preparedStatement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));

@@ -219,20 +219,32 @@ public class OrderServiceImpl implements OrderService {
     private void rejectOtherQuotations(Integer currentQuotationId, Integer purchaseId) {
         List<Quotation> otherQuotations = quotationDAO.findByPurchaseId(purchaseId).stream()
                 .filter(q -> !q.getId().equals(currentQuotationId))
-                .filter(q -> q.getQuotationStatus() == PurchaseProcessStatus.PENDING 
+                .filter(q -> q.getQuotationStatus() == PurchaseProcessStatus.PENDING
                         || q.getQuotationStatus() == PurchaseProcessStatus.DRAFT)
                 .toList();
 
         for (Quotation q : otherQuotations) {
-            // Reject the quotation itself
-            quotationDAO.updateStatus(q.getId(), PurchaseProcessStatus.REJECTED);
-            
-            // Reject all its details
+
             List<QuotationDetail> details = quotationDetailDAO.findByQuotationId(q.getId());
-            for (QuotationDetail qd : details) {
-                if (qd.getQuotationDetailStatus() != PurchaseProcessStatus.REJECTED) {
-                    quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
-                }
+            switch (q.getQuotationStatus()) {
+                case PENDING:
+                    quotationDAO.updateStatus(q.getId(), PurchaseProcessStatus.REJECTED);
+
+                    for (QuotationDetail qd : details) {
+                        if (qd.getQuotationDetailStatus() != PurchaseProcessStatus.REJECTED) {
+                            quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
+                        }
+                    }
+                    break;
+                case DRAFT:
+                    quotationDAO.updateStatus(q.getId(), PurchaseProcessStatus.DELETED);
+
+                    for (QuotationDetail qd : details) {
+                        if (qd.getQuotationDetailStatus() != PurchaseProcessStatus.DELETED) {
+                            quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.DELETED);
+                        }
+                    }
+                    break;
             }
         }
     }
