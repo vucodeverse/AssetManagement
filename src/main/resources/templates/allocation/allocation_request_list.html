@@ -237,8 +237,8 @@
                         </a>
 
                         <!-- TRANSFER -->
-                        <form th:if="${requestDto.status == 'PENDING_AM'}"
-                              th:action="@{'/asset-manager/allocation-request/approve-transfer/' + ${requestDto.requestId}}"
+                        <form th:if="${x.status == 'PENDING_AM'}"
+                              th:action="@{'/asset-manager/allocation-request/approve-transfer/' + ${x.requestId}}"
                               method="post" style="display:inline;"
                               onsubmit="return confirm('Xác nhận điều chuyển ?');">
                             <button type="submit"
