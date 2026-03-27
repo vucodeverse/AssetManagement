@@ -17,19 +17,20 @@ public class TransferRequestDetailDAOImpl implements TransferRequestDetailDAO {
 
     private final DatabaseConfig databaseConfig;
     @Override
-    public void batchInsertDetails(int transferId, List<Integer> assetIds) {
+    public void batchInsertDetails(int transferId, List<TransferRequestDetail> details) {
 
         String query = """
-        INSERT INTO transfer_request_detail (transfer_id, asset_id)
-        VALUES (?, ?)
+        INSERT INTO transfer_request_detail (transfer_id, asset_id, allocation_request_detail_id)
+        VALUES (?, ?, ?)
     """;
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query)) {
 
-            for (Integer assetId : assetIds) {
+            for (TransferRequestDetail d : details) {
                 ps.setInt(1, transferId);
-                ps.setInt(2, assetId);
+                ps.setInt(2, d.getAssetId());
+                ps.setObject(3, d.getAllocationRequestDetailId());
                 ps.addBatch();
             }
 
@@ -39,6 +40,7 @@ public class TransferRequestDetailDAOImpl implements TransferRequestDetailDAO {
             throw new RuntimeException("Lỗi khi batch insert transfer request details", e);
         }
     }
+
     @Override
     public void createDetail(TransferRequestDetail detail) {
         String query = """
@@ -132,6 +134,29 @@ public class TransferRequestDetailDAOImpl implements TransferRequestDetailDAO {
         } catch (SQLException e) {
             throw new RuntimeException("Lỗi khi tìm danh sách chi tiết điều chuyển theo transfer_id", e);
         }
+    }
+
+    @Override
+    public long countCompletedAssetsForAllocationDetail(int allocationDetailId) {
+        String query = """
+        SELECT COUNT(td.asset_id)
+        FROM transfer_request_detail td
+        JOIN transfer_request t ON td.transfer_id = t.transfer_id
+        WHERE td.allocation_request_detail_id = ?
+          AND t.status = 'COMPLETED'
+    """;
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, allocationDetailId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi đếm tài sản điều chuyển cho cấp phát", e);
+        }
+        return 0;
     }
 
     private TransferRequestDetail mapRow(ResultSet rs) throws SQLException {

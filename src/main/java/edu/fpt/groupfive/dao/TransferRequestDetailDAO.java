@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TransferRequestDetailDAO {
-    void batchInsertDetails(int transferId, List<Integer> assetIds);
+    void batchInsertDetails(int transferId, List<TransferRequestDetail> details);
 
     void createDetail(TransferRequestDetail detail);
 
@@ -15,4 +15,6 @@ public interface TransferRequestDetailDAO {
     Optional<TransferRequestDetail> findById(int transferDetailId);
 
     List<TransferRequestDetail> findByTransferId(int transferId);
+
+    long countCompletedAssetsForAllocationDetail(int allocationDetailId);
 }

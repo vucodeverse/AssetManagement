@@ -235,6 +235,18 @@
                            onclick="event.stopPropagation();">
                             <i class="fas fa-times"></i>
                         </a>
+
+                        <!-- TRANSFER -->
+                        <form th:if="${requestDto.status == 'PENDING_AM'}"
+                              th:action="@{'/asset-manager/allocation-request/approve-transfer/' + ${requestDto.requestId}}"
+                              method="post" style="display:inline;"
+                              onsubmit="return confirm('Xác nhận điều chuyển ?');">
+                            <button type="submit"
+                                    class="btn btn-back-custom" title="Điều chuyển">
+                                <i class="fas fa-exchange-alt"></i>
+                            </button>
+
+                        </form>
                     </th:block>
                 </td>
 

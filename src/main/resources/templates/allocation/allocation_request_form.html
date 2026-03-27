@@ -14,320 +14,320 @@
 
 <body>
 <th:block layout:fragment="content">
-<div class="pr-container">
-    <!-- header -->
-    <header class="pr-header">
-        <div>
-            <h1 th:text="${requestDto.requestId != null
+    <div class="pr-container">
+        <!-- header -->
+        <header class="pr-header">
+            <div>
+                <h1 th:text="${requestDto.requestId != null
                 ? (canEdit ? 'Sửa yêu cầu cấp phát' : 'Chi tiết yêu cầu cấp phát')
                 : 'Tạo yêu cầu cấp phát'}">
-            </h1>
-        </div>
-    </header>
+                </h1>
+            </div>
+        </header>
 
-    <!-- FORM -->
-    <form th:action="@{${requestDto.requestId != null
+        <!-- FORM -->
+        <form th:action="@{${requestDto.requestId != null
             ? '/department/allocation-request/update/' + requestDto.requestId
             : '/department/allocation-request/save'}}" th:object="${requestDto}" method="post">
-        <!-------------------- Thông tin chung ------------------->
-        <section class="form-section">
-            <div class="section-title">THÔNG TIN CHUNG</div>
+            <!-------------------- Thông tin chung ------------------->
+            <section class="form-section">
+                <div class="section-title">THÔNG TIN CHUNG</div>
 
-            <div class="form-grid">
-                <!-- reason -->
-                <div class="form-group full-width">
-                    <label>LÝ DO CẤP PHÁT</label>
-                    <input type="text" th:field="*{requestReason}"
-                           th:readonly="${canEdit != null && !canEdit}"
-                           placeholder="VD: Cấp máy cho nhân viên mới"/>
-                    <!-- ERROR -->
-                    <span style="color:red"
-                          th:if="${#fields.hasErrors('requestReason')}"
-                          th:errors="*{requestReason}">
+                <div class="form-grid">
+                    <!-- reason -->
+                    <div class="form-group full-width">
+                        <label>LÝ DO CẤP PHÁT</label>
+                        <input type="text" th:field="*{requestReason}"
+                               th:readonly="${canEdit != null && !canEdit}"
+                               placeholder="VD: Cấp máy cho nhân viên mới"/>
+                        <!-- ERROR -->
+                        <span style="color:red"
+                              th:if="${#fields.hasErrors('requestReason')}"
+                              th:errors="*{requestReason}">
                     </span>
-                </div>
+                    </div>
 
-                <!-- priority -->
-                <div class="form-group">
-                    <label>MỨC ĐỘ ƯU TIÊN</label>
-                    <select th:field="*{priority}" th:disabled="${canEdit != null && !canEdit}">
-                        <option value="">-- Chọn --</option>
-                        <option th:each="p : ${T(edu.fpt.groupfive.common.Priority).values()}"
-                                th:value="${p}"
-                                th:text="${p.description}">
-                        </option>
-                    </select>
-                    <!-- ERROR -->
-                    <span style="color:red"
-                          th:if="${#fields.hasErrors('priority')}"
-                          th:errors="*{priority}">
+                    <!-- priority -->
+                    <div class="form-group">
+                        <label>MỨC ĐỘ ƯU TIÊN</label>
+                        <select th:field="*{priority}" th:disabled="${canEdit != null && !canEdit}">
+                            <option value="">-- Chọn --</option>
+                            <option th:each="p : ${T(edu.fpt.groupfive.common.Priority).values()}"
+                                    th:value="${p}"
+                                    th:text="${p.description}">
+                            </option>
+                        </select>
+                        <!-- ERROR -->
+                        <span style="color:red"
+                              th:if="${#fields.hasErrors('priority')}"
+                              th:errors="*{priority}">
                     </span>
 
-                    <input type="hidden"
-                           th:if="${canEdit != null && !canEdit}"
-                           name="priority"
-                           th:value="*{priority}"/>
-                </div>
+                        <input type="hidden"
+                               th:if="${canEdit != null && !canEdit}"
+                               name="priority"
+                               th:value="*{priority}"/>
+                    </div>
 
-                <!-- needed date -->
-                <div class="form-group">
-                    <label>NGÀY CẦN</label>
-                    <input type="date" th:field="*{neededByDate}"
-                           th:readonly="${canEdit != null && !canEdit}"/>
-                    <!-- ERROR -->
-                    <span style="color:red"
-                          th:if="${#fields.hasErrors('neededByDate')}"
-                          th:errors="*{neededByDate}">
+                    <!-- needed date -->
+                    <div class="form-group">
+                        <label>NGÀY CẦN</label>
+                        <input type="date" th:field="*{neededByDate}"
+                               th:readonly="${canEdit != null && !canEdit}"/>
+                        <!-- ERROR -->
+                        <span style="color:red"
+                              th:if="${#fields.hasErrors('neededByDate')}"
+                              th:errors="*{neededByDate}">
                     </span>
+                    </div>
+
+                    <!-- created date -->
+                    <div class="form-group"
+                         th:if="${requestDto.requestId != null && !canEdit}">
+                        <label>NGÀY TẠO</label>
+                        <input type="text" readonly
+                               th:value="${#temporals.format(requestDto.createdAt, 'dd-MM-yyyy HH:mm')}"/>
+                    </div>
+
+                    <!-- approver by am -->
+                    <div class="form-group"
+                         th:if="${requestDto.requestId != null && requestDto.amApprovedBy != null && !canEdit}">
+                        <label>NGƯỜI DUYỆT</label>
+                        <input type="text" readonly style="background-color: #f7f9fa; border: 1px solid #dfe3e8;"
+                               th:value="${requestDto.userName}"/>
+                    </div>
+
+                    <!-- approved date -->
+                    <div class="form-group"
+                         th:if="${requestDto.requestId != null && requestDto.amApprovedAt != null && !canEdit}">
+                        <label>NGÀY DUYỆT</label>
+                        <input type="text" readonly style="background-color: #f7f9fa; border: 1px solid #dfe3e8;"
+                               th:value="${#temporals.format(requestDto.amApprovedAt, 'dd-MM-yyyy HH:mm')}"/>
+                    </div>
+
+                    <!-- reject reason -->
+                    <div class="form-group full-width"
+                         th:if="${requestDto.requestId != null && requestDto.reasonReject != null && !canEdit}">
+                        <label>LÝ DO TỪ CHỐI</label>
+                        <input type="text" readonly
+                               style="background-color: #fce4e4; border: 1px solid #f5c6cb; color: #721c24;"
+                               th:value="${requestDto.reasonReject}"/>
+                    </div>
                 </div>
 
-                <!-- created date -->
-                <div class="form-group"
-                     th:if="${requestDto.requestId != null && !canEdit}">
-                    <label>NGÀY TẠO</label>
-                    <input type="text" readonly
-                           th:value="${#temporals.format(requestDto.createdAt, 'dd-MM-yyyy HH:mm')}"/>
+            </section>
+
+            <!----------------------- CHI TIẾT -------------------------->
+            <section class="form-section">
+                <div class="section-title">DANH SÁCH THIẾT BỊ</div>
+
+                <div class="table-container">
+                    <table class="pr-table" id="itemTable">
+                        <thead>
+                        <tr>
+                            <th>LOẠI TÀI SẢN</th>
+                            <th>SỐ LƯỢNG</th>
+                            <th>GHI CHÚ</th>
+                            <th></th>
+                        </tr>
+
+                        </thead>
+                        <tbody>
+
+                        <!--------------------------------- EDIT MODE --------------------------------->
+                        <tr class="item-row"
+                            th:if="${requestDto.details != null && !requestDto.details.isEmpty()}"
+                            th:each="detail, stat : *{details}">
+
+                            <!-- Asset Type -->
+                            <td>
+                                <select th:name="|details[${stat.index}].assetTypeId|" class="table-input"
+                                        th:disabled="${canEdit != null && !canEdit}" required>
+                                    <option value="" hidden>-- Chọn loại --</option>
+                                    <option th:each="at : ${assetType}"
+                                            th:value="${at.typeId}"
+                                            th:text="${at.typeName}"
+                                            th:selected="${at.typeId == detail.assetTypeId}">
+                                    </option>
+                                </select>
+
+                                <!-- ERROR -->
+                                <div class="text-danger"
+                                     th:if="${#fields.hasErrors('details[0].assetTypeId')}"
+                                     th:errors="*{details[0].assetTypeId}">
+                                </div>
+
+                                <input type="hidden" th:if="${canEdit != null && !canEdit}"
+                                       th:name="|details[${stat.index}].assetTypeId|"
+                                       th:value="${detail.assetTypeId}"/>
+                            </td>
+
+                            <!-- Quantity -->
+                            <td>
+                                <input type="number" th:name="|details[${stat.index}].requestedQuantity|"
+                                       th:value="${detail.requestedQuantity}" class="table-input" min="1"
+                                       th:readonly="${canEdit != null && !canEdit}"/>
+
+                                <!-- ERROR -->
+                                <div class="text-danger"
+                                     th:if="${#fields.hasErrors('details[0].requestedQuantity')}"
+                                     th:errors="*{details[0].requestedQuantity}">
+                                </div>
+                            </td>
+
+                            <!-- Note -->
+                            <td>
+                                <input type="text" th:name="|details[${stat.index}].note|" th:value="${detail.note}"
+                                       class="table-input" th:readonly="${canEdit != null && !canEdit}"/>
+                            </td>
+
+                            <!-- Nút button -->
+                            <td>
+                                <button type="button" class="btn-remove" onclick="removeRow(this)"
+                                        th:if="${canEdit == null || canEdit}">
+                                    ×
+                                </button>
+                            </td>
+                        </tr>
+
+
+                        <!--------------------------------- CREATE MODE --------------------------------->
+                        <tr class="item-row"
+                            th:if="${requestDto.details == null || requestDto.details.isEmpty()}">
+                            <!-- Asset type -->
+                            <td>
+                                <select name="details[0].assetTypeId" class="table-input" required>
+                                    <option value="" hidden>-- Chọn loại --</option>
+                                    <option th:each="at : ${assetType}"
+                                            th:value="${at.typeId}"
+                                            th:text="${at.typeName}">
+
+                                    </option>
+                                </select>
+                                <!-- ERROR -->
+                                <div class="text-danger"
+                                     th:if="${#fields.hasErrors('details[0].assetTypeId')}"
+                                     th:errors="*{details[0].assetTypeId}">
+                                </div>
+                            </td>
+
+                            <!-- Quantity -->
+                            <td>
+                                <input type="number" name="details[0].requestedQuantity"
+                                       value="1" min="1"
+                                       class="table-input"/>
+                                <!-- ERROR -->
+                                <div class="text-danger"
+                                     th:if="${#fields.hasErrors('details[0].requestedQuantity')}"
+                                     th:errors="*{details[0].requestedQuantity}">
+                                </div>
+                            </td>
+
+                            <!-- Note -->
+                            <td><input type="text" name="details[0].note" class="table-input"/></td>
+
+                            <!-- Nút buttom -->
+                            <td>
+                                <button type="button" class="btn-remove" onclick="removeRow(this)"> ×
+                                </button>
+                            </td>
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+
+                    <!-- Thêm ô detail mới -->
+                    <button type="button" class="btn-add-row" onclick="addRow()"
+                            th:if="${canEdit == null || canEdit}">
+                        + Thêm dòng
+                    </button>
+
+                </div>
+            </section>
+
+            <!-- ================= FOOTER ================= -->
+            <footer class="pr-footer">
+
+                <div class="footer-left">
+                    <a th:href="@{/department/allocation-request/list}" class="btn btn-back-custom">
+                        <- Quay lại </a>
                 </div>
 
-                <!-- approver by am -->
-                <div class="form-group"
-                     th:if="${requestDto.requestId != null && requestDto.amApprovedBy != null && !canEdit}">
-                    <label>NGƯỜI DUYỆT</label>
-                    <input type="text" readonly style="background-color: #f7f9fa; border: 1px solid #dfe3e8;"
-                           th:value="${requestDto.userName}"/>
-                </div>
+                <div class="footer-right">
+                    <!-- Nhập lại -->
+                    <button type="reset" class="btn btn-reset-custom" th:if="${canEdit == null || canEdit}">
+                        Nhập lại
+                    </button>
 
-                <!-- approved date -->
-                <div class="form-group"
-                     th:if="${requestDto.requestId != null && requestDto.amApprovedAt != null && !canEdit}">
-                    <label>NGÀY DUYỆT</label>
-                    <input type="text" readonly style="background-color: #f7f9fa; border: 1px solid #dfe3e8;"
-                           th:value="${#temporals.format(requestDto.amApprovedAt, 'dd-MM-yyyy HH:mm')}"/>
-                </div>
-
-                <!-- reject reason -->
-                <div class="form-group full-width"
-                     th:if="${requestDto.requestId != null && requestDto.reasonReject != null && !canEdit}">
-                    <label>LÝ DO TỪ CHỐI</label>
-                    <input type="text" readonly
-                           style="background-color: #fce4e4; border: 1px solid #f5c6cb; color: #721c24;"
-                           th:value="${requestDto.reasonReject}"/>
-                </div>
-            </div>
-
-        </section>
-
-        <!----------------------- CHI TIẾT -------------------------->
-        <section class="form-section">
-            <div class="section-title">DANH SÁCH THIẾT BỊ</div>
-
-            <div class="table-container">
-                <table class="pr-table" id="itemTable">
-                    <thead>
-                    <tr>
-                        <th>LOẠI TÀI SẢN</th>
-                        <th>SỐ LƯỢNG</th>
-                        <th>GHI CHÚ</th>
-                        <th></th>
-                    </tr>
-
-                    </thead>
-                    <tbody>
-
-                    <!--------------------------------- EDIT MODE --------------------------------->
-                    <tr class="item-row"
-                        th:if="${requestDto.details != null && !requestDto.details.isEmpty()}"
-                        th:each="detail, stat : *{details}">
-
-                        <!-- Asset Type -->
-                        <td>
-                            <select th:name="|details[${stat.index}].assetTypeId|" class="table-input"
-                                    th:disabled="${canEdit != null && !canEdit}" required>
-                                <option value="" hidden>-- Chọn loại --</option>
-                                <option th:each="at : ${assetType}"
-                                        th:value="${at.typeId}"
-                                        th:text="${at.typeName}"
-                                        th:selected="${at.typeId == detail.assetTypeId}">
-                                </option>
-                            </select>
-
-                            <!-- ERROR -->
-                            <div class="text-danger"
-                                 th:if="${#fields.hasErrors('details[0].assetTypeId')}"
-                                 th:errors="*{details[0].assetTypeId}">
-                            </div>
-
-                            <input type="hidden" th:if="${canEdit != null && !canEdit}"
-                                   th:name="|details[${stat.index}].assetTypeId|"
-                                   th:value="${detail.assetTypeId}"/>
-                        </td>
-
-                        <!-- Quantity -->
-                        <td>
-                            <input type="number" th:name="|details[${stat.index}].requestedQuantity|"
-                                   th:value="${detail.requestedQuantity}" class="table-input" min="1"
-                                   th:readonly="${canEdit != null && !canEdit}"/>
-
-                            <!-- ERROR -->
-                            <div class="text-danger"
-                                 th:if="${#fields.hasErrors('details[0].requestedQuantity')}"
-                                 th:errors="*{details[0].requestedQuantity}">
-                            </div>
-                        </td>
-
-                        <!-- Note -->
-                        <td>
-                            <input type="text" th:name="|details[${stat.index}].note|" th:value="${detail.note}"
-                                   class="table-input" th:readonly="${canEdit != null && !canEdit}"/>
-                        </td>
-
-                        <!-- Nút button -->
-                        <td>
-                            <button type="button" class="btn-remove" onclick="removeRow(this)"
-                                    th:if="${canEdit == null || canEdit}">
-                                ×
-                            </button>
-                        </td>
-                    </tr>
-
-
-                    <!--------------------------------- CREATE MODE --------------------------------->
-                    <tr class="item-row"
-                        th:if="${requestDto.details == null || requestDto.details.isEmpty()}">
-                        <!-- Asset type -->
-                        <td>
-                            <select name="details[0].assetTypeId" class="table-input" required>
-                                <option value="" hidden>-- Chọn loại --</option>
-                                <option th:each="at : ${assetType}"
-                                        th:value="${at.typeId}"
-                                        th:text="${at.typeName}">
-
-                                </option>
-                            </select>
-                            <!-- ERROR -->
-                            <div class="text-danger"
-                                 th:if="${#fields.hasErrors('details[0].assetTypeId')}"
-                                 th:errors="*{details[0].assetTypeId}">
-                            </div>
-                        </td>
-
-                        <!-- Quantity -->
-                        <td>
-                            <input type="number" name="details[0].requestedQuantity"
-                                   value="1" min="1"
-                                   class="table-input"/>
-                            <!-- ERROR -->
-                            <div class="text-danger"
-                                 th:if="${#fields.hasErrors('details[0].requestedQuantity')}"
-                                 th:errors="*{details[0].requestedQuantity}">
-                            </div>
-                        </td>
-
-                        <!-- Note -->
-                        <td><input type="text" name="details[0].note" class="table-input"/></td>
-
-                        <!-- Nút buttom -->
-                        <td>
-                            <button type="button" class="btn-remove" onclick="removeRow(this)"> ×
-                            </button>
-                        </td>
-                    </tr>
-
-
-                    </tbody>
-                </table>
-
-                <!-- Thêm ô detail mới -->
-                <button type="button" class="btn-add-row" onclick="addRow()"
-                        th:if="${canEdit == null || canEdit}">
-                    + Thêm dòng
-                </button>
-
-            </div>
-        </section>
-
-        <!-- ================= FOOTER ================= -->
-        <footer class="pr-footer">
-
-            <div class="footer-left">
-                <a th:href="@{/department/allocation-request/list}" class="btn btn-back-custom">
-                    <- Quay lại </a>
-            </div>
-
-            <div class="footer-right">
-                <!-- Nhập lại -->
-                <button type="reset" class="btn btn-reset-custom" th:if="${canEdit == null || canEdit}">
-                    Nhập lại
-                </button>
-
-                <!-- Gửi yêu cầu-->
-                <button type="submit" class="btn btn-submit-custom" th:if="${canEdit == null || canEdit}">
+                    <!-- Gửi yêu cầu-->
+                    <button type="submit" class="btn btn-submit-custom" th:if="${canEdit == null || canEdit}">
                         <span th:text="${requestDto.requestId != null ? 'Lưu thay đổi' : 'Gửi yêu cầu'}">
                         </span>
-                </button>
+                    </button>
 
-            </div>
-        </footer>
-    </form>
-</div>
+                </div>
+            </footer>
+        </form>
+    </div>
 
-<script>
-    function addRow() {
-        const tbody = document.querySelector("#itemTable tbody");
+    <script>
+        function addRow() {
+            const tbody = document.querySelector("#itemTable tbody");
 
-        const rowCount = tbody.rows.length;
+            const rowCount = tbody.rows.length;
 
-        //const newRow = tbody.rows[0].cloneNode(true);
+            //const newRow = tbody.rows[0].cloneNode(true);
 
-        const template = tbody.querySelector("tr");
-        const newRow = template.cloneNode(true);
+            const template = tbody.querySelector("tr");
+            const newRow = template.cloneNode(true);
 
-        newRow.querySelectorAll("select, input").forEach((input) => {
-            if (input.name.includes("assetTypeId"))
-                input.name = `details[${rowCount}].assetTypeId`;
-
-            if (input.name.includes("requestedQuantity"))
-                input.name = `details[${rowCount}].requestedQuantity`;
-
-            if (input.name.includes("note"))
-                input.name = `details[${rowCount}].note`;
-
-            if (input.tagName === "SELECT") input.selectedIndex = 0;
-
-            if (input.type === "number") input.value = 1;
-
-            if (input.type === "text") input.value = "";
-        });
-
-        tbody.appendChild(newRow);
-    }
-
-    function reIndex() {
-        const rows = document.querySelectorAll("#itemTable tbody tr");
-
-        rows.forEach((row, index) => {
-            row.querySelectorAll("select, input").forEach(input => {
+            newRow.querySelectorAll("select, input").forEach((input) => {
                 if (input.name.includes("assetTypeId"))
-                    input.name = `details[${index}].assetTypeId`;
+                    input.name = `details[${rowCount}].assetTypeId`;
 
                 if (input.name.includes("requestedQuantity"))
-                    input.name = `details[${index}].requestedQuantity`;
+                    input.name = `details[${rowCount}].requestedQuantity`;
 
                 if (input.name.includes("note"))
-                    input.name = `details[${index}].note`;
+                    input.name = `details[${rowCount}].note`;
+
+                if (input.tagName === "SELECT") input.selectedIndex = 0;
+
+                if (input.type === "number") input.value = 1;
+
+                if (input.type === "text") input.value = "";
             });
-        });
-    }
 
-    function removeRow(btn) {
-        const tbody = document.querySelector("#itemTable tbody");
-
-        if (tbody.rows.length > 1) {
-            btn.closest("tr").remove();
-            reIndex();
+            tbody.appendChild(newRow);
         }
-    }
-</script>
+
+        function reIndex() {
+            const rows = document.querySelectorAll("#itemTable tbody tr");
+
+            rows.forEach((row, index) => {
+                row.querySelectorAll("select, input").forEach(input => {
+                    if (input.name.includes("assetTypeId"))
+                        input.name = `details[${index}].assetTypeId`;
+
+                    if (input.name.includes("requestedQuantity"))
+                        input.name = `details[${index}].requestedQuantity`;
+
+                    if (input.name.includes("note"))
+                        input.name = `details[${index}].note`;
+                });
+            });
+        }
+
+        function removeRow(btn) {
+            const tbody = document.querySelector("#itemTable tbody");
+
+            if (tbody.rows.length > 1) {
+                btn.closest("tr").remove();
+                reIndex();
+            }
+        }
+    </script>
 </th:block>
 </body>
 

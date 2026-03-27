@@ -14,6 +14,10 @@ import edu.fpt.groupfive.service.ITransferRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import edu.fpt.groupfive.dao.AllocationReqDao;
+import edu.fpt.groupfive.dao.AllocationReqDetailDao;
+import edu.fpt.groupfive.model.AllocationRequestDetail;
+import edu.fpt.groupfive.model.Asset;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,6 +34,8 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
     private final UserDAO userDAO;
     private final AssetDAO assetDAO;
     private final IQCReportService qcReportService;
+    private final AllocationReqDao allocationReqDao;
+    private final AllocationReqDetailDao allocationReqDetailDao;
 
     // ================= CREATE =================
     @Override
@@ -56,10 +62,34 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
         request.setCreatedAt(LocalDateTime.now());
         request.setTransferDate(LocalDateTime.now());
 
+        request.setAllocationRequestId(dto.getAllocationRequestId());
+
         int transferId = transferRequestDAO.createTransferRequest(request);
 
         try {
-            transferRequestDetailDAO.batchInsertDetails(transferId, validAssetIds);
+            List<AllocationRequestDetail> allocDetails = null;
+            if (dto.getAllocationRequestId() != null) {
+                allocDetails = allocationReqDetailDao.findByRequestId(dto.getAllocationRequestId());
+            }
+            for (Integer targetAssetId : validAssetIds) {
+                TransferRequestDetail td = new TransferRequestDetail();
+                td.setTransferId(transferId);
+                td.setAssetId(targetAssetId);
+                // Map từng tài sản vào đúng dòng cấp phát theo AssetType
+                if (allocDetails != null) {
+                    Asset asset = assetDAO.findById(targetAssetId).orElse(null);
+                    if (asset != null) {
+                        for (AllocationRequestDetail ad : allocDetails) {
+                            if (ad.getAssetTypeId() != null
+                                    && ad.getAssetTypeId().equals(asset.getAssetTypeId())) {
+                                td.setAllocationRequestDetailId(ad.getRequestDetailId());
+                                break;
+                            }
+                        }
+                    }
+                }
+                transferRequestDetailDAO.createDetail(td);
+            }
         } catch (Exception e) {
             transferRequestDAO.delete(transferId);
             throw new RuntimeException("Lỗi khi tạo transfer details", e);
@@ -75,6 +105,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
                 .status(request.getStatus())
                 .build();
     }
+
     @Override
     public PageResponse<TransferResponse> searchOutgoing(int departmentId, TransferSearchCriteria criteria,
                                                          int page, int size, String sortField, String sortDir) {
@@ -86,6 +117,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
                 page, size, total
         );
     }
+
     // ================= PROCESS =================
     @Override
     public void processTransferAction(int transferId, int userId,
@@ -153,6 +185,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
                 total
         );
     }
+
     @Override
     public PageResponse<TransferResponse> searchForReceiver(
             int departmentId, TransferSearchCriteria criteria,
@@ -272,6 +305,33 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
         }
 
         transferRequestDAO.updateStatus(transferId, TransferStatus.COMPLETED.name());
+
+        if (transfer.getAllocationRequestId() != null
+                && transfer.getAllocationRequestId() > 0) {
+            checkAndUpdateAllocationFulfillment(transfer.getAllocationRequestId());
+        }
+    }
+
+    private void checkAndUpdateAllocationFulfillment(int allocationRequestId) {
+        AllocationRequest allocation = allocationReqDao.findById(allocationRequestId);
+
+        List<AllocationRequestDetail> details = allocationReqDetailDao.findByRequestId(allocationRequestId);
+        boolean isFullyFulfilled = true;
+        for (AllocationRequestDetail detail : details) {
+            int requestedQty = detail.getRequestedQuantity();
+            long transferredQty = transferRequestDetailDAO.countCompletedAssetsForAllocationDetail(detail.getRequestDetailId());
+            if (transferredQty < requestedQty) {
+                isFullyFulfilled = false;
+                break;
+            }
+        }
+
+        if (isFullyFulfilled) {
+            allocationReqDao.updateStatusWh(allocationRequestId, "COMPLETED");
+        } else {
+            allocationReqDao.updateStatusWh(allocationRequestId, "IN_PROGRESS");
+        }
+
     }
 
     private void handleCancel(int transferId, TransferStatus status) {
@@ -372,6 +432,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
             throw new IllegalArgumentException("Manager không tồn tại");
         }
     }
+
     @Override
     public TransferRequest getTransferById(int transferId) {
         return transferRequestDAO.findById(transferId)

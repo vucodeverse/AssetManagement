@@ -28,6 +28,13 @@
         <span>Tạo yêu cầu điều chuyển</span>
     </nav>
 
+    <div th:if="${allocationId != null}" class="alert-success" style="margin-bottom: 16px;">
+        <i data-lucide="link"></i>
+        <span>Phiếu điều chuyển này sẽ liên kết với
+        <strong>Yêu cầu cấp phát #<span th:text="${allocationId}"></span></strong>
+    </span>
+    </div>
+
     <div class="page-header">
         <h2>Tạo yêu cầu điều chuyển tài sản</h2>
         <p>Vui lòng chọn phòng ban nguồn, tài sản cần điều chuyển và thông tin nhận để tạo yêu cầu.</p>
@@ -77,6 +84,8 @@
                   th:object="${transferRequest}"
                   id="mainForm">
 
+                <input type="hidden" th:field="*{allocationRequestId}" th:value="${allocationId}" />
+
                 <input type="hidden" name="fromDepartmentId" th:value="${selectedDepartmentId}">
                 <div id="hiddenAssetContainer"></div>
 
@@ -124,19 +133,19 @@
                 <div th:if="${totalPages > 1}" class="pagination-wrapper">
                     <nav class="pagination">
                         <a th:if="${currentPage > 0}"
-                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, page=${currentPage - 1})}">
+                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, page=${currentPage - 1}, allocationId=${allocationId})}">
                             Trước
                         </a>
 
                         <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-            <a th:if="${i != currentPage}"
-               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, page=${i})}"
-               th:text="${i+1}"></a>
-            <span th:if="${i == currentPage}" th:text="${i+1}" class="active"></span>
-        </span>
+                            <a th:if="${i != currentPage}"
+                               th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, page=${i}, allocationId=${allocationId})}"
+                               th:text="${i+1}"></a>
+                            <span th:if="${i == currentPage}" th:text="${i+1}" class="active"></span>
+                        </span>
 
                         <a th:if="${currentPage < totalPages - 1}"
-                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, page=${currentPage+1})}">
+                           th:href="@{/transfer-requests/add(fromDepartmentId=${selectedDepartmentId}, page=${currentPage+1}, allocationId=${allocationId})}">
                             Sau
                         </a>
                     </nav>
@@ -153,7 +162,8 @@
                             <option th:each="d : ${departments}"
                                     th:value="${d.departmentId}"
                                     th:text="${d.departmentName}"
-                                    th:disabled="${d.departmentId == selectedDepartmentId}">
+                                    th:disabled="${d.departmentId == selectedDepartmentId}"
+                                    th:selected="${prefilledToDeptId != null and d.departmentId == prefilledToDeptId}">
                             </option>
                         </select>
                         <p class="field-hint">Không thể chọn cùng phòng ban nguồn</p>

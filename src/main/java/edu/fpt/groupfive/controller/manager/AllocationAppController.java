@@ -82,6 +82,7 @@ public class AllocationAppController {
     @GetMapping("/detail/{id}")
     public String showDetailForm(
             @PathVariable("id") Integer id,
+            HttpSession session,
             Model model) {
         // Lấy request cần update
         AllocationRequestResponse dto = allocationRequestService.getRequestById(id);
@@ -92,8 +93,23 @@ public class AllocationAppController {
 
         model.addAttribute("canEdit", false);
 
+        // Xác định role để hiển thị nút điều chuyển
+        String role = (String) session.getAttribute("role");
+        model.addAttribute("role", role);
+
+
+
         return "allocation/allocation_request_form";
 
+    }
+
+    @PostMapping("/approve-transfer/{id}")
+    public String approveAndTransfer(@PathVariable("id") Integer id, HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+
+        allocationRequestService.updateStatus(id, "APPROVED", userId, null);
+
+        return "redirect:/transfer-requests/add?allocationId=" + id;
     }
 
 

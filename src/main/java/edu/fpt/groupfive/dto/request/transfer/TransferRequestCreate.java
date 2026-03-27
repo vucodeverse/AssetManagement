@@ -16,4 +16,6 @@
         private Integer assetManagerId;
         private String reason;
         private List<Integer> assetIds;
+
+        private Integer allocationRequestId;
     }

@@ -4,16 +4,9 @@ import edu.fpt.groupfive.common.TransferAction;
 import edu.fpt.groupfive.dto.request.search.AssetSearchCriteria;
 import edu.fpt.groupfive.dto.request.search.TransferSearchCriteria;
 import edu.fpt.groupfive.dto.request.transfer.TransferRequestCreate;
-import edu.fpt.groupfive.dto.response.AssetDetailResponse;
-import edu.fpt.groupfive.dto.response.PageResponse;
-import edu.fpt.groupfive.dto.response.QCReportResponse;
-import edu.fpt.groupfive.dto.response.TransferResponse;
+import edu.fpt.groupfive.dto.response.*;
 import edu.fpt.groupfive.model.Users;
-import edu.fpt.groupfive.service.AssetService;
-import edu.fpt.groupfive.service.DepartmentService;
-import edu.fpt.groupfive.service.IQCReportService;
-import edu.fpt.groupfive.service.ITransferRequestService;
-import edu.fpt.groupfive.service.UserService;
+import edu.fpt.groupfive.service.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -36,6 +29,7 @@ public class TransferRequestController {
     private final AssetService assetService;
     private final UserService userService;
     private final IQCReportService qcReportService;
+    private final AllocationRequestService allocationRequestService;
 
 
     // ==================== HELPER ====================
@@ -59,6 +53,7 @@ public class TransferRequestController {
     @GetMapping("/add")
     public String showCreateForm(
             @RequestParam(value = "fromDepartmentId", required = false) Integer fromDepartmentId,
+            @RequestParam(value = "allocationId", required = false) Integer allocationId,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "5") int size,
             @RequestParam(value = "selectedIds", required = false) List<Integer> selectedIds,
@@ -71,11 +66,26 @@ public class TransferRequestController {
         }
 
         if (!model.containsAttribute("transferRequest")) {
-            model.addAttribute("transferRequest", new TransferRequestCreate());
+            TransferRequestCreate dto = new TransferRequestCreate();
+
+            if (allocationId != null) {
+                dto.setAllocationRequestId(allocationId);
+            }
+            model.addAttribute("transferRequest", dto);
         }
 
         model.addAttribute("departments", departmentService.findAll());
         model.addAttribute("users", userService.findAll());
+
+        model.addAttribute("allocationId", allocationId);
+
+        if (allocationId != null) {
+            AllocationRequestResponse allocReq =
+                    allocationRequestService.getRequestById(allocationId);
+            if (allocReq != null) {
+                model.addAttribute("prefilledToDeptId", allocReq.getRequestedDepartmentId());
+            }
+        }
 
         if (fromDepartmentId != null) {
             AssetSearchCriteria criteria = new AssetSearchCriteria();
