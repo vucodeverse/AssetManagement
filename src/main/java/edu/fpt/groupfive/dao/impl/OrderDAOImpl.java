@@ -399,7 +399,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus) {
-        String sql = "update purchase_orders set status = ? where purchase_order_id = ?";
+        String sql = "update purchase_orders set status = ?, updated_at = ? where purchase_order_id = ?";
 
         try (Connection connection = databaseConfig.getConnection()) {
 
@@ -408,7 +408,8 @@ public class OrderDAOImpl implements OrderDAO {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
                 preparedStatement.setString(1, orderStatus.name());
-                preparedStatement.setInt(2, orderId);
+                preparedStatement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                preparedStatement.setInt(3, orderId);
                 preparedStatement.executeUpdate(); // MISSING BEFORE
                 connection.commit();
 
@@ -421,6 +422,22 @@ public class OrderDAOImpl implements OrderDAO {
 
         } catch (Exception e) {
             throw new DataAccessException("Update thất bại", e);
+        }
+    }
+
+    @Override
+    public void updateUpdatedAt(Integer orderId) {
+        String sql = "update purchase_orders set updated_at = ? where purchase_order_id = ?";
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            preparedStatement.setInt(2, orderId);
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Update updated_at thất bại", e);
         }
     }
 

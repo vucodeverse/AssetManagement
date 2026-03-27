@@ -340,6 +340,7 @@ public class OrderServiceImpl implements OrderService {
         }
         try {
             orderDetailDAO.updateDeliveryDate(orderId, deliveryDate);
+            orderDAO.updateUpdatedAt(orderId);
         } catch (Exception e) {
             throw new InvalidDataException(deliveryDateInvalidFormatMsg);
         }

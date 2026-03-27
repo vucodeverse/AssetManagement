@@ -374,8 +374,10 @@ public class QuotationServiceImpl implements QuotationService {
 
         if ("a".equals(actions)) {
             quotationDetailDAO.update(id, PurchaseProcessStatus.APPROVED);
+            quotationDAO.updateUpdatedAt(qoId);
         } else if ("r".equals(actions)) {
             quotationDetailDAO.update(id, PurchaseProcessStatus.REJECTED);
+            quotationDAO.updateUpdatedAt(qoId);
             List<QuotationDetail> quotationDetails = quotationDetailDAO.findByQuotationId(qoId);
 
             boolean isRejectAll =

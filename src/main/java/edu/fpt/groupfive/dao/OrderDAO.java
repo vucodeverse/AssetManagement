@@ -21,4 +21,6 @@ public interface OrderDAO {
     List<Order> findRecent();
 
     void updateStatus(Integer orderId, PurchaseProcessStatus status);
+    
+    void updateUpdatedAt(Integer orderId);
 }
