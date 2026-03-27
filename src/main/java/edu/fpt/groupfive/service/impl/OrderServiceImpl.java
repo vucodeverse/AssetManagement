@@ -205,7 +205,12 @@ public class OrderServiceImpl implements OrderService {
 
         for (QuotationDetail qd : allCandidates) {
             if (!approvedIds.contains(qd.getId())) {
-                quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
+                switch (qd.getQuotationDetailStatus()) {
+                    case DRAFT:
+                        qd.setQuotationDetailStatus(PurchaseProcessStatus.DELETED);
+                    default:
+                        quotationDetailDAO.update(qd.getId(), PurchaseProcessStatus.REJECTED);
+                }
             }
         }
     }

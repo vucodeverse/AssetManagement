@@ -18,6 +18,11 @@
             <i class="fas fa-th-large"></i> TỔNG QUAN
         </a>
 
+        <a th:href="@{/department/assets}" th:classappend="${activeMenu == 'asset'} ? 'active' : ''">
+            <i class="fas fa-laptop"></i>
+            <span> TÀI SẢN BỘ PHẬN</span>
+        </a>
+
         <!-- ALLOCATION -->
         <a th:href="@{/department/allocation-request/list}"
            th:classappend="${activeMenu == 'allocation'} ? 'active'"

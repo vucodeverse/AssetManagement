@@ -234,7 +234,7 @@ public class QuotationDAOImpl implements QuotationDAO {
 
         String sql = "select count(distinct q.quotation_id) from purchase_request p " +
                 "left join quotation q on p.purchase_request_id = q.purchase_request_id " +
-                "where p.purchase_request_id = ? and (q.status <> 'DELETED') " +
+                "where p.purchase_request_id = ? and (q.status <> 'DELETED' and q.status <> 'DRAFT') " +
                 "group by p.purchase_request_id";
 
         try (Connection connection = databaseConfig.getConnection();
