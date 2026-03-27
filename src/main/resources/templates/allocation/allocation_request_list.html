@@ -56,6 +56,8 @@
                     </option>
                     <option value="APPROVED" th:selected="${status == 'APPROVED'}">ĐÃ DUYỆT
                     </option>
+                    <option value="IN_PROGRESS" th:selected="${status == 'IN_PROGRESS'}">ĐANG XỬ LÝ
+                    </option>
                     <option value="REJECTED" th:selected="${status == 'REJECTED'}">TỪ CHỐI
                     </option>
                     <option value="COMPLETED" th:selected="${status == 'COMPLETED'}">HOÀN THÀNH
@@ -152,6 +154,9 @@
                           class="status-badge status-APPROVED">
                         ĐÃ DUYỆT
                     </span>
+                    <span th:if="${x.status == 'IN_PROGRESS'}" class="status-badge" style="background-color: #fef08a; color: #854d0e;">
+                        ĐANG XỬ LÝ
+                    </span>
                     <span th:if="${x.status == 'REJECTED'}"
                           class="status-badge status-REJECTED">
                         TỪ CHỐI
@@ -237,8 +242,8 @@
                         </a>
 
                         <!-- TRANSFER -->
-                        <form th:if="${requestDto.status == 'PENDING_AM'}"
-                              th:action="@{'/asset-manager/allocation-request/approve-transfer/' + ${requestDto.requestId}}"
+                        <form th:if="${x.status == 'PENDING_AM' or x.status == 'APPROVED' or x.status == 'IN_PROGRESS'}"
+                              th:action="@{'/asset-manager/allocation-request/approve-transfer/' + ${x.requestId}}"
                               method="post" style="display:inline;"
                               onsubmit="return confirm('Xác nhận điều chuyển ?');">
                             <button type="submit"
