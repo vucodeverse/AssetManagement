@@ -346,6 +346,7 @@ public class OrderServiceImpl implements OrderService {
                         .deliveryDate(pod.getDeliveryDate())
                         .discountRate(pod.getDiscountRate())
                         .quantity(pod.getQuantity())
+                        .receivedQuantity(pod.getReceivedQuantity())
                         .assetTypeName(map.getOrDefault(pod.getAssetTypeId(), "Không có loại tài sản"))
                         .build()).toList();
     }
@@ -362,9 +363,31 @@ public class OrderServiceImpl implements OrderService {
                 .createdAt(o.getCreatedAt())
                 .orderStatus(o.getOrderStatus().name())
                 .purchaseId(o.getPurchaseId())
-                .supplierName(supplierMap.getOrDefault(o.getSupplierId(), notFoundFallbackMsg))
+                .supplierName(supplierMap.getOrDefault(o.getSupplierId(), "Không xác định"))
                 .approvedByName(map.getOrDefault(o.getApprovedBy(), "Hiện chưa được chấp nhận"))
                 .totalAmount(o.getTotalAmount()).build()).toList();
+    }
+
+    @Override
+    public List<PurchaseOrderResponse> getInboundOrders() {
+        Map<Integer, String> map = userService.getUserIdToUsernameMap();
+        Map<Integer, String> supplierMap = supplierService.getSupplierIdToNameMap();
+
+        return (List<PurchaseOrderResponse>) orderDAO.findRecent().stream()
+                .filter(o -> PurchaseProcessStatus.PENDING == o.getOrderStatus() 
+                          || PurchaseProcessStatus.PARTIALLY_RECEIVED == o.getOrderStatus()
+                          || PurchaseProcessStatus.COMPLETED == o.getOrderStatus())
+                .map(o -> PurchaseOrderResponse.builder()
+                        .orderId(o.getId())
+                        .orderNote(o.getOrderNote())
+                        .createdAt(o.getCreatedAt())
+                        .orderStatus(o.getOrderStatus().name())
+                        .purchaseId(o.getPurchaseId())
+                        .supplierName(supplierMap.getOrDefault(o.getSupplierId(), "Không xác định"))
+                        .approvedByName(map.getOrDefault(o.getApprovedBy(), "Hiện chưa được chấp nhận"))
+                        .totalAmount(o.getTotalAmount())
+                        .build())
+                .toList();
     }
 
     @Override

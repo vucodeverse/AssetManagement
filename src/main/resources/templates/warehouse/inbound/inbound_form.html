@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/warehouse-layout}">
+
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/warehouse/warehouse.css}">
+    </th:block>
+</head>
+
+<body>
+    <th:block layout:fragment="content">
+        <header class="page-header">
+            <div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                    <a th:href="@{'/wh/inbound/po/' + ${po.orderId}}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại chi tiết</a>
+                </div>
+                <h1 class="page-title">Lập phiếu Nhập kho PO #<span th:text="${po.orderId}"></span></h1>
+                <p class="page-subtitle">Nhà cung cấp: <strong th:text="${po.supplierName}"></strong></p>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <form th:action="@{'/wh/inbound/po/' + ${po.orderId} + '/confirm'}" method="post">
+                <div class="wh-panel" style="margin-bottom: 24px;">
+                    <div class="wh-panel-header">
+                        <span class="wh-panel-title"><i class="fa-solid fa-file-invoice"></i> Thông tin phiếu nhập</span>
+                    </div>
+                    <div style="padding: 16px;">
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #475569;">Ghi chú nhập kho:</label>
+                            <textarea name="note" rows="3" class="wh-input"
+                                placeholder="Ví dụ: Nhập đợt 1, hàng đầy đủ, hóa đơn kèm theo..."
+                                style="width: 100%; resize: none;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wh-panel">
+                    <div class="wh-panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="wh-panel-title"><i class="fa-solid fa-list-check"></i> Xác nhận số lượng thực nhận</span>
+                        <button type="submit" class="btn-primary" style="margin: 0; padding: 8px 24px;">
+                            <i class="fa-solid fa-check"></i> Xác nhận & Nhập kho
+                        </button>
+                    </div>
+                    <div style="padding: 0 16px 16px 16px;">
+                        <p style="color: #64748b; font-size: 0.9rem; margin: 16px 0;">
+                            <i class="fa-solid fa-circle-info"></i> Vui lòng kiểm tra kỹ số lượng thực tế nhận được so với đơn đặt hàng.
+                        </p>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Mặt hàng</th>
+                                    <th style="text-align: center;">Số lượng Đặt</th>
+                                    <th style="text-align: center;">Đã nhận</th>
+                                    <th style="text-align: center;">Còn lại</th>
+                                    <th style="text-align: center; width: 160px;">Nhận lần này</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item, iterStat : ${po.orderDetails}">
+                                    <td th:text="${item.assetTypeName}"></td>
+                                    <td style="text-align: center;"><strong th:text="${item.quantity}"></strong></td>
+                                    <td style="text-align: center;" th:text="${item.receivedQuantity ?: 0}"></td>
+                                    <td style="text-align: center;">
+                                        <strong th:text="${item.quantity - (item.receivedQuantity ?: 0)}"
+                                            style="color: #e67e22;"></strong>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <input type="hidden" th:name="'items[' + ${iterStat.index} + '].poDetailId'"
+                                            th:value="${item.purchaseOrderDetailId}">
+                                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                            <input type="number" th:name="'items[' + ${iterStat.index} + '].quantityToReceive'"
+                                                class="wh-input" style="width: 100px; text-align: center;"
+                                                min="0"
+                                                th:attr="max=${item.quantity - (item.receivedQuantity ?: 0)}"
+                                                th:value="${(item.quantity - (item.receivedQuantity ?: 0)) > 0 ? (item.quantity - (item.receivedQuantity ?: 0)) : 0}"
+                                                th:readonly="${(item.receivedQuantity ?: 0) >= item.quantity}">
+                                            <span style="color: #64748b;">cái</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 24px; display: flex; gap: 12px;">
+                    <a th:href="@{'/wh/inbound/po/' + ${po.orderId}}" class="btn-secondary" style="text-decoration: none;">
+                        Hủy bỏ
+                    </a>
+                </div>
+            </form>
+        </div>
+    </th:block>
+</body>
+</html>

@@ -16,58 +16,19 @@
                 justify-content: space-between;
                 align-items: center;
             }
-            .summary-info h2 {
-                margin: 0 0 8px 0;
-                color: #1e293b;
-                font-size: 1.5rem;
-            }
-            .summary-info p {
-                margin: 0;
-                color: #64748b;
-            }
+            .summary-info h2 { margin: 0 0 8px 0; color: #1e293b; font-size: 1.5rem; }
+            .summary-info p { margin: 0; color: #64748b; }
             
-            /* --- Screen View --- */
-            .asset-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                gap: 20px;
-            }
-            .asset-group-card {
+            .data-table-container {
                 background: white;
+                padding: 20px;
                 border-radius: 12px;
-                overflow: hidden;
                 box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
                 border: 1px solid #e2e8f0;
+                margin-bottom: 24px;
             }
-            .group-header {
-                padding: 16px;
-                background: #f8fafc;
-                border-bottom: 1px solid #e2e8f0;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .group-title {
-                font-weight: 600;
-                color: #334155;
-            }
-            .group-count {
-                background: #e2e8f0;
-                color: #475569;
-                padding: 2px 8px;
-                border-radius: 12px;
-                font-size: 0.75rem;
-                font-weight: 600;
-            }
-            .id-list {
-                padding: 16px;
-                max-height: 250px;
-                overflow-y: auto;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            .id-badge {
+
+            .id-badge-inline {
                 padding: 4px 10px;
                 background: #f1f5f9;
                 border: 1px solid #e2e8f0;
@@ -78,20 +39,68 @@
                 font-size: 0.9rem;
             }
 
-            /* --- Print View (Tags) --- */
-            #printable-tags {
-                display: none; /* Hidden on screen */
+            .btn-icon {
+                width: 32px;
+                height: 32px;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: white;
+                border: 1px solid #e2e8f0;
+                color: #64748b;
+                cursor: pointer;
+                transition: all 0.2s;
             }
+            .btn-icon:hover {
+                background: #f1f5f9;
+                color: #2563eb;
+                border-color: #2563eb;
+            }
+            
+            /* Modal Styles */
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 9999; /* Ensure high z-index */
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.6);
+                backdrop-filter: blur(4px);
+            }
+            .modal-content {
+                background-color: #ffffff;
+                margin: 10% auto;
+                width: 350px;
+                border-radius: 16px;
+                box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+                overflow: hidden;
+                animation: modalIn 0.3s ease-out;
+            }
+            @keyframes modalIn {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .modal-header {
+                padding: 16px 20px;
+                border-bottom: 1px solid #f1f5f9;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #f8fafc;
+            }
+            .modal-header h3 { margin: 0; font-size: 1rem; color: #334155; font-weight: 700; }
+            .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; line-height: 1; }
+            .close-btn:hover { color: #ef4444; }
+
+            /* Print View */
+            #printable-tags { display: none; }
 
             @media print {
-                /* Hide EVERYTHING by default */
-                body * {
-                    visibility: hidden;
-                }
-                /* Only show the tags and its children */
-                #printable-tags, #printable-tags * {
-                    visibility: visible;
-                }
+                body * { visibility: hidden; }
+                #printable-tags, #printable-tags * { visibility: visible; }
                 #printable-tags {
                     position: absolute;
                     left: 0;
@@ -99,26 +108,14 @@
                     width: 100%;
                     display: block !important;
                 }
-                
-                /* Reset body/page for printing */
-                body, html {
-                    background: white !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    width: 100% !important;
-                    height: auto !important;
-                }
-                
-                /* Layout for A4 */
+                body, html { background: white !important; margin: 0 !important; }
                 .tag-page {
                     display: grid;
                     grid-template-columns: repeat(2, 1fr);
                     gap: 10mm;
                     padding: 10mm;
                     page-break-after: always;
-                    visibility: visible;
                 }
-                
                 .asset-tag {
                     border: 2px solid #000;
                     padding: 5mm;
@@ -127,33 +124,12 @@
                     justify-content: space-between;
                     align-items: center;
                     page-break-inside: avoid;
-                    visibility: visible;
+                    box-sizing: border-box;
                 }
-                
-                .tag-content {
-                    flex: 1;
-                    visibility: visible;
-                }
-                .tag-type {
-                    font-size: 10pt;
-                    font-weight: bold;
-                    text-transform: uppercase;
-                    margin-bottom: 5mm;
-                    display: block;
-                    visibility: visible;
-                }
-                .tag-id {
-                    font-size: 24pt;
-                    font-weight: 900;
-                    font-family: inherit;
-                    visibility: visible;
-                }
-                .tag-qr {
-                    width: 30mm;
-                    height: 30mm;
-                    margin-left: 5mm;
-                    visibility: visible;
-                }
+                .tag-content { flex: 1; }
+                .tag-type { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 5mm; display: block; }
+                .tag-id { font-size: 24pt; font-weight: 900; }
+                .tag-qr { width: 30mm; height: 30mm; margin-left: 5mm; }
             }
         </style>
     </th:block>
@@ -163,15 +139,18 @@
     <header class="page-header no-print">
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                <a th:href="@{/wh/inbound/po}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách PO</a>
+                <a th:if="${isHistory != true}" th:href="@{/wh/inbound/po}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách PO</a>
+                <a th:if="${isHistory == true}" th:href="@{'/wh/inbound/po/' + ( ${summary.purchaseOrderId} ?: '0' )}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại Chi tiết đơn hàng</a>
             </div>
-            <h1 class="page-title">Tổng kết Nhập kho - Phiếu nhập #<span th:text="${summary.receiptNo}"></span></h1>
-            <p class="page-subtitle">Liên kết tới Đơn mua hàng PO #<span th:text="${summary.purchaseOrderId}"></span></p>
+            <h1 class="page-title" th:text="${isHistory == true ? 'Chi tiết Phiếu nhập kho' : 'Tổng kết Nhập kho'}"></h1>
+            <p class="page-subtitle">
+                <span th:if="${isHistory == true}">Phiếu nhập #<span th:text="${summary.receiptNo}"></span> | </span>
+                Liên kết tới Đơn mua hàng PO #<span th:text="${summary.purchaseOrderId}"></span>
+            </p>
         </div>
     </header>
 
     <div class="content-wrapper">
-        <!-- Screen View Components -->
         <div th:if="${successMessage}" class="flash-message success no-print">
             <i class="fa-solid fa-circle-check"></i>
             <span th:text="${successMessage}"></span>
@@ -179,52 +158,169 @@
 
         <div class="summary-header no-print">
             <div class="summary-info">
-                <h2 th:text="'Nhà cung cấp: ' + ${summary.supplierName}">Nhà cung cấp</h2>
                 <p>Ngày nhập kho: <span th:text="${#temporals.format(summary.inboundDate, 'dd/MM/yyyy HH:mm')}">--/--/----</span></p>
             </div>
             <div>
                 <button class="btn-primary" onclick="window.print()">
-                    <i class="fa-solid fa-print"></i> In tất cả thẻ tài sản (Tags)
+                    <i class="fa-solid fa-print"></i> In tất cả thẻ tài sản
                 </button>
             </div>
         </div>
 
-        <div class="asset-grid no-print">
-            <div th:each="group : ${summary.assetGroups}" class="asset-group-card">
-                <div class="group-header">
-                    <span class="group-title" th:text="${group.assetTypeName}"></span>
-                    <span class="group-count" th:text="${group.quantity} + ' cái'"></span>
-                </div>
-                <div class="id-list">
-                    <span th:each="id : ${group.assetIds}" class="id-badge" th:text="${id}"></span>
-                </div>
-            </div>
+        <div class="data-table-container no-print">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th>Loại tài sản</th>
+                        <th>Tên tài sản</th>
+                        <th>Trạng thái</th>
+                        <th style="text-align: right;">Nguyên giá</th>
+                        <th style="text-align: center; width: 150px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <th:block th:each="group : ${summary.assetGroups}">
+                        <tr th:each="asset : ${group.assets}">
+                            <td>
+                                <span class="id-badge-inline" th:text="${asset.assetId}"></span>
+                            </td>
+                            <td th:text="${group.assetTypeName}"></td>
+                            <td th:text="${asset.assetName}"></td>
+                            <td>
+                                <span class="wh-badge info" th:text="${asset.status}"></span>
+                            </td>
+                            <td style="text-align: right;" 
+                                th:text="${asset.cost != null ? #numbers.formatDecimal(asset.cost, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px; justify-content: center;">
+                                    <button class="btn-icon btn-view-qr" title="Xem mã QR" th:data-id="${asset.assetId}">
+                                        <i class="fa-solid fa-qrcode"></i>
+                                    </button>
+                                    <button class="btn-icon btn-print-single" title="In mã QR" 
+                                            th:data-id="${asset.assetId}" th:data-type="${group.assetTypeName}">
+                                        <i class="fa-solid fa-print"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </th:block>
+                </tbody>
+            </table>
         </div>
 
         <div class="print-section no-print">
             <p style="color: #64748b; margin-bottom: 16px;">
-                <i class="fa-solid fa-circle-info"></i> Hệ thống đã tự động tạo hồ sơ tài sản với ID số nguyên. Vui lòng in thẻ và dán lên tài sản thực tế.
+                <i class="fa-solid fa-circle-info"></i> Hệ thống đã tự động tạo hồ sơ tài sản. Bạn có thể in toàn bộ hoặc in lẻ cho từng tài sản.
             </p>
-            <a th:href="@{/wh/inbound/po}" class="btn-secondary">
-                Hoàn tất & Quay lại
-            </a>
+            <a th:href="@{/wh/inbound/po}" class="btn-secondary">Hoàn tất & Quay lại</a>
         </div>
 
-        <!-- Hidden Print Section (Paginated by Asset Type) -->
+        <!-- Hidden Print Section -->
         <div id="printable-tags">
             <div th:each="group : ${summary.assetGroups}" class="tag-page">
-                <div th:each="id : ${group.assetIds}" class="asset-tag">
+                <div th:each="asset : ${group.assets}" class="asset-tag" th:id="'tag-' + ${asset.assetId}">
                     <div class="tag-content">
-                        <span class="tag-type" th:text="${group.assetTypeName}">TÊN LOẠI TÀI SẢN</span>
-                        <div class="tag-id" th:text="${id}">1234</div>
+                        <span class="tag-type" th:text="${group.assetTypeName}"></span>
+                        <div class="tag-id" th:text="${asset.assetId}"></div>
                     </div>
-                    <img class="tag-qr" 
-                         th:src="'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + ${id}" 
-                         alt="QR Code">
+                    <img class="tag-qr" th:src="'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + ${asset.assetId}" alt="QR">
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal remains here but we'll control it with jQuery -->
+    <div id="qrModal" class="modal no-print">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Mã QR Tài sản</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 30px;">
+                <div style="background: white; padding: 10px; display: inline-block; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <img id="modalQRImg" src="" alt="QR" style="width: 200px; height: 200px; display: block;">
+                </div>
+                <div id="modalAssetId" style="margin-top: 20px; font-size: 1.25rem; font-weight: 800; color: #1e293b; letter-spacing: 1px;"></div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<th:block layout:fragment="extra-js">
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            // View QR
+            $('.btn-view-qr').on('click', function() {
+                const assetId = $(this).data('id');
+                const imgUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + assetId;
+                
+                $('#modalQRImg').attr('src', imgUrl);
+                $('#modalAssetId').text('ID: ' + assetId);
+                $('#qrModal').fadeIn(200);
+            });
+
+            // Close Modal
+            $('.close-btn, #qrModal').on('click', function(e) {
+                if (e.target !== this && !$(e.target).hasClass('close-btn')) return;
+                $('#qrModal').fadeOut(200);
+            });
+
+            // Print Single
+            $('.btn-print-single').on('click', function() {
+                const assetId = $(this).data('id');
+                const tagSelector = '#tag-' + assetId;
+                const tagElement = $(tagSelector);
+                
+                if (tagElement.length === 0) {
+                    alert('Lỗi: Không tìm thấy dữ liệu thẻ tài sản #' + assetId);
+                    return;
+                }
+
+                const tagHtml = tagElement[0].outerHTML;
+                const printWindow = window.open('', '_blank');
+                
+                printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>In mã QR - ${assetId}</title>
+                        <style>
+                            body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: flex-start; }
+                            .asset-tag {
+                                border: 2px solid #000;
+                                padding: 5mm;
+                                width: 90mm;
+                                height: 40mm;
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                box-sizing: border-box;
+                            }
+                            .tag-content { flex: 1; }
+                            .tag-type { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 5mm; display: block; }
+                            .tag-id { font-size: 24pt; font-weight: 900; }
+                            .tag-qr { width: 30mm; height: 30mm; margin-left: 5mm; }
+                            @media print { body { padding: 0; } }
+                        </style>
+                    </head>
+                    <body>
+                        ${tagHtml}
+                        <script>
+                            window.onload = function() {
+                                setTimeout(function() {
+                                    window.print();
+                                    window.close();
+                                }, 300);
+                            };
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            });
+        });
+    </script>
 </th:block>
 </body>
 </html>

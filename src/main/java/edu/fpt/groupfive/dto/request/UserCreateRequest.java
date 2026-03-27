@@ -20,10 +20,17 @@ public class UserCreateRequest {
     private String password;
 
     @NotBlank(message = "Tên là bắt buộc")
-
+    @Pattern(
+            regexp = "^(\\p{Lu}\\p{Ll}+)(\\s\\p{Lu}\\p{Ll}+)*$",
+            message = "Mỗi từ phải bắt đầu hoa, chỉ chứa chữ, không số/ký tự đặc biệt, không khoảng trắng thừa"
+    )
     private String firstName;
 
     @NotBlank(message = "Họ là bắt buộc")
+    @Pattern(
+            regexp = "^(\\p{Lu}\\p{Ll}+)(\\s\\p{Lu}\\p{Ll}+)*$",
+            message = "Mỗi từ phải bắt đầu hoa, chỉ chứa chữ, không số/ký tự đặc biệt, không khoảng trắng thừa"
+    )
     private String lastName;
 
     @Email(message = "Định dạng email không hợp lệ")

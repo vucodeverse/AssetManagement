@@ -45,6 +45,18 @@
                 font-size: 0.8rem;
                 color: #475569;
             }
+            .progress-container {
+                width: 100%;
+                background-color: #f1f5f9;
+                border-radius: 9999px;
+                height: 0.5rem;
+                margin-top: 0.5rem;
+            }
+            .progress-bar {
+                height: 0.5rem;
+                border-radius: 9999px;
+                background-color: #a855f7;
+            }
         </style>
     </th:block>
 </head>
@@ -55,45 +67,38 @@
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                 <a th:href="@{/wh/outbound}" style="color: #64748b;"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
                 <span style="color: #cbd5e1;">/</span>
-                <span style="color: #94a3b8;">Chi tiết Xuất kho</span>
+                <span style="color: #94a3b8;">Tổng quan Cấp phát</span>
             </div>
-            <h1 class="page-title">Xử lý Xuất kho #<span th:text="${handover.handoverId}"></span></h1>
+            <h1 class="page-title">Lệnh Cấp phát #<span th:text="${handover.handoverId}"></span></h1>
             <p class="page-subtitle">Phòng ban Đích: <strong th:text="${handover.toDepartmentName}"></strong></p>
+        </div>
+        <div th:if="${handover.status == 'PENDING'}">
+            <a th:href="@{'/wh/outbound/' + ${handover.handoverId} + '/process'}" class="btn-primary" style="background: #a855f7; border-color: #a855f7; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-barcode"></i> Xử lý xuất kho
+            </a>
         </div>
     </header>
 
     <div class="content-wrapper">
-        <div th:if="${successMessage}" class="flash-message success">
-            <i class="fa-solid fa-circle-check"></i>
-            <span th:text="${successMessage}"></span>
-        </div>
-
-        <div th:if="${errorMessage}" class="flash-message info" style="background: #fef2f2; border-color: #ef4444; color: #dc2626;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span th:text="${errorMessage}"></span>
-        </div>
-
-        <!-- REQUEST INFO -->
+        <!-- BẢNG TIẾN ĐỘ -->
         <div class="wh-panel" style="margin-bottom: 2rem;">
             <div class="wh-panel-header">
-                <span class="wh-panel-title"><i class="fa-solid fa-file-invoice"></i> Thông tin Yêu cầu Cấp phát</span>
+                <span class="wh-panel-title"><i class="fa-solid fa-file-invoice"></i> Thông tin Yêu cầu & Tiến độ</span>
+                <span th:class="${handover.status == 'PENDING' ? 'badge badge-in-use' : 'badge badge-completed'}" th:text="${handover.status}"></span>
             </div>
             <div style="padding: 1.5rem;">
                 <div class="info-grid">
                     <div class="info-item">
-                        <div class="info-label">Phòng ban nhận</div>
-                        <div class="info-value" th:text="${handover.allocationRequest.requestedDepartmentName}"></div>
+                        <div class="info-label">Phòng ban yêu cầu</div>
+                        <div class="info-value" th:text="${handover.allocationRequest != null ? handover.allocationRequest.requestedDepartmentName : handover.toDepartmentName}"></div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">Ngày cần</div>
-                        <div class="info-value" th:text="${handover.allocationRequest.neededByDate}"></div>
+                        <div class="info-label">Trạng thái hiện tại</div>
+                        <div class="info-value" th:text="${handover.status == 'PENDING' ? 'Đang thực hiện' : 'Đã hoàn tất'}"></div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">Độ ưu tiên</div>
-                        <div class="info-value">
-                            <span th:text="${handover.allocationRequest.priority}" 
-                                  th:class="${handover.allocationRequest.priority.name() == 'HIGH' ? 'text-red' : ''}"></span>
-                        </div>
+                        <div class="info-label">Loại lệnh</div>
+                        <div class="info-value">Cấp phát tài sản</div>
                     </div>
                 </div>
 
@@ -102,17 +107,22 @@
                         <tr>
                             <th>Loại tài sản</th>
                             <th>Số lượng yêu cầu</th>
-                            <th>Đã quét</th>
+                            <th>Đã cấp phát</th>
+                            <th style="width: 250px;">Tiến độ</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="reqItem : ${handover.requestedItems}">
                             <td th:text="${reqItem.assetTypeName}"></td>
                             <td th:text="${reqItem.requestedQuantity}"></td>
+                            <td th:text="${reqItem.allocatedQuantity}"></td>
                             <td>
-                                <span th:text="${reqItem.allocatedQuantity}" 
-                                      th:class="${reqItem.allocatedQuantity == reqItem.requestedQuantity ? 'text-purple' : ''}" 
-                                      style="font-weight: 700;"></span> / <span th:text="${reqItem.requestedQuantity}"></span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="progress-container" style="flex: 1;">
+                                        <div class="progress-bar" th:style="'width: ' + (${reqItem.requestedQuantity > 0 ? (reqItem.allocatedQuantity * 100 / reqItem.requestedQuantity) : 0}) + '%'"></div>
+                                    </div>
+                                    <span style="font-size: 0.75rem; font-weight: 600; color: #64748b;" th:text="${reqItem.requestedQuantity > 0 ? (reqItem.allocatedQuantity * 100 / reqItem.requestedQuantity) : 0} + '%'"></span>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -120,52 +130,44 @@
             </div>
         </div>
 
-        <div class="wh-layout" style="grid-template-columns: 1fr 400px;">
-            <!-- SCANNER FORM -->
-            <div class="wh-panel">
-                <div class="wh-panel-header">
-                    <span class="wh-panel-title"><i class="fa-solid fa-right-from-bracket"></i> Quét Mã Tài sản</span>
-                </div>
-                <div style="padding: 2rem; text-align: center;">
-                    <div style="margin-bottom: 2rem;">
-                        <i class="fa-solid fa-barcode" style="font-size: 4rem; color: #a855f7;"></i>
-                        <p style="margin-top: 1rem; color: #64748b;">Quét mã tài sản để kiểm tra chất lượng và thêm vào phiếu xuất</p>
-                    </div>
-                    <form th:action="@{'/wh/outbound/' + ${handover.handoverId} + '/scan'}" method="post">
-                        <input type="text" name="assetCode" class="form-input" 
-                               style="max-width: 300px; text-align: center; font-size: 1.5rem; font-weight: 700;"
-                               placeholder="VD: AST-881" autofocus autocomplete="off">
-                        <div style="margin-top: 1.5rem;">
-                            <button type="submit" class="btn-primary" style="background: #a855f7; border-color: #a855f7; padding: 0.75rem 2rem;">Tiếp tục: Báo cáo chất lượng</button>
-                        </div>
-                    </form>
-                </div>
+        <!-- DANH SÁCH PHIẾU XUẤT KHO -->
+        <div class="wh-panel">
+            <div class="wh-panel-header">
+                <span class="wh-panel-title"><i class="fa-solid fa-receipt"></i> Danh sách Phiếu xuất kho đã tạo</span>
             </div>
-
-            <!-- CHECKLIST -->
-            <div class="wh-panel">
-                <div class="wh-panel-header">
-                    <span class="wh-panel-title"><i class="fa-solid fa-clipboard-check"></i> Danh sách đã chọn QC</span>
-                </div>
-                <div style="padding: 1rem;">
-                    <div th:each="item : ${handover.items}" 
-                         style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 12px;">
-                        <div class="text-purple" style="font-size: 1.25rem;">
-                            <i class="fa-solid fa-circle-check"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; font-size: 0.9rem;" th:text="${item.assetCode}"></div>
-                            <div style="font-size: 0.75rem; color: #6b7280;" th:text="${item.assetName} + ' (' + ${item.assetTypeName} + ')'"></div>
-                        </div>
-                        <div style="font-size: 0.7rem; background: #f3e8ff; color: #7e22ce; padding: 2px 6px; border-radius: 4px;">
-                            Đã QC
-                        </div>
-                    </div>
-                    
-                    <div th:if="${#lists.isEmpty(handover.items)}" style="text-align: center; padding: 2rem; color: #94a3b8;">
-                        Chưa có tài sản nào được chọn
-                    </div>
-                </div>
+            <div style="padding: 0;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Số phiếu</th>
+                            <th>Ngày tạo</th>
+                            <th>Người tạo</th>
+                            <th>Số lượng tài sản</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="rcp : ${handover.receipts}">
+                            <td>
+                                <a th:href="@{'/wh/outbound/receipt/' + ${rcp.receiptId}}"
+                                   style="font-weight:700; color:#a855f7; text-decoration:none;"
+                                   th:text="${rcp.receiptNo}"></a>
+                            </td>
+                            <td th:text="${#temporals.format(rcp.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${rcp.creatorName}"></td>
+                            <td>
+                                <span class="wh-badge info" th:text="${rcp.totalQuantity} + ' tài sản'"></span>
+                            </td>
+                            <td th:text="${rcp.note}"></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(handover.receipts)}">
+                            <td colspan="5" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                                <i class="fa-solid fa-folder-open" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                                Chưa có phiếu xuất kho nào được tạo cho lệnh này.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

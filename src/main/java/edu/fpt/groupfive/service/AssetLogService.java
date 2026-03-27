@@ -12,7 +12,7 @@ public interface AssetLogService {
 
     void logTransfer(int assetId, int fromDeptId, int toDeptId, int transferId);
 
-    void logReturn(int assetId, int fromDeptId, int toDeptId, int returnId);
+    void logReturn(int assetId, int fromDeptId, int returnId);
 
     void logStatusChange(int assetId, String oldStatus, String newStatus, String note);
 
