@@ -192,9 +192,8 @@
                               <i class="fas fa-info-circle"></i>
                               Vui lòng kiểm tra kỹ tất cả chi tiết trước khi lưu báo giá.
                          </div>
-                         <a th:href="@{/purchases}" class="btn-form btn-cancel">
-                              HỦY BỎ
-                         </a>
+                         <button type="button"class="btn-form btn-cancel" onclick="history.back()">HỦY</button>
+
                          <button type="submit" name="actions" value="draft" class="btn-form btn-draft">
                               <i class="fas fa-save"></i>
                               LƯU NHÁP

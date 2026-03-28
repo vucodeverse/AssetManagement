@@ -190,6 +190,7 @@ public class OrderServiceImpl implements OrderService {
         // chuyển những quotation detail khác sang reject
         updateQuotationDetail(detailCreateRequests, quotationDetails);
 
+        // nếu đã tạo đơn mua đủ số lượng với yêu cầu chuyển pr sang đã đặt hàng và reject các quotaiton khác
         if(checkQuantityOfPO(quotation.getPurchaseId())) {
             purchaseDAO.updateStatus(PurchaseProcessStatus.ORDERED, quotation.getPurchaseId(), null, order.getApprovedBy());
 
@@ -217,6 +218,8 @@ public class OrderServiceImpl implements OrderService {
 
     // hủy những quotation khác khi hàng đã đủ
     private void rejectOtherQuotations(Integer currentQuotationId, Integer purchaseId) {
+
+        // lấy lên những quotation khác
         List<Quotation> otherQuotations = quotationDAO.findByPurchaseId(purchaseId).stream()
                 .filter(q -> !q.getId().equals(currentQuotationId))
                 .filter(q -> q.getQuotationStatus() == PurchaseProcessStatus.PENDING
