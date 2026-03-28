@@ -39,8 +39,8 @@ public class UserUpdateRequest {
     private String email;
 
     @Pattern(
-            regexp = "^0\\d{9}$",
-            message = "Số điện thoại phải có 10 chữ số và bắt đầu bằng 0"
+            regexp = "^(0\\d{9})?$",
+            message = "Số điện thoại phải có 10 chữ số và có định dạng 0xxxxxxxxx"
     )
     private String phoneNumber;
 

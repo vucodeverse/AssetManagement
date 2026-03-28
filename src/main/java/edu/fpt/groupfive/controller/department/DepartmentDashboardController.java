@@ -40,6 +40,7 @@ public class DepartmentDashboardController {
         model.addAttribute("recentRequests", dashboardData.getRecentRequests());
         model.addAttribute("departmentName", dashboardData.getDepartmentName());
         model.addAttribute("userName", dashboardData.getUserName());
+        model.addAttribute("activeMenu", "dashboard");
 
         return "department/department-dashboard";
     }
