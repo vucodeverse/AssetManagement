@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 ordering: true,
                 info: true,
                 searching: false,
-                order: [[0, "desc"]],
+                order: [[0, "asc"]],
                 language: {
                     paginate: { previous: "<", next: ">" },
                     info: "HIỂN THỊ TỪ _START_ ĐẾN _END_ TRONG TỔNG SỐ _TOTAL_ ĐƠN ĐẶT HÀNG",

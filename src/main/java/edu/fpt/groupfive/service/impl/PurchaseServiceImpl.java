@@ -141,7 +141,6 @@ public class PurchaseServiceImpl implements PurchaseService {
         List<Purchase> purchases = purchaseDAO.findAll();
 
         purchases = author(purchases);
-        purchases = sortPurchases(purchases);
         return purchases.stream().map(p -> {
 
             // map sang response để trả về client
@@ -168,7 +167,6 @@ public class PurchaseServiceImpl implements PurchaseService {
         List<Purchase> purchases = purchaseDAO.search(p);
 
         purchases = author(purchases);
-        purchases = sortPurchases(purchases);
 
         return purchases.stream()
                 .map(pr -> {
@@ -256,14 +254,6 @@ public class PurchaseServiceImpl implements PurchaseService {
         return purchases;
     }
 
-    private List<Purchase> sortPurchases(List<Purchase> purchases) {
-        return purchases.stream()
-                .sorted(Comparator.comparing((Purchase p) -> {
-                    if (PurchaseProcessStatus.DRAFT.equals(p.getStatus())) return 0;
-                    if (PurchaseProcessStatus.PENDING.equals(p.getStatus())) return 1;
-                    return 2;
-                }).thenComparing(Purchase::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
-                .collect(Collectors.toList());
-    }
+
 
 }
