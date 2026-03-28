@@ -30,7 +30,7 @@ public class SecurityConfig {
     private boolean securityEnable;
 
     // các url dc truy cập tự do
-    private final String[] WHITE_LIST = {"/auth/login", "/static/**"};
+    private final String[] WHITE_LIST = {"/auth/**", "/static/**"};
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -92,7 +92,8 @@ public class SecurityConfig {
                 .sessionManagement(
                         s -> s.sessionFixation(
                                         SessionManagementConfigurer.SessionFixationConfigurer::newSession)
-                                .maximumSessions(1).maxSessionsPreventsLogin(false));
+                                .maximumSessions(1).maxSessionsPreventsLogin(false))
+                .exceptionHandling(e -> e.accessDeniedPage("/auth/access-denied"));
 
         return httpSecurity.build();
     }
