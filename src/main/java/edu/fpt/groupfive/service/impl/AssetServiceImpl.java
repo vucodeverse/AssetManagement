@@ -350,4 +350,9 @@ public class AssetServiceImpl implements AssetService {
         return assetDAO.findById(id);
     }
 
+    @Override
+    public void updateDepartment(Integer id, Integer departmentId) {
+        assetDAO.updateAssetDepartment(List.of(id), departmentId);
+    }
+
 }
