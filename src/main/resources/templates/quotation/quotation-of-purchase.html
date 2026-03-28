@@ -178,9 +178,8 @@
                                     </th:block>
 
                                     <th:block sec:authorize="hasAuthority('DIRECTOR')">
-                                        <button type="button" class="btn-reject-sm"
-                                            th:if="${q.quotationStatus.name() == 'PENDING'}"
-                                            th:attr="data-action=@{/quotations/{id}/actions(id=${q.quotationId})}"
+                                        <button type="submit" name="action" value="r" class="btn-reject-sm"
+                                                th:if="${q.quotationStatus.name() == 'PENDING'}">
                                             TỪ CHỐI
                                         </button>
                                     </th:block>
@@ -189,8 +188,6 @@
                         </tr>
                     </tbody>
                 </table>
-
-
             </div>
         </main>
     </th:block>

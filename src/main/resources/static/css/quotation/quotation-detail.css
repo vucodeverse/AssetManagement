@@ -269,59 +269,68 @@
 /* Premium Buttons */
 .header-actions {
     display: flex;
+    align-items: center;
     gap: 12px;
 }
 
-.btn-outline-prem {
-    padding: 10px 24px;
-    border: 1px solid #000000;
-    border-radius: 4px;
-    background: transparent;
-    color: #000000;
+.btn-approve,
+.btn-solid-prem,
+.btn-outline-prem,
+.btn-danger-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 24px;
+    border-radius: 12px;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.btn-approve,
+.btn-solid-prem {
+    background: linear-gradient(135deg, #111827 0%, #374151 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(17, 24, 39, 0.15);
+}
+
+.btn-approve:hover,
+.btn-solid-prem:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(17, 24, 39, 0.25);
+    background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
+    color: #fff;
+}
+
+.btn-outline-prem {
+    background: #ffffff;
+    color: #111827;
+    border: 1px solid #e5e7eb;
 }
 
 .btn-outline-prem:hover {
-    background: #000000;
-    color: #ffffff;
-}
-
-.btn-solid-prem {
-    padding: 10px 24px;
-    border: 1px solid #000000;
-    border-radius: 4px;
-    background: #000000;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-solid-prem:hover {
-    background: #333333;
-    transform: translateY(-1px);
+    background: #f9fafb;
+    border-color: #111827;
+    transform: translateY(-2px);
 }
 
 .btn-danger-outline {
-    padding: 10px 24px;
-    border: 1px solid #ff0000;
-    border-radius: 4px;
-    background: transparent;
-    color: #ff0000;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
+    background: #ffffff;
+    color: #ef4444;
+    border: 1px solid #fee2e2;
 }
 
 .btn-danger-outline:hover {
-    background: #ff0000;
-    color: #ffffff;
-    transform: translateY(-1px);
+    background: #fffafa;
+    border-color: #ef4444;
+    color: #dc2626;
+    transform: translateY(-2px);
 }
 
 /* Black and White Action Buttons for Detail Items */

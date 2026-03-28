@@ -304,7 +304,7 @@ public class PurchaseDAOImpl implements PurchaseDAO {
 
             if ("APPROVED".equals(purchaseProcessStatus.name())) {
                 preparedStatement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                preparedStatement.setObject(5, userId);
+                preparedStatement.setInt(5, userId);
             } else {
                 preparedStatement.setNull(4, Types.TIMESTAMP);
                 preparedStatement.setNull(5, Types.INTEGER);

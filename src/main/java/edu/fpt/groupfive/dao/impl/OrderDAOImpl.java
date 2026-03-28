@@ -55,22 +55,23 @@ public class OrderDAOImpl implements OrderDAO {
             connection = databaseConfig.getConnection();
             connection.setAutoCommit(false);
 
-            // tạm khóa yeee cầu mua sắm chi tiết và số lượng yêu cầu mua ko cho các thread
-            // khác thay đổi
-            String lockSql = "SELECT purchase_request_detail_id, quantity FROM purchase_request_detail WITH (UPDLOCK, HOLDLOCK) WHERE purchase_request_id = ?";
+            // lấy ra prdid và số lượng yêu cầu mua
+            String prdSql = "SELECT purchase_request_detail_id, quantity FROM purchase_request_detail WHERE purchase_request_id = ?";
 
-            // lưu lại id yc detail và số lượng của nó
             Map<Integer, Integer> prdMaxQty = new HashMap<>();
-            try (PreparedStatement psLock = connection.prepareStatement(lockSql)) {
-                psLock.setInt(1, order.getPurchaseId());
-                try (ResultSet rsLock = psLock.executeQuery()) {
-                    while (rsLock.next()) {
-                        prdMaxQty.put(rsLock.getInt("purchase_request_detail_id"), rsLock.getInt("quantity"));
+            try (PreparedStatement ps = connection.prepareStatement(prdSql)) {
+                ps.setInt(1, order.getPurchaseId());
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        prdMaxQty.put(
+                                rs.getInt("purchase_request_detail_id"),
+                                rs.getInt("quantity")
+                        );
                     }
                 }
             }
 
-            // lấy ra quotation detail và purchase request detail
+            // lấy ra quotation detail và purchase request detail để check mapping
             String mappingSql = "SELECT quotation_detail_id, purchase_request_detail_id FROM quotation_detail WHERE quotation_id = ?";
 
             // lưu lại qd và prd
@@ -84,11 +85,11 @@ public class OrderDAOImpl implements OrderDAO {
                 }
             }
 
-            //
+
             if (!prdMaxQty.isEmpty()) {
                 String placeholders = prdMaxQty.keySet().stream().map(id -> "?").collect(Collectors.joining(", "));
 
-                // lấy ra tổng số lượng đc báo giá của từng request detail
+                // lấy ra tổng số lượng đã mua của từng request detail
                 String orderedSql = "select qd.purchase_request_detail_id, sum(pod.quantity) as total_qty " +
                         "from purchase_order_details pod " +
                         "join quotation_detail qd on pod.quotation_detail_id = qd.quotation_detail_id " +
@@ -104,12 +105,12 @@ public class OrderDAOImpl implements OrderDAO {
                     for (Integer prdId : prdMaxQty.keySet()) {
                         psOrdered.setInt(i++, prdId);
                     }
-                    try (ResultSet rsOrdered = psOrdered.executeQuery()) {
+                    ResultSet rsOrdered = psOrdered.executeQuery();
                         while (rsOrdered.next()) {
                             prdOrderedQty.put(rsOrdered.getInt("purchase_request_detail_id"),
                                     rsOrdered.getInt("total_qty"));
                         }
-                    }
+
                 }
 
                 if (order.getOrderDetails() != null) {
@@ -128,14 +129,11 @@ public class OrderDAOImpl implements OrderDAO {
                             // số lượng đã mua
                             int already = prdOrderedQty.getOrDefault(prdId, 0);
 
-                            // số lượng mua trong thread hiện tại
+                            // số lượng mua trong request  hiện tại
                             int inThisRequest = currentRequestQty.getOrDefault(prdId, 0);
 
                             if (already + inThisRequest + od.getQuantity() > max) {
-                                throw new InvalidDataException(
-                                        excessQuantityMsg + " (Cần thêm: "
-                                                + od.getQuantity() + ", Đã đặt trong các đơn cũ: " + already
-                                                + ", Đã có trong đơn này: " + inThisRequest + ", Tối đa: " + max + ")");
+                                throw new InvalidDataException("Số lượng đặt vượt quá số lượng yêu cầu cho phép");
                             }
 
                             // nếu hợp lệ thì update số lượng đã mua của prd này
@@ -170,7 +168,7 @@ public class OrderDAOImpl implements OrderDAO {
                     int orderId = rs.getInt(1);
 
                     if (order.getOrderDetails() != null) {
-                        for (var detail : order.getOrderDetails()) {
+                        for (OrderDetail detail : order.getOrderDetails()) {
                             orderDetailDAO.insert(detail, orderId, connection);
                         }
                     }
@@ -202,7 +200,7 @@ public class OrderDAOImpl implements OrderDAO {
         }
     }
 
-    // lấy ra số lượng đã order ứng với từng purchas id
+    // lấy ra số lượng đã order ứng với từng purchas detail id
     @Override
     public Map<Integer, Integer> getOrderedQuantityByPurchaseDetailId(List<PurchaseDetail> purchaseDetailIds) {
         if (purchaseDetailIds == null || purchaseDetailIds.isEmpty()) {
@@ -232,6 +230,7 @@ public class OrderDAOImpl implements OrderDAO {
         return map;
     }
 
+    // đếm số lượng đã nhập về của từng pr detail
     @Override
     public Map<Integer, Integer> getReceivedQuantityByPurchaseDetailId(List<PurchaseDetail> purchaseDetailIds) {
         if (purchaseDetailIds == null || purchaseDetailIds.isEmpty()) {
