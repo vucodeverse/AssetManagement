@@ -3,6 +3,8 @@ package edu.fpt.groupfive.service.warehouse;
 import edu.fpt.groupfive.dto.response.AssetDetailResponse;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverDetailResponseDTO;
 import edu.fpt.groupfive.dto.response.warehouse.HandoverResponseDTO;
+import edu.fpt.groupfive.dto.response.warehouse.OutboundReceiptDetailDTO;
+
 import java.util.List;
 
 /**
@@ -57,7 +59,7 @@ public interface WarehouseOutboundService {
      * @param receiptId ID phiếu xuất kho
      * @return Thông tin phiếu và danh sách tài sản nhóm theo loại
      */
-    edu.fpt.groupfive.dto.response.warehouse.OutboundReceiptDetailDTO getReceiptDetail(Integer receiptId);
+    OutboundReceiptDetailDTO getReceiptDetail(Integer receiptId);
 
     /**
      * @deprecated Sử dụng validateAssetForOutbound và confirmOutbound thay thế.

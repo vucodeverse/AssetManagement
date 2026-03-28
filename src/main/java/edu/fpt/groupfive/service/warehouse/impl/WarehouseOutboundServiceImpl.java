@@ -287,7 +287,10 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
             int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
             int toDeptId = handover.getToDepartmentId() != null ? handover.getToDepartmentId() : 0;
             int allocReqId = handover.getAllocationRequestId() != null ? handover.getAllocationRequestId() : 0;
-            assetLogService.logAllocate(assetId, fromDeptId, toDeptId, allocReqId);
+            //assetLogService.logAllocate(assetId, fromDeptId, toDeptId, allocReqId);
+
+            // Cập nhật phòng ban đích cho tài sản
+            assetService.updateDepartment(assetId, toDeptId);
 
             // Capacity
             int unitVolume = whAssetCapacityDAO.findByAssetTypeId(assetDetail.getAssetTypeId())

@@ -250,7 +250,8 @@
         <footer class="pr-footer">
 
             <div class="footer-left">
-                <a th:href="@{/department/allocation-request/list}" class="btn btn-back-custom">
+                <a th:if="${role == 'ASSET_MANAGER'}"
+                   th:href="@{/department/allocation-request/list}" class="btn btn-back-custom">
                     <- Quay lại </a>
             </div>
 
