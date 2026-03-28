@@ -8,7 +8,7 @@ public interface AssetLogService {
 
     void logCreate(int assetId, String note);
 
-    void logAllocate(int assetId, int fromDeptId, int toDeptId, int allocationId);
+    void logAllocate(int assetId, int toDeptId, int allocationId);
 
     void logTransfer(int assetId, int fromDeptId, int toDeptId, int transferId);
 

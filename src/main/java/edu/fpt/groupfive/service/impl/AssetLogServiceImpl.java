@@ -35,11 +35,10 @@ public class AssetLogServiceImpl implements AssetLogService {
     }
 
     @Override
-    public void logAllocate(int assetId, int fromDeptId, int toDeptId, int allocationId) {
+    public void logAllocate(int assetId, int toDeptId, int allocationId) {
         AssetLog log = new AssetLog();
         log.setAssetId(assetId);
         log.setActionType(AssetActionType.ALLOCATE);
-        log.setFromDepartmentId(fromDeptId);
         log.setToDepartmentId(toDeptId);
         log.setActionDate(LocalDateTime.now());
         log.setRelatedAllocationId(allocationId);
