@@ -102,7 +102,7 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
 
     @Override
     public void updateDeliveryDate(Integer orderId, LocalDate deliveryDate) {
-        String sql = "update purchase_order_details set delivery_date = ? where purchase_order_id = ?";
+        String sql = "update purchase_order_details set delivery_date = ?, updated_at = SYSDATETIME() where purchase_order_id = ?";
         try (Connection conn = databaseConfig.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(deliveryDate));

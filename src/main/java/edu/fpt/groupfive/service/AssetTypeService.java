@@ -30,17 +30,18 @@ public interface AssetTypeService {
 
     Map<Integer, String> getAssetTypeIdToNameMap();
 
-
     List<AssetTypeResponse> search(String keyword,
-                                   Integer categoryId,
-                                   AssetTypeClass typeClass,
-                                   DepreciationMethod depreciationMethod,
-                                   String direction,
-                                   int offset,
-                                   int limit);
+            Integer categoryId,
+            AssetTypeClass typeClass,
+            DepreciationMethod depreciationMethod,
+            String direction,
+            int offset,
+            int limit);
 
     int count(String keyword,
               Integer categoryId,
               AssetTypeClass typeClass,
               DepreciationMethod depreciationMethod);
+
+    Map<String, Integer> getNameToIdMap();
 }

@@ -35,17 +35,15 @@ public class AssetServiceImpl implements AssetService {
     private final AssetLogService assetLogService;
     private static final int PAGE_SIZE = 5;
 
-    // get all
     @Override
     public List<AssetResponse> getAll() {
         List<Asset> assets = assetDAO.findAll();
         return assetMapper.toAssetResponseList(assets);
     }
 
-    // get by id
+
     @Override
     public AssetResponse getById(Integer id) {
-
         Asset asset = assetDAO.findById(id)
                 .orElseThrow(() ->
                         new InvalidDataException("Không tìm thấy tài sản với id = " + id));
@@ -65,21 +63,16 @@ public class AssetServiceImpl implements AssetService {
         return assetMapper.toAssetResponseList(assets);
     }
 
-    // create
     @Override
-    @Transactional
     public void create(AssetCreateRequest request) {
         Integer quantity = request.getQuantity();
-
         if (quantity == null || quantity < 1) {
             throw new InvalidDataException("Số lượng phải >= 1");
         }
-
         AssetType type = assetTypeDAO.findById(request.getAssetTypeId());
         if (type == null) {
             throw new InvalidDataException("Loại tài sản không tồn tại");
         }
-
         validateOriginalCost(request.getOriginalCost());
 
         validateDateLogic(
@@ -88,13 +81,11 @@ public class AssetServiceImpl implements AssetService {
                 request.getAcquisitionDate()
         );
 
-
         for (int i = 0; i < quantity; i++) {
             Asset asset = assetMapper.toAsset(request);
             int assetId = assetDAO.insert(asset);
             if(assetId>0){
                 assetLogService.logCreate(assetId, "Tạo mới tài sản");
-
             }
         }
     }
@@ -152,16 +143,13 @@ public class AssetServiceImpl implements AssetService {
                     newStatus == AssetStatus.DISPOSED) {
                 existing.setDepartmentId(null);
             }
-
             assetDAO.update(existing);
 
-            // 6. Log thay đổi trạng thái
             if (!oldStatus.equals(newStatus)) {
                 assetLogService.logStatusChange(id, oldStatus.name(), newStatus.name(), request.getNote());
             }
     }
 
-    // Thêm method validateDateLogic nếu chưa có (nếu có rồi thì giữ nguyên)
     private void validateDateLogic(LocalDate acquisitionDate, LocalDate warrantyStart, LocalDate warrantyEnd) {
         if (acquisitionDate == null) {
             throw new InvalidDataException("Ngày nhập kho không được để trống.");
@@ -189,7 +177,6 @@ public class AssetServiceImpl implements AssetService {
         AssetStatus oldStatus = existing.getCurrentStatus();
         existing.setCurrentStatus(AssetStatus.DELETED);
         assetDAO.update(existing);
-
         assetLogService.logStatusChange(id, oldStatus.name(), AssetStatus.DELETED.name(), "Xóa tài sản");
     }
 
@@ -230,15 +217,10 @@ public class AssetServiceImpl implements AssetService {
                 status,
                 fromDate, toDate
         );
-
         int totalPages = (int) Math.ceil((double) total / PAGE_SIZE);
-
         var responses = assetMapper.toAssetResponseList(assets);
-
         return new PageResponse<>(responses, page, PAGE_SIZE, total);
     }
-
-
 
     private void validateOriginalCost(BigDecimal cost) {
         if (cost != null && cost.compareTo(BigDecimal.ZERO) < 0) {
@@ -254,7 +236,6 @@ public class AssetServiceImpl implements AssetService {
             int pageSize
     ) {
         if (criteria == null) criteria = new AssetSearchCriteria();
-
         if (pageNo < 0) pageNo = 0;
         if (pageSize <= 0) pageSize = 10;
 

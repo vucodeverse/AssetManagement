@@ -115,7 +115,7 @@ public class QuotationDAOImpl implements QuotationDAO {
             connection = databaseConfig.getConnection();
             connection.setAutoCommit(false);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setObject(1, quotation.getSupplierId());
+            preparedStatement.setInt(1, quotation.getSupplierId());
             preparedStatement.setString(2, quotation.getQuotationStatus().name());
             preparedStatement.setBigDecimal(3, quotation.getTotalAmount());
             preparedStatement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
@@ -346,6 +346,22 @@ public class QuotationDAOImpl implements QuotationDAO {
             throw new RuntimeException(findErrorMsg, e);
         }
         return quotations;
+    }
+
+    @Override
+    public void updateUpdatedAt(Integer quotationId) {
+        String sql = "update quotation set updated_at = ? where quotation_id = ?";
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            preparedStatement.setInt(2, quotationId);
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Update updated_at thất bại", e);
+        }
     }
 
 }

@@ -105,7 +105,8 @@
                 <span class="status-tag" th:classappend="${po.getOrderStatus}"
                   th:text="${T(edu.fpt.groupfive.common.PurchaseProcessStatus).valueOf(po.getOrderStatus).description}">STATUS</span>
               </td>
-              <td class="td-id" th:text="${po.purchaseId != null && po.purchaseId != '' && po.purchaseId != 'null' ? 'PR-' + po.purchaseId : '---'}">PR-001</td>
+              <td class="td-id"
+                  th:text="${po.purchaseId != null && po.purchaseId != '' && po.purchaseId != 'null' ? 'PR-' + po.purchaseId : '---'}" th:data-order="${po.purchaseId}">PR-001</td>
             </tr>
           </tbody>
         </table>

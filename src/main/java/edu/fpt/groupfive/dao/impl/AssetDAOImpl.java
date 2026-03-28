@@ -41,7 +41,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
             ps.setString(3, asset.getCurrentStatus().name());
@@ -71,21 +71,21 @@ public class AssetDAOImpl implements AssetDAO {
 
     @Override
     public void update(Asset asset) {
-        System.out.println("=== AssetDAOImpl.update called for asset " + asset.getAssetId() + " ===");
         String sql = """
-            UPDATE asset
-            SET asset_name = ?,
-                purchase_order_detail_id = ?,
-                warranty_start_date = ?,
-                warranty_end_date = ?,
-                original_cost = ?,
-                asset_type_id = ?,
-                current_status = ?,
-                acquisition_date = ?
-            WHERE asset_id = ?
-        """;
+                    UPDATE asset
+                    SET asset_name = ?,
+                        purchase_order_detail_id = ?,
+                        warranty_start_date = ?,
+                        warranty_end_date = ?,
+                        original_cost = ?,
+                        asset_type_id = ?,
+                        current_status = ?,
+                        acquisition_date = ?,
+                        department_id = ?
+                    WHERE asset_id = ?
+                """;
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, asset.getAssetName());
             ps.setInt(2, asset.getPurchaseOrderDetailId());
@@ -95,7 +95,14 @@ public class AssetDAOImpl implements AssetDAO {
             ps.setInt(6, asset.getAssetTypeId());
             ps.setString(7, asset.getCurrentStatus().name());
             setDate(ps, 8, asset.getAcquisitionDate());
-            ps.setInt(9, asset.getAssetId());
+
+            if (asset.getDepartmentId() != null) {
+                ps.setInt(9, asset.getDepartmentId());
+            } else {
+                ps.setNull(9, Types.INTEGER);
+            }
+
+            ps.setInt(10, asset.getAssetId());
 
             int rows = ps.executeUpdate();
             System.out.println("Updated asset " + asset.getAssetId() + ", rows affected = " + rows);
@@ -107,8 +114,6 @@ public class AssetDAOImpl implements AssetDAO {
             throw new RuntimeException("Lỗi không cập nhật được tài sản", e);
         }
     }
-
-
 
     @Override
     public List<Integer> findValidAssetIds(List<Integer> assetIds, int departmentId) {
@@ -123,17 +128,17 @@ public class AssetDAOImpl implements AssetDAO {
                 .orElse("");
 
         String sql = """
-        SELECT asset_id
-        FROM asset
-        WHERE department_id = ?
-        AND asset_id IN (%s)
-         AND current_status != 'DELETED'
-        """.formatted(placeholders);
+                SELECT asset_id
+                FROM asset
+                WHERE department_id = ?
+                AND asset_id IN (%s)
+                 AND current_status != 'DELETED'
+                """.formatted(placeholders);
 
         List<Integer> validIds = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, departmentId);
 
@@ -154,8 +159,6 @@ public class AssetDAOImpl implements AssetDAO {
         return validIds;
     }
 
-
-
     @Override
     public void updateAssetDepartment(List<Integer> assetIds, int newDepartmentId) {
 
@@ -168,13 +171,13 @@ public class AssetDAOImpl implements AssetDAO {
                 .orElse("");
 
         String sql = """
-        UPDATE asset
-        SET department_id = ?
-        WHERE asset_id IN (%s)
-        """.formatted(placeholders);
+                UPDATE asset
+                SET department_id = ?
+                WHERE asset_id IN (%s)
+                """.formatted(placeholders);
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, newDepartmentId);
 
@@ -204,7 +207,7 @@ public class AssetDAOImpl implements AssetDAO {
                 """;
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -236,8 +239,8 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 list.add(mapResultSet(rs));
@@ -269,7 +272,7 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, departmentId);
             ResultSet rs = ps.executeQuery();
@@ -320,7 +323,7 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, requestId);
             ResultSet rs = ps.executeQuery();
@@ -367,7 +370,7 @@ public class AssetDAOImpl implements AssetDAO {
                 AND a.current_status != 'DELETED'
                 """;
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -412,13 +415,16 @@ public class AssetDAOImpl implements AssetDAO {
 
     @Override
     public List<Asset> searchAssets(String keyword, AssetStatus status, LocalDate fromDate,
-                                    LocalDate toDate, String direction, int offset, int pageSize) {
+            LocalDate toDate, String direction, int offset, int pageSize) {
 
         StringBuilder sql = new StringBuilder("""
-                SELECT a.*, t.type_name
+                SELECT a.*, t.type_name, d.department_name
                 FROM asset a
                 LEFT JOIN asset_type t
                     ON a.asset_type_id = t.asset_type_id
+                LEFT JOIN departments d
+                    ON a.department_id = d.department_id
+
                 WHERE a.current_status != 'DELETED'
                 """);
 
@@ -455,7 +461,7 @@ public class AssetDAOImpl implements AssetDAO {
         sql.append(" offset ? rows fetch next ? rows only ");
         List<Asset> assets = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 
@@ -481,6 +487,7 @@ public class AssetDAOImpl implements AssetDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Asset asset = mapResultSet(rs);
+                asset.setDepartmentName(rs.getString("department_name"));
                 assets.add(asset);
 
             }
@@ -495,15 +502,14 @@ public class AssetDAOImpl implements AssetDAO {
     public List<Asset> searchAssets(
             AssetSearchCriteria criteria,
             int offset,
-            int pageSize
-    ) {
+            int pageSize) {
         StringBuilder sql = new StringBuilder("""
-        SELECT a.*, t.type_name
-        FROM asset a
-        LEFT JOIN asset_type t
-            ON a.asset_type_id = t.asset_type_id 
-        WHERE a.current_status != 'DELETED'
-        """);
+                SELECT a.*, t.type_name
+                FROM asset a
+                LEFT JOIN asset_type t
+                    ON a.asset_type_id = t.asset_type_id
+                WHERE a.current_status != 'DELETED'
+                """);
 
         if (criteria.getDepartmentId() != null) {
             sql.append(" AND a.department_id = ? ");
@@ -538,7 +544,7 @@ public class AssetDAOImpl implements AssetDAO {
         List<Asset> assets = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 
@@ -574,13 +580,14 @@ public class AssetDAOImpl implements AssetDAO {
     }
 
     @Override
-    public int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate, Integer departmentId) {
+    public int countAssets(String keyword, AssetStatus status, LocalDate fromDate, LocalDate toDate,
+            Integer departmentId) {
 
         StringBuilder sql = new StringBuilder("""
-        SELECT COUNT(*)
-        FROM asset a
-        WHERE a.current_status != 'DELETED'
-    """);
+                    SELECT COUNT(*)
+                    FROM asset a
+                    WHERE a.current_status != 'DELETED'
+                """);
 
         if (departmentId != null) {
             sql.append(" AND a.department_id = ? ");
@@ -603,18 +610,24 @@ public class AssetDAOImpl implements AssetDAO {
         }
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 
-            if (departmentId != null) ps.setInt(index++, departmentId);
-            if (keyword != null && !keyword.isBlank()) ps.setString(index++, "%" + keyword + "%");
-            if (status != null) ps.setString(index++, status.name());
-            if (fromDate != null) ps.setDate(index++, Date.valueOf(fromDate));
-            if (toDate != null) ps.setDate(index++, Date.valueOf(toDate));
+            if (departmentId != null)
+                ps.setInt(index++, departmentId);
+            if (keyword != null && !keyword.isBlank())
+                ps.setString(index++, "%" + keyword + "%");
+            if (status != null)
+                ps.setString(index++, status.name());
+            if (fromDate != null)
+                ps.setDate(index++, Date.valueOf(fromDate));
+            if (toDate != null)
+                ps.setDate(index++, Date.valueOf(toDate));
 
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
+            if (rs.next())
+                return rs.getInt(1);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -649,7 +662,7 @@ public class AssetDAOImpl implements AssetDAO {
         }
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
 
@@ -684,15 +697,15 @@ public class AssetDAOImpl implements AssetDAO {
 
     @Override
     public List<Asset> findExpiringWarranties(int days) {
-        String sql ="select a.*, t.type_name from asset a\n" +
+        String sql = "select a.*, t.type_name from asset a\n" +
                 "left join asset_type t on a.asset_type_id=t.asset_type_id\n" +
-                "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date)) AND a.current_status != 'DELETED' \n" +
+                "where a.warranty_end_date between  cast(getdate() as DATE) and dateadd(day, ?, cast(getdate() as date)) AND a.current_status != 'DELETED' \n"
+                +
                 "order by a.warranty_end_date asc";
-
 
         List<Asset> list = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, days);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -708,7 +721,7 @@ public class AssetDAOImpl implements AssetDAO {
     public void updateStatus(Integer assetId, AssetStatus status) {
         String sql = "UPDATE asset SET current_status = ? WHERE asset_id = ?";
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status.name());
             ps.setInt(2, assetId);
             ps.executeUpdate();
@@ -716,6 +729,7 @@ public class AssetDAOImpl implements AssetDAO {
             throw new RuntimeException("Cập nhật trạng thái tài sản thất bại", e);
         }
     }
+
     @Override
     public List<Asset> findByDepartmentId(Integer departmentId) {
 
@@ -725,14 +739,14 @@ public class AssetDAOImpl implements AssetDAO {
                 FROM asset a
                 LEFT JOIN asset_type t
                     ON a.asset_type_id = t.asset_type_id
-                WHERE a.department_id = ? 
+                WHERE a.department_id = ?
                 AND a.current_status != 'DELETED'
                 """;
 
         List<Asset> list = new ArrayList<>();
 
         try (Connection conn = databaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, departmentId);
 
@@ -772,10 +786,12 @@ public class AssetDAOImpl implements AssetDAO {
     }
 
     private AssetStatus parseStatus(String status) {
-        if (status == null || status.isBlank()) return null;
+        if (status == null || status.isBlank())
+            return null;
         String s = status.toUpperCase().trim();
         // Handle common legacy mappings if any
-        if ("IN_USE".equals(s)) return AssetStatus.ASSIGNED;
+        if ("IN_USE".equals(s))
+            return AssetStatus.ASSIGNED;
 
         try {
             return AssetStatus.valueOf(s);
@@ -813,12 +829,12 @@ public class AssetDAOImpl implements AssetDAO {
                 FROM asset a
                 JOIN asset_type t ON a.asset_type_id = t.asset_type_id
                 JOIN purchase_order_details pod ON a.purchase_order_detail_id = pod.purchase_order_detail_id
-                WHERE pod.purchase_order_id = ? 
+                WHERE pod.purchase_order_id = ?
                 AND a.current_status != 'DELETED'
                 """;
         List<Asset> list = new ArrayList<>();
         try (Connection con = databaseConfig.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, poId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

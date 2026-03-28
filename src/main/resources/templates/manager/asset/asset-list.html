@@ -39,8 +39,8 @@
                     <label>Trạng thái</label>
                     <select name="status">
                         <option value="">Tất cả</option>
-                        <option th:each="s : ${filterStatuses}" th:value="${s}"
-                            th:text="${s.description}" th:selected="${status == s}">
+                        <option th:each="s : ${filterStatuses}" th:value="${s}" th:text="${s.description}"
+                            th:selected="${status == s}">
                         </option>
                     </select>
                 </div>
@@ -91,6 +91,7 @@
                             <th class="col-name">Tên tài sản</th>
                             <th class="col-type">Loại</th>
                             <th class="col-status">Trạng thái</th>
+                            <th class="col-location">Vị trí</th>
                             <th class="col-price">Giá</th>
                             <th class="col-po">Mã đơn mua</th>
                             <th class="col-date">Ngày mua</th>
@@ -114,12 +115,25 @@
                                 </span>
                             </td>
 
+                            <td>
+                                <span th:if="${asset.departmentName != null}" th:text="${asset.departmentName}"></span>
+                                <span th:unless="${asset.departmentName != null}">
+                                    <th:block th:switch="${asset.currentStatus.name()}">
+                                        <span th:case="'UNDER_MAINTENANCE'">Đang bảo trì</span>
+                                        <span th:case="'DISPOSED'">Đã thanh lý</span>
+                                        <span th:case="*">Tại kho</span>
+                                    </th:block>
+                                </span>
+                            </td>
+
 
                             <td th:text="${#numbers.formatDecimal(asset.originalCost,0,'COMMA',0,'POINT')}"></td>
 
                             <td th:text="'PO-' + ${asset.purchaseOrderDetailId}"></td>
 
                             <td th:text="${asset.acquisitionDate}"></td>
+
+
 
                             <td class="col-action">
 
@@ -130,9 +144,11 @@
                                 <form th:action="@{/manager/assets/delete/{id}(id=${asset.assetId})}" method="post"
                                     class="action-form">
 
-                                    <button class="icon-btn">
+                                    <button class="icon-btn"
+                                        onclick="return confirm('Bạn có chắc chắn muốn xóa tài sản này không?')">
                                         <i class="fas fa-trash"></i>
                                     </button>
+
 
                                 </form>
 
