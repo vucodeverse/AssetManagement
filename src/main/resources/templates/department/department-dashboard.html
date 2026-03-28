@@ -110,9 +110,9 @@
                         <tbody>
                         <tr th:each="req : ${recentRequests}">
                             <td>
-                                <a th:href="@{/department/requests/view/{id}(id=${req.id})}" class="request-code" th:text="${req.code}">REQ-001</a>
+                                <a th:href="@{/department/requests/view/{id}(id=${req.requestId})}" class="request-code" th:text="${req.code}">REQ-001</a>
                             </td>
-                            <td th:text="${#temporals.format(req.date, 'dd/MM/yyyy')}">15/03/2025</td>
+                            <td th:text="${req.date}">15/03/2025</td>
                             <td th:text="${#strings.abbreviate(req.reason, 30)}">Nâng cấp thiết bị cho nhân viên mới</td>
                             <td>
                                 <span th:class="'badge badge-' + ${req.statusClass}" th:text="${req.statusText}">Đang xử lý</span>

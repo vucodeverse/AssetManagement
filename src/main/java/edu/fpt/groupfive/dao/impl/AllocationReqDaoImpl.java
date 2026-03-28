@@ -429,7 +429,8 @@ public class AllocationReqDaoImpl implements AllocationReqDao {
 
     @Override
     public List<AllocationRequest> findAllPending() {
-        String sql = "select * from allocation_request where status in ('PENDING', 'SUBMITTED') order by created_at desc";
+        String sql = "select * from allocation_request where status in ('PENDING_AM', 'PENDING', 'SUBMITTED') order by " +
+                "created_at desc";
 
         List<AllocationRequest> list = new ArrayList<>();
         try (Connection conn = databaseConfig.getConnection();

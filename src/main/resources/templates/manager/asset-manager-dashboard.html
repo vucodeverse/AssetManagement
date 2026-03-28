@@ -95,13 +95,16 @@
                     <tbody>
                         <tr th:each="req : ${dashboard.pendingAllocations}">
                             <td th:text="'AR-' + ${req.requestId}">AR-001</td>
-                            <td th:text="${req.requesterName}">Nguyễn Văn A</td>
+                            <td th:text="${req.requestedDepartmentName}">Nguyễn Văn A</td>
                             <td th:text="${#temporals.format(req.neededByDate, 'dd-MM-yyyy')}">-</td>
                             <td><span th:class="'priority-' + ${#strings.toLowerCase(req.priority)}"
                                     th:text="${req.priority}">HIGH</span></td>
                             <td><span class="status-badge" th:text="${req.status}">PENDING</span></td>
-                            <td><a th:href="@{'/asset-manager/allocation-requests/' + ${req.requestId}}"
-                                    class="btn-approve">DUYỆT</a></td>
+                            <td>
+                                <form th:action="@{/asset-manager/allocation-request/approve/{id}(id=${req.requestId})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn-approve">DUYỆT</button>
+                                </form>
+                            </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(dashboard.pendingAllocations)}">
                             <td colspan="6" class="text-muted">Không có yêu cầu nào</td>

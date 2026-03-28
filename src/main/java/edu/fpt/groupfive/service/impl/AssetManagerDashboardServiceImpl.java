@@ -50,7 +50,7 @@ public class AssetManagerDashboardServiceImpl implements AssetManagerDashboardSe
                 List<AllocationRequestResponse> pendingResponses = pendingRequests.stream()
                                 .limit(5)
                                 .map(this::toAllocationResponse)
-                                .collect(Collectors.toList());
+                                .toList();
 
                 List<Asset> expiringAssets = assetDAO.findExpiringWarranties(30);
                 long expiringCount = expiringAssets.size();

@@ -76,7 +76,7 @@ public class DepartmentDashboardService {
 
         List<AllocationRequest> allRequests = allocationReqDao.findAllByDepartmentId(departmentId);
         long pendingCount = allRequests.stream()
-                .filter(r -> "PENDING".equals(r.getStatus()) || "SUBMITTED".equals(r.getStatus()))
+                .filter(r -> "PENDING".equals(r.getStatus()) || "SUBMITTED".equals(r.getStatus()) || "PENDING_AM".equals(r.getStatus()))
                 .count();
         stats.setPendingAllocations(pendingCount);
 
@@ -153,6 +153,7 @@ public class DepartmentDashboardService {
         switch (status.toUpperCase()) {
             case "PENDING":
             case "SUBMITTED":
+            case "PENDING_AM":
                 return "Đang xử lý";
             case "APPROVED":
                 return "Đã duyệt";
@@ -169,6 +170,7 @@ public class DepartmentDashboardService {
         switch (status.toUpperCase()) {
             case "PENDING":
             case "SUBMITTED":
+            case "PENDING_AM":
                 return "warning";
             case "APPROVED":
                 return "success";
