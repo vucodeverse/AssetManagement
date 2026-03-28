@@ -379,7 +379,7 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
             } else {
                 // Fully allocated
                 assetHandoverService.updateAllocationStatus(allocationId, "COMPLETED");
-                assetHandoverService.updateStatus(handoverId, Status.APPROVED); // Mark handover as ready
+                assetHandoverService.updateStatus(handoverId, Status.COMPLETED); // Mark handover as ready
                 return true;
             }
         }

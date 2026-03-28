@@ -112,7 +112,7 @@ public class TransferRequestDetailDAOImpl implements TransferRequestDetailDAO {
     @Override
     public List<TransferRequestDetail> findByTransferId(int transferId) {
         String query = """
-            SELECT transfer_detail_id, transfer_id, allocation_request_detail_id,
+            SELECT transfer_detail_id, transfer_id,
                    asset_id, condition_from_sender, note
             FROM transfer_request_detail
             WHERE transfer_id = ?
@@ -138,7 +138,7 @@ public class TransferRequestDetailDAOImpl implements TransferRequestDetailDAO {
         TransferRequestDetail detail = new TransferRequestDetail();
         detail.setTransferDetailId(rs.getInt("transfer_detail_id"));
         detail.setTransferId(rs.getInt("transfer_id"));
-        detail.setAllocationRequestDetailId((Integer) rs.getObject("allocation_request_detail_id"));
+        //detail.setAllocationRequestDetailId((Integer) rs.getObject("allocation_request_detail_id"));
         detail.setAssetId(rs.getInt("asset_id"));
         detail.setConditionFromSender(rs.getString("condition_from_sender"));
         detail.setNote(rs.getString("note"));

@@ -24,28 +24,27 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
 
         String query = """
                     INSERT INTO transfer_request (
-                        allocation_request_id, from_department_id, to_department_id,
+                        from_department_id, to_department_id,
                         asset_manager_id, transfer_date, reason, status,
                         sender_confirmed_by, sender_confirmed_at,
                         receiver_confirmed_by, receiver_confirmed_at,
                         created_at, updated_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())
                 """;
 
         try (Connection connection = databaseConfig.getConnection();
              PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setObject(1, request.getAllocationRequestId());
-            ps.setObject(2, request.getFromDepartmentId());
-            ps.setObject(3, request.getToDepartmentId());
-            ps.setObject(4, request.getAssetManagerId());
-            ps.setTimestamp(5, Timestamp.valueOf(request.getTransferDate()));
-            ps.setString(6, request.getReason());
-            ps.setString(7, request.getStatus());
-            ps.setObject(8, request.getSenderConfirmedBy());
-            ps.setTimestamp(9, request.getSenderConfirmedAt() != null ? Timestamp.valueOf(request.getSenderConfirmedAt()) : null);
-            ps.setObject(10, request.getReceiverConfirmedBy());
-            ps.setTimestamp(11, request.getReceiverConfirmedAt() != null ? Timestamp.valueOf(request.getReceiverConfirmedAt()) : null);
+            ps.setObject(1, request.getFromDepartmentId());
+            ps.setObject(2, request.getToDepartmentId());
+            ps.setObject(3, request.getAssetManagerId());
+            ps.setTimestamp(4, Timestamp.valueOf(request.getTransferDate()));
+            ps.setString(5, request.getReason());
+            ps.setString(6, request.getStatus());
+            ps.setObject(7, request.getSenderConfirmedBy());
+            ps.setTimestamp(8, request.getSenderConfirmedAt() != null ? Timestamp.valueOf(request.getSenderConfirmedAt()) : null);
+            ps.setObject(9, request.getReceiverConfirmedBy());
+            ps.setTimestamp(10, request.getReceiverConfirmedAt() != null ? Timestamp.valueOf(request.getReceiverConfirmedAt()) : null);
 
             int rows = ps.executeUpdate();
 
@@ -87,7 +86,7 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
     @Override
     public Optional<TransferRequest> findById(int transferId) {
         String query = """
-                    SELECT transfer_id, allocation_request_id, from_department_id, to_department_id,
+                    SELECT transfer_id, from_department_id, to_department_id,
                            asset_manager_id, transfer_date, reason, status,
                            sender_confirmed_by, sender_confirmed_at,
                            receiver_confirmed_by, receiver_confirmed_at,
@@ -114,7 +113,7 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
     @Override
     public List<TransferRequest> findAll() {
         String query = """
-                    SELECT transfer_id, allocation_request_id, from_department_id, to_department_id,
+                    SELECT transfer_id, from_department_id, to_department_id,
                            asset_manager_id, transfer_date, reason, status,
                            sender_confirmed_by, sender_confirmed_at,
                            receiver_confirmed_by, receiver_confirmed_at,
@@ -200,7 +199,7 @@ public class TransferRequestDAOImpl implements TransferRequestDAO {
     private TransferRequest mapRow(ResultSet rs) throws SQLException {
         TransferRequest request = new TransferRequest();
         request.setTransferId(rs.getInt("transfer_id"));
-        request.setAllocationRequestId((Integer) rs.getObject("allocation_request_id"));
+        //request.setAllocationRequestId((Integer) rs.getObject("allocation_request_id"));
         request.setFromDepartmentId((Integer) rs.getObject("from_department_id"));
         request.setToDepartmentId((Integer) rs.getObject("to_department_id"));
         request.setAssetManagerId((Integer) rs.getObject("asset_manager_id"));
