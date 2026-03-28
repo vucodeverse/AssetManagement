@@ -412,7 +412,7 @@ public class OrderServiceImpl implements OrderService {
     public void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus) {
         Order order = orderDAO.findById(orderId).orElseThrow(() -> new InvalidDataException(orderNotFoundMsg));
 
-        if(checkQuantityOfPO(order.getPurchaseId()))
+        if(checkReceivedQuantityOfPO(order.getPurchaseId()))
             purchaseDAO.updateStatus(PurchaseProcessStatus.COMPLETED, order.getPurchaseId(), null, securityUtils.getCurrentUserId());
 
         orderDAO.updateStatus(orderId, orderStatus);
@@ -428,6 +428,23 @@ public class OrderServiceImpl implements OrderService {
             int orderedQty = ordered.getOrDefault(pd.getId(), 0);
 
             if(orderedQty < pd.getQuantity()){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private Boolean checkReceivedQuantityOfPO(Integer purchaseId){
+
+        List<PurchaseDetail> purchaseDetails = purchaseDetailDAO.findByPurchaseRequestId(purchaseId);
+
+        Map<Integer, Integer> received = orderDAO.getReceivedQuantityByPurchaseDetailId(purchaseDetails);
+
+        for(PurchaseDetail pd : purchaseDetails){
+            int receivedQty = received.getOrDefault(pd.getId(), 0);
+
+            if(receivedQty < pd.getQuantity()){
                 return false;
             }
         }

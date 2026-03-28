@@ -15,7 +15,7 @@ $(document).ready(function () {
             ordering: true,
             info: true,
             searching: false,
-            order: [[1, "desc"]],
+            order: [[6, "desc"]],
             columnDefs: [
                 { orderable: false, targets: 4 }
             ],

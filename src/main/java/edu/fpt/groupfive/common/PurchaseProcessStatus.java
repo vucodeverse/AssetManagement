@@ -4,7 +4,7 @@ public enum PurchaseProcessStatus {
     DRAFT("Tạm thời"),
     PENDING("Đang chờ"),
     APPROVED("Đã chấp nhận"),
-    ORDERED("Đã đặt hàng toàn bộ"),
+    ORDERED("Đã đặt"),
     REJECTED("Từ chối"),
     DELETED("Đã bị xóa"),
     COMPLETED("Đã hoàn thành"),

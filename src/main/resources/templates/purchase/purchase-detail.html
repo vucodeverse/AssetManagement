@@ -52,7 +52,7 @@
                         <a th:href="@{/quotations/create/{id}(id=${purchase.purchaseId})}"
                            class="btn-create-quote">TẠO BÁO GIÁ</a>
                     </div>
-                    <div th:if="${purchase.status != null and purchase.status.name() == 'PENDING'}" class="action-group"
+                    <div th:if="${purchase.status != null and purchase.status.name() == 'PENDING'}" class="manager-actions"
                         sec:authorize="hasAuthority('DIRECTOR')">
                         <form method="post" th:action="@{/purchases/{id}/actions(id=${purchase.purchaseId})}">
                             <button type="submit" name="action" value="a" class="btn-approve">DUYỆT</button>
@@ -65,8 +65,7 @@
                     </div>
 
                     <div sec:authorize="hasAnyAuthority('DIRECTOR', 'PURCHASE_STAFF')">
-                        <a th:href="@{/purchase-orders/of-purchase-request/{id}(id=${purchase.purchaseId})}" class="btn-primary"
-                           style="background-color: #6c757d;">
+                        <a th:href="@{/purchase-orders/of-purchase-request/{id}(id=${purchase.purchaseId})}" class="btn-list-order">
                             <i class="fas fa-list-ul"></i> Danh sách Đơn Đặt Hàng
                         </a>
                     </div>
