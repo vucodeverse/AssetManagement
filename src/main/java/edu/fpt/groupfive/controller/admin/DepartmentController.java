@@ -215,8 +215,12 @@ public class DepartmentController {
 
 
     @PostMapping("/department/delete")
-    public String deleteDepartment(@RequestParam("id") Integer id) {
+    public String deleteDepartment(@RequestParam("id") Integer id,
+                                   RedirectAttributes redirectAttributes) {
         departmentService.removeDepartment(id);
+
+        redirectAttributes.addFlashAttribute("successMsg", "Xóa phòng ban thành công!");
+
         return "redirect:/admin/departments";
     }
 
