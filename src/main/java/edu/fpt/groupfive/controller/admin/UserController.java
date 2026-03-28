@@ -207,6 +207,17 @@ public class UserController {
             }
         }
 
+        if (request.getRole() == Role.ASSET_MANAGER) {
+            if (userService.isAssetManagerLimitReached(null)) {
+                bindingResult.rejectValue(
+                        "role",
+                        "limit.assetManager",
+                        "Hệ thống đã có đủ tối đa 2 quản lý tài sản!"
+                );
+            }
+        }
+
+
         if (bindingResult.hasErrors()) {
             setupAttributes(model, request, true, false);
             return "admin/user-detail";
@@ -272,6 +283,16 @@ public class UserController {
                         "role",
                         "duplicate.manager",
                         "Công ty đã có giám đốc");
+            }
+        }
+
+        if (request.getRole() == Role.ASSET_MANAGER) {
+            if (userService.isAssetManagerLimitReached(request.getUserId())) {
+                bindingResult.rejectValue(
+                        "role",
+                        "limit.assetManager",
+                        "Hệ thống đã có đủ tối đa 2 quản lý tài sản!"
+                );
             }
         }
 

@@ -180,6 +180,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean isAssetManagerLimitReached(Integer userId) {
+        return userDAO.isAssetManagerLimit(userId);
+    }
+
+    @Override
     public Map<Integer, String> getUserIdToUsernameMap() {
 
         Map<Integer, String> userMap = new HashMap<>();

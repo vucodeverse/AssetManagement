@@ -276,6 +276,7 @@ public class UserDAOImpl implements UserDAO {
         StringBuilder query = new StringBuilder("""
                   SELECT 1 FROM Users
                   WHERE role = ?
+                  AND status = 'ACTIVE'
                 """);
 
         if (userId != null) {
@@ -293,6 +294,36 @@ public class UserDAOImpl implements UserDAO {
 
             return ps.executeQuery().next();
 
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
+    public boolean isAssetManagerLimit(Integer userId) {
+        StringBuilder query = new StringBuilder("""
+                SELECT COUNT(*) FROM Users
+                WHERE role = 'ASSET_MANAGER'
+                AND status = 'ACTIVE'
+            """);
+
+        if (userId != null) {
+            query.append(" AND user_id <> ?");
+        }
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query.toString())) {
+            if (userId != null) {
+                ps.setInt(1, userId);
+            }
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) >= 2;
+            }
+
+            return false;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

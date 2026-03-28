@@ -64,6 +64,14 @@
 
             <!-- ================= DANH SÁCH TÀI SẢN ================= -->
             <section class="form-section">
+
+                <div th:if="${#fields.hasErrors('details')}"
+                     class="alert alert-danger"
+                     style="color: red; background-color: #f8d7da; border-color: #f5c6cb; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span th:errors="*{details}"></span>
+                </div>
+
                 <input type="hidden" th:field="*{requestId}">
                 <div th:class="${requestDto.requestId != null && canEdit ? 'tables-grid' : ''}">
                     <!-- Bảng tài sản đã chọn -->
