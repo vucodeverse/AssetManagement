@@ -83,7 +83,7 @@ public class PurchaseController {
     @GetMapping("/create")
     public String showPurchaseForm(Model model) {
 
-        // thêm sẵn 1 dòng detail trước.
+        // thêm sẵn 1 dòng detail trước.  tránh viếc submit ko có row nào
         PurchaseRequestCreateRequest purchaseCreateRequest = new PurchaseRequestCreateRequest();
         purchaseCreateRequest.getPurchaseRequestDetailCreateRequests().add(new PurchaseRequestDetailCreateRequest());
         model.addAttribute("purchaseCreateRequest", purchaseCreateRequest);
@@ -98,6 +98,8 @@ public class PurchaseController {
             RedirectAttributes redirectAttributes) {
 
         try {
+
+            // lấy ra pr cần được update
             PurchaseRequestCreateRequest p = purchaseService.preparePurchaseRequestForm(id);
             model.addAttribute("purchaseCreateRequest", p);
             prepareFormModel(model);

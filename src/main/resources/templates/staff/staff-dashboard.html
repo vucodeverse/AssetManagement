@@ -132,8 +132,9 @@
                         </thead>
                         <tbody>
                             <tr th:each="po : ${dashboard.activeOrders}">
-                                <td>
-                                    <div class="po-ref" th:text="'#PO-' + ${po.orderId}">#PO-24-0012</div>
+                                <td th:data-order="${po.orderId}">
+                                    <div class="po-ref" th:text="'#PO-' + ${po.orderId}">#PO-24
+                                        -0012</div>
                                 </td>
                                 <td th:text="${#temporals.format(po.createdAt, 'dd-MM-yyyy')}">10-10-2024</td>
                                 <td>Northern Energy</td>
