@@ -144,9 +144,11 @@
                                 <form th:action="@{/manager/assets/delete/{id}(id=${asset.assetId})}" method="post"
                                     class="action-form">
 
-                                    <button class="icon-btn">
+                                    <button class="icon-btn"
+                                        onclick="return confirm('Bạn có chắc chắn muốn xóa tài sản này không?')">
                                         <i class="fas fa-trash"></i>
                                     </button>
+
 
                                 </form>
 
