@@ -33,6 +33,7 @@ public class AllocationRequestController {
         List<AllocationRequest> requests = allocationRequestService.getAllAllocationRequestByDepartmentId(departmentId);
 
         model.addAttribute("requests", requests);
+        model.addAttribute("activeMenu", "allocation");
 
         return "allocation/allocation_request_list";
     }
@@ -68,17 +69,23 @@ public class AllocationRequestController {
             to = LocalDate.parse(toDate);
         }
 
-        List<AllocationRequest> requests = allocationRequestService.search(departmentId, keyword, status,
-                priority, from, to);
+        if (from != null && to != null && from.isAfter(to)) {
+            model.addAttribute("error", "Từ ngày không được lớn hơn Đến ngày!");
+            // Set mảng list rỗng vì query đang bị lỗi
+            model.addAttribute("requests", List.of());
+        } else {
+            List<AllocationRequest> requests = allocationRequestService.search(departmentId, keyword, status, priority, from, to);
+            model.addAttribute("requests", requests);
+        }
 
 
-        model.addAttribute("requests", requests);
         // Giữ nguyên giá trị filter trên form
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
         model.addAttribute("priority", priority);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
+        model.addAttribute("activeMenu", "allocation");
 
         return "allocation/allocation_request_list";
     }
@@ -98,6 +105,8 @@ public class AllocationRequestController {
 
         model.addAttribute("canEdit", true);
 
+        model.addAttribute("activeMenu", "allocation");
+
         return "allocation/allocation_request_form";
     }
 
@@ -113,6 +122,7 @@ public class AllocationRequestController {
             model.addAttribute("requestDto", requestDto);
             model.addAttribute("assetType", assetTypeService.getAll());
             model.addAttribute("canEdit", true);
+            model.addAttribute("activeMenu", "allocation");
 
             return "allocation/allocation_request_form";
         }
@@ -141,6 +151,8 @@ public class AllocationRequestController {
 
         model.addAttribute("canEdit", true);
 
+        model.addAttribute("activeMenu", "allocation");
+
         return "allocation/allocation_request_form";
 
     }
@@ -158,6 +170,8 @@ public class AllocationRequestController {
 
         model.addAttribute("canEdit", false);
 
+        model.addAttribute("activeMenu", "allocation");
+
         return "allocation/allocation_request_form";
 
     }
@@ -174,6 +188,7 @@ public class AllocationRequestController {
             model.addAttribute("requestDto", dto);
             model.addAttribute("assetType", assetTypeService.getAll());
             model.addAttribute("canEdit", true);
+            model.addAttribute("activeMenu", "allocation");
 
             return "allocation/allocation_request_form";
         }

@@ -49,17 +49,10 @@ public class DepartmentAssetController {
         // Gọi service tìm kiếm
         var result = assetService.searchAssets(criteria, page - 1, 10);
 
-        List<AssetStatus> filterStatuses = Arrays.stream(AssetStatus.values())
-                .filter(s -> s != AssetStatus.DELETED)
-                .collect(Collectors.toList());
-
-        model.addAttribute("filterStatuses", filterStatuses);
         model.addAttribute("assets", result.getData());
         model.addAttribute("page", result);
 
-        // Truyền lại các giá trị filter để giữ trạng thái trên form
         model.addAttribute("keyword", keyword);
-
         model.addAttribute("activeMenu", "asset");
 
         return "department/asset-list";
@@ -77,6 +70,7 @@ public class DepartmentAssetController {
 
             // Đảm bảo tài sản này đúng là của Phòng ban đang đăng nhập
             Integer departmentId = (Integer) session.getAttribute("departmentId");
+
             if (asset.getDepartmentId() == null || !asset.getDepartmentId().equals(departmentId)) {
                 redirectAttributes.addFlashAttribute("error",
                         "Bạn không có quyền xem tài sản của phòng ban khác!");

@@ -15,7 +15,7 @@
 <body>
 
 <div class="sidebar">
-    <h4 class="text-center mb-4">Admin Panel</h4>
+    <h4 class="text-center mb-4">Quản lý</h4>
     <div class="sidebar-nav">
         <a href="/admin/dashboard"><i class="fas fa-chart-line mr-2"></i> Trang tổng quan</a>
         <a href="/admin/users" class="active"><i class="fas fa-users mr-2"></i> Quản lí người dùng</a>
@@ -104,6 +104,14 @@
             </form>
         </div>
 
+        <!-- MSG -->
+        <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
         <table id="userTable" class="table table-bordered table-hover shadow-sm bg-white">
             <thead>
             <tr>
@@ -152,7 +160,9 @@
             </tr>
 
             <tr th:if="${users == null or users.isEmpty()}">
-                <td colspan="6" class="text-center">Không tìm thấy người dùng nào.</td>
+                <td colspan="7" class="text-center">
+                    Không tìm thấy người dùng nào
+                </td>
             </tr>
 
             </tbody>

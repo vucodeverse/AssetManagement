@@ -179,6 +179,10 @@
                         <td>
                             <input type="text" th:name="|details[${stat.index}].note|" th:value="${detail.note}"
                                    class="table-input" th:readonly="${canEdit != null && !canEdit}"/>
+                            <div class="text-danger"
+                                 th:if="${#fields.hasErrors('details[0].note')}"
+                                 th:errors="*{details[0].note}">
+                            </div>
                         </td>
 
                         <!-- Nút button -->

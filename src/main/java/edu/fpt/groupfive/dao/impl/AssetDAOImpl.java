@@ -392,6 +392,7 @@ public class AssetDAOImpl implements AssetDAO {
                     dto.setAssetTypeName(rs.getString("type_name"));
 
                     dto.setDepartmentName(rs.getString("department_name"));
+                    dto.setDepartmentId((Integer) rs.getObject("department_id"));
 
                     dto.setAcquisitionDate(toLocalDate(rs.getDate("acquisition_date")));
                     dto.setInServiceDate(toLocalDate(rs.getDate("in_service_date")));

@@ -177,13 +177,14 @@ public class UserController {
         }
 
         // Nếu phone bị trùng
-        if (userService.existsByPhone(request.getPhoneNumber(), null)) {
-            bindingResult.rejectValue(
-                    "phoneNumber",
-                    "duplicate.phoneNumber",
-                    "Số điện thoại đã tồn tại!"
-            );
-        }
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank())
+            if (userService.existsByPhone(request.getPhoneNumber(), null)) {
+                bindingResult.rejectValue(
+                        "phoneNumber",
+                        "duplicate.phoneNumber",
+                        "Số điện thoại đã tồn tại!"
+                );
+            }
 
         // Nếu phòng ban đã có trưởng phòng
         if (request.getRole() == Role.DEPARTMENT_MANAGER) {
@@ -244,13 +245,14 @@ public class UserController {
         }
 
         // Nếu phone bị trùng
-        if (userService.existsByPhone(request.getPhoneNumber(), request.getUserId())) {
-            bindingResult.rejectValue(
-                    "phoneNumber",
-                    "duplicate.phoneNumber",
-                    "Số điện thoại đã tồn tại!"
-            );
-        }
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank())
+            if (userService.existsByPhone(request.getPhoneNumber(), request.getUserId())) {
+                bindingResult.rejectValue(
+                        "phoneNumber",
+                        "duplicate.phoneNumber",
+                        "Số điện thoại đã tồn tại!"
+                );
+            }
 
         // Nếu phòng ban đã có trưởng phòng
         if (request.getRole() == Role.DEPARTMENT_MANAGER) {
@@ -300,8 +302,10 @@ public class UserController {
             @PathVariable("id") Integer userId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             RedirectAttributes redirectAttributes) {
-
         userService.removeUser(userId);
+
+        redirectAttributes.addFlashAttribute("message", "Xóa người dùng thành công!");
+
         redirectAttributes.addAttribute("page", page);
         return "redirect:/admin/users";
     }

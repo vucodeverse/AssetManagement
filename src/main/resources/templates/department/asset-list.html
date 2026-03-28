@@ -5,7 +5,6 @@
 <head>
     <title>Danh sách tài sản bộ phận</title>
     <th:block layout:fragment="extra-css">
-        <!-- Tái sử dụng CSS của manager asset list -->
         <link rel="stylesheet" th:href="@{/css/asset/asset-list.css}">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     </th:block>
@@ -21,31 +20,11 @@
             <h1 class="page-title">TÀI SẢN BỘ PHẬN</h1>
         </header>
 
-        <!-- Filter Section -->
+        <!-- Filter Section: Chỉ giữ lại tìm kiếm -->
         <form th:action="@{/department/assets}" method="get" class="filter-bar">
             <div class="filter-item">
                 <label>Tìm kiếm</label>
                 <input type="text" name="keyword" placeholder="Tên tài sản..." th:value="${keyword}">
-            </div>
-
-            <div class="filter-item">
-                <label>Trạng thái</label>
-                <select name="status">
-                    <option value="">Tất cả</option>
-                    <option th:each="s : ${filterStatuses}" th:value="${s}"
-                            th:text="${s.description}" th:selected="${status == s}">
-                    </option>
-                </select>
-            </div>
-
-            <div class="filter-item">
-                <label>Từ ngày</label>
-                <input type="date" name="fromDate" th:value="${fromDate}">
-            </div>
-
-            <div class="filter-item">
-                <label>Đến ngày</label>
-                <input type="date" name="toDate" th:value="${toDate}">
             </div>
 
             <div class="filter-buttons">
@@ -73,10 +52,10 @@
                     <td th:text="${asset.assetName}"></td>
                     <td th:text="${asset.assetTypeName}"></td>
                     <td>
-                                <span class="status-badge"
-                                      th:classappend="'status-' + ${#strings.replace(#strings.toLowerCase(asset.currentStatus.name()), '_', '-')}"
-                                      th:text="${asset.currentStatus.description}">
-                                </span>
+                        <span class="status-badge"
+                              th:classappend="'status-' + ${#strings.replace(#strings.toLowerCase(asset.currentStatus.name()), '_', '-')}"
+                              th:text="${asset.currentStatus.description}">
+                        </span>
                     </td>
                     <td th:text="${asset.acquisitionDate}"></td>
                     <td class="col-action">
@@ -95,15 +74,19 @@
             <div class="pagination" th:if="${page.totalPages > 1}">
                 <span>Trang [[${page.currentPage + 1}]] / [[${page.totalPages}]]</span>
                 <div class="pagination-controls">
-                    <a th:if="${page.currentPage > 0}" th:href="@{/department/assets(page=${page.currentPage}, keyword=${keyword}, status=${status}, fromDate=${fromDate}, toDate=${toDate})}" class="pagination-btn">Trước</a>
+                    <a th:if="${page.currentPage > 0}"
+                       th:href="@{/department/assets(page=${page.currentPage}, keyword=${keyword})}"
+                       class="pagination-btn">Trước</a>
 
                     <a th:each="i : ${#numbers.sequence(1, page.totalPages)}"
-                       th:href="@{/department/assets(page=${i}, keyword=${keyword}, status=${status}, fromDate=${fromDate}, toDate=${toDate})}"
+                       th:href="@{/department/assets(page=${i}, keyword=${keyword})}"
                        th:text="${i}"
                        th:classappend="${i == page.currentPage + 1} ? 'active' : ''"
                        class="pagination-btn"></a>
 
-                    <a th:if="${page.currentPage + 1 < page.totalPages}" th:href="@{/department/assets(page=${page.currentPage + 2}, keyword=${keyword}, status=${status}, fromDate=${fromDate}, toDate=${toDate})}" class="pagination-btn">Tiếp</a>
+                    <a th:if="${page.currentPage + 1 < page.totalPages}"
+                       th:href="@{/department/assets(page=${page.currentPage + 2}, keyword=${keyword})}"
+                       class="pagination-btn">Tiếp</a>
                 </div>
             </div>
         </div>

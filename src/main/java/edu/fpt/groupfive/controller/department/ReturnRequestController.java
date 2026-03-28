@@ -33,6 +33,8 @@ public class ReturnRequestController {
 
         model.addAttribute("requests", list);
 
+        model.addAttribute("activeMenu", "return");
+
         return "return/return_request_list";
     }
 
@@ -46,28 +48,32 @@ public class ReturnRequestController {
             Model model) {
 
         LocalDate from = null;
-
         LocalDate to = null;
 
         if (fromDate != null && !fromDate.isEmpty()) {
             from = LocalDate.parse(fromDate);
         }
-
         if (toDate != null && !toDate.isEmpty()) {
             to = LocalDate.parse(toDate);
         }
 
         Integer departmentId = (Integer) session.getAttribute("departmentId");
 
-        List<ReturnRequestRespnse> list = returnRequestService
-                .searchRequest(departmentId, keyword, status, from, to);
+        if (from != null && to != null && from.isAfter(to)) {
+            model.addAttribute("error", "Từ ngày không được lớn hơn Đến ngày!");
+            // Set list rỗng thay vì request sai logic tìm kiếm
+            model.addAttribute("requests", List.of());
+        } else {
+            List<ReturnRequestRespnse> list = returnRequestService
+                    .searchRequest(departmentId, keyword, status, from, to);
+            model.addAttribute("requests", list);
+        }
 
-        model.addAttribute("requests", list);
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
-
+        model.addAttribute("activeMenu", "return");
         return "return/return_request_list";
     }
 
@@ -84,6 +90,8 @@ public class ReturnRequestController {
 
         model.addAttribute("canEdit", false);
 
+        model.addAttribute("activeMenu", "return");
+
         return "return/return_request_detail";
 
     }
@@ -99,6 +107,7 @@ public class ReturnRequestController {
 
         model.addAttribute("canEdit", true);
 
+        model.addAttribute("activeMenu", "return");
         return "return/return_request_form";
     }
 
@@ -117,6 +126,7 @@ public class ReturnRequestController {
             model.addAttribute("requestDto", requestDto);
             model.addAttribute("assets", assetService.getAllByDepartmentId(departmentId));
             model.addAttribute("canEdit", true);
+            model.addAttribute("activeMenu", "return");
 
             return "return/return_request_form";
         }
@@ -151,6 +161,8 @@ public class ReturnRequestController {
 
         model.addAttribute("canEdit", true);
 
+        model.addAttribute("activeMenu", "return");
+
         return "return/return_request_form";
 
     }
@@ -158,30 +170,39 @@ public class ReturnRequestController {
     @PostMapping("/update/{id}")
     public String updateRequest(
             @PathVariable("id") Integer id,
-            @ModelAttribute("requestDto") ReturnRequestCreateRequest dto,
+            @Valid @ModelAttribute("requestDto") ReturnRequestCreateRequest dto,
+            BindingResult bindingResult,
+            HttpSession session,
+            Model model,
             RedirectAttributes redirectAttributes) {
 
+        Integer departmentId = (Integer) session.getAttribute("departmentId");
+        // Bắt lỗi Validation và trả lại về màn hình Form
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("requestDto", dto);
+            model.addAttribute("assetNew", assetService.getAllByDepartmentId(departmentId));
+            model.addAttribute("assets", assetService.getAllByReturnRequestId(id));
+            model.addAttribute("canEdit", true);
+            model.addAttribute("activeMenu", "return");
+
+            return "return/return_request_form";
+        }
         try {
-
             returnRequestService.updateRequest(id, dto);
-
             redirectAttributes.addFlashAttribute(
                     "message",
                     "Cập nhật thành công!"
             );
-
             return "redirect:/department/return-request/list";
-
         } catch (Exception e) {
-
             redirectAttributes.addFlashAttribute(
                     "error",
                     e.getMessage()
             );
-
             return "redirect:/department/return-request/edit/" + id;
         }
     }
+
 
     @PostMapping("/delete/{id}")
     public String deleteRequest(

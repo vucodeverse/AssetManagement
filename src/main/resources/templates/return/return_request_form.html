@@ -47,6 +47,10 @@
                                th:readonly="${canEdit != null && !canEdit}"
                                placeholder="VD: Thiết bị hỏng, nhân viên nghỉ việc"
                                required/>
+                        <span style="color:red; font-size: 13px; margin-top: 5px;"
+                              th:if="${#fields.hasErrors('requestReason')}"
+                              th:errors="*{requestReason}">
+                        </span>
                     </div>
                     <!-- created date -->
                     <div class="form-group"
@@ -89,6 +93,14 @@
                                                class="noteInput"
                                                th:readonly="${canEdit != null && !canEdit}"
                                                th:value="${a.note}">
+                                        <th:block th:if="${requestDto.details != null}">
+                                            <th:block th:each="d, st : ${requestDto.details}">
+                                                <div class="text-danger" style="color: red; font-size: 13px; margin-top: 5px;"
+                                                     th:if="${d.assetId == a.assetId and #fields.hasErrors('details[' + st.index + '].note')}"
+                                                     th:text="${#fields.errors('details[' + st.index + '].note')[0]}">
+                                                </div>
+                                            </th:block>
+                                        </th:block>
                                     </td>
                                     <!-- tick -->
                                     <td>
@@ -128,6 +140,14 @@
                                         <input type="text"
                                                style="padding: 8px;"
                                                class="noteInput">
+                                        <th:block th:if="${requestDto.details != null}">
+                                            <th:block th:each="d, st : ${requestDto.details}">
+                                                <div class="text-danger" style="color: red; font-size: 13px; margin-top: 5px;"
+                                                     th:if="${d.assetId == a.assetId and #fields.hasErrors('details[' + st.index + '].note')}"
+                                                     th:text="${#fields.errors('details[' + st.index + '].note')[0]}">
+                                                </div>
+                                            </th:block>
+                                        </th:block>
                                     </td>
                                     <td>
                                         <input type="checkbox"
@@ -176,85 +196,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            const dtConfig = {
-                "pageLength": 5,
-                "lengthChange": false,
-                "searching": false,
-                "language": {
-                    "paginate": {
-                        "first": "Đầu",
-                        "last": "Cuối",
-                        "next": "Sau",
-                        "previous": "Trước"
-                    },
-                    "info": "Hiển thị _START_ đến _END_ trên _TOTAL_",
-                    "infoEmpty": "Không có dữ liệu",
-                    "emptyTable": "Không có tài sản nào"
-                }
-            };
-
-            if($('#assetTable').length) {
-                $('#assetTable').DataTable(dtConfig);
-            }
-            if($('#assetTableNew').length) {
-                $('#assetTableNew').DataTable(dtConfig);
-            }
-        });
-
-        function toggleRow(chk) {
-            const row = chk.closest("tr");
-            const noteInput = row.querySelector(".noteInput");
-            noteInput.readOnly = !chk.checked;
-            buildDetails();
-        }
-
-        function buildDetails() {
-            const container = document.getElementById("detailsContainer");
-            container.innerHTML = "";
-            let index = 0;
-
-            const tables = ["assetTable", "assetTableNew"];
-            tables.forEach(id => {
-                if ($.fn.DataTable.isDataTable('#' + id)) {
-                    const table = $('#' + id).DataTable();
-                    table.$('tr').each(function() {
-                        const chk = $(this).find('.chkAsset')[0];
-                        if (chk && chk.checked) {
-                            const assetId = chk.value;
-                            const note = $(this).find('.noteInput').val();
-                            container.innerHTML += `
-                                <input type="hidden" name="details[${index}].assetId" value="${assetId}">
-                                <input type="hidden" name="details[${index}].note" value="${note}">
-                            `;
-                            index++;
-                        }
-                    });
-                } else {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        const rows = el.querySelectorAll("tbody tr");
-                        rows.forEach(row => {
-                            const chk = row.querySelector(".chkAsset");
-                            if (chk && chk.checked) {
-                                const assetId = chk.value;
-                                const note = row.querySelector(".noteInput").value;
-                                container.innerHTML += `
-                                    <input type="hidden" name="details[${index}].assetId" value="${assetId}">
-                                    <input type="hidden" name="details[${index}].note" value="${note}">
-                                `;
-                                index++;
-                            }
-                        });
-                    }
-                }
-            });
-        }
-        document.querySelector("form").addEventListener("submit", function () {
-            buildDetails();
-        });
-    </script>
+    <script th:src="@{/js/return/return_request_form.js}"></script>
 </th:block>
 </body>
 </html>
