@@ -1,8 +1,6 @@
 <!DOCTYPE html>
-<html lang="vi"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/manager-layout}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/manager-layout}">
 
 <head>
     <title>Asset Type Form</title>
@@ -14,159 +12,141 @@
 
 <body>
 
-<th:block layout:fragment="content">
-    <div class="page-container">
+    <th:block layout:fragment="content">
+        <div class="page-container">
 
-        <header class="page-header">
-            <h1 class="page-title"
-                th:text="${mode == 'create'} ? 'TẠO LOẠI TÀI SẢN' : 'CẬP NHẬT LOẠI TÀI SẢN'">
-            </h1>
-        </header>
+            <header class="page-header">
+                <h1 class="page-title" th:text="${mode == 'create'} ? 'TẠO LOẠI TÀI SẢN' : 'CẬP NHẬT LOẠI TÀI SẢN'">
+                </h1>
+            </header>
 
-        <div class="content-wrapper">
-            <div class="form-panel">
+            <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
-                <form th:action="${mode == 'create'} ? @{/manager/asset-types/create} : @{/manager/asset-types/update}"
-                      th:object="${assetType}"
-                      method="post">
+            <div class="content-wrapper">
+                <div class="form-panel">
 
-                    <input type="hidden" th:if="${mode=='update'}" th:field="*{typeId}">
+                    <form
+                        th:action="${mode == 'create'} ? @{/manager/asset-types/create} : @{/manager/asset-types/update}"
+                        th:object="${assetType}" method="post">
 
-                    <div class="form-grid">
+                        <input type="hidden" th:if="${mode=='update'}" th:field="*{typeId}">
 
-                        <!-- name -->
-                        <div class="form-field">
-                            <label>Tên loại</label>
-                            <input type="text"
-                                   th:field="*{typeName}">
-                            <p class="error"
-                               th:if="${#fields.hasErrors('typeName')}"
-                               th:errors="*{typeName}">
-                            </p>
-                        </div>
+                        <div class="form-grid">
+
+                            <!-- name -->
+                            <div class="form-field">
+                                <label>Tên loại</label>
+                                <input type="text" th:field="*{typeName}">
+                                <p class="error" th:if="${#fields.hasErrors('typeName')}" th:errors="*{typeName}">
+                                </p>
+                            </div>
 
 
-                        <!-- type class -->
-                        <div class="form-field">
-                            <label>Nhóm tài sản</label>
-                            <select th:field="*{typeClass}">
-                                <option value="">-- Chọn nhóm --</option>
-                                <option th:each="c : ${typeClasses}"
-                                        th:value="${c}"
-                                        th:text="${c.description}">
-                                </option>
-                            </select>
+                            <!-- type class -->
+                            <div class="form-field">
+                                <label>Nhóm tài sản</label>
+                                <select th:field="*{typeClass}">
+                                    <option value="">-- Chọn nhóm --</option>
+                                    <option th:each="c : ${typeClasses}" th:value="${c}" th:text="${c.description}">
+                                    </option>
+                                </select>
 
-                            <p class="error"
-                               th:if="${#fields.hasErrors('typeClass')}"
-                               th:errors="*{typeClass}">
-                            </p>
-                        </div>
+                                <p class="error" th:if="${#fields.hasErrors('typeClass')}" th:errors="*{typeClass}">
+                                </p>
+                            </div>
 
 
-                        <!-- category -->
-                        <div class="form-field">
-                            <label>Danh mục</label>
-                            <select th:field="*{categoryId}">
-                                <option value="">-- Chọn danh mục --</option>
-                                <option th:each="c : ${categories}"
-                                        th:value="${c.categoryId}"
+                            <!-- category -->
+                            <div class="form-field">
+                                <label>Danh mục</label>
+                                <select th:field="*{categoryId}">
+                                    <option value="">-- Chọn danh mục --</option>
+                                    <option th:each="c : ${categories}" th:value="${c.categoryId}"
                                         th:text="${c.categoryName}">
-                                </option>
-                            </select>
+                                    </option>
+                                </select>
 
-                            <p class="error"
-                               th:if="${#fields.hasErrors('categoryId')}"
-                               th:errors="*{categoryId}">
-                            </p>
-                        </div>
+                                <p class="error" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}">
+                                </p>
+                            </div>
 
 
-                        <!-- model -->
-                        <div class="form-field">
-                            <label>Model</label>
-                            <input type="text"
-                                   th:field="*{model}">
-                            <p class="error"
-                               th:if="${#fields.hasErrors('model')}"
-                               th:errors="*{model}">
-                            </p>
+                            <!-- model -->
+                            <div class="form-field">
+                                <label>Model</label>
+                                <input type="text" th:field="*{model}">
+                                <p class="error" th:if="${#fields.hasErrors('model')}" th:errors="*{model}">
+                                </p>
 
-                        </div>
+                            </div>
 
 
-                        <!-- pp khau hao -->
-                        <div class="form-field">
-                            <label>Phương pháp khấu hao</label>
-                            <select th:field="*{defaultDepreciationMethod}">
-                                <option value="">-- Chọn phương pháp --</option>
-                                <option th:each="m : ${depreciationMethods}"
-                                        th:value="${m}"
+                            <!-- pp khau hao -->
+                            <div class="form-field">
+                                <label>Phương pháp khấu hao</label>
+                                <select th:field="*{defaultDepreciationMethod}">
+                                    <option value="">-- Chọn phương pháp --</option>
+                                    <option th:each="m : ${depreciationMethods}" th:value="${m}"
                                         th:text="${m.description}">
-                                </option>
-                            </select>
+                                    </option>
+                                </select>
 
-                            <p class="error"
-                               th:if="${#fields.hasErrors('defaultDepreciationMethod')}"
-                               th:errors="*{defaultDepreciationMethod}">
-                            </p>
+                                <p class="error" th:if="${#fields.hasErrors('defaultDepreciationMethod')}"
+                                    th:errors="*{defaultDepreciationMethod}">
+                                </p>
+                            </div>
+
+
+                            <!-- khau hao -->
+                            <div class="form-field">
+                                <label>Thời gian khấu hao (tháng)</label>
+                                <input type="number" th:field="*{defaultUsefulLifeMonths}">
+                                <p class="error" th:if="${#fields.hasErrors('defaultUsefulLifeMonths')}"
+                                    th:errors="*{defaultUsefulLifeMonths}">
+                                </p>
+                            </div>
+
+
+                            <!-- descr -->
+                            <div class="form-field full-width">
+                                <label>Mô tả</label>
+                                <textarea th:field="*{description}"></textarea>
+                                <p class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">
+                                </p>
+                            </div>
+
+
+                            <!-- spec -->
+                            <div class="form-field full-width">
+                                <label>Specification</label>
+                                <textarea th:field="*{specification}"></textarea>
+                                <p class="error" th:if="${#fields.hasErrors('specification')}"
+                                    th:errors="*{specification}">
+                                </p>
+                            </div>
+
                         </div>
 
 
-                        <!-- khau hao -->
-                        <div class="form-field">
-                            <label>Thời gian khấu hao (tháng)</label>
-                            <input type="number"
-                                   th:field="*{defaultUsefulLifeMonths}">
-                            <p class="error"
-                               th:if="${#fields.hasErrors('defaultUsefulLifeMonths')}"
-                               th:errors="*{defaultUsefulLifeMonths}">
-                            </p>
-                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">LƯU</button>
 
-
-                        <!-- descr -->
-                        <div class="form-field full-width">
-                            <label>Mô tả</label>
-                            <textarea th:field="*{description}"></textarea>
-                            <p class="error"
-                               th:if="${#fields.hasErrors('description')}"
-                               th:errors="*{description}">
-                            </p>
-                        </div>
-
-
-                        <!-- spec -->
-                        <div class="form-field full-width">
-                            <label>Specification</label>
-                            <textarea th:field="*{specification}"></textarea>
-                            <p class="error"
-                               th:if="${#fields.hasErrors('specification')}"
-                               th:errors="*{specification}">
-                            </p>
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">LƯU</button>
-
-                        <button type="button" onclick="window.location.href='/manager/asset-types'"
+                            <button type="button" onclick="window.location.href='/manager/asset-types'"
                                 class="btn-secondary">
-                            HỦY
-                        </button>
-                    </div>
+                                HỦY
+                            </button>
+                        </div>
 
-                </form>
+                    </form>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
-
-</th:block>
+    </th:block>
 
 </body>
+
 </html>

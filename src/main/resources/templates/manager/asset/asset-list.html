@@ -39,8 +39,8 @@
                     <label>Trạng thái</label>
                     <select name="status">
                         <option value="">Tất cả</option>
-                        <option th:each="s : ${filterStatuses}" th:value="${s}"
-                            th:text="${s.description}" th:selected="${status == s}">
+                        <option th:each="s : ${filterStatuses}" th:value="${s}" th:text="${s.description}"
+                            th:selected="${status == s}">
                         </option>
                     </select>
                 </div>

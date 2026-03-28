@@ -17,17 +17,13 @@ public class AssetResponse {
     private String assetName;
     private  Integer purchaseOrderDetailId;
     private AssetStatus currentStatus;
-
     private LocalDate warrantyStartDate;
-
     private LocalDate warrantyEndDate;
-
     private BigDecimal originalCost;
-
     private Integer assetTypeId;
     private String assetTypeName;
     private LocalDate acquisitionDate;
-
+    private String departmentName;
     private String note;
 
 
