@@ -144,18 +144,18 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
 
         // --- All checks passed ---
 
+        // Log Allocation
+        //int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
+        int toDeptId = handover.getToDepartmentId() != null ? handover.getToDepartmentId() : 0;
+        int allocReqId = handover.getAllocationRequestId() != null ? handover.getAllocationRequestId() : 0;
+
+        assetLogService.logAllocate(assetId, toDeptId, allocReqId);
         // 3. Update asset status to ALLOCATED
         assetService.updateStatus(assetId, AssetStatus.ASSIGNED);
 
         // 4. Execute outbound transaction
         whTransactionDAO.executeOutboundTransaction(handoverId, assetId, location.getZoneId(), executedBy,
                 "Xuất kho cấp phát");
-
-        // Log Allocation
-        int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
-        int toDeptId = handover.getToDepartmentId() != null ? handover.getToDepartmentId() : 0;
-        int allocReqId = handover.getAllocationRequestId() != null ? handover.getAllocationRequestId() : 0;
-        assetLogService.logAllocate(assetId, fromDeptId, toDeptId, allocReqId);
 
         // 5. Decrease zone capacity
         int unitVolume = whAssetCapacityDAO.findByAssetTypeId(assetDetail.getAssetTypeId())
@@ -277,20 +277,20 @@ public class WarehouseOutboundServiceImpl implements WarehouseOutboundService {
             AssetDetailResponse assetDetail = assetService.getDetailById(assetId);
 
             // Update status
-            assetService.updateStatus(assetId, AssetStatus.ALLOCATED);
+            assetService.updateStatus(assetId, AssetStatus.ASSIGNED);
 
             // Transaction
             whTransactionDAO.executeOutboundTransactionWithReceipt(receiptId, assetId, location.getZoneId(), executedBy,
                     "Xuất kho cấp phát");
 
             // Log Allocation
-            int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
+            //int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
             int toDeptId = handover.getToDepartmentId() != null ? handover.getToDepartmentId() : 0;
             int allocReqId = handover.getAllocationRequestId() != null ? handover.getAllocationRequestId() : 0;
-            //assetLogService.logAllocate(assetId, fromDeptId, toDeptId, allocReqId);
 
             // Cập nhật phòng ban đích cho tài sản
             assetService.updateDepartment(assetId, toDeptId);
+            assetLogService.logAllocate(assetId, toDeptId, allocReqId);
 
             // Capacity
             int unitVolume = whAssetCapacityDAO.findByAssetTypeId(assetDetail.getAssetTypeId())

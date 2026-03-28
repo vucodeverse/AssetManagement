@@ -33,8 +33,6 @@ public class AssetManagerDashboardServiceImpl implements AssetManagerDashboardSe
 
                 long available = allAssets.stream()
                                 .filter(a -> a.getCurrentStatus() == AssetStatus.AVAILABLE).count();
-                long allocated = allAssets.stream()
-                                .filter(a -> a.getCurrentStatus() == AssetStatus.ALLOCATED).count();
                 long assigned = allAssets.stream()
                                 .filter(a -> a.getCurrentStatus() == AssetStatus.ASSIGNED).count();
                 long maintenance = allAssets.stream()
@@ -73,7 +71,6 @@ public class AssetManagerDashboardServiceImpl implements AssetManagerDashboardSe
                                 .totalAssets(totalAssets)
                                 .totalAssetValue(totalValue)
                                 .availableCount(available)
-                                .allocatedCount(allocated)
                                 .assignedCount(assigned)
                                 .maintenanceCount(maintenance)
                                 .disposedCount(disposed)

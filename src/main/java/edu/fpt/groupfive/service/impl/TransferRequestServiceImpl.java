@@ -9,6 +9,7 @@ import edu.fpt.groupfive.dto.response.PageResponse;
 import edu.fpt.groupfive.dto.response.TransferAssetDetailResponse;
 import edu.fpt.groupfive.dto.response.TransferResponse;
 import edu.fpt.groupfive.model.*;
+import edu.fpt.groupfive.service.AssetLogService;
 import edu.fpt.groupfive.service.IQCReportService;
 import edu.fpt.groupfive.service.ITransferRequestService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
     private final UserDAO userDAO;
     private final AssetDAO assetDAO;
     private final IQCReportService qcReportService;
+    private final AssetLogService assetLogService;
 
     // ================= CREATE =================
     @Override
@@ -40,8 +42,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
         Department toDept = departmentDAO.findById(dto.getToDepartmentId()).orElseThrow();
         Users manager = userDAO.findById(dto.getAssetManagerId()).orElseThrow();
 
-        List<Integer> validAssetIds =
-                assetDAO.findValidAssetIds(dto.getAssetIds(), dto.getFromDepartmentId());
+        List<Integer> validAssetIds = assetDAO.findValidAssetIds(dto.getAssetIds(), dto.getFromDepartmentId());
 
         if (validAssetIds.size() != dto.getAssetIds().size()) {
             throw new IllegalArgumentException("Có asset không thuộc phòng ban nguồn");
@@ -75,21 +76,23 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
                 .status(request.getStatus())
                 .build();
     }
+
     @Override
     public PageResponse<TransferResponse> searchOutgoing(int departmentId, TransferSearchCriteria criteria,
-                                                         int page, int size, String sortField, String sortDir) {
+            int page, int size, String sortField, String sortDir) {
         int offset = page * size;
-        List<TransferRequest> list = transferRequestDAO.searchOutgoing(departmentId, criteria, offset, size, sortField, sortDir);
+        List<TransferRequest> list = transferRequestDAO.searchOutgoing(departmentId, criteria, offset, size, sortField,
+                sortDir);
         int total = transferRequestDAO.countOutgoing(departmentId, criteria);
         return new PageResponse<>(
                 list.stream().map(this::mapToResponse).toList(),
-                page, size, total
-        );
+                page, size, total);
     }
+
     // ================= PROCESS =================
     @Override
     public void processTransferAction(int transferId, int userId,
-                                      TransferAction action, Boolean issue) {
+            TransferAction action, Boolean issue) {
 
         TransferRequest transfer = transferRequestDAO.findById(transferId)
                 .orElseThrow(() -> new IllegalArgumentException("Transfer không tồn tại"));
@@ -116,19 +119,16 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
 
         int offset = page * size;
 
-        List<TransferRequest> list =
-                transferRequestDAO.searchForDepartmentManager(
-                        departmentId, criteria, offset, size, sortField, sortDir);
+        List<TransferRequest> list = transferRequestDAO.searchForDepartmentManager(
+                departmentId, criteria, offset, size, sortField, sortDir);
 
-        int total =
-                transferRequestDAO.countForDepartmentManager(departmentId, criteria);
+        int total = transferRequestDAO.countForDepartmentManager(departmentId, criteria);
 
         return new PageResponse<>(
                 list.stream().map(this::mapToResponse).toList(),
                 page,
                 size,
-                total
-        );
+                total);
     }
 
     @Override
@@ -141,8 +141,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
 
         int offset = page * size;
 
-        List<TransferRequest> list =
-                transferRequestDAO.search(criteria, offset, size, sortField, sortDir);
+        List<TransferRequest> list = transferRequestDAO.search(criteria, offset, size, sortField, sortDir);
 
         int total = transferRequestDAO.countSearch(criteria);
 
@@ -150,9 +149,9 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
                 list.stream().map(this::mapToResponse).toList(),
                 page,
                 size,
-                total
-        );
+                total);
     }
+
     @Override
     public PageResponse<TransferResponse> searchForReceiver(
             int departmentId, TransferSearchCriteria criteria,
@@ -235,7 +234,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
     }
 
     private void handleReceiverConfirm(int transferId, int userId,
-                                       TransferRequest transfer, TransferStatus status) {
+            TransferRequest transfer, TransferStatus status) {
 
         if (status != TransferStatus.WAREHOUSE_CONFIRMED) {
             throw new IllegalStateException("Phải qua QC trước");
@@ -263,6 +262,9 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
             if (qcReportService.isAssetPassed(detail.getAssetId())) {
                 passedAssetIds.add(detail.getAssetId());
                 log.info("Asset {} will be moved to department {}", detail.getAssetId(), transfer.getToDepartmentId());
+                assetLogService.logTransfer(detail.getAssetId(), transfer.getFromDepartmentId(),
+                        transfer.getToDepartmentId(), transferId);
+
             } else {
                 log.info("Asset {} NOT passed, skip update", detail.getAssetId());
             }
@@ -300,19 +302,17 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
 
         TransferResponse res = mapToResponse(t);
 
-        List<TransferAssetDetailResponse> assets =
-                transferRequestDetailDAO.findByTransferId(transferId)
-                        .stream()
-                        .map(d -> {
-                            Asset asset = assetDAO.findById(d.getAssetId()).orElse(null);
-                            return new TransferAssetDetailResponse(
-                                    d.getAssetId(),
-                                    asset != null ? asset.getAssetName() : "N/A",
-                                    d.getConditionFromSender(),
-                                    d.getNote()
-                            );
-                        })
-                        .toList();
+        List<TransferAssetDetailResponse> assets = transferRequestDetailDAO.findByTransferId(transferId)
+                .stream()
+                .map(d -> {
+                    Asset asset = assetDAO.findById(d.getAssetId()).orElse(null);
+                    return new TransferAssetDetailResponse(
+                            d.getAssetId(),
+                            asset != null ? asset.getAssetName() : "N/A",
+                            d.getConditionFromSender(),
+                            d.getNote());
+                })
+                .toList();
 
         res.setTransferAssets(assets);
         return res;
@@ -372,6 +372,7 @@ public class TransferRequestServiceImpl implements ITransferRequestService {
             throw new IllegalArgumentException("Manager không tồn tại");
         }
     }
+
     @Override
     public TransferRequest getTransferById(int transferId) {
         return transferRequestDAO.findById(transferId)
