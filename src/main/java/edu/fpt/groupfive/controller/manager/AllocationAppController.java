@@ -83,6 +83,7 @@ public class AllocationAppController {
     @GetMapping("/detail/{id}")
     public String showDetailForm(
             @PathVariable("id") Integer id,
+            HttpSession session,
             Model model) {
         // Lấy request cần update
         AllocationRequestResponse dto = allocationRequestService.getRequestById(id);
@@ -93,6 +94,8 @@ public class AllocationAppController {
 
         model.addAttribute("canEdit", false);
         model.addAttribute("activeMenu", "allocation");
+
+        model.addAttribute("role", session.getAttribute("role"));
 
         return "allocation/allocation_request_form";
 

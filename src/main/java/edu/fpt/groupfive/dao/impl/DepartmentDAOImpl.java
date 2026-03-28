@@ -296,7 +296,7 @@ public class DepartmentDAOImpl implements DepartmentDAO {
                 if (firstName != null) {
                     d.setManagerName(firstName + " " + lastName);
                 } else {
-                    d.setManagerName("No Manager");
+                    d.setManagerName("N/A");
                 }
                 list.add(d);
             }

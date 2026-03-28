@@ -254,9 +254,17 @@
         <footer class="pr-footer">
 
             <div class="footer-left">
-                <a th:if="${role == 'ASSET_MANAGER'}"
-                   th:href="@{/department/allocation-request/list}" class="btn btn-back-custom">
-                    <- Quay lại </a>
+                <!-- Sửa lại logic nút quay lại -->
+                <th:block th:if="${role == 'ASSET_MANAGER'}">
+                    <a th:href="@{/asset-manager/allocation-request/list}" class="btn btn-back-custom">
+                        <- Quay lại
+                    </a>
+                </th:block>
+                <th:block th:if="${role == 'DEPARTMENT_MANAGER'}">
+                    <a th:href="@{/department/allocation-request/list}" class="btn btn-back-custom">
+                        <- Quay lại
+                    </a>
+                </th:block>
             </div>
 
             <div class="footer-right">
