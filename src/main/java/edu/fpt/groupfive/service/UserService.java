@@ -38,6 +38,8 @@ public interface UserService {
 
     boolean existsDirector(Integer userId);
 
+    boolean isAssetManagerLimitReached(Integer userId);
+
     Map<Integer, String> getUserIdToUsernameMap();
     List<UserResponse> findAll();
     Users findByUsername(String username);

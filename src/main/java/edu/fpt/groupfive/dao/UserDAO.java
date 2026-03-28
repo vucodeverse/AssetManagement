@@ -25,6 +25,8 @@ public interface UserDAO {
 
     boolean exitsDirector(Role role, Integer userId);
 
+    boolean isAssetManagerLimit(Integer userId);
+
     List<Users> findAll();
 
     Integer findUserIdByUsername(String username);
