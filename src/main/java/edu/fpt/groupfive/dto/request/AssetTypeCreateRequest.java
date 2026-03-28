@@ -14,6 +14,8 @@ import lombok.Setter;
 @Setter
 public class AssetTypeCreateRequest {
     @NotBlank(message = "Tên loại tài sản không được để trống")
+    @Pattern(regexp = "^[\\p{L}0-9\\s]+$", message = "Tên loại tài sản không được có kí tự đặc biệt")
+    @Size(min = 2, message = "Tên loại tài sản phải có ít nhất 2 ký tự")
     @Size(max = 100, message = "Tên loại tài sản không được vượt quá 100 ký tự")
     private String typeName;
 

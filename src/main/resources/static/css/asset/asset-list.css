@@ -127,6 +127,12 @@
     width: 13%;
 }
 
+.col-location {
+    width: 130px;
+    text-align: left;
+}
+
+
 .col-price {
     width: 12%;
 }
