@@ -125,10 +125,18 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
         String sql = "update quotation_detail set status = ?, updated_at = SYSDATETIME() where quotation_detail_id = ?";
 
         try (Connection connection = databaseConfig.getConnection()) {
+            connection.setAutoCommit(false);
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setString(1, quotationStatus.name());
                 ps.setInt(2, quotationDetailId);
                 ps.executeUpdate();
+                connection.commit();
+            }catch (SQLException e) {
+                connection.rollback();
+
+                throw new DataAccessException(insertErrorMsg, e);
+            } finally {
+                connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
             throw new DataAccessException(updateStatusErrorMsg, e);

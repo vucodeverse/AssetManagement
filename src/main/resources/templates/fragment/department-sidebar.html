@@ -13,31 +13,34 @@
 
         <!-- DASHBOARD -->
         <a th:href="@{/department/dashboard}"
-           th:classappend="${activeMenu == 'dashboard'} ? 'active'" class="nav-item">
+           th:classappend="${activeMenu == 'dashboard'} ? 'active'"
+           class="nav-item">
             <i class="fas fa-th-large"></i> TỔNG QUAN
         </a>
 
-        <a th:href="@{/department/assets}"
-           th:classappend="${activeMenu == 'asset'} ? 'active'" class="nav-item">
+        <a th:href="@{/department/assets}" th:classappend="${activeMenu == 'asset'} ? 'active' : ''"class="nav-item">
             <i class="fas fa-th-large"></i> TÀI SẢN BỘ PHẬN
         </a>
 
 
         <!-- ALLOCATION -->
         <a th:href="@{/department/allocation-request/list}"
-           th:classappend="${activeMenu == 'allocation'} ? 'active'" class="nav-item">
+           th:classappend="${activeMenu == 'allocation'} ? 'active'"
+           class="nav-item">
             <i class="fas fa-box"></i> YÊU CẦU PHÂN BỔ
         </a>
 
         <!-- RETURN -->
         <a th:href="@{/department/return-request/list}"
-           th:classappend="${activeMenu == 'return'} ? 'active'" class="nav-item">
+           th:classappend="${activeMenu == 'return'} ? 'active'"
+           class="nav-item">
             <i class="fas fa-undo"></i> YÊU CẦU TRẢ
         </a>
 
         <!-- TRANSFER  -->
         <a th:href="@{/transfer-requests/incoming}"
-           th:classappend="${activeMenu == 'transfer'} ? 'active'" class="nav-item">
+           th:classappend="${activeMenu == 'transfer'} ? 'active'"
+           class="nav-item">
             <i class="fas fa-exchange-alt"></i>YÊU CẦU ĐIỀU CHUYỂN
         </a>
     </nav>

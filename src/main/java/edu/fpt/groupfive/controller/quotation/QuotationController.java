@@ -64,8 +64,7 @@ public class QuotationController {
         List<Integer> idList = Arrays.stream(ids.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
+                .map(Integer::parseInt).toList();
 
         // chỉ lấy ra các quotation detial ko bị reject
         List<QuotationResponse> quotationResponses = idList.stream()
@@ -145,6 +144,8 @@ public class QuotationController {
         prepareQuotationFormModel(model, purchaseId);
         return URL_QUOTATION_FORM;
     }
+
+
     @IsPurchaseStaff
     @PostMapping(value = "/create/{purchaseId}", params = "removeDetail")
     public String removeQuotationDetail(@PathVariable("purchaseId") Integer purchaseId,

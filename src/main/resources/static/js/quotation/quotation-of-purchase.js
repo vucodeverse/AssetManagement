@@ -108,21 +108,3 @@ function openCompareModal() {
     window.location.href = `${compareBaseUrl}?purchaseId=${purchaseId}&ids=${ids.join(',')}`;
 }
 
-function closeCompareModal() {
-    $('#compareModal').css("display", "none");
-}
-
-function openRejectModal(e, btn) {
-    if (e) e.stopPropagation();
-
-    const action = $(btn).data("action");
-
-    $('#rejectForm').attr("action", action);
-    $('#rejectModal textarea').val("");
-    $('#rejectModal').css("display", "block");
-
-}
-
-function closeRejectModal() {
-    $('#rejectModal').css("display", "none");
-}
