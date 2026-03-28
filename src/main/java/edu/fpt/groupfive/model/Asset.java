@@ -26,10 +26,8 @@ public class Asset {
     private LocalDate inServiceDate;
     private LocalDate warrantyStartDate;
     private LocalDate warrantyEndDate;
-
     private String assetTypeName;
-
-    // Thêm cho truy vấn trả tài sản
+    private  String departmentName;
     private String note;
 
 }

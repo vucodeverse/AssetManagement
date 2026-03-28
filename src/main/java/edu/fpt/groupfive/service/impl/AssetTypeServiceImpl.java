@@ -57,7 +57,7 @@ public class AssetTypeServiceImpl implements AssetTypeService {
     public void create(AssetTypeCreateRequest request) {
         String name = request.getTypeName().trim();
         if (assetTypeDAO.existByTypeName(name)) {
-            throw new InvalidDataException("Ten loai tai san da ton tai");
+            throw new InvalidDataException("Tên loại tài sản đã tồn tại!");
         }
         AssetType assetType = assetTypeMapper.toAssetType(request);
         assetType.setTypeName(name);
@@ -109,7 +109,7 @@ public class AssetTypeServiceImpl implements AssetTypeService {
     public Map<Integer, String> getAssetTypeIdToNameMap() {
         Map<Integer, String> map = new HashMap<>();
 
-        for(AssetType assetType : assetTypeDAO.findAll()) {
+        for (AssetType assetType : assetTypeDAO.findAll()) {
             map.put(assetType.getTypeId(), assetType.getTypeName());
         }
 
@@ -118,25 +118,24 @@ public class AssetTypeServiceImpl implements AssetTypeService {
 
     @Override
     public List<AssetTypeResponse> search(String keyword,
-                                          Integer categoryId,
-                                          AssetTypeClass typeClass,
-                                          DepreciationMethod depreciationMethod,
-                                          String direction,
-                                          int offset,
-                                          int limit) {
+            Integer categoryId,
+            AssetTypeClass typeClass,
+            DepreciationMethod depreciationMethod,
+            String direction,
+            int offset,
+            int limit) {
 
-        List<AssetType> assetTypes =
-                assetTypeDAO.search(keyword, categoryId, typeClass, depreciationMethod, direction, offset, limit);
+        List<AssetType> assetTypes = assetTypeDAO.search(keyword, categoryId, typeClass, depreciationMethod, direction,
+                offset, limit);
 
         return assetTypeMapper.toAssetTypeResponseList(assetTypes);
     }
 
-
     @Override
     public int count(String keyword,
-                     Integer categoryId,
-                     AssetTypeClass typeClass,
-                     DepreciationMethod depreciationMethod) {
+            Integer categoryId,
+            AssetTypeClass typeClass,
+            DepreciationMethod depreciationMethod) {
 
         return assetTypeDAO.count(keyword, categoryId, typeClass, depreciationMethod);
     }
