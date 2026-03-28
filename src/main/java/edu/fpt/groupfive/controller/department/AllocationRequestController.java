@@ -97,7 +97,7 @@ public class AllocationRequestController {
      * @return trả dữ liệu về trang allocation_request_form
      */
     @GetMapping("/create")
-    public String showCreateForm(Model model) {
+    public String showCreateForm(HttpSession session, Model model) {
 
         model.addAttribute("requestDto", new AllocationRequestCreateRequest());
 
@@ -106,6 +106,8 @@ public class AllocationRequestController {
         model.addAttribute("canEdit", true);
 
         model.addAttribute("activeMenu", "allocation");
+
+        model.addAttribute("role", session.getAttribute("role"));
 
         return "allocation/allocation_request_form";
     }
@@ -141,6 +143,7 @@ public class AllocationRequestController {
     @GetMapping("/edit/{id}")
     public String showEditForm(
             @PathVariable("id") Integer id,
+            HttpSession session,
             Model model) {
         // Lấy request cần update
         AllocationRequestResponse dto = allocationRequestService.getRequestById(id);
@@ -151,6 +154,8 @@ public class AllocationRequestController {
 
         model.addAttribute("canEdit", true);
 
+        model.addAttribute("role", session.getAttribute("role"));
+
         model.addAttribute("activeMenu", "allocation");
 
         return "allocation/allocation_request_form";
@@ -160,6 +165,7 @@ public class AllocationRequestController {
     @GetMapping("/detail/{id}")
     public String showDetailForm(
             @PathVariable("id") Integer id,
+            HttpSession session,
             Model model) {
         // Lấy request cần update
         AllocationRequestResponse dto = allocationRequestService.getRequestById(id);
@@ -169,6 +175,8 @@ public class AllocationRequestController {
         model.addAttribute("assetType", assetTypeService.getAll());
 
         model.addAttribute("canEdit", false);
+
+        model.addAttribute("role", session.getAttribute("role"));
 
         model.addAttribute("activeMenu", "allocation");
 
