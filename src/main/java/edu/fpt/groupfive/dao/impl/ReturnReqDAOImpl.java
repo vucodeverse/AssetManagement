@@ -211,9 +211,11 @@ public class ReturnReqDAOImpl implements ReturnReqDAO {
         StringBuilder query = new StringBuilder("""
                 SELECT
                      r.*,
-                     u.first_name + ' ' + u.last_name AS full_name
+                     u.first_name + ' ' + u.last_name AS full_name,
+                     d.department_name
                  FROM return_request r
                      JOIN dbo.users u on u.user_id = r.requester_id
+                     JOIN dbo.departments d on d.department_id = r.requested_department_id
                  WHERE requested_department_id = ?
                 """);
 

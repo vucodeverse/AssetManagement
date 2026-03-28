@@ -50,4 +50,6 @@ public interface AssetService {
     List<AssetDetailResponse> findByDepartment(Integer departmentId);
 
     Optional<Asset> findById(Integer id);
+
+    void updateDepartment(Integer id, Integer departmentId);
 }
