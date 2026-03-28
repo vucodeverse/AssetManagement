@@ -1,184 +1,158 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
 <head>
     <meta charset="UTF-8">
-    <title>Quản lý nhà cung cấp</title>
-    <link rel="stylesheet" th:href="@{/css/supplier/style.css}">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Quản lý nhà cung cấp | PROCUREX</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/supplier/style.css}">
+    </th:block>
 </head>
 <body>
 
-<header class="topbar">
-    <div class="topbar-left">
-        <i data-lucide="menu" class="menu-icon"></i>
-        <span class="title">QUẢN LÝ NHÀ CUNG CẤP</span>
-    </div>
-    <div class="topbar-right">
-        <div class="avatar">
-            <i data-lucide="user" style="width:18px;height:18px;"></i>
-        </div>
-    </div>
-</header>
-
-<main class="container">
-
-    <div class="action-bar">
-        <a th:href="@{/suppliers/create}" class="btn-primary">
-            <i data-lucide="plus" style="width:16px;height:16px;margin-right:8px;"></i>
-            Tạo nhà cung cấp
-        </a>
-    </div>
-
-    <!-- SEARCH -->
-    <section class="card">
-        <form th:action="@{/suppliers}" method="get"
-              th:object="${searchCriteria}" class="search-form">
-
-            <div class="form-group">
-                <label>Mã nhà cung cấp</label>
-                <input type="text" th:field="*{supplierCode}" placeholder="Nhập mã...">
+<th:block layout:fragment="content">
+    <main class="container">
+        <header class="content-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="header-left">
+                <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a;">QUẢN LÝ NHÀ CUNG CẤP</h1>
             </div>
-
-            <div class="form-group">
-                <label>Tên nhà cung cấp</label>
-                <input type="text" th:field="*{supplierName}" placeholder="Nhập tên...">
+            <div class="header-right">
+                <a th:href="@{/suppliers/create}" class="btn-primary" style="background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; font-weight: 600;">
+                    <i class="fas fa-plus" style="margin-right: 8px;"></i>
+                    Tạo nhà cung cấp
+                </a>
             </div>
+        </header>
 
-            <div class="form-group">
-                <label>Trạng thái</label>
-                <select th:field="*{status}">
-                    <option value="">Tất cả</option>
-                    <option value="ACTIVE">Hoạt động</option>
-                    <option value="INACTIVE">Ngừng hoạt động</option>
-                </select>
-            </div>
+        <!-- SEARCH -->
+        <section class="card" style="background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #edf2f7;">
+            <form th:action="@{/suppliers}" method="get"
+                  th:object="${searchCriteria}" class="search-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; align-items: end;">
 
-            <div style="display:flex;gap:12px;">
-                <button type="submit" class="btn-primary">Tìm kiếm</button>
-                <a th:href="@{/suppliers}" class="btn-secondary">Đặt lại</a>
-            </div>
-        </form>
-    </section>
+                <div class="form-group">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #4a5568; margin-bottom: 8px;">Mã nhà cung cấp</label>
+                    <input type="text" th:field="*{supplierCode}" placeholder="Nhập mã..." style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                </div>
 
-    <!-- TABLE -->
-    <section class="card">
-        <div class="table-container">
-            <table>
-                <thead>
-                <tr>
-                    <th>
-                        <a th:href="@{/suppliers(
+                <div class="form-group">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #4a5568; margin-bottom: 8px;">Tên nhà cung cấp</label>
+                    <input type="text" th:field="*{supplierName}" placeholder="Nhập tên..." style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                </div>
+
+                <div class="form-group">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #4a5568; margin-bottom: 8px;">Trạng thái</label>
+                    <select th:field="*{status}" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                        <option value="">Tất cả</option>
+                        <option value="ACTIVE">Hoạt động</option>
+                        <option value="INACTIVE">Ngừng hoạt động</option>
+                    </select>
+                </div>
+
+                <div style="display:flex;gap:12px;">
+                    <button type="submit" class="btn-primary" style="background: #1a1a1a; color: white; padding: 10px 24px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;">Tìm kiếm</button>
+                    <a th:href="@{/suppliers}" class="btn-secondary" style="background: #f7fafc; color: #4a5568; padding: 10px 24px; border-radius: 6px; text-decoration: none; border: 1px solid #e2e8f0; font-weight: 600;">Đặt lại</a>
+                </div>
+            </form>
+        </section>
+
+        <!-- TABLE -->
+        <section class="card" style="background: white; border-radius: 12px; border: 1px solid #edf2f7; overflow: hidden;">
+            <div class="table-container">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: #f8fafc; border-bottom: 1px solid #edf2f7;">
+                    <tr>
+                        <th style="padding: 16px; text-align: left;">
+                            <a th:href="@{/suppliers(
                 pageNo=0,
                 sortField='supplierCode',
                 sortDir=${sortField == 'supplierCode' and sortDir == 'asc' ? 'desc' : 'asc'}
-            )}">
-                            MÃ
-                            <span class="sort-icon"
-                                  th:classappend="${sortField == 'supplierCode'} ? 'active'"
-                                  th:text="${sortField == 'supplierCode'}
-                           ? (${sortDir == 'asc'} ? '↑' : '↓')
-                           : '↕'">
-            </span>
-                        </a>
-                    </th>
-                    <th>
-                        <a th:href="@{/suppliers(
+            )}" style="text-decoration: none; color: #4a5568; font-size: 12px; font-weight: 700;">
+                                MÃ
+                                <span class="sort-icon" th:classappend="${sortField == 'supplierCode'} ? 'active'" th:text="${sortField == 'supplierCode'} ? (${sortDir == 'asc'} ? '↑' : '↓') : '↕'"></span>
+                            </a>
+                        </th>
+                        <th style="padding: 16px; text-align: left;">
+                            <a th:href="@{/suppliers(
                 pageNo=0,
                 sortField='supplierName',
                 sortDir=${sortField == 'supplierName' and sortDir == 'asc' ? 'desc' : 'asc'}
-            )}">
-                            TÊN
-                            <span class="sort-icon"
-                                  th:classappend="${sortField == 'supplierName'} ? 'active'"
-                                  th:text="${sortField == 'supplierName'}
-                           ? (${sortDir == 'asc'} ? '↑' : '↓')
-                           : '↕'">
-            </span>
-                        </a>
-                    </th>
-                    <th>MÃ SỐ THUẾ</th>
-                    <th>TRẠNG THÁI</th>
-                    <th>THAO TÁC</th>
-                </tr>
-                </thead>
-                <tbody>
-
-                <!-- Có dữ liệu -->
-                <tr th:each="supplier : ${page.data}"
-                    th:if="${page.data != null and !#lists.isEmpty(page.data)}">
-
-                    <td th:text="${supplier.supplierCode}" class="bold"></td>
-                    <td th:text="${supplier.supplierName}"></td>
-                    <td th:text="${supplier.taxCode}"></td>
-
-                    <td>
-        <span th:if="${supplier.status == 'ACTIVE'}"
-              class="status-active">Hoạt động</span>
-
-                        <span th:if="${supplier.status == 'INACTIVE'}"
-                              class="status-inactive">Ngừng hoạt động</span>
-                    </td>
-
-                    <td class="actions">
-                        <a th:href="@{/suppliers/{supplierCode}(supplierCode=${supplier.supplierCode})}">
-                            <i data-lucide="eye" style="width:18px;"></i>
-                        </a>
-
-                        <a th:href="@{/suppliers/{supplierCode}(supplierCode=${supplier.supplierCode},mode='edit')}">
-                            <i data-lucide="pencil" style="width:18px;"></i>
-                        </a>
-                    </td>
-
-                </tr>
-
-                <!-- EMPTY STATE -->
-                <tr th:if="${page.data == null or #lists.isEmpty(page.data)}">
-                    <td colspan="5" class="empty-table">
-                        Không tìm thấy nhà cung cấp nào
-                    </td>
-                </tr>
-
-                </tbody>
-            </table>
-        </div>
-
-        <!-- FOOTER -->
-        <div class="table-footer">
-            <div class="table-summary">
-                Hiển thị
-                <span th:text="${page.totalRecords == 0 ? 0 : page.currentPage * size + 1}"></span>
-                -
-                <span th:text="${page.totalRecords == 0 ? 0 : page.currentPage * size + page.data.size()}"></span>
-                của <span th:text="${page.totalRecords}"></span>
-                nhà cung cấp
+            )}" style="text-decoration: none; color: #4a5568; font-size: 12px; font-weight: 700;">
+                                TÊN
+                                <span class="sort-icon" th:classappend="${sortField == 'supplierName'} ? 'active'" th:text="${sortField == 'supplierName'} ? (${sortDir == 'asc'} ? '↑' : '↓') : '↕'"></span>
+                            </a>
+                        </th>
+                        <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 700; color: #4a5568;">MÃ SỐ THUẾ</th>
+                        <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 700; color: #4a5568;">TRẠNG THÁI</th>
+                        <th style="padding: 16px; text-align: left; font-size: 12px; font-weight: 700; color: #4a5568;">THAO TÁC</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="supplier : ${page.data}" th:if="${page.data != null and !#lists.isEmpty(page.data)}" style="border-bottom: 1px solid #edf2f7; transition: background 0.2s;">
+                        <td style="padding: 16px; font-weight: 600; color: #1a1a1a;" th:text="${supplier.supplierCode}"></td>
+                        <td style="padding: 16px; color: #4a5568;" th:text="${supplier.supplierName}"></td>
+                        <td style="padding: 16px; color: #4a5568;" th:text="${supplier.taxCode}"></td>
+                        <td style="padding: 16px;">
+                            <span th:if="${supplier.status == 'ACTIVE'}" style="background: #c6f6d5; color: #22543d; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700;">Hoạt động</span>
+                            <span th:if="${supplier.status == 'INACTIVE'}" style="background: #fed7d7; color: #822727; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700;">Ngừng hoạt động</span>
+                        </td>
+                        <td style="padding: 16px;">
+                            <div style="display: flex; gap: 12px;">
+                                <a th:href="@{/suppliers/{supplierCode}(supplierCode=${supplier.supplierCode})}" style="color: #4a5568; text-decoration: none;">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a th:href="@{/suppliers/{supplierCode}(supplierCode=${supplier.supplierCode},mode='edit')}" style="color: #4a5568; text-decoration: none;">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${page.data == null or #lists.isEmpty(page.data)}">
+                        <td colspan="5" style="padding: 40px; text-align: center; color: #a0aec0;">
+                            Không tìm thấy nhà cung cấp nào
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <nav class="pagination" th:if="${page.totalPages > 1}">
-                <a th:if="${page.currentPage > 0}"
-                   th:href="@{/suppliers(pageNo=${page.currentPage - 1})}"
-                   class="page-nav">
-                    <i data-lucide="chevron-left" style="width:16px;"></i>
-                    Trước
-                </a>
+            <!-- FOOTER -->
+            <div class="table-footer" style="padding: 20px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-top: 1px solid #edf2f7;">
+                <div class="table-summary" style="font-size: 13px; color: #718096;">
+                    Hiển thị
+                    <span th:text="${page.totalRecords == 0 ? 0 : page.currentPage * size + 1}" style="font-weight: 600; color: #1a1a1a;"></span>
+                    -
+                    <span th:text="${page.totalRecords == 0 ? 0 : page.currentPage * size + page.data.size()}" style="font-weight: 600; color: #1a1a1a;"></span>
+                    của <span th:text="${page.totalRecords}" style="font-weight: 600; color: #1a1a1a;"></span> nhà cung cấp
+                </div>
 
-                <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
-                    <a th:if="${i != page.currentPage}"
-                       th:href="@{/suppliers(pageNo=${i})}"
-                       class="page-number"
-                       th:text="${i + 1}"></a>
+                <nav class="pagination" th:if="${page.totalPages > 1}" style="display: flex; gap: 8px;">
+                    <a th:if="${page.currentPage > 0}" th:href="@{/suppliers(pageNo=${page.currentPage - 1})}" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; text-decoration: none; color: #4a5568; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
 
-                    <span th:if="${i == page.currentPage}"
-                          class="page-number active"
-                          th:text="${i + 1}"></span>
-                </span>
+                    <span style="display: flex; gap: 4px;">
+                        <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                            <a th:if="${i != page.currentPage}" th:href="@{/suppliers(pageNo=${i})}" th:text="${i + 1}" style="display: inline-block; padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 6px; text-decoration: none; color: #4a5568; font-size: 13px; font-weight: 600;"></a>
+                            <span th:if="${i == page.currentPage}" th:text="${i + 1}" style="display: inline-block; padding: 8px 14px; background: #1a1a1a; color: white; border-radius: 6px; font-size: 13px; font-weight: 700;"></span>
+                        </span>
+                    </span>
 
-                <a th:if="${page.currentPage < page.totalPages - 1}"
-                   th:href="@{/suppliers(pageNo=${page.currentPage + 1})}"
-                   class="page-nav">
-                    Sau
-                    <i data-lucide="chevron-right" style="width:16px;"></i>
-                </a>
-            </nav>
+                    <a th:if="${page.currentPage < page.totalPages - 1}" th:href="@{/suppliers(pageNo=${page.currentPage + 1})}" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; text-decoration: none; color: #4a5568; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                </nav>
+            </div>
+        </section>
+    </main>
+</th:block>
+
+<th:block layout:fragment="extra-js">
+    <!-- Any extra JS if needed -->
+</th:block>
+
+</body>
+</html>
+/nav>
         </div>
     </section>
 

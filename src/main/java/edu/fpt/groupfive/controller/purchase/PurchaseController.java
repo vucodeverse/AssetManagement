@@ -207,7 +207,7 @@ public class PurchaseController {
 
     // hiển thị navbar
     private void setNavbar(Model model) {
-        model.addAttribute("activeMenu", "approval");
+        model.addAttribute("activeMenu", "purchase");
         model.addAttribute("activeSub", "pr");
     }
 

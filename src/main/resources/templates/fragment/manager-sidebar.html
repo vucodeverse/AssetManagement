@@ -27,16 +27,18 @@
 
 
             <!-- Thêm menu khác -->
-            <a th:href="@{/asset-manager/allocation-request/list}" class="nav-item">
+            <a th:href="@{/asset-manager/allocation-request/list}"
+                th:classappend="${activeMenu == 'allocation'} ? 'active' : ''" class="nav-item">
                 <i class="fas fa-file-invoice"></i> YÊU CẦU CẤP PHÁT
             </a>
 
             <!-- Thêm menu khác -->
-            <a th:href="@{/purchases}" class="nav-item">
+            <a th:href="@{/purchases}" th:classappend="${activeMenu == 'purchase'} ? 'active' : ''" class="nav-item">
                 <i class="fas fa-file-invoice"></i> YÊU CẦU MUA SẮM
             </a>
 
-            <a th:href="@{/transfer-requests/am}" class="nav-item">
+            <a th:href="@{/transfer-requests/am}" th:classappend="${activeMenu == 'transfer'} ? 'active' : ''"
+                class="nav-item">
                 <i class="fas fa-chart-bar"></i> YÊU CẦU ĐIỀU CHUYỂN
             </a>
         </nav>

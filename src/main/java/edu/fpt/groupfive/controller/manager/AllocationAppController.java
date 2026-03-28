@@ -6,6 +6,7 @@ import edu.fpt.groupfive.model.AllocationRequest;
 import edu.fpt.groupfive.service.AllocationRequestService;
 import edu.fpt.groupfive.service.AssetTypeService;
 import edu.fpt.groupfive.service.DepartmentService;
+import edu.fpt.groupfive.util.annotation.IsAssetManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -33,6 +34,7 @@ public class AllocationAppController {
         model.addAttribute("departments", departmentService.getAllDepartments());
 
         model.addAttribute("requests", list);
+        model.addAttribute("activeMenu", "allocation");
 
         return "allocation/allocation_request_list";
     }
@@ -63,7 +65,6 @@ public class AllocationAppController {
         List<AllocationRequest> requests = allocationRequestService.search(departmentId, keyword, status,
                 priority, from, to);
 
-
         model.addAttribute("requests", requests);
         model.addAttribute("departments", departmentService.getAllDepartments());
 
@@ -74,10 +75,10 @@ public class AllocationAppController {
         model.addAttribute("priority", priority);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
+        model.addAttribute("activeMenu", "allocation");
 
         return "allocation/allocation_request_list";
     }
-
 
     @GetMapping("/detail/{id}")
     public String showDetailForm(
@@ -91,12 +92,11 @@ public class AllocationAppController {
         model.addAttribute("assetType", assetTypeService.getAll());
 
         model.addAttribute("canEdit", false);
+        model.addAttribute("activeMenu", "allocation");
 
         return "allocation/allocation_request_form";
 
     }
-
-
 
     @PostMapping("/approve/{id}")
     public String approveRequest(@PathVariable("id") Integer id, HttpSession session) {
@@ -108,11 +108,10 @@ public class AllocationAppController {
         return "redirect:/asset-manager/allocation-request/list";
     }
 
-
     @PostMapping("/reject/{id}")
     public String rejectRequest(@PathVariable("id") Integer id,
-                                @RequestParam("reasonReject") String reasonReject,
-                                HttpSession session) {
+            @RequestParam("reasonReject") String reasonReject,
+            HttpSession session) {
 
         Integer userId = (Integer) session.getAttribute("userId");
 

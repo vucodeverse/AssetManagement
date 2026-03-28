@@ -44,17 +44,14 @@ public class SupplierController {
         model.addAttribute("size", size);
         model.addAttribute("sortField", sortField);
         model.addAttribute("sortDir", sortDir);
-
-        model.addAttribute("activeMenu", "asset");
-        model.addAttribute("activeSubMenu", "supplier-list");
+        model.addAttribute("activeMenu", "supplier");
         return SUPPLIER_LIST_VIEW;
     }
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("supplierCreateRequest", new SupplierCreateRequest());
-        model.addAttribute("activeMenu", "asset");
-        model.addAttribute("activeSubMenu", "supplier-form");
+        model.addAttribute("activeMenu", "supplier");
         return SUPPLIER_FORM_VIEW;
     }
 
@@ -71,8 +68,7 @@ public class SupplierController {
 
         } catch (IllegalArgumentException ex) {
             model.addAttribute(ERROR_ATTR, ex.getMessage());
-            model.addAttribute("activeMenu", "asset");
-            model.addAttribute("activeSubMenu", "supplier-form");
+            model.addAttribute("activeMenu", "supplier");
             return SUPPLIER_FORM_VIEW;
         }
     }
@@ -89,9 +85,7 @@ public class SupplierController {
         model.addAttribute("supplierResponse", response);
         model.addAttribute("supplierUpdateRequest", request);
         model.addAttribute("mode", mode);
-
-        model.addAttribute("activeMenu", "asset");
-        model.addAttribute("activeSubMenu", "supplier-list");
+        model.addAttribute("activeMenu", "supplier");
         return SUPPLIER_DETAIL_VIEW;
     }
 

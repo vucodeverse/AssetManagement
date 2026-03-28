@@ -89,6 +89,9 @@ public class TransferRequestController {
             model.addAttribute("totalPages", res.getTotalPages());
             model.addAttribute("selectedDepartmentId", fromDepartmentId);
             model.addAttribute("selectedIds", selectedIds);
+            model.addAttribute("activeMenu", "transfer");
+        } else {
+            model.addAttribute("activeMenu", "transfer");
         }
 
         return "transfer/create";
@@ -302,6 +305,7 @@ public class TransferRequestController {
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
         model.addAttribute("baseUrl", "/transfer-requests/am");
+        model.addAttribute("activeMenu", "transfer");
         return "transfer/list";
     }
     @GetMapping("/detail/{id}")
@@ -389,6 +393,7 @@ public class TransferRequestController {
         model.addAttribute("hasAnyPassed", hasAnyPassed);
         model.addAttribute("qcCreateUrls", qcCreateUrls);
         model.addAttribute("latestQcReports", transferQcReports);
+        model.addAttribute("activeMenu", "transfer");
 
         return "transfer/detail";
     }

@@ -1,187 +1,140 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
 <head>
     <meta charset="UTF-8">
-    <title>Chi tiết nhà cung cấp</title>
-
-    <link rel="stylesheet" th:href="@{/css/supplier/detail.css}">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title th:text="'Chi tiết nhà cung cấp: ' + ${supplierResponse.supplierName} + ' | PROCUREX'">Chi tiết nhà cung cấp | PROCUREX</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/supplier/detail.css}">
+    </th:block>
 </head>
-
 <body>
 
-<header class="topbar">
-    <div class="topbar-left">
-        <i data-lucide="menu" class="menu-icon"></i>
-        <span class="title">QUẢN LÝ NHÀ CUNG CẤP</span>
-    </div>
-    <div class="topbar-right">
-        <div class="avatar">
-            <i data-lucide="user"></i>
-        </div>
-    </div>
-</header>
+<th:block layout:fragment="content">
+    <div class="detail-container" th:classappend="${mode == 'edit'} ? ' editing'" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
 
-<div class="detail-container"
-     th:classappend="${mode == 'edit'} ? ' editing'">
+        <!-- BREADCRUMB -->
+        <nav class="breadcrumb" style="margin-bottom: 24px; font-size: 14px; color: #718096;">
+            <a th:href="@{/suppliers}" style="text-decoration: none; color: #1a1a1a; font-weight: 500;">Nhà cung cấp</a>
+            <span style="margin: 0 8px;">/</span>
+            <span>Chi tiết nhà cung cấp</span>
+        </nav>
 
-    <!-- BREADCRUMB -->
-    <nav class="breadcrumb">
-        <a th:href="@{/suppliers}">Trang chủ</a>
-        <span>/</span>
-        <span>Chi tiết nhà cung cấp</span>
-    </nav>
-
-    <!-- MESSAGE -->
-    <div th:if="${message}" class="alert success">
-        <span th:text="${message}"></span>
-    </div>
-
-    <div th:if="${error}" class="alert error">
-        <span th:text="${error}"></span>
-    </div>
-
-    <!-- ================= UPDATE FORM ================= -->
-    <form th:action="@{/suppliers/{code}(code=${supplierResponse.supplierCode})}"
-          th:object="${supplierUpdateRequest}"
-          method="post">
-
-        <!-- HEADER -->
-        <div class="header-card">
-
-            <div class="supplier-name">
-                <h1 class="view-field" th:text="*{supplierName}"></h1>
-                <input type="text" th:field="*{supplierName}" class="edit-field">
-            </div>
-
-            <div class="supplier-meta">
-                <div>
-                    Mã NCC:
-                    <strong th:text="${supplierResponse.supplierCode}"></strong>
-                </div>
-
-                <div>
-                    Cập nhật:
-                    <span th:text="${#temporals.format(supplierResponse.updatedDate,'dd/MM/yyyy HH:mm')}"></span>
-                </div>
-            </div>
-
-            <span class="status-badge"
-                  th:classappend="${supplierResponse.status} == 'ACTIVE' ? ' status-active' : ' status-inactive'"
-                  th:text="${supplierResponse.status} == 'ACTIVE' ? 'ĐANG HOẠT ĐỘNG' : 'NGỪNG HOẠT ĐỘNG'">
-            </span>
+        <!-- MESSAGE -->
+        <div th:if="${message}" class="alert success" style="background: #f0fff4; border-left: 4px solid #48bb78; color: #276749; padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-weight: 500;">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${message}"></span>
         </div>
 
-        <!-- INFO -->
-        <div class="card">
-            <h3>Thông tin chung</h3>
-
-            <div class="detail-grid">
-
-                <div class="form-group">
-                    <label>Mã số thuế</label>
-                    <span class="view-field" th:text="*{taxCode}"></span>
-                    <input type="text" th:field="*{taxCode}" class="edit-field">
-                </div>
-
-                <div class="form-group">
-                    <label>Email</label>
-                    <span class="view-field" th:text="*{email}"></span>
-                    <input type="email" th:field="*{email}" class="edit-field">
-                </div>
-
-                <div class="form-group">
-                    <label>SĐT</label>
-                    <span class="view-field" th:text="*{phoneNumber}"></span>
-                    <input type="text" th:field="*{phoneNumber}" class="edit-field">
-                </div>
-
-                <div class="form-group full-width">
-                    <label>Địa chỉ</label>
-                    <span class="view-field" th:text="*{address}"></span>
-                    <textarea th:field="*{address}" class="edit-field"></textarea>
-                </div>
-
-            </div>
+        <div th:if="${error}" class="alert error" style="background: #fff5f5; border-left: 4px solid #f56565; color: #c53030; padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-weight: 500;">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
         </div>
 
-        <!-- ACTION -->
-        <div class="action-bar">
+        <!-- ================= UPDATE FORM ================= -->
+        <form th:action="@{/suppliers/{code}(code=${supplierResponse.supplierCode})}"
+              th:object="${supplierUpdateRequest}"
+              method="post">
 
-            <a th:href="@{/suppliers}" class="btn btn-secondary">Quay lại</a>
+            <!-- HEADER -->
+            <div class="header-card" style="background: white; border-radius: 16px; padding: 32px; border: 1px solid #edf2f7; margin-bottom: 24px; display: flex; flex-direction: column; gap: 16px; position: relative;">
 
-            <div class="action-right">
+                <div class="supplier-name">
+                    <h1 class="view-field" th:text="*{supplierName}" style="font-size: 32px; font-weight: 800; color: #1a1a1a; margin: 0;"></h1>
+                    <input type="text" th:field="*{supplierName}" class="edit-field" style="width: 100%; font-size: 28px; font-weight: 800; padding: 8px 12px; border: 2px solid #3182ce; border-radius: 8px;">
+                </div>
 
-                <a th:if="${mode != 'edit'}"
-                   th:href="@{/suppliers/{code}(code=${supplierResponse.supplierCode},mode='edit')}"
-                   class="btn btn-primary">
-                    Chỉnh sửa
+                <div class="supplier-meta" style="display: flex; gap: 24px; font-size: 14px; color: #718096;">
+                    <div>
+                        Mã NCC:
+                        <strong th:text="${supplierResponse.supplierCode}" style="color: #1a1a1a;"></strong>
+                    </div>
+
+                    <div>
+                        Cập nhật lần cuối:
+                        <span th:text="${supplierResponse.updatedDate != null ? #temporals.format(supplierResponse.updatedDate,'dd/MM/yyyy HH:mm') : 'N/A'}" style="color: #1a1a1a; font-weight: 500;"></span>
+                    </div>
+                </div>
+
+                <div style="position: absolute; top: 32px; right: 32px;">
+                    <span class="status-badge"
+                          th:classappend="${supplierResponse.status} == 'ACTIVE' ? ' status-active' : ' status-inactive'"
+                          th:text="${supplierResponse.status} == 'ACTIVE' ? 'ĐANG HOẠT ĐỘNG' : 'NGỪNG HOẠT ĐỘNG'"
+                          style="padding: 6px 16px; border-radius: 999px; font-size: 12px; font-weight: 700;">
+                    </span>
+                </div>
+            </div>
+
+            <!-- INFO -->
+            <div class="card" style="background: white; border-radius: 16px; padding: 32px; border: 1px solid #edf2f7; margin-bottom: 32px;">
+                <h3 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #edf2f7;">Thông tin liên hệ</h3>
+
+                <div class="detail-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+
+                    <div class="form-group">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #718096; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Mã số thuế</label>
+                        <p class="view-field" th:text="*{taxCode}" style="font-size: 16px; color: #1a1a1a; font-weight: 500;"></p>
+                        <input type="text" th:field="*{taxCode}" class="edit-field" style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #718096; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Email liên hệ</label>
+                        <p class="view-field" th:text="*{email}" style="font-size: 16px; color: #1a1a1a; font-weight: 500;"></p>
+                        <input type="email" th:field="*{email}" class="edit-field" style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #718096; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Số điện thoại</label>
+                        <p class="view-field" th:text="*{phoneNumber}" style="font-size: 16px; color: #1a1a1a; font-weight: 500;"></p>
+                        <input type="text" th:field="*{phoneNumber}" class="edit-field" style="width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+
+                    <div class="form-group full-width" style="grid-column: span 2;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #718096; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Địa chỉ trụ sở</label>
+                        <p class="view-field" th:text="*{address}" style="font-size: 16px; color: #1a1a1a; font-weight: 500; line-height: 1.6;"></p>
+                        <textarea th:field="*{address}" class="edit-field" style="width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; min-height: 100px; resize: vertical;"></textarea>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ACTION -->
+            <div class="action-bar" style="display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid #edf2f7;">
+
+                <a th:href="@{/suppliers}" class="btn btn-secondary" style="padding: 12px 24px; border: 1.5px solid #e2e8f0; border-radius: 10px; color: #4a5568; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
 
-                <a th:if="${mode == 'edit'}"
-                   th:href="@{/suppliers/{code}(code=${supplierResponse.supplierCode})}"
-                   class="btn btn-secondary">
-                    Hủy
-                </a>
+                <div class="action-right" style="display: flex; gap: 16px;">
 
-                <button th:if="${mode == 'edit'}"
-                        type="submit"
-                        class="btn btn-success">
-                    Lưu thay đổi
-                </button>
+                    <a th:if="${mode != 'edit'}"
+                       th:href="@{/suppliers/{code}(code=${supplierResponse.supplierCode},mode='edit')}"
+                       class="btn btn-primary" style="padding: 12px 28px; background: #1a1a1a; color: white; border: none; border-radius: 10px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-edit"></i> Chỉnh sửa
+                    </a>
 
-                <!-- OPEN MODAL -->
-                <button type="button"
-                        class="btn btn-danger"
-                        onclick="openModal()"
-                        th:if="${supplierResponse.status == 'ACTIVE'}">
-                    Ngừng hoạt động
-                </button>
+                    <a th:if="${mode == 'edit'}"
+                       th:href="@{/suppliers/{code}(code=${supplierResponse.supplierCode})}"
+                       class="btn btn-secondary" style="padding: 12px 28px; border: 1.5px solid #e2e8f0; border-radius: 10px; color: #4a5568; text-decoration: none; font-weight: 600;">
+                        Hủy
+                    </a>
 
+                    <button th:if="${mode == 'edit'}"
+                            type="submit"
+                            class="btn btn-success" style="padding: 12px 32px; background: #48bb78; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                        <i class="fas fa-save"></i> Lưu bộ
+                    </button>
+
+                </div>
             </div>
-        </div>
 
-    </form>
+        </form>
 
-</div>
-
-<!-- ================= DEACTIVATE MODAL ================= -->
-<div id="modal" class="modal">
-
-    <div class="modal-content">
-
-        <h3>Xác nhận</h3>
-        <p>Bạn có chắc chắn muốn ngừng hoạt động?</p>
-
-        <div class="modal-actions">
-
-            <!-- FORM riêng -->
-            <form th:action="@{/suppliers/{code}/deactivate(code=${supplierResponse.supplierCode})}"
-                  method="post">
-
-                <button type="submit" class="btn btn-danger">
-                    Xác nhận
-                </button>
-            </form>
-
-            <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
-
-        </div>
     </div>
+</th:block>
 
-</div>
-
-<script>
-    lucide.createIcons()
-
-    function openModal() {
-        document.getElementById("modal").style.display = "flex";
-    }
-
-    function closeModal() {
-        document.getElementById("modal").style.display = "none";
-    }
-</script>
+<th:block layout:fragment="extra-js">
+</th:block>
 
 </body>
 </html>
