@@ -14,6 +14,8 @@ public interface OrderDAO {
 
     Map<Integer, Integer> getOrderedQuantityByPurchaseDetailId(List<PurchaseDetail> purchaseDetailIds);
 
+    Map<Integer, Integer> getReceivedQuantityByPurchaseDetailId(List<PurchaseDetail> purchaseDetailIds);
+
     List<Object[]> search(PurchaseOrderSearchCriteria criteria);
 
     Optional<Order> findById(Integer orderId);
@@ -21,4 +23,6 @@ public interface OrderDAO {
     List<Order> findRecent();
 
     void updateStatus(Integer orderId, PurchaseProcessStatus status);
+    
+    void updateUpdatedAt(Integer orderId);
 }

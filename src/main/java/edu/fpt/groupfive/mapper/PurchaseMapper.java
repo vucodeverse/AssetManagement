@@ -15,4 +15,5 @@ public interface PurchaseMapper {
 
     @Mapping(source = "id", target = "purchaseId")
     PurchaseRequestResponse toPurchaseResponse(Purchase purchase);
+
 }

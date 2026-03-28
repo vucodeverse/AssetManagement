@@ -122,7 +122,7 @@ public class QuotationDetailDAOImpl implements QuotationDetailDAO {
 
     @Override
     public void update(Integer quotationDetailId, PurchaseProcessStatus quotationStatus) {
-        String sql = "update quotation_detail set status = ? where quotation_detail_id = ?";
+        String sql = "update quotation_detail set status = ?, updated_at = SYSDATETIME() where quotation_detail_id = ?";
 
         try (Connection connection = databaseConfig.getConnection()) {
             try (PreparedStatement ps = connection.prepareStatement(sql)) {

@@ -19,6 +19,7 @@ public class AllocationRequestCreateRequest {
     private Integer requestedDepartmentId;
 
     @NotBlank(message = "Lí do xin cấp chưa nhập")
+    @Pattern(regexp = "^[\\p{L}a-zA-Z0-9 .,_-]+$", message = "Lí do xin cấp không được chứa kí tự đặc biệt")
     private String requestReason;
 
     @NotNull(message = "Độ ưu tiên chưa được chọn")

@@ -39,7 +39,9 @@ public interface AssetTypeService {
             int limit);
 
     int count(String keyword,
-            Integer categoryId,
-            AssetTypeClass typeClass,
-            DepreciationMethod depreciationMethod);
+              Integer categoryId,
+              AssetTypeClass typeClass,
+              DepreciationMethod depreciationMethod);
+
+    Map<String, Integer> getNameToIdMap();
 }

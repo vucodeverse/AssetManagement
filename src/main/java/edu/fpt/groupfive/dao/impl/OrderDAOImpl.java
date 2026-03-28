@@ -232,6 +232,37 @@ public class OrderDAOImpl implements OrderDAO {
         return map;
     }
 
+    @Override
+    public Map<Integer, Integer> getReceivedQuantityByPurchaseDetailId(List<PurchaseDetail> purchaseDetailIds) {
+        if (purchaseDetailIds == null || purchaseDetailIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        String placeholders = purchaseDetailIds.stream().map(id -> "?").collect(Collectors.joining(", "));
+        String sql = "select qd.purchase_request_detail_id, sum(pod.received_quantity) as total_qty " +
+                "from purchase_order_details pod " +
+                "join quotation_detail qd on pod.quotation_detail_id = qd.quotation_detail_id " +
+                "join purchase_orders po on pod.purchase_order_id = po.purchase_order_id " +
+                "where qd.purchase_request_detail_id in (" + placeholders + ") " +
+                "and po.status <> 'DELETED' " +
+                "group by qd.purchase_request_detail_id";
+
+        Map<Integer, Integer> map = new HashMap<>();
+        try (Connection conn = databaseConfig.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < purchaseDetailIds.size(); i++) {
+                ps.setInt(i + 1, purchaseDetailIds.get(i).getId());
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                map.put(rs.getInt("purchase_request_detail_id"), rs.getInt("total_qty"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(findOrderDetailErrorMsg, e);
+        }
+        return map;
+    }
+
     // search cho màn purchase orderlisst
     @Override
     public List<Object[]> search(PurchaseOrderSearchCriteria criteria) {
@@ -399,7 +430,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public void updateStatus(Integer orderId, PurchaseProcessStatus orderStatus) {
-        String sql = "update purchase_orders set status = ? where purchase_order_id = ?";
+        String sql = "update purchase_orders set status = ?, updated_at = ? where purchase_order_id = ?";
 
         try (Connection connection = databaseConfig.getConnection()) {
 
@@ -408,7 +439,8 @@ public class OrderDAOImpl implements OrderDAO {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
                 preparedStatement.setString(1, orderStatus.name());
-                preparedStatement.setInt(2, orderId);
+                preparedStatement.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                preparedStatement.setInt(3, orderId);
                 preparedStatement.executeUpdate(); // MISSING BEFORE
                 connection.commit();
 
@@ -421,6 +453,22 @@ public class OrderDAOImpl implements OrderDAO {
 
         } catch (Exception e) {
             throw new DataAccessException("Update thất bại", e);
+        }
+    }
+
+    @Override
+    public void updateUpdatedAt(Integer orderId) {
+        String sql = "update purchase_orders set updated_at = ? where purchase_order_id = ?";
+
+        try (Connection connection = databaseConfig.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            preparedStatement.setInt(2, orderId);
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Update updated_at thất bại", e);
         }
     }
 

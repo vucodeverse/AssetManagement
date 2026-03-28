@@ -42,7 +42,7 @@
                     </div>
                     <div class="stat-content">
                         <span class="stat-label">TỔNG CHI TIÊU NĂM NAY</span>
-                        <h2 class="stat-value" 
+                        <h2 class="stat-value"
                             th:text="${#numbers.formatDecimal(dashboard.totalPrTotalInYear, 1, 'POINT', 0, 'COMMA')} + ' VNĐ'">
                             0 VNĐ
                         </h2>
@@ -82,7 +82,7 @@
                                         <span th:if="${p.status == null}">—</span>
                                     </td>
                                     <td th:text="${p.creatorName ?: '—'}"></td>
-                                    <td>
+                                    <td th:data-order="${p.neededByDate}">
                                         <span th:if="${p.neededByDate != null}"
                                             th:text="${#temporals.format(p.neededByDate,'dd-MM-yyyy')}"></span>
                                         <span th:if="${p.neededByDate == null}">—</span>
@@ -139,7 +139,8 @@
                                     <td><span class="badge-prem"
                                             th:classappend="'quo-' + ${quo.quotationStatus.name().toLowerCase()}"
                                             th:text="${quo.quotationStatus.description}">PENDING</span></td>
-                                    <td th:data-order="${quo.createdAt}" th:text="${#temporals.format(quo.createdAt, 'dd-MM-yyyy')}">____</td>
+                                    <td th:data-order="${quo.createdAt}"
+                                        th:text="${#temporals.format(quo.createdAt, 'dd-MM-yyyy')}">____</td>
                                     <td style="text-align: right;"><i class="fas fa-chevron-right arrow-icon"></i></td>
                                 </tr>
                             </tbody>

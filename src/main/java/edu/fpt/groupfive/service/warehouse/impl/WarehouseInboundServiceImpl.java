@@ -424,7 +424,8 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
             // Log Return
             int fromDeptId = handover.getFromDepartmentId() != null ? handover.getFromDepartmentId() : 0;
             int returnReqId = handover.getReturnRequestId() != null ? handover.getReturnRequestId() : 0;
-            assetLogService.logReturn(assetId, fromDeptId,  returnReqId);
+            //assetLogService.logReturn(assetId, fromDeptId,  returnReqId);
+
         }
 
         // 4. Check if all items in this handover are now scanned

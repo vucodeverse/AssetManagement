@@ -63,10 +63,9 @@ public class AssetManagerDashboardServiceImpl implements AssetManagerDashboardSe
 
                 List<AssetResponse> recentAssets = allAssets.stream()
                                 .filter(a -> a.getAcquisitionDate() != null)
-                                .sorted(Comparator.comparing(Asset::getAcquisitionDate).reversed())
+                                .sorted(Comparator.comparing(Asset::getAcquisitionDate).thenComparing(Asset::getAssetId, Comparator.reverseOrder()))
                                 .limit(5)
-                                .map(this::toAssetResponse)
-                                .collect(Collectors.toList());
+                                .map(this::toAssetResponse).toList();
 
                 List<AllocationRequest> allRequests = allocationReqDao.findAllOrderByCreatedAtDesc();
 

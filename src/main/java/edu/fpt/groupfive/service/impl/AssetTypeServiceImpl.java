@@ -139,4 +139,15 @@ public class AssetTypeServiceImpl implements AssetTypeService {
 
         return assetTypeDAO.count(keyword, categoryId, typeClass, depreciationMethod);
     }
+
+    @Override
+    public Map<String, Integer> getNameToIdMap() {
+        Map<String, Integer> map = new HashMap<>();
+
+        for(AssetType assetType : assetTypeDAO.findAll()) {
+            map.put(assetType.getTypeName(), assetType.getTypeId());
+        }
+
+        return map;
+    }
 }

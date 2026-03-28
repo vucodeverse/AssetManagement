@@ -16,6 +16,8 @@ public interface QuotationDAO {
 
     void updateStatus(Integer quotationId, PurchaseProcessStatus status);
 
+    void updateUpdatedAt(Integer quotationId);
+
     List<Quotation> findByPurchaseId(Integer purchaseId);
 
     Integer countQuotationFromPurchaseId(Integer purchaseId);

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/department-layout}">
+
+<head>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" th:href="@{/css/asset/asset-detail.css}">
+    </th:block>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+    <div class="asset-page">
+        <div class="asset-header">
+            <h1 class="asset-title">CHI TIẾT TÀI SẢN BỘ PHẬN</h1>
+        </div>
+
+        <div class="asset-form">
+
+            <!-- Bắt lỗi nếu có flash attribute -->
+            <div class="error-message" th:if="${error}" th:text="${error}"></div>
+            <div class="success-message" th:if="${success}" th:text="${success}"></div>
+
+            <!-- THÔNG TIN CHUNG CƠ BẢN -->
+            <div class="form-section">
+                <div class="form-section-title">Thông tin tài sản</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Mã tài sản</label>
+                        <div class="form-control-view" th:text="${asset.assetId}"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tên tài sản</label>
+                        <div class="form-control-view" th:text="${asset.assetName}"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Loại tài sản</label>
+                        <div class="form-control-view" th:text="${asset.assetTypeName}"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày nhận (Ngày mua)</label>
+                        <div class="form-control-view" th:text="${asset.acquisitionDate}"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bắt đầu bảo hành</label>
+                        <div class="form-control-view" th:text="${asset.warrantyStartDate != null ? asset.warrantyStartDate : '—'}"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Kết thúc bảo hành</label>
+                        <div class="form-control-view" th:text="${asset.warrantyEndDate != null ? asset.warrantyEndDate : '—'}"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Trạng thái hiện tại</label>
+                        <div class="form-control-view">
+                                <span class="status-badge"
+                                      th:classappend="'status-' + ${#strings.replace(#strings.toLowerCase(asset.currentStatus.name()), '_', '-')}"
+                                      th:text="${asset.currentStatus.description}">
+                                </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú trạng thái</label>
+                        <div class="form-control-view" th:text="${asset.note != null ? asset.note : '—'}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nút quay lại danh sách -->
+            <div class="form-actions" style="margin-top: 20px;">
+                <a th:href="@{/department/assets}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> QUAY LẠI DANH SÁCH
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</th:block>
+</body>
+</html>
