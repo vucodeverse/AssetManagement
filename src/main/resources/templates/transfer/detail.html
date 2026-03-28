@@ -36,10 +36,6 @@
                     <span th:text="${transfer.toDepartmentName}"></span>
                 </p>
 
-                <p><strong>Người quản lý:</strong>
-                    <span th:text="${transfer.assetManagerName}"></span>
-                </p>
-
                 <p><strong>Ngày tạo:</strong>
                     <span th:text="${transfer.createdAt != null ? #temporals.format(transfer.createdAt, 'dd-MM-yyyy HH:mm') : '-'}"></span>
                 </p>
