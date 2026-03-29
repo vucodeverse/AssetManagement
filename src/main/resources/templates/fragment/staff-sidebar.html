@@ -21,7 +21,7 @@
             <div class="nav-group">
                 <div class="nav-group-title">Mua sắm</div>
                 <a class="nav-item" th:href="@{/purchases}"
-                    th:classappend="${activeMenu}=='approval' and ${activeSub}=='pr' ? ' active' : ''">
+                    th:classappend="${activeMenu == 'purchase' ? 'active' : ''}">
                     <i class="fas fa-shopping-cart"></i> YÊU CẦU MUA SẮM
                 </a>
 

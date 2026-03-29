@@ -20,12 +20,12 @@
 
             <div class="nav-group">
                 <div class="nav-group-title">Yêu Cầu</div>
-                <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu}=='approval' ? ' active' : ''">
+                <a class="nav-item" th:href="@{/purchases}" th:classappend="${activeMenu == 'approval' or activeMenu == 'purchase' ? 'active' : ''}">
                     <i class="fas fa-shield-check"></i> PHÊ DUYỆT
                 </a>
 
-                <div class="sub-nav" th:if="${activeMenu}=='approval'">
-                    <a class="sub-item" th:href="@{/purchases}" th:classappend="${activeSub}=='pr' ? ' active' : ''">
+                <div class="sub-nav" th:if="${activeMenu == 'approval' or activeMenu == 'purchase'}">
+                    <a class="sub-item" th:href="@{/purchases}" th:classappend="${activeSub == 'pr' ? 'active' : ''}">
                         Yêu Cầu Mua Sắm
                     </a>
 
