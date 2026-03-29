@@ -24,7 +24,7 @@
                 </div>
                 <div class="header-actions" style="display: flex; gap: 10px;">
                     <input type="hidden" id="purchaseIdForCompare" th:value="${purchaseId}">
-                    <div sec:authorize="hasAnyAuthority('PURCHASE_STAFF', 'DIRECTOR')">
+                    <div sec:authorize="hasAuthority('DIRECTOR')">
                         <button id="btnCompare" class="btn-compare-custom" style="display: none;"
                                 th:data-url="@{/quotations/compare}">
                             <span class="icon-wrap"><i class="fas fa-columns"></i></span>
