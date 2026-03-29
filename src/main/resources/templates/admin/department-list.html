@@ -101,11 +101,11 @@
                     </td>
                 </tr>
 
-                <tr th:if="${departments == null or departments.isEmpty()}">
-                    <td colspan="4" class="text-center text-muted">
-                        Không tìm thấy phòng ban nào
-                    </td>
-                </tr>
+<!--                <tr th:if="${departments == null or departments.isEmpty()}">-->
+<!--                    <td colspan="4" class="text-center text-muted">-->
+<!--                        Không tìm thấy phòng ban nào-->
+<!--                    </td>-->
+<!--                </tr>-->
                 </tbody>
             </table>
 
@@ -231,6 +231,9 @@
             info: false,
 
             ordering: true,
+            language: {
+                emptyTable: "Không tìm thấy phòng ban nào"
+            },
 
             columnDefs: [
                 {orderable: false, targets: [3]}

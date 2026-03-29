@@ -160,7 +160,7 @@ public class WarehouseInboundController {
             model.addAttribute("stagedAssets", warehouseInboundService.getAssetsByCodes(codes));
             model.addAttribute("stagedCodes", codes);
         } else {
-            model.addAttribute("stagedAssets", java.util.Collections.emptyList());
+            model.addAttribute( "stagedAssets", java.util.Collections.emptyList());
             model.addAttribute("stagedCodes", java.util.Collections.emptyList());
         }
         return "warehouse/inbound/return_process";

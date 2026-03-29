@@ -159,11 +159,11 @@
                 </td>
             </tr>
 
-            <tr th:if="${users == null or users.isEmpty()}">
-                <td colspan="7" class="text-center">
-                    Không tìm thấy người dùng nào
-                </td>
-            </tr>
+<!--            <tr th:if="${users == null or users.isEmpty()}">-->
+<!--                <td colspan="7" class="text-center">-->
+<!--                    Không tìm thấy người dùng nào-->
+<!--                </td>-->
+<!--            </tr>-->
 
             </tbody>
 
@@ -227,6 +227,9 @@
             info: false,
 
             ordering: true,
+            language: {
+                emptyTable: "Không tìm thấy người dùng nào"
+            },
 
             columnDefs: [
                 {orderable: false, targets: [6]}

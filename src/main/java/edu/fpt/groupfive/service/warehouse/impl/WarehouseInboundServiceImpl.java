@@ -353,6 +353,7 @@ public class WarehouseInboundServiceImpl implements WarehouseInboundService {
                         return AssetDetailResponse.builder()
                                 .assetId(asset.getAssetId())
                                 .assetName(asset.getAssetName())
+                                .assetTypeName(asset.getAssetTypeName())
                                 .build();
                     } catch (NumberFormatException e) {
                         return null;
