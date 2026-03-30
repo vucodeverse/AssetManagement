@@ -513,7 +513,8 @@ public class UserDAOImpl implements UserDAO {
         }
 
         if (keyword != null) {
-            sql.append(" AND (username LIKE ? OR email LIKE ?)");
+            sql.append(" AND (username LIKE ? OR email LIKE ? OR (firstname + ' ' + lastname) LIKE ?)");
+            params.add("%" + keyword + "%");
             params.add("%" + keyword + "%");
             params.add("%" + keyword + "%");
         }
